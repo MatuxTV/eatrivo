@@ -39,6 +39,20 @@
   --info: #3b82f6;
 }
 @theme inline {
+
+  /* Primary color   */
+  --color-primary: #7b3ff2;
+  --color-secondary: #f3f4f6;
+
+  /* Color background */
+  --color-primary-foreground: #F9FAFB;
+  --color-secondary-foreground: #FFFFFF;
+
+  /* Color text */
+  --color-primary-text: #1E2939;
+  --color-secondary-text: #4A5565;
+
+
   /* EatRivo Custom Colors */
   --eatrivo-green: #22c55e;
   --eatrivo-orange: #f97316;

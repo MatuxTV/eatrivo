@@ -7,6 +7,7 @@ export const activityLevelEnum = pgEnum("activity_level",["sedentary","lightly_a
 export const dietEnum = pgEnum("diet",["none","lactosefree","vegetarian","vegan","pescatarian","ketogenic","paleolithic"]);
 export const timePrefEnum = pgEnum("time_pref",["quick","normal","slow"]);
 export const budgetEnum = pgEnum("budget",["low","medium","high"]);
+export const membershipEnum = pgEnum("membership", ["basic", "premium", "trainer"]);
 
 // NextAuth users table (minimal, just for OAuth)
 export const users = pgTable("users", {
@@ -14,6 +15,7 @@ export const users = pgTable("users", {
   name: text("name"),
   email: text("email").notNull().unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
+  membership: membershipEnum("membership").default("basic").notNull(),
   image: text("image"),
 });
 
