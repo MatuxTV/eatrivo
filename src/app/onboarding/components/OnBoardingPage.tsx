@@ -17,8 +17,6 @@ export default function OnboardingClient() {
 
   const handleFoodPreferencesComplete = async (data: UserFoodPreferences) => {
     setIsLoading(true);
-    console.log("Food Preferences Data:", data);
-    console.log("Profile Data at submission:", profileData);
     
     try {
       // Here you'll save both profile and food preferences to database

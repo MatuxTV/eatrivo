@@ -1,6 +1,7 @@
-import { auth } from "../../../../auth";
-import { redirect } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
+"use client";
+
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ReceiptText,
   UtensilsCrossed,
@@ -12,15 +13,54 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import ReceiptCard from "@/components/dashboard/ReceiptCard";
+import MealPlanCard from "@/components/dashboard/MealPlanCard";
+import { toast } from "sonner";
+import type { Session } from "next-auth";
 
-export default async function DashboardPage() {
-  const session = await auth();
+interface MealPlan {
+  id: string;
+  title: string;
+  description?: string;
+  weekStartDate: string;
+  weekEndDate: string;
+  status: 'active' | 'completed' | 'cancelled';
+  cloudinaryPublicId: string;
+  createdAt: string;
+}
 
-  console.log("DashboardPage session:", session?.user);
+interface DashboardPageProps {
+  session: Session;
+}
 
-  if (!session?.user) {
-    redirect("/signin");
-  }
+export default function DashboardPage({ session }: DashboardPageProps) {
+  const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
+  const [isLoadingMealPlans, setIsLoadingMealPlans] = useState(true);
+
+  useEffect(() => {
+    const fetchMealPlans = async () => {
+      if (!session?.user) return;
+      
+      try {
+        setIsLoadingMealPlans(true);
+        const response = await fetch('/api/meal-plans');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch meal plans');
+        }
+        
+        const data = await response.json();
+        setMealPlans(data.mealPlans || []);
+      } catch (error) {
+        console.error('Error fetching meal plans:', error);
+        toast.error('Nepodarilo sa načítať jedálne plány');
+        setMealPlans([]);
+      } finally {
+        setIsLoadingMealPlans(false);
+      }
+    };
+
+    fetchMealPlans();
+  }, [session]);
 
   const mealPlan = [
     {
@@ -74,42 +114,60 @@ export default async function DashboardPage() {
   ];
 
   return (
+
+
     <div className="min-h-screen flex w-full bg-primary-foreground">
       {/* Profile section */}
-      <div className=" w-1/6 min-h-screen bg-secondary-foreground drop-shadow-lg">
+      <div className="w-64 bg-white shadow-sm border-r border-gray-100 flex flex-col">
         {/* Profile card */}
-        <div className=" p-4 flex">
-          <Image
-            src={session?.user?.image || "/default-avatar.png"}
-            alt={session?.user?.name || "User"}
-            width={50}
-            height={50}
-            className="rounded-full border-2 border-primary"
-          />
-          <div className=" ml-4">
-            <h2 className="text-xl font-bold text-primary-text mt-2">
-              {session?.user?.name}
-            </h2>
-            <p className=" text-eatrivo-green">Členstvo: {session?.user?.membership || "Základné"}</p>
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center mb-4">
+            <Image
+              src={session?.user?.image || "/default-avatar.png"}
+              alt={session?.user?.name || "User"}
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
+            <div className="ml-3">
+              <h2 className="text-sm font-semibold text-gray-900">
+                {session?.user?.name}
+              </h2>
+              <p className="text-xs text-gray-500">Premium účet</p>
+            </div>
           </div>
         </div>
-        <div className=" p-4 flex flex-col gap-2 font-semibold text-primary-text">
-          <Link className="flex items-center font-semibold" href="/dashboard">
-            <ReceiptText className="mr-4 flex justify-center" />
-            Dashboard
-          </Link>
-          <Link className="flex items-center font-semibold" href="/profile">
-            <UtensilsCrossed className="mr-4 flex justify-center" />
-            Profile
-          </Link>
-          <Link className="flex items-center font-semibold" href="/settings">
-            <MessageCircle className="mr-4 flex justify-center" />
-            Settings
-          </Link>
-        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4">
+          <div className="space-y-1">
+            <Link
+              className="flex items-center p-3 rounded-lg bg-blue-50 text-blue-700 font-medium"
+              href="/dashboard"
+            >
+              <ReceiptText className="mr-3 w-4 h-4" />
+              Dashboard
+            </Link>
+            <Link
+              className="flex items-center p-3 rounded-lg text-gray-600 hover:bg-gray-50"
+              href="/profile"
+            >
+              <UtensilsCrossed className="mr-3 w-4 h-4" />
+              Profil
+            </Link>
+            <Link
+              className="flex items-center p-3 rounded-lg text-gray-600 hover:bg-gray-50"
+              href="/settings"
+            >
+              <MessageCircle className="mr-3 w-4 h-4" />
+              Nastavenia
+            </Link>
+          </div>
+        </nav>
       </div>
       {/* Main content */}
       <div className="w-5/6 p-6">
+        {/* Welcome */}
         <div className=" bg-secondary-foreground p-6 rounded-2xl mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-6">
             Vitajte späť, {session?.user?.name?.split(" ")[0]}!
@@ -174,7 +232,6 @@ export default async function DashboardPage() {
                   </div>
                 </div>
               </div>
-
               {/* Meal Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {mealPlan.map((meal) => (
@@ -195,40 +252,92 @@ export default async function DashboardPage() {
               </div>
             </div>
           </div>
-
-          {/* Right Section */}
-          <div className="space-y-6">
-            {/* Goals Section */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center mb-4">
-                <Target className="mr-3 text-eatrivo-purple" size={20} />
-                <h2 className="text-lg font-bold text-gray-800">
-                  Ciele na tento týždeň
-                </h2>
+          {/* Goals Section */}
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center mb-4">
+              <Target className="mr-3 text-eatrivo-purple" size={20} />
+              <h2 className="text-lg font-bold text-gray-800">
+                Ciele na tento týždeň
+              </h2>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="mr-3 w-4 h-4 text-eatrivo-purple"
+                />
+                <span className="text-sm text-gray-700">
+                  Každý deň zjesť 100g bielkovín
+                </span>
               </div>
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="mr-3 w-4 h-4 text-eatrivo-purple"
-                  />
-                  <span className="text-sm text-gray-700">
-                    Každý deň zjesť 100g bielkovín
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="mr-3 w-4 h-4 text-eatrivo-purple"
-                  />
-                  <span className="text-sm text-gray-700">
-                    Vypiť 3l vody každý deň
-                  </span>
-                </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="mr-3 w-4 h-4 text-eatrivo-purple"
+                />
+                <span className="text-sm text-gray-700">
+                  Vypiť 3l vody každý deň
+                </span>
               </div>
             </div>
-
-            {/* Messages Section */}
+          </div>
+          {/* Meal Plans Section */}
+          <div className="lg:col-span-2">
+            <Card className="bg-secondary-foreground rounded-xl shadow-2xl p-6">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl font-bold text-primary-text flex items-center gap-2">
+                    <UtensilsCrossed className="w-5 h-5" />
+                    Vaše jedálne plány
+                  </CardTitle>
+                  <div className="text-sm text-gray-500">
+                    {mealPlans.length} {mealPlans.length === 1 ? 'plán' : mealPlans.length < 5 ? 'plány' : 'plánov'}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoadingMealPlans ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="bg-white border border-gray-200 rounded-2xl p-6 animate-pulse">
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="w-12 h-12 bg-gray-200 rounded-2xl"></div>
+                          <div className="flex-1">
+                            <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
+                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                          </div>
+                        </div>
+                        <div className="h-3 bg-gray-200 rounded mb-4 w-2/3"></div>
+                        <div className="flex items-center justify-between">
+                          <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                          <div className="h-8 bg-gray-200 rounded w-20"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : mealPlans.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {mealPlans.map((plan) => (
+                      <MealPlanCard key={plan.id} {...plan} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <UtensilsCrossed className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Žiadne jedálne plány</h3>
+                    <p className="text-gray-500 mb-6">Zatiaľ nemáte žiadne jedálne plány. Požiadajte svojho trénera o vytvorenie personalizovaného plánu.</p>
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                      <p className="text-sm text-blue-800">
+                        💡 <strong>Tip:</strong> Jedálne plány vám pomôžu dosiahnuť vaše fitnes ciele efektívnejšie!
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+          {/* Messages Section */}
+          <div className="space-y-6">
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <div className="flex items-center mb-4">
                 <Mail className="mr-3 text-eatrivo-purple" size={20} />

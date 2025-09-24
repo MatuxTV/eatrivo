@@ -8,6 +8,7 @@ export const dietEnum = pgEnum("diet",["none","lactosefree","vegetarian","vegan"
 export const timePrefEnum = pgEnum("time_pref",["quick","normal","slow"]);
 export const budgetEnum = pgEnum("budget",["low","medium","high"]);
 export const membershipEnum = pgEnum("membership", ["basic", "premium", "trainer"]);
+export const mealPlanStatusEnum = pgEnum("meal_plan_status", ["active", "completed", "cancelled"]);
 
 // NextAuth users table (minimal, just for OAuth)
 export const users = pgTable("users", {
@@ -50,6 +51,30 @@ export const userInfoTable = pgTable("user_info", {
   dislikes: text("dislikes"),
   allergies: text("allergies"),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+
+// Updated meal plans table for PDF files
+export const mealPlans = pgTable("meal_plans", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userProfileId: uuid("userProfileId").notNull().references(() => userProfiles.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  weekStartDate: timestamp("weekStartDate").notNull(),
+  weekEndDate: timestamp("weekEndDate").notNull(),
+  cloudinaryPublicId: text("cloudinaryPublicId").notNull(), // For PDF storage
+  pdfUrl: text("pdfUrl"), // Direct URL for faster access
+  status: mealPlanStatusEnum("status").default("active").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Optional: Track downloads for analytics
+export const mealPlanDownloads = pgTable("meal_plan_downloads", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  mealPlanId: uuid("mealPlanId").notNull().references(() => mealPlans.id, { onDelete: "cascade" }),
+  userProfileId: uuid("userProfileId").notNull().references(() => userProfiles.id, { onDelete: "cascade" }),
+  downloadedAt: timestamp("downloadedAt", { withTimezone: true }).defaultNow().notNull(),
 });
 
 // NextAuth required tables

@@ -33,7 +33,6 @@ export default function ReceiptCard({
 
   // Function to get color based on meal type
   const getMealTypeColor = (mealType: string): string => {
-    console.log("Determining color for meal type:", mealType);
     const normalizedType = mealType.toLowerCase();
     switch(normalizedType){
         case "breakfast":
