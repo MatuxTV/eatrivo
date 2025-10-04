@@ -42,7 +42,7 @@ export async function GET() {
       userProfileId: userProfile.id
     })
   } catch (error) {
-    console.error('Error fetching meal plans:', error)
+            console.error('Error fetching shopping lists:', error)
     return NextResponse.json({ error: 'Failed to fetch shopping lists' }, { status: 500 })
   }
 }

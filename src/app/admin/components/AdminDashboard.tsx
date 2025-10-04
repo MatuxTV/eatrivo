@@ -27,7 +27,7 @@ interface User {
   isProfileComplete: boolean | null;
 }
 
-interface MealPlanFormData {
+interface ShoppingListFormData {
   title: string;
   description: string;
   weekStartDate: string;
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<"upload" | "users" | "settings">(
     "upload"
   );
-  const [formData, setFormData] = useState<MealPlanFormData>({
+  const [formData, setFormData] = useState<ShoppingListFormData>({
     title: "",
     description: "",
     weekStartDate: "",
@@ -102,7 +102,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleInputChange = (field: keyof MealPlanFormData, value: string) => {
+  const handleInputChange = (field: keyof ShoppingListFormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
         uploadFormData.append("userId", formData.userId);
       }
 
-      const response = await fetch("/api/admin/meal-plans/upload", {
+      const response = await fetch("/api/admin/shopping-lists/upload", {
         method: "POST",
         body: uploadFormData,
       });

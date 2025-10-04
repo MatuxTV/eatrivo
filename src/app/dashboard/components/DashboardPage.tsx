@@ -13,11 +13,11 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import ReceiptCard from "@/components/dashboard/ReceiptCard";
-import MealPlanCard from "@/components/dashboard/MealPlanCard";
+import ShoppingListCard from "@/components/dashboard/ShoppingListCard";
 import { toast } from "sonner";
 import type { Session } from "next-auth";
 
-interface MealPlan {
+interface ShoppingList {
   id: string;
   title: string;
   description?: string;
@@ -33,33 +33,33 @@ interface DashboardPageProps {
 }
 
 export default function DashboardPage({ session }: DashboardPageProps) {
-  const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
-  const [isLoadingMealPlans, setIsLoadingMealPlans] = useState(true);
+  const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
+  const [isLoadingShoppingLists, setIsLoadingShoppingLists] = useState(true);
 
   useEffect(() => {
-    const fetchMealPlans = async () => {
+    const fetchShoppingLists = async () => {
       if (!session?.user) return;
       
       try {
-        setIsLoadingMealPlans(true);
-        const response = await fetch('/api/meal-plans');
+        setIsLoadingShoppingLists(true);
+        const response = await fetch('/api/shopping-lists');
         
         if (!response.ok) {
-          throw new Error('Failed to fetch meal plans');
+          throw new Error('Failed to fetch shopping lists');
         }
         
         const data = await response.json();
-        setMealPlans(data.mealPlans || []);
+        setShoppingLists(data.shoppingLists || []);
       } catch (error) {
-        console.error('Error fetching meal plans:', error);
+        console.error('Error fetching shopping lists:', error);
         toast.error('Nepodarilo sa načítať jedálne plány');
-        setMealPlans([]);
+        setShoppingLists([]);
       } finally {
-        setIsLoadingMealPlans(false);
+        setIsLoadingShoppingLists(false);
       }
     };
 
-    fetchMealPlans();
+    fetchShoppingLists();
   }, [session]);
 
   const mealPlan = [
@@ -281,7 +281,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
               </div>
             </div>
           </div>
-          {/* Meal Plans Section */}
+          {/* Shopping Lists Section */}
           <div className="lg:col-span-2">
             <Card className="bg-secondary-foreground rounded-xl shadow-2xl p-6">
               <CardHeader className="pb-4">
@@ -291,12 +291,12 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                     Vaše jedálne plány
                   </CardTitle>
                   <div className="text-sm text-gray-500">
-                    {mealPlans.length} {mealPlans.length === 1 ? 'plán' : mealPlans.length < 5 ? 'plány' : 'plánov'}
+                    {shoppingLists.length} {shoppingLists.length === 1 ? 'zoznam' : shoppingLists.length < 5 ? 'zoznamy' : 'zoznamov'}
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                {isLoadingMealPlans ? (
+                {isLoadingShoppingLists ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[1, 2, 3].map((i) => (
                       <div key={i} className="bg-white border border-gray-200 rounded-2xl p-6 animate-pulse">
@@ -315,10 +315,10 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                       </div>
                     ))}
                   </div>
-                ) : mealPlans.length > 0 ? (
+                ) : shoppingLists.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {mealPlans.map((plan) => (
-                      <MealPlanCard key={plan.id} {...plan} />
+                    {shoppingLists.map((plan: ShoppingList) => (
+                      <ShoppingListCard key={plan.id} {...plan} />
                     ))}
                   </div>
                 ) : (
