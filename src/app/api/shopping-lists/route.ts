@@ -1,17 +1,28 @@
-import { NextResponse } from 'next/server'
+import { NextResponse,NextRequest } from 'next/server'
 import { auth } from '../../../../auth'
 import { db } from '@/index'
 import { shoppingLists, userProfiles } from '@/db/schema'
 import { eq, desc } from 'drizzle-orm'
+import { CacheService } from '@/lib/cache'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile
+    const cacheKey = `shopping-lists:${session.user.id}`
+
+
+    const cachedData = await CacheService.get(cacheKey)
+    if (cachedData) {
+      console.log('📋 Cache hit for shopping lists')
+      return NextResponse.json(cachedData)
+    }
+
+    // Database fallback
+    console.log('🔄 Cache miss - fetching from database')
     const [userProfile] = await db
       .select()
       .from(userProfiles)
@@ -21,28 +32,27 @@ export async function GET() {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    // Get user's shopping lists
     const userShoppingLists = await db
-      .select({
-        id: shoppingLists.id,
-        title: shoppingLists.title,
-        description: shoppingLists.description,
-        weekStartDate: shoppingLists.weekStartDate,
-        weekEndDate: shoppingLists.weekEndDate,
-        status: shoppingLists.status,
-        cloudinaryPublicId: shoppingLists.cloudinaryPublicId,
-        createdAt: shoppingLists.created_at,
-      })
+      .select()
       .from(shoppingLists)
       .where(eq(shoppingLists.userProfileId, userProfile.id))
       .orderBy(desc(shoppingLists.created_at))
 
-    return NextResponse.json({ 
+    const response = {
+      success: true,
       shoppingLists: userShoppingLists,
-      userProfileId: userProfile.id
-    })
+      total: userShoppingLists.length
+    }
+
+    // Cache for 5 minutes
+    await CacheService.set(cacheKey, response, 300)
+
+    return NextResponse.json(response)
   } catch (error) {
-            console.error('Error fetching shopping lists:', error)
-    return NextResponse.json({ error: 'Failed to fetch shopping lists' }, { status: 500 })
+    console.error('Failed to fetch shopping lists:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch shopping lists' },
+      { status: 500 }
+    )
   }
 }

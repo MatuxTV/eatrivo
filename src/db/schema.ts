@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, pgEnum, timestamp, integer, numeric, primaryKey, boolean } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, pgEnum, timestamp, integer,jsonb, numeric, primaryKey, boolean } from "drizzle-orm/pg-core";
 
 // Define the role enum
 export const roleEnum = pgEnum("role", ["user","coach", "admin"]);
@@ -53,7 +53,6 @@ export const userInfoTable = pgTable("user_info", {
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
-
 // Updated shopping lists table for PDF files
 export const shoppingLists = pgTable("shopping_lists", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -64,6 +63,7 @@ export const shoppingLists = pgTable("shopping_lists", {
   weekEndDate: timestamp("weekEndDate").notNull(),
   cloudinaryPublicId: text("cloudinaryPublicId").notNull(), // For PDF storage
   pdfUrl: text("pdfUrl"), // Direct URL for faster access
+  pdfJson : jsonb("pdfJson"), // Store parsed PDF content as JSON
   status: shoppingListStatusEnum("status").default("active").notNull(),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
@@ -113,3 +113,31 @@ export const verificationTokens = pgTable("verificationToken", {
 }, (vt) => ({
   compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
 }));
+
+// New table for AI-generated insights
+export const aiInsights = pgTable('ai_insights', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userProfileId: uuid('user_profile_id').references(() => userProfiles.id).notNull(),
+  insightType: text('insight_type').notNull(), // 'meal_plan', 'nutrition_analysis', 'recommendations'
+  title: text('title').notNull(),
+  content: jsonb('content').notNull(), // Store AI-generated JSON here
+  metadata: jsonb('metadata'), // Additional data (calories, preferences, etc.)
+  isActive: boolean('is_active').default(true),
+  generatedAt: timestamp('generated_at').defaultNow(),
+  expiresAt: timestamp('expires_at'), // For cache-like behavior
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+})
+
+export const userAIPreferences = pgTable('user_ai_preferences', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userProfileId: uuid('user_profile_id').references(() => userProfiles.id).notNull(),
+  dietaryRestrictions: text('dietary_restrictions').array(),
+  preferredCuisines: text('preferred_cuisines').array(),
+  dislikedIngredients: text('disliked_ingredients').array(),
+  maxCookingTime: integer('max_cooking_time').default(30),
+  complexityLevel: text('complexity_level').default('medium'), // simple, medium, complex
+  autoGenerateEnabled: boolean('auto_generate_enabled').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+})

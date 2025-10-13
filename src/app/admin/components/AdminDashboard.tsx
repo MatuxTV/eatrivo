@@ -358,7 +358,7 @@ export default function AdminDashboard() {
                   <div>
                     <Label className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
                       <User className="w-4 h-4" />
-                      Priradiť používateľovi (voliteľné)
+                      Priradiť používateľovi *
                     </Label>
                     {isLoadingUsers ? (
                       <div className="flex items-center gap-3 p-4 text-sm text-gray-500 border border-gray-200 rounded-lg bg-gray-50">
@@ -373,18 +373,18 @@ export default function AdminDashboard() {
                             handleInputChange("userId", value)
                           }
                         >
-                          <SelectTrigger className="h-16 bg-secondary-foreground border-gray-200 hover:border-eatrivo-purple transition-colors">
+                          <SelectTrigger className="min-h-[40px] h-auto py-3 bg-secondary-foreground border-gray-200 hover:border-eatrivo-purple transition-colors">
                             <SelectValue 
                               placeholder={
                                 <div className="flex items-center gap-2 text-gray-500">
                                   <User className="w-4 h-4" />
-                                  Vyberte používateľa alebo nechajte prázdne
+                                  Vyberte používateľa 
                                 </div>
                               } 
                             />
                           </SelectTrigger>
-                          <SelectContent className="max-h-[300px]">
-                            <SelectItem value="bez" className="p-3">
+                          <SelectContent className="bg-secondary-foreground border-4 max-h-[300px]">
+                            <SelectItem value="0" className="p-3">
                               <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
                                   <User className="w-4 h-4 text-gray-400" />
@@ -426,7 +426,7 @@ export default function AdminDashboard() {
                                 <SelectItem
                                   key={user?.id}
                                   value={user?.profileId || user?.id}
-                                  className="p-3 hover:bg-gray-50 cursor-pointer"
+                                  className="p-3 bg-secondary-foreground hover:bg-gray-50 cursor-pointer"
                                 >
                                   <div className="flex items-center gap-3">
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${getMembershipColor(user?.membership)}`}>

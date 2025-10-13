@@ -36,6 +36,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
   const [isLoadingShoppingLists, setIsLoadingShoppingLists] = useState(true);
 
+
   useEffect(() => {
     const fetchShoppingLists = async () => {
       if (!session?.user) return;
@@ -58,7 +59,6 @@ export default function DashboardPage({ session }: DashboardPageProps) {
         setIsLoadingShoppingLists(false);
       }
     };
-
     fetchShoppingLists();
   }, [session]);
 
@@ -260,26 +260,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                 Ciele na tento týždeň
               </h2>
             </div>
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="mr-3 w-4 h-4 text-eatrivo-purple"
-                />
-                <span className="text-sm text-gray-700">
-                  Každý deň zjesť 100g bielkovín
-                </span>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="mr-3 w-4 h-4 text-eatrivo-purple"
-                />
-                <span className="text-sm text-gray-700">
-                  Vypiť 3l vody každý deň
-                </span>
-              </div>
-            </div>
+           <div className=" justify-center w-full h-full text-center text-black font-bold">COMING SOON</div>
           </div>
           {/* Shopping Lists Section */}
           <div className="lg:col-span-2">
@@ -343,37 +324,8 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                 <Mail className="mr-3 text-eatrivo-purple" size={20} />
                 <h2 className="text-lg font-bold text-gray-800">Správy</h2>
               </div>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="border-b border-gray-100 pb-3 last:border-b-0"
-                  >
-                    <div className="flex items-start gap-3">
-                      <Image
-                        src={`https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&auto=format`}
-                        alt="Tréner Matúš"
-                        width={32}
-                        height={32}
-                        className="rounded-full"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-sm text-gray-900">
-                            Tréner Matúš
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            pred 2 hodinami
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-700 leading-relaxed">
-                          Ahoj, dnes sa pokús obmedzif tuky a zameraj sa skôr na
-                          kardio
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div>
+                <p className=" justify-center w-full text-center text-black font-bold h-full">COMING SOON</p>
               </div>
             </div>
           </div>

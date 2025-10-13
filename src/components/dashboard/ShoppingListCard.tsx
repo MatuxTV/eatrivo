@@ -40,51 +40,55 @@ export default function ShoppingListCard({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800 hover:bg-green-200'
+        return 'bg-green-100 text-green-800 '
       case 'completed':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+        return 'bg-blue-100 text-blue-800 '
       case 'cancelled':
-        return 'bg-red-100 text-red-800 hover:bg-red-200'
+        return 'bg-red-100 text-red-800 '
       default:
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+        return 'bg-gray-100 text-gray-800 '
     }
   }
 
   const handleDownload = async () => {
     setIsDownloading(true)
     try {
+      // Use explicit GET request to download endpoint
       const response = await fetch(`/api/shopping-lists/${id}/download`, {
         method: 'GET',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
       })
-
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(errorData.error || 'Failed to generate download link')
       }
 
-      // Get the blob from the response
-      const blob = await response.blob()
+      const data = await response.json()
+      console.log('Download response:', data)
+
+      // Validate response data
+      if (!data.downloadUrl) {
+        throw new Error('Invalid response: missing download URL')
+      }
       
-      // Create a URL for the blob
-      const url = window.URL.createObjectURL(blob)
-      
-      // Create a temporary anchor element and trigger download
+      // Create temporary link and trigger download
       const link = document.createElement('a')
-      link.href = url
-      link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`
+      link.href = data.downloadUrl
+      link.download = data.filename || `${title}.pdf`
+      link.target = '_blank' // Add target blank for better compatibility
       document.body.appendChild(link)
       link.click()
-      
-      // Clean up
-      window.URL.revokeObjectURL(url)
       document.body.removeChild(link)
-      
-      toast.success('Shopping list downloaded successfully!')
+
+      toast.success('Váš nákupný zoznam sa sťahuje!')
     } catch (error) {
-      console.error('Download error:', error)
-      toast.error('Failed to download shopping list')
+      console.error('Download failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Nepodarilo sa stiahnuť nákupný zoznam'
+      toast.error(errorMessage)
     } finally {
       setIsDownloading(false)
     }
@@ -93,35 +97,21 @@ export default function ShoppingListCard({
   const handleView = async () => {
     setIsViewing(true)
     try {
-      const response = await fetch(`/api/shopping-lists/${id}/download`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
+      const response = await fetch(`/api/shopping-lists/${id}/download`)
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error('Failed to generate view link')
       }
 
-      // Get the blob from the response
-      const blob = await response.blob()
+      const data = await response.json()
       
-      // Create a URL for the blob
-      const url = window.URL.createObjectURL(blob)
-      
-      // Open in new window/tab for viewing
-      window.open(url, '_blank')
-      
-      // Clean up the URL after a delay
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url)
-      }, 1000)
-      
-      toast.success('Shopping list opened for viewing!')
+      // Open in new tab for viewing
+      window.open(data.downloadUrl, '_blank')
+
+      toast.success('Váš nákupný zoznam sa otvoril v novom okne')
     } catch (error) {
-      console.error('View error:', error)
-      toast.error('Failed to open shopping list')
+      console.error('View failed:', error)
+      toast.error('Nepodarilo sa otvoriť nákupný zoznam')
     } finally {
       setIsViewing(false)
     }
@@ -164,11 +154,10 @@ export default function ShoppingListCard({
         {/* Actions */}
         <div className="flex space-x-2 pt-2">
           <Button
-            variant="outline"
             size="sm"
             onClick={handleView}
             disabled={isViewing}
-            className="flex-1"
+            className="flex-1 bg-secondary-foreground hover:scale-105 hover:border-1 text-primary-text/60"
           >
             <Eye className="w-4 h-4 mr-2" />
             {isViewing ? 'Opening...' : 'View'}
@@ -177,7 +166,7 @@ export default function ShoppingListCard({
             size="sm"
             onClick={handleDownload}
             disabled={isDownloading}
-            className="flex-1"
+            className="flex-1 hover:scale-105"
           >
             <Download className="w-4 h-4 mr-2" />
             {isDownloading ? 'Downloading...' : 'Download'}

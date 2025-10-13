@@ -50,6 +50,13 @@ export const updateUserProfileSchema = z.object({
   dateOfBirth: z.date().max(new Date(), "Dátum narodenia nemôže byť v budúcnosti").optional(),
 });
 
+export const userProfileForAIInsightsSchema = z.object({
+  fullName: z.string().min(2, "Celé meno musí mať aspoň 2 znaky").max(100, "Celé meno je príliš dlhé").optional(),
+  username: z.string().min(3, "Používateľské meno musí mať aspoň 3 znaky").max(20, "Používateľské meno je príliš dlhé").regex(/^[a-zA-Z0-9_]+$/, "Používateľské meno môže obsahovať len písmená, čísla a podčiarkovníky").optional(),
+  phone: z.string().regex(/^\+?[\d\s\-\(\)]+$/, "Neplatný formát telefónneho čísla").optional(),
+  dateOfBirth: z.date().max(new Date(), "Dátum narodenia nemôže byť v budúcnosti").optional(),
+});
+
 // Schema for updating food preferences
 export const updateFoodPreferencesSchema = userFoodPreferencesSchema.partial();
 
