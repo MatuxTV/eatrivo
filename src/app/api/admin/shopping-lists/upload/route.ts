@@ -3,6 +3,10 @@ import { v2 as cloudinary } from "cloudinary";
 import { db } from "@/index";
 import { shoppingLists } from "@/db/schema";
 import { nanoid } from "nanoid";
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+import { writeFile, unlink } from "fs/promises";
+import path from "path";
+import os from "os";
 
 // Configure Cloudinary
 cloudinary.config({
@@ -41,6 +45,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convert File to Buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Parsovanie PDF s v2 API
+    let pdfData: any = null;
+    try {
+      const blob = new Blob([buffer], { type: file.type });
+
+      const loader = new PDFLoader(blob);
+      const docs = await loader.load();
+
+      pdfData = {
+        text: docs.map((doc) => doc.pageContent).join("\n"),
+        numPages: docs.length,
+      };
+      console.log("Parsed PDF data:", pdfData);
+    } catch (pdfError) {
+      console.error("PDF parsing error:", pdfError);
+      return NextResponse.json(
+        { error: "Failed to parse PDF" },
+        { status: 400 }
+      );
+    }
+
     // Generate unique ID for the shopping list
     const shoppingListId = nanoid();
 
@@ -56,7 +85,6 @@ export async function POST(request: NextRequest) {
               resource_type: "auto",
               public_id: publicId,
               folder: "eatrivo/shopping-lists",
-              format: "pdf",
             },
             (error, result) => {
               if (error) reject(error);
@@ -75,8 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Store shopping list data in database
-    // Note: For now, we'll use a default userProfileId since this is beta without authentication
-    const defaultUserProfileId = "00000000-0000-0000-0000-000000000000"; // You may want to create a system user
+    const defaultUserProfileId = "00000000-0000-0000-0000-000000000000";
 
     const shoppingListData = {
       title,
@@ -86,7 +113,12 @@ export async function POST(request: NextRequest) {
       status,
       cloudinaryPublicId: publicId,
       pdfUrl: uploadResult.secure_url,
-      pdfJson: {}, // Placeholder for now
+      // Uložíme parsované dáta
+      pdfJson: pdfData
+        ? {
+            text: pdfData.text,
+          }
+        : null,
       userProfileId: userId || defaultUserProfileId,
     };
 
@@ -101,6 +133,7 @@ export async function POST(request: NextRequest) {
       data: {
         shoppingList: insertedShoppingList[0],
         cloudinaryUrl: uploadResult.secure_url,
+        parsedText: pdfData?.text.substring(0, 200),
       },
     });
   } catch (error) {

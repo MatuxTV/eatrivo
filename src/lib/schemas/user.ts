@@ -16,7 +16,7 @@ export const userProfileOnboardingSchema = z.object({
 
 // User food preferences schema (second step)
 export const userFoodPreferencesSchema = z.object({
-  sex: z.enum(["man", "women"], {
+  sex: z.enum(["man", "woman"], {
     message: "Prosím vyberte svoje pohlavie"
   }),
   age: z.number().min(13, "Musíte mať aspoň 13 rokov").max(120, "Neplatný vek"),
@@ -29,6 +29,7 @@ export const userFoodPreferencesSchema = z.object({
   cooking_time_pref: z.enum(["quick", "normal", "slow"], {
     message: "Prosím vyberte svoju preferenciu času varenia"
   }).optional(),
+  goal: z.enum(["lose_weight", "maintain_weight", "gain_muscle"]).default("maintain_weight").optional(),
   diet_preferences: z.enum(["none", "lactosefree", "vegetarian", "vegan", "pescatarian", "ketogenic", "paleolithic"]).default("none").optional(),
   budget_preference: z.enum(["low", "medium", "high"]).default("medium").optional(),
   likes: z.string().max(500, "Popis obľúbených jedál je príliš dlhý").optional(),

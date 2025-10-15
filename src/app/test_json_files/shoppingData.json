@@ -1,0 +1,154 @@
+{
+  "nakupny_zoznam": {
+    "zelenina": [
+      {
+        "nazov": "Biela kapusta",
+        "mnozstvo": "1ks"
+      },
+      {
+        "nazov": "Hokkaido tekvica",
+        "mnozstvo": "1ks"
+      },
+      {
+        "nazov": "Červená repa",
+        "mnozstvo": "3-4ks"
+      },
+      {
+        "nazov": "Paprika",
+        "mnozstvo": "5-6ks"
+      },
+      {
+        "nazov": "Šalátová uhorka",
+        "mnozstvo": "2ks"
+      },
+      {
+        "nazov": "Cibuľa",
+        "mnozstvo": "5ks"
+      },
+      {
+        "nazov": "Paradajky",
+        "mnozstvo": "6-7ks"
+      },
+      {
+        "nazov": "Batáty",
+        "mnozstvo": "3ks"
+      },
+      {
+        "nazov": "Mrkva",
+        "mnozstvo": "5ks"
+      }
+    ],
+    "ovocie": [
+      {
+        "nazov": "Jablko",
+        "mnozstvo": "6ks"
+      },
+      {
+        "nazov": "Hruška",
+        "mnozstvo": "5ks"
+      },
+      {
+        "nazov": "Hrozno",
+        "mnozstvo": "500g"
+      },
+      {
+        "nazov": "Mrazená záhradná zmes",
+        "mnozstvo": "400g"
+      }
+    ],
+    "obilniny_a_prilohy": [
+      {
+        "nazov": "Ovsené vločky",
+        "mnozstvo": "500g"
+      },
+      {
+        "nazov": "Pohánka",
+        "mnozstvo": "400g"
+      },
+      {
+        "nazov": "Ryža",
+        "mnozstvo": "500g"
+      },
+      {
+        "nazov": "Bulgur",
+        "mnozstvo": "400g"
+      },
+      {
+        "nazov": "Kváskový chlieb",
+        "mnozstvo": "400g"
+      }
+    ],
+    "strukoviny": [
+      {
+        "nazov": "Šošovica",
+        "mnozstvo": "400g"
+      },
+      {
+        "nazov": "Cícer",
+        "mnozstvo": "400g"
+      },
+      {
+        "nazov": "Fazuľa",
+        "mnozstvo": "400g"
+      }
+    ],
+    "tuky": [
+      {
+        "nazov": "Oriešky podľa vašej preferencie",
+        "mnozstvo": "cca 200g"
+      },
+      {
+        "nazov": "Slnečnicové semienka",
+        "mnozstvo": "150g"
+      },
+      {
+        "nazov": "Chia semienka",
+        "mnozstvo": "100g"
+      },
+      {
+        "nazov": "Olivový olej",
+        "mnozstvo": "150ml"
+      }
+    ],
+    "mliecne_vyrobky": [
+      {
+        "nazov": "Grécky jogurt",
+        "mnozstvo": "500g"
+      },
+      {
+        "nazov": "Kefír",
+        "mnozstvo": "500ml"
+      },
+      {
+        "nazov": "Nízkotučný tvaroh",
+        "mnozstvo": "500g"
+      },
+      {
+        "nazov": "Cottage chesse",
+        "mnozstvo": "600g"
+      },
+      {
+        "nazov": "Bryndza",
+        "mnozstvo": "200g"
+      },
+      {
+        "nazov": "Syr podľa vašej preferencie",
+        "mnozstvo": "200g"
+      }
+    ],
+    "doplnky_vyzivy": [
+      {
+        "nazov": "Vitamín B12"
+      },
+      {
+        "nazov": "Vitamín D3"
+      },
+      {
+        "nazov": "Omega 3"
+      },
+      {
+        "nazov": "Železo"
+      }
+    ]
+  }
+}

@@ -2,13 +2,14 @@ import { pgTable, uuid, text, pgEnum, timestamp, integer,jsonb, numeric, primary
 
 // Define the role enum
 export const roleEnum = pgEnum("role", ["user","coach", "admin"]);
-export const sexEnum = pgEnum("sex",["man","women"]);
+export const sexEnum = pgEnum("sex",["man","woman"]);
 export const activityLevelEnum = pgEnum("activity_level",["sedentary","lightly_active","moderately_active","very_active","athlete"]);
 export const dietEnum = pgEnum("diet",["none","lactosefree","vegetarian","vegan","pescatarian","ketogenic","paleolithic"]);
 export const timePrefEnum = pgEnum("time_pref",["quick","normal","slow"]);
 export const budgetEnum = pgEnum("budget",["low","medium","high"]);
 export const membershipEnum = pgEnum("membership", ["basic", "premium", "trainer"]);
 export const shoppingListStatusEnum = pgEnum("shopping_list_status", ["active", "completed", "cancelled"]);
+export const goalEnum = pgEnum("goal", ["lose_weight", "maintain_weight", "gain_muscle"]);
 
 // NextAuth users table (minimal, just for OAuth)
 export const users = pgTable("users", {
@@ -43,6 +44,7 @@ export const userInfoTable = pgTable("user_info", {
   height: integer("height").notNull(),
   weight: numeric("weight", { precision: 5, scale: 2 }).notNull(),
   activity_level: activityLevelEnum("activity_level").notNull(),
+  goal: goalEnum("goal").notNull(),
   meal_per_day: integer("meal_per_day"),
   cooking_time_pref: timePrefEnum("time_pref"),
   diet_preferences: dietEnum("diet").default("none"),
@@ -75,6 +77,16 @@ export const shoppingListDownloads = pgTable("shopping_list_downloads", {
   shoppingListId: uuid("shoppingListId").notNull().references(() => shoppingLists.id, { onDelete: "cascade" }),
   userProfileId: uuid("userProfileId").notNull().references(() => userProfiles.id, { onDelete: "cascade" }),
   downloadedAt: timestamp("downloadedAt", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const mealPlans = pgTable("meal_plans", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userProfileId: uuid("userProfileId").notNull().references(() => userProfiles.id, { onDelete: "cascade" }),
+  shoppingListId: uuid("shoppingListId").notNull().references(() => shoppingLists.id, { onDelete: "cascade" }),
+  weekStartDate: timestamp("weekStartDate").notNull(),
+  weekEndDate: timestamp("weekEndDate").notNull(),
+  meals: jsonb("meals").notNull(), // Store meal plan as JSON
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 // NextAuth required tables

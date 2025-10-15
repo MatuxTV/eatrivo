@@ -27,6 +27,7 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
       activity_level: undefined,
       meal_per_day: 3,
       cooking_time_pref: undefined,
+      goal: undefined,
       diet_preferences: "none",
       budget_preference: "medium",
       likes: "",
@@ -40,7 +41,7 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
   }
 
   return (
-    <Card>
+    <Card className=" text-black">
       <CardHeader>
         <CardTitle>Jedálne preferencie</CardTitle>
         <CardDescription>
@@ -66,7 +67,7 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="man">Muž</SelectItem>
-                        <SelectItem value="women">Žena</SelectItem>
+                        <SelectItem value="woman">Žena</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -155,6 +156,30 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
                       <SelectItem value="moderately_active">Stredne aktívny (3-5x týždenne)</SelectItem>
                       <SelectItem value="very_active">Veľmi aktívny (6-7x týždenne)</SelectItem>
                       <SelectItem value="athlete">Športovec (Viac krát denne)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* {GOAL} */}
+            <FormField
+              control={form.control}
+              name="goal"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cieľ *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Vyberte cieľ" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="lose_weight">Schudnúť</SelectItem>
+                      <SelectItem value="maintain_weight">Udržať váhu</SelectItem>
+                      <SelectItem value="gain_muscle">Získať svalovú hmotu</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ReceiptText,
@@ -9,6 +9,7 @@ import {
   Target,
   Mail,
   ChefHat,
+  User,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,6 +17,7 @@ import ReceiptCard from "@/components/dashboard/ReceiptCard";
 import ShoppingListCard from "@/components/dashboard/ShoppingListCard";
 import { toast } from "sonner";
 import type { Session } from "next-auth";
+import { EatrivoAIService } from "@/lib/langchain";
 
 interface ShoppingList {
   id: string;
@@ -35,6 +37,8 @@ interface DashboardPageProps {
 export default function DashboardPage({ session }: DashboardPageProps) {
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
   const [isLoadingShoppingLists, setIsLoadingShoppingLists] = useState(true);
+  const [mealPlanData, setMealPlanData] = useState<any[]>([]);
+  const [isLoadingMealPlan, setIsLoadingMealPlan] = useState(false);
 
 
   useEffect(() => {
@@ -62,6 +66,41 @@ export default function DashboardPage({ session }: DashboardPageProps) {
     fetchShoppingLists();
   }, [session]);
 
+  useEffect(() => {
+  const fetchMealPlan = async () => {
+    if (!session?.user) return;
+
+    try {
+      setIsLoadingMealPlan(true); // Pridaj state pre loading
+      
+      const response = await fetch('/api/meal-plans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate meal plan');
+      }
+
+      const data = await response.json();
+      console.log('Generated meal plan:', data.insights);
+      
+      // Ulož meal plan do state
+      setMealPlanData(data.insights);
+      
+    } catch (error) {
+      console.error('Error generating meal plan:', error);
+      toast.error('Nepodarilo sa vygenerovať jedálny plán');
+    } finally {
+      setIsLoadingMealPlan(false);
+    }
+  };
+
+  fetchMealPlan();
+}, [session]);
+  
   const mealPlan = [
     {
       id: 1,

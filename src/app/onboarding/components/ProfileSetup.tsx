@@ -60,7 +60,7 @@ export default function ProfileSetup({
   };
 
   return (
-    <Card>
+    <Card className=" text-black">
       <CardHeader>
         <CardTitle>Osobné údaje</CardTitle>
         <CardDescription>
