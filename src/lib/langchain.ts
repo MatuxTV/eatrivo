@@ -1,169 +1,126 @@
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
-import { HumanMessage, SystemMessage } from "@langchain/core/messages"
-import shoppingData from '../app/test_json_files/shoppingData.json' // testovacie dáta;
+// src/lib/langchain.ts
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { HumanMessage } from "@langchain/core/messages";
 
 interface UserProfile {
-  age: number
-  weight: number
-  height: number
-  sex: "man" | "woman"
-  goal: "lose_weight" | "gain_muscle" | "maintain_weight"
-  activityLevel: "sedentary" | "lightly_active" | "moderately_active" | "very_active" | "athlete"
-  mealsPerDay: number // počet jedál za deň
-  maxPrepTime: "quick" | "normal" | "slow"
-  dietType?: "none" | "lactosefree" | "vegetarian" | "vegan" | "pescatarian" | "ketogenic" | "paleolithic" // typ stravy
-  budget: "low" | "medium" | "high" // rozpočet na potraviny
-  likedFoods: string // čo má rád
-  dislikedFoods: string // čo nemá rád
-  allergies: string // alergie a intolerancie
+  age: number;
+  weight: number;
+  height: number;
+  sex: "man" | "woman";
+  goal: "lose_weight" | "gain_muscle" | "maintain_weight";
+  activityLevel:
+    | "sedentary"
+    | "lightly_active"
+    | "moderately_active"
+    | "very_active"
+    | "athlete";
+  mealsPerDay: number;
+  maxPrepTime: "quick" | "normal" | "slow";
+  dietType?:
+    | "none"
+    | "lactosefree"
+    | "vegetarian"
+    | "vegan"
+    | "pescatarian"
+    | "ketogenic"
+    | "paleolithic";
+  budget: "low" | "medium" | "high";
+  likedFoods: string;
+  dislikedFoods: string;
+  allergies: string;
 }
 
+interface ShoppingData {
+  markdown: string;
+}
 
 const model = new ChatGoogleGenerativeAI({
   model: "gemini-2.5-flash",
-  maxOutputTokens: 2048,
+  maxOutputTokens: 150000,
   temperature: 0.7,
   apiKey: process.env.GOOGLE_AI_API_KEY,
-})
+});
 
 export class EatrivoAIService {
+  private static extractJSON(content: string): string {
+    // Pokus 1: Odstráň markdown wrapper
+    let cleaned = content
+      .replace(/```(?:json|JSON)?\s*/g, "")
+      .replace(/```\s*$/g, "")
+      .trim();
 
-  static async generateWeeklyMealPlan(userProfile: UserProfile) {
-    try {
-      const prompt = `
-        Vytvor kompletný jedálniček na celý týždeň PRESNE NA ZÁKLADE DOSTUPNÉHO NÁKUPNÉHO ZOZNAMU.
-        
-        PROFIL POUŽÍVATEĽA:
-        - Vek: ${userProfile.age} rokov, váha: ${userProfile.weight} kg, výška: ${userProfile.height} cm
-        - Pohlavie: ${userProfile.sex === 'man' ? 'muž' : 'žena'}
-        - Cieľ: ${userProfile.goal}
-        - Aktivita: ${userProfile.activityLevel}
-        - Počet jedál za deň: ${userProfile.mealsPerDay}
-        - Rychlost prípravy jedla: ${userProfile.maxPrepTime} 
-        - Alergie: ${userProfile.allergies || 'žiadne'}
-        - Nemá rád: ${userProfile.dislikedFoods || 'žiadne'}
-        
-        DOSTUPNÝ NÁKUPNÝ ZOZNAM (MUSÍŠ POUŽIŤ VŠETKO):
-        ${JSON.stringify(shoppingData, null, 2)}
-        
-        KRITICKÉ POŽIADAVKY - MUSÍŠ DODRŽAŤ:
-        1. POUŽIŤ VŠETKY POTRAVINY zo shopping listu v PRESNÝCH množstvách
-        2. NEVYMÝŠĽAJ žiadne nové ingrediencie - len tie zo zoznamu
-        3. ROZDEĽ potraviny medzi ${userProfile.mealsPerDay} jedál denne na 7 dní
-        4. KAŽDÁ potravina musí byť použitá úplne (celé množstvo)
-        5. Prípava receptov musí byť ${userProfile.maxPrepTime} 
-        
-        VYTVOR JEDÁLNIČEK V JSON FORMÁTE:
-        {
-          "weeklyMealPlan": {
-            "shoppingListUsage": {
-              "totalItemsAvailable": 0,
-              "totalItemsUsed": 0,
-              "usagePercentage": "100%",
-              "unusedItems": []
-            },
-            "week": [
-              {
-                "day": "Pondelok",
-                "meals": [
-                  {
-                    "mealType": "raňajky",
-                    "time": "07:00",
-                    "name": "Názov jedla presne zo shopping listu",
-                    "prepTime": 0,
-                    "difficulty": "ľahké",
-                    "usedFromShoppingList": [
-                      {
-                        "item": "presný názov zo shopping listu",
-                        "availableAmount": "množstvo zo shopping listu",
-                        "usedAmount": "koľko použijem v tomto jedle",
-                        "remainingAmount": "koľko zostane"
-                      }
-                    ],
-                    "instructions": [
-                      "detailný krok 1 s presnými množstvami",
-                      "detailný krok 2",
-                      "krok 3 - finalizácia"
-                    ],
-                    "estimatedCalories": 0,
-                    "macros": {
-                      "protein": 0,
-                      "carbs": 0,
-                      "fat": 0
-                    }
-                  }
-                ]
-              }
-            ],
-            "ingredientTracking": [
-              {
-                "originalItem": "presný názov zo shopping listu",
-                "originalAmount": "celkové množstvo zo shopping listu", 
-                "usedIn": [
-                  {
-                    "day": "Pondelok",
-                    "meal": "raňajky",
-                    "amount": "použité množstvo"
-                  }
-                ],
-                "totalUsed": "celkové použité množstvo",
-                "remaining": "zostávajúce množstvo (musí byť 0)",
-                "fullyUtilized": true
-              }
-            ],
-            "weeklyNotes": [
-              "Všetky potraviny zo shopping listu boli úplne využité",
-              "Recepty vytvorené presne podľa dostupných ingrediencií"
-            ]
-          }
-        }
-        
-        ABSOLÚTNE PRAVIDLÁ (100% DODRŽANIE):
-        1. POUŽIŤ každú potravinu zo shopping listu v PRESNOM množstve
-        2. NESMIEŠ pridať žiadne ingrediencie ktoré nie sú v zozname
-        3. KAŽDÁ potravina musí mať "remaining: 0" - úplne spotrebovaná
-        4. Rozdeliť potraviny medzi ${userProfile.mealsPerDay} jedál × 7 dní = ${userProfile.mealsPerDay * 7} jedál celkom
-        5. Recepty maximálne ${userProfile.maxPrepTime} minút
-        6. Rešpektuj alergie: ${userProfile.allergies || 'žiadne'}
-        
-        KONTROLA VYUŽITIA:
-        - ingredientTracking: každá položka musí mať "fullyUtilized": true
-        - unusedItems: musí byť prázdne pole []
-        - usagePercentage: musí byť presne "100%"
-        
-        VÝSTUP:
-        - Iba čistý JSON bez markdown
-        - Slovenské názvy jedál
-        - Detailné kroky prípravy
-        - Sledovanie využitia každej ingrediencie
-        
-        DÔLEŽITÉ: Ak shopping list obsahuje napr. "500g kuracích pŕs", MUSÍŠ použiť celých 500g rozdelených medzi jedlá tak aby remaining = 0g.
-      `
-
-      const response = await model.invoke([new HumanMessage(prompt)])
-      const jsonContent = this.extractJSON(response.content as string)
-      
-      return jsonContent
-    } catch (error) {
-      console.error('Error generating AI insights:', error)
-      throw new Error('Failed to generate AI insights')
+    // Pokus 2: Ak stále začína s ```
+    if (cleaned.startsWith("```")) {
+      cleaned = cleaned
+        .replace(/^```[a-zA-Z]*\n?/, "")
+        .replace(/```$/, "")
+        .trim();
     }
+
+    // Pokus 3: Nájdi prvý { a posledný }
+    const firstBrace = cleaned.indexOf("{");
+    const lastBrace = cleaned.lastIndexOf("}");
+
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      return cleaned.substring(firstBrace, lastBrace + 1);
+    }
+
+    return cleaned;
   }
-
-
-  private static extractJSON(content: string): any {
+  static async generateWeeklyMealPlan(
+    userProfile: UserProfile,
+    shoppingListData: ShoppingData
+  ) {
     try {
-      // Try to find JSON in the response
-      const jsonMatch = content.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0])
+      const prompt = `Vytvor jedálniček na CELÝ TÝŽDEŇ (7 dní: Pondelok-Nedeľa) zo nakupneho zoznamu. Použi LEN ingrediencie zo zoznamu. Vyuzi vsetky potraviny aj s presným množstvom ako v nakupnom zozname.
+
+        PROFIL: ${userProfile.age}r, ${userProfile.weight}kg, ${
+                userProfile.height
+              }cm, ${userProfile.sex}, cieľ: ${userProfile.goal}, aktivita: ${
+                userProfile.activityLevel
+              }, jedál/deň: ${userProfile.mealsPerDay}, alergie: ${
+                userProfile.allergies || "žiadne"
+              }
+
+        Nakupny zoznam:
+        ${shoppingListData.markdown}
+
+        VÝSTUP: Čistý JSON objekt (začni {, skonči }), BEZ markdown wrapperu!
+
+        {"week":[{"day":"Pondelok","totalDailyCalories":"2400kcal","totalDailyProtein":"120g","totalDailyCarbs":"130g","totalDailyFats":"62g","meals":[{"name":"Názov","prepTime":20,"difficulty":"ľahké","calories":450,"protein":30,"carbs":40,"fat":15}]},{"day":"Utorok",...},{"day":"Streda",...},{"day":"Štvrtok",...},{"day":"Piatok",...},{"day":"Sobota",...},{"day":"Nedeľa",...}]}
+
+        DÔLEŽITÉ: Vytvor ${
+                userProfile.mealsPerDay
+              } jedál/deň pre VŠETKÝCH 7 dní. Celkom ${
+                userProfile.mealsPerDay * 7
+              } jedál. Slovenské názvy.`
+      ;
+
+      const response = await model.invoke([new HumanMessage(prompt)]);
+      console.log(response);
+
+      // Spracuj odpoveď
+      let contentText: string;
+      if (typeof response.content === "string") {
+        contentText = response.content;
+      } else if (Array.isArray(response.content)) {
+        contentText = response.content
+          .filter(
+            (part): part is { type: string; text: string } =>
+              typeof part === "object" && part !== null && "text" in part
+          )
+          .map((part) => part.text)
+          .join("");
+      } else {
+        contentText = JSON.stringify(response.content);
       }
-      
-      // If no JSON found, try to parse the whole content
-      return JSON.parse(content)
+
+      contentText = this.extractJSON(contentText);
+
+      return JSON.parse(contentText);
     } catch (error) {
-      console.error('Failed to extract JSON from AI response:', error)
-      throw new Error('Invalid JSON response from AI')
+      console.error("❌ Error generating meal plan:", error);
+      throw new Error("Failed to generate AI meal plan");
     }
   }
 }

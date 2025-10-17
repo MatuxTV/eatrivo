@@ -1,3 +1,4 @@
+// src/app/api/meal-plans/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../../../auth";
 import { db } from "@/index";
@@ -11,6 +12,19 @@ import { eq, desc, and, gte } from "drizzle-orm";
 import { EatrivoAIService } from "../../../lib/langchain";
 import { CacheService } from "@/lib/cache";
 
+const STATIC_FALLBACK = {
+  week: [
+    {
+      day: "Pondelok",
+      meals: [
+        { name: "Ovosné müsli s jogurtom", prepTime: 5, difficulty: "ľahké", calories: 320, protein: 12, carbs: 45, fat: 8 },
+        { name: "Kuracie prsia s ryžou", prepTime: 25, difficulty: "stredne", calories: 480, protein: 42, carbs: 55, fat: 12 },
+        { name: "Grilovaná zelenina s tofu", prepTime: 20, difficulty: "ľahké", calories: 350, protein: 18, carbs: 35, fat: 15 }
+      ]
+    }
+  ]
+};
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -18,7 +32,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get user profile
     const [userProfile] = await db
       .select()
       .from(userProfiles)
@@ -31,12 +44,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check Redis cache first
-    const cacheKey = `ai-insights:${userProfile.id}:${new Date()
-      .toISOString()
-      .slice(0, 10)}`;
-    const cachedInsights = await CacheService.get(cacheKey);
-
+    // 3️⃣ Get user info
     const [userInfo] = await db
       .select()
       .from(userInfoTable)
@@ -54,31 +62,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userInfoForAi = {
-      age: userInfo.age || 25, // Default age if null
-      weight: Number(userInfo.weight) || 70, // Default weight if null
-      height: userInfo.height || 170, // Default height if null
-      sex: userInfo.sex || "man", // Default sex if null
-      goal: userInfo.goal || "maintain_weight", // Default goal if null
-      activityLevel: userInfo.activity_level || "moderately_active",
-      mealsPerDay: userInfo.meal_per_day || 3, // Default 3 meals if null
-      maxPrepTime: userInfo.cooking_time_pref || "normal",
-      dietType: userInfo.diet_preferences || "none",
-      budget: userInfo.budget_preference || "medium",
-      likedFoods: userInfo.likes || "",
-      dislikedFoods: userInfo.dislikes || "",
-      allergies: userInfo.allergies || "",
-    };
-
-    // Calculate start of current week (Monday)
+    //  Get shopping lists from this week
     const now = new Date();
-    const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    const daysFromMonday = currentDay === 0 ? 6 : currentDay - 1; // Handle Sunday as 6 days from Monday
+    const currentDay = now.getDay();
+    const daysFromMonday = currentDay === 0 ? 6 : currentDay - 1;
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - daysFromMonday);
-    startOfWeek.setHours(0, 0, 0, 0); // Set to midnight
+    startOfWeek.setHours(0, 0, 0, 0);
 
-    // Get user's shopping lists from this week only
     const userShoppingLists = await db
       .select()
       .from(shoppingLists)
@@ -90,96 +81,124 @@ export async function POST(request: NextRequest) {
       )
       .orderBy(desc(shoppingLists.created_at));
 
+    // 5️⃣ No shopping lists case
     if (userShoppingLists.length === 0) {
-      const noDataInsights = {
-        weeklyRecommendations: [
-          "Zatiaľ nemáte žiadne nákupné zoznamy z tohto týždňa",
-          "Pridajte svoj prvý nákupný zoznam pre personalizované odporúčania",
-          "AI analýza bude dostupná po nahraní aspoň jedného zoznamu",
-        ],
-        nutritionalTips: [
-          "Začnite s vyváženou stravou obsahujúcou všetky makronutrienty",
-          "Nezabudnite na dostatok zeleniny a ovocia",
-          "Hydratácia je kľúčová pre zdravý životný štýl",
-        ],
-        metadata: {
-          userId: userProfile.id,
-          generatedAt: new Date().toISOString(),
-          shoppingListsAnalyzed: 0,
-          weekPeriod: `${startOfWeek.toLocaleDateString(
-            "sk"
-          )} - ${new Date().toLocaleDateString("sk")}`,
-        },
-      };
-
-      // Cache the no-data response for 2 hours
-      await CacheService.set(cacheKey, noDataInsights, 7200);
-
       return NextResponse.json({
         success: true,
-        insights: noDataInsights,
+        insights: { week: [] },
         cached: false,
-        message: "No shopping lists found for this week",
+        message: "No shopping lists found for this week. Upload a shopping list to get personalized meal plans.",
+        fallbackUsed: 'no-data'
       });
     }
 
-    // Generate AI insights
-    const personalizedInsights = await EatrivoAIService.generateWeeklyMealPlan(
-      userInfoForAi
-    );
+    const latestShoppingList = userShoppingLists[0];
+    const cacheKey = `meal-plan:${latestShoppingList.id}`;
+    
+    console.log(`🔍 Checking cache: ${cacheKey}`);
+    const cachedMealPlan = await CacheService.get(cacheKey);
 
-    // Combine insights
-    const combinedInsights = {
-      ...personalizedInsights,
-      metadata: {
-        userId: userProfile.id,
-        generatedAt: new Date().toISOString(),
-        shoppingListsAnalyzed: userShoppingLists.length,
-        userGoal: userInfo?.activity_level,
-        userDateOfBirth: userInfo?.age,
-      },
+    if (cachedMealPlan) {
+      console.log(`✅ Cache HIT - returning cached meal plan`);
+      return NextResponse.json({
+        success: true,
+        insights: cachedMealPlan,
+        cached: true,
+        cacheKey,
+        message: "Returning cached meal plan"
+      });
+    }
+
+    // 7️⃣ Prepare user data for AI
+    const userInfoForAi = {
+      age: userInfo.age || 25,
+      weight: Number(userInfo.weight) || 70,
+      height: userInfo.height || 170,
+      sex: userInfo.sex || "man",
+      goal: userInfo.goal || "maintain_weight",
+      activityLevel: userInfo.activity_level || "moderately_active",
+      mealsPerDay: userInfo.meal_per_day || 3,
+      maxPrepTime: userInfo.cooking_time_pref || "normal",
+      dietType: userInfo.diet_preferences || "none",
+      budget: userInfo.budget_preference || "medium",
+      likedFoods: userInfo.likes || "",
+      dislikedFoods: userInfo.dislikes || "",
+      allergies: userInfo.allergies || "",
     };
 
-    // Save to database
-    const expirationDate = new Date();
-    expirationDate.setHours(expirationDate.getHours() + 24); // Expire in 24 hours
 
-    const [savedInsight] = await db
-      .insert(aiInsights)
-      .values({
+    let mealPlan;
+    let fallbackUsed = 'none';
+
+    try {
+      const shoppingData = {
+        markdown: latestShoppingList.markdownContent
+      };
+
+      mealPlan = await EatrivoAIService.generateWeeklyMealPlan(
+        userInfoForAi,
+        shoppingData
+      );
+    } catch (aiError) {
+      console.error('❌ AI generation failed:', aiError);
+      
+      mealPlan = STATIC_FALLBACK;
+      fallbackUsed = 'static';
+    }
+
+    if (fallbackUsed === 'none') {
+      await CacheService.set(cacheKey, mealPlan,  604800); // 24h
+      console.log(`💾 Saved to cache: ${cacheKey}`);
+    }
+
+    // 🔟 **SAVE TO DATABASE** (optional - for audit trail)
+    const expirationDate = new Date();
+    expirationDate.setHours(expirationDate.getHours() + 24);
+
+    try {
+      await db.insert(aiInsights).values({
         userProfileId: userProfile.id,
-        insightType: "comprehensive_analysis",
-        title: `AI Analýza pre ${
-          userProfile.fullName
-        } - ${new Date().toLocaleDateString("sk")}`,
-        content: combinedInsights,
+        insightType: "meal_plan",
+        title: `Meal Plan - ${new Date().toLocaleDateString("sk")}`,
+        content: mealPlan,
         metadata: {
+          shoppingListId: latestShoppingList.id,
           shoppingListCount: userShoppingLists.length,
           generationTime: new Date().toISOString(),
-          version: "1.0",
+          fallbackUsed,
+          version: "2.0",
         },
         expiresAt: expirationDate,
-      })
-      .returning();
+      });
+    } catch (dbError) {
+      console.error('⚠️ Failed to save to database (non-critical):', dbError);
+      // Continue - DB save is optional
+    }
 
-    // Cache in Redis for 6 hours
-    await CacheService.set(cacheKey, combinedInsights, 21600);
-
+    // 1️⃣1️⃣ **RETURN RESPONSE**
     return NextResponse.json({
       success: true,
-      insights: combinedInsights,
-      insightId: savedInsight.id,
+      insights: mealPlan,
       cached: false,
+      fallbackUsed,
+      shoppingListId: latestShoppingList.id,
       generatedAt: new Date().toISOString(),
+      message: fallbackUsed === 'static' 
+        ? 'Using fallback meal plan due to AI error'
+        : 'Fresh meal plan generated'
     });
+
   } catch (error) {
-    console.error("AI insights generation failed:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to generate AI insights",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    console.error("❌ Critical error in meal plan generation:", error);
+    
+    // ULTIMATE FALLBACK
+    return NextResponse.json({
+      success: true, // Still return 200 to avoid breaking UI
+      insights: STATIC_FALLBACK,
+      cached: false,
+      fallbackUsed: 'error',
+      error: error instanceof Error ? error.message : "Unknown error",
+      message: "Using fallback meal plan due to system error"
+    }, { status: 200 }); // Return 200 with fallback data instead of 500
   }
 }

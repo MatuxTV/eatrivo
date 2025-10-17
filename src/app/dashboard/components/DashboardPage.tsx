@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ReceiptText,
@@ -25,7 +25,7 @@ interface ShoppingList {
   description?: string;
   weekStartDate: string;
   weekEndDate: string;
-  status: 'active' | 'completed' | 'cancelled';
+  status: "active" | "completed" | "cancelled";
   cloudinaryPublicId: string;
   createdAt: string;
 }
@@ -40,24 +40,40 @@ export default function DashboardPage({ session }: DashboardPageProps) {
   const [mealPlanData, setMealPlanData] = useState<any[]>([]);
   const [isLoadingMealPlan, setIsLoadingMealPlan] = useState(false);
 
+  //HELPER TO GET DAY
+  const getCurrentDaySlovak = (): string => {
+    const daysMap: { [key: number]: string } = {
+      0: "Nedeľa",
+      1: "Pondelok",
+      2: "Utorok",
+      3: "Streda",
+      4: "Štvrtok",
+      5: "Piatok",
+      6: "Sobota",
+    };
 
+    const today = new Date().getDay();
+    return daysMap[today];
+  };
+
+  //FETCH SHOPPING LISTS
   useEffect(() => {
     const fetchShoppingLists = async () => {
       if (!session?.user) return;
-      
+
       try {
         setIsLoadingShoppingLists(true);
-        const response = await fetch('/api/shopping-lists');
-        
+        const response = await fetch("/api/shopping-lists");
+
         if (!response.ok) {
-          throw new Error('Failed to fetch shopping lists');
+          throw new Error("Failed to fetch shopping lists");
         }
-        
+
         const data = await response.json();
         setShoppingLists(data.shoppingLists || []);
       } catch (error) {
-        console.error('Error fetching shopping lists:', error);
-        toast.error('Nepodarilo sa načítať jedálne plány');
+        console.error("Error fetching shopping lists:", error);
+        toast.error("Nepodarilo sa načítať jedálne plány");
         setShoppingLists([]);
       } finally {
         setIsLoadingShoppingLists(false);
@@ -66,95 +82,79 @@ export default function DashboardPage({ session }: DashboardPageProps) {
     fetchShoppingLists();
   }, [session]);
 
+  //FETCH MEAL PLAN
   useEffect(() => {
-  const fetchMealPlan = async () => {
-    if (!session?.user) return;
+    const fetchMealPlan = async () => {
+      if (!session?.user) return;
 
-    try {
-      setIsLoadingMealPlan(true); // Pridaj state pre loading
-      
-      const response = await fetch('/api/meal-plans', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      try {
+        setIsLoadingMealPlan(true);
 
-      if (!response.ok) {
-        throw new Error('Failed to generate meal plan');
+        const response = await fetch("/api/meal-plans", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) throw new Error("Failed to generate meal plan");
+
+        const data = await response.json();
+
+        setMealPlanData(data.insights.week);
+      } catch (error) {
+        console.error("Error:", error);
+        toast.error("Failed to load meal plan");
+      } finally {
+        setIsLoadingMealPlan(false);
       }
+    };
 
-      const data = await response.json();
-      console.log('Generated meal plan:', data.insights);
-      
-      // Ulož meal plan do state
-      setMealPlanData(data.insights);
-      
-    } catch (error) {
-      console.error('Error generating meal plan:', error);
-      toast.error('Nepodarilo sa vygenerovať jedálny plán');
-    } finally {
-      setIsLoadingMealPlan(false);
-    }
-  };
+    fetchMealPlan();
+  }, [session]);
 
-  fetchMealPlan();
-}, [session]);
-  
-  const mealPlan = [
-    {
-      id: 1,
-      time: "Raňajky",
-      timeSlot: "07:00 - 09:00",
-      meal: "Ovocná miska s gréckym jogurtom",
-      description: "Čerstvé bobule s granolou a medom",
-      image:
-        "https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?w=300&h=200&fit=crop&auto=format",
-      calories: 320,
-      protein: 15,
-      carbs: 45,
-      fat: 12,
-      difficulty: "Jednoduché",
-      cookTime: "5 min",
-      type: "breakfast",
-    },
-    {
-      id: 2,
-      time: "Obed",
-      timeSlot: "12:00 - 14:00",
-      meal: "Grilované kuracie prsia so zeleninou",
-      description: "S pečenou sladkou zemiakmi a brokolicou",
-      image:
-        "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&h=200&fit=crop&auto=format",
-      calories: 480,
-      protein: 42,
-      carbs: 35,
-      fat: 18,
-      difficulty: "Stredne",
-      cookTime: "25 min",
-      type: "lunch",
-    },
-    {
-      id: 3,
-      time: "Večera",
-      timeSlot: "18:00 - 20:00",
-      meal: "Lososový steak s quinoa šalátom",
-      description: "S avokádom, cherry paradajkami a limetou",
-      image:
-        "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=300&h=200&fit=crop&auto=format",
-      calories: 420,
-      protein: 35,
-      carbs: 28,
-      fat: 22,
-      difficulty: "Stredne",
-      cookTime: "20 min",
-      type: "dinner",
-    },
-  ];
+  const todaysMeals = useMemo(() => {
+    if (!mealPlanData || mealPlanData.length === 0) return [];
+
+    const todayName = getCurrentDaySlovak();
+    const todayPlan = mealPlanData.find((day) => day.day === todayName);
+
+    if (!todayPlan || !todayPlan.meals) return [];
+
+    // 2️⃣ Transformuj meals na formát pre ReceiptCard
+    const mealTypes = ["breakfast", "lunch", "dinner", "snack"]; // Podľa počtu jedál
+
+    return todayPlan.meals.map((meal: any, index: number) => ({
+      id: `${todayName}-${index}`, // Unikátny ID pre React key
+      title: meal.name,
+      description: `${meal.difficulty} • ${meal.prepTime} minút`, // Generujeme popis
+      type: mealTypes[index] || "snack", // Priradíme typ podľa poradia
+      cookTime: `${meal.prepTime} min`, // Pretvoríme číslo na string
+      difficulty: meal.difficulty,
+      calories: meal.calories,
+      protein: meal.protein,
+      carbs: meal.carbs,
+      fat: meal.fat,
+    }));
+  }, [mealPlanData]);
+
+  // 3️⃣ Získaj aj denné súčty pre dnešný deň
+  const todaysNutrition = useMemo(() => {
+    if (!mealPlanData || mealPlanData.length === 0) return null;
+
+    const todayName = getCurrentDaySlovak();
+    const todayPlan = mealPlanData.find((day) => day.day === todayName);
+
+    return todayPlan
+      ? {
+          calories: todayPlan.totalDailyCalories,
+          protein: todayPlan.totalDailyProtein,
+          carbs: todayPlan.totalDailyCarbs,
+          fats: todayPlan.totalDailyFats,
+        }
+      : null;
+  }, [mealPlanData]);
+  console.log("Meal plan:", todaysMeals);
 
   return (
-
-
     <div className="min-h-screen flex w-full bg-primary-foreground">
       {/* Profile section */}
       <div className="w-64 bg-white shadow-sm border-r border-gray-100 flex flex-col">
@@ -232,9 +232,8 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                     <div className="w-12 h-12 rounded-xl bg-eatrivo-purple/10 border-2 border-eatrivo-purple flex items-center justify-center">
                       <div className="text-center">
                         <div className="text-sm font-bold text-eatrivo-purple">
-                          2400
+                          {todaysNutrition?.calories || "0"}
                         </div>
-                        <div className="text-xs text-eatrivo-purple">kcal</div>
                       </div>
                     </div>
                     <span className="text-xs text-gray-600 mt-1">
@@ -244,7 +243,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                   <div className="flex flex-col items-center">
                     <div className="w-12 h-12 rounded-full bg-eatrivo-green/10 border-2 border-eatrivo-green flex items-center justify-center">
                       <div className="text-sm font-bold text-eatrivo-green">
-                        92g
+                        {todaysNutrition?.protein || "0"}
                       </div>
                     </div>
                     <span className="text-xs text-gray-600 mt-1">
@@ -254,7 +253,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                   <div className="flex flex-col items-center">
                     <div className="w-12 h-12 rounded-full bg-eatrivo-orange/10 border-2 border-eatrivo-orange flex items-center justify-center">
                       <div className="text-sm font-bold text-eatrivo-orange">
-                        108g
+                        {todaysNutrition?.carbs || "0"}
                       </div>
                     </div>
                     <span className="text-xs text-gray-600 mt-1">
@@ -264,7 +263,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                   <div className="flex flex-col items-center">
                     <div className="w-12 h-12 rounded-full bg-eatrivo-pink/10 border-2 border-eatrivo-pink flex items-center justify-center">
                       <div className="text-sm font-bold text-eatrivo-pink">
-                        52g
+                        {todaysNutrition?.fats || "0"}
                       </div>
                     </div>
                     <span className="text-xs text-gray-600 mt-1">Tuky</span>
@@ -273,21 +272,38 @@ export default function DashboardPage({ session }: DashboardPageProps) {
               </div>
               {/* Meal Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {mealPlan.map((meal) => (
-                  <ReceiptCard
-                    key={meal.id}
-                    icon={<ChefHat className="w-6 h-6 text-white" />}
-                    title={meal.meal}
-                    type={meal.type}
-                    description={meal.description}
-                    difficulty={meal.difficulty}
-                    cookTime={meal.cookTime}
-                    calories={meal.calories}
-                    protein={meal.protein}
-                    carbs={meal.carbs}
-                    fat={meal.fat}
-                  />
-                ))}
+                {isLoadingMealPlan ? (
+                  // Loading skeleton
+                  [1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="bg-gray-100 animate-pulse rounded-xl h-64"
+                    ></div>
+                  ))
+                ) : todaysMeals.length > 0 ? (
+                  // Render meals
+                  todaysMeals.map((meal) => (
+                    <ReceiptCard
+                      key={meal.id}
+                      icon={<ChefHat className="w-6 h-6 text-white" />}
+                      title={meal.title}
+                      type={meal.type}
+                      description={meal.description}
+                      difficulty={meal.difficulty}
+                      cookTime={meal.cookTime}
+                      calories={meal.calories}
+                      protein={meal.protein}
+                      carbs={meal.carbs}
+                      fat={meal.fat}
+                    />
+                  ))
+                ) : (
+                  // Empty state
+                  <div className="col-span-3 text-center py-8">
+                    <ChefHat className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                    <p className="text-gray-500">Žiadne jedlá na dnes</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -299,7 +315,9 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                 Ciele na tento týždeň
               </h2>
             </div>
-           <div className=" justify-center w-full h-full text-center text-black font-bold">COMING SOON</div>
+            <div className=" justify-center w-full h-full text-center text-black font-bold">
+              COMING SOON
+            </div>
           </div>
           {/* Shopping Lists Section */}
           <div className="lg:col-span-2">
@@ -311,7 +329,12 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                     Vaše jedálne plány
                   </CardTitle>
                   <div className="text-sm text-gray-500">
-                    {shoppingLists.length} {shoppingLists.length === 1 ? 'zoznam' : shoppingLists.length < 5 ? 'zoznamy' : 'zoznamov'}
+                    {shoppingLists.length}{" "}
+                    {shoppingLists.length === 1
+                      ? "zoznam"
+                      : shoppingLists.length < 5
+                      ? "zoznamy"
+                      : "zoznamov"}
                   </div>
                 </div>
               </CardHeader>
@@ -319,7 +342,10 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                 {isLoadingShoppingLists ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="bg-white border border-gray-200 rounded-2xl p-6 animate-pulse">
+                      <div
+                        key={i}
+                        className="bg-white border border-gray-200 rounded-2xl p-6 animate-pulse"
+                      >
                         <div className="flex items-start gap-4 mb-4">
                           <div className="w-12 h-12 bg-gray-200 rounded-2xl"></div>
                           <div className="flex-1">
@@ -344,11 +370,17 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                 ) : (
                   <div className="text-center py-12">
                     <UtensilsCrossed className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Žiadne jedálne plány</h3>
-                    <p className="text-gray-500 mb-6">Zatiaľ nemáte žiadne jedálne plány. Požiadajte svojho trénera o vytvorenie personalizovaného plánu.</p>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Žiadne jedálne plány
+                    </h3>
+                    <p className="text-gray-500 mb-6">
+                      Zatiaľ nemáte žiadne jedálne plány. Požiadajte svojho
+                      trénera o vytvorenie personalizovaného plánu.
+                    </p>
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                       <p className="text-sm text-blue-800">
-                        💡 <strong>Tip:</strong> Jedálne plány vám pomôžu dosiahnuť vaše fitnes ciele efektívnejšie!
+                        💡 <strong>Tip:</strong> Jedálne plány vám pomôžu
+                        dosiahnuť vaše fitnes ciele efektívnejšie!
                       </p>
                     </div>
                   </div>
@@ -364,7 +396,9 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                 <h2 className="text-lg font-bold text-gray-800">Správy</h2>
               </div>
               <div>
-                <p className=" justify-center w-full text-center text-black font-bold h-full">COMING SOON</p>
+                <p className=" justify-center w-full text-center text-black font-bold h-full">
+                  COMING SOON
+                </p>
               </div>
             </div>
           </div>

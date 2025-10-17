@@ -63,9 +63,7 @@ export const shoppingLists = pgTable("shopping_lists", {
   description: text("description"),
   weekStartDate: timestamp("weekStartDate").notNull(),
   weekEndDate: timestamp("weekEndDate").notNull(),
-  cloudinaryPublicId: text("cloudinaryPublicId").notNull(), // For PDF storage
-  pdfUrl: text("pdfUrl"), // Direct URL for faster access
-  pdfJson : jsonb("pdfJson"), // Store parsed PDF content as JSON
+  markdownContent : text("markdownContent").notNull(),
   status: shoppingListStatusEnum("status").default("active").notNull(),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

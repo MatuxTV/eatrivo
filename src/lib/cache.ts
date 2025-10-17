@@ -3,28 +3,40 @@ import { redis } from './redis'
 
 export class CacheService {
   static async get<T>(key: string): Promise<T | null> {
+    
     try {
       const data = await redis.get(key)
-      return data ? JSON.parse(data as string) : null
+      if (!data) return null
+      
+      // Redis may return string or already parsed object
+      if (typeof data === 'string') {
+        return JSON.parse(data) as T
+      }
+      return data as T
     } catch (error) {
-      console.error('Cache get error:', error)
+      console.error('❌ Cache get error:', error)
       return null
     }
   }
 
   static async set(key: string, data: any, ttl: number = 300): Promise<void> {
     try {
-      await redis.setex(key, ttl, JSON.stringify(data))
+      // Always stringify for consistency
+      const serialized = typeof data === 'string' ? data : JSON.stringify(data)
+      await redis.setex(key, ttl, serialized)
+      console.log(`✅ Cached: ${key} (TTL: ${ttl}s)`)
     } catch (error) {
-      console.error('Cache set error:', error)
+      console.error('❌ Cache set error:', error)
+      // Don't throw - caching is optional
     }
   }
 
   static async del(key: string): Promise<void> {
     try {
       await redis.del(key)
+      console.log(`🗑️ Deleted cache: ${key}`)
     } catch (error) {
-      console.error('Cache delete error:', error)
+      console.error('❌ Cache delete error:', error)
     }
   }
 
@@ -33,29 +45,26 @@ export class CacheService {
       const keys = await redis.keys(pattern)
       if (keys.length > 0) {
         await redis.del(...keys)
+        console.log(`🗑️ Invalidated ${keys.length} keys matching: ${pattern}`)
       }
     } catch (error) {
-      console.error('Cache invalidation error:', error)
+      console.error('❌ Cache invalidation error:', error)
     }
   }
-  static async cacheAIInsights(userId: string, insights: any, ttl: number = 21600) {
-    const key = `ai-insights:${userId}:${new Date().toISOString().slice(0, 10)}`
-    await this.set(key, insights, ttl)
-    
-    // Also cache a quick lookup
-    await this.set(`ai-insights-meta:${userId}`, {
-      lastGenerated: new Date().toISOString(),
-      hasInsights: true
-    }, ttl)
+
+  // Helper for meal plans
+  static async getMealPlan(userProfileId: string, shoppingListId: string) {
+    const key = `meal-plan:${userProfileId}:${shoppingListId}`
+    return this.get<any>(key)
   }
 
-  static async getAIInsights(userId: string) {
-    const key = `ai-insights:${userId}:${new Date().toISOString().slice(0, 10)}`
-    return await this.get(key)
-  }
-
-  static async invalidateUserAICache(userId: string) {
-    const pattern = `ai-insights:${userId}:*`
-    await this.invalidatePattern(pattern)
+  static async setMealPlan(
+    userProfileId: string, 
+    shoppingListId: string, 
+    mealPlan: any, 
+    ttl: number = 86400 // 24 hours default
+  ) {
+    const key = `meal-plan:${userProfileId}:${shoppingListId}`
+    await this.set(key, mealPlan, ttl)
   }
 }
