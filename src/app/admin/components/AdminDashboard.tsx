@@ -13,8 +13,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, FileText, Users, Settings, Plus, User } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  Users,
+  Settings,
+  Plus,
+  User,
+  Eye,
+} from "lucide-react";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
+import MarkdownIt from "markdown-it";
+import "react-markdown-editor-lite/lib/index.css";
+
+// Dynamic import to avoid SSR issues
+const MdEditor = dynamic(() => import("react-markdown-editor-lite"), {
+  ssr: false,
+});
+
+// Initialize markdown parser
+const mdParser = new MarkdownIt();
 
 interface User {
   id: string;
@@ -34,6 +53,7 @@ interface ShoppingListFormData {
   weekEndDate: string;
   status: "active" | "completed" | "cancelled";
   userId?: string;
+  markdownContent: string; // NEW: Markdown content instead of file
 }
 
 export default function AdminDashboard() {
@@ -47,8 +67,8 @@ export default function AdminDashboard() {
     weekEndDate: "",
     status: "active",
     userId: "",
+    markdownContent: "", // NEW: Initialize markdown content
   });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
@@ -84,36 +104,28 @@ export default function AdminDashboard() {
     fetchUsers();
   }, []);
 
-  // Debug effect to monitor users state
-  useEffect(() => {
-    console.log("Users state changed:", users.length, users);
-  }, [users]);
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.type === "application/pdf") {
-        setSelectedFile(file);
-        toast.success(`Súbor ${file.name} bol vybratý`);
-      } else {
-        toast.error("Prosím vyberte PDF súbor");
-        event.target.value = "";
-      }
-    }
-  };
-
-  const handleInputChange = (field: keyof ShoppingListFormData, value: string) => {
+  const handleInputChange = (
+    field: keyof ShoppingListFormData,
+    value: string
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
+  const handleMarkdownChange = ({ text }: { text: string }) => {
+    setFormData((prev) => ({
+      ...prev,
+      markdownContent: text,
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedFile) {
-      toast.error("Prosím vyberte PDF súbor");
+    if (!formData.markdownContent.trim()) {
+      toast.error("Prosím napíšte obsah nákupného zoznamu");
       return;
     }
 
@@ -122,32 +134,38 @@ export default function AdminDashboard() {
       return;
     }
 
+    if (!formData.userId || formData.userId === "0") {
+      toast.error("Prosím vyberte používateľa");
+      return;
+    }
+
     setIsUploading(true);
 
     try {
-      const uploadFormData = new FormData();
-      uploadFormData.append("file", selectedFile);
-      uploadFormData.append("title", formData.title);
-      uploadFormData.append("description", formData.description);
-      uploadFormData.append("weekStartDate", formData.weekStartDate);
-      uploadFormData.append("weekEndDate", formData.weekEndDate);
-      uploadFormData.append("status", formData.status);
-      if (formData.userId) {
-        uploadFormData.append("userId", formData.userId);
-      }
-
-      const response = await fetch("/api/admin/shopping-lists/upload", {
+      const response = await fetch("/api/admin/shopping-lists/create", {
         method: "POST",
-        body: uploadFormData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          weekStartDate: formData.weekStartDate,
+          weekEndDate: formData.weekEndDate,
+          status: formData.status,
+          userProfileId: formData.userId,
+          markdownContent: formData.markdownContent,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("Upload failed");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Upload failed");
       }
 
       const result = await response.json();
       console.log("Upload successful:", result);
-      toast.success("Jedálny plán bol úspešne nahraný!");
+      toast.success("Nákupný zoznam bol úspešne vytvorený!");
 
       // Reset form
       setFormData({
@@ -157,19 +175,15 @@ export default function AdminDashboard() {
         weekEndDate: "",
         status: "active",
         userId: "",
+        markdownContent: "",
       });
-      setSelectedFile(null);
-
-      // Reset file input
-      const fileInput = document.getElementById(
-        "file-upload"
-      ) as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = "";
-      }
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Nepodarilo sa nahrať jedálny plán");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Nepodarilo sa vytvoriť nákupný zoznam"
+      );
     } finally {
       setIsUploading(false);
     }
@@ -204,8 +218,8 @@ export default function AdminDashboard() {
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
-                <Upload className="w-5 h-5 inline mr-2" />
-                Nahrať jedálne plány
+                <Plus className="w-5 h-5 inline mr-2" />
+                Vytvoriť nákupný zoznam
               </button>
               <button
                 onClick={() => setActiveTab("users")}
@@ -235,49 +249,17 @@ export default function AdminDashboard() {
 
         {/* Content */}
         {activeTab === "upload" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 text-primary-text">
-            {/* Upload Form */}
+          <div className="space-y-6 text-primary-text">
+            {/* Main Form Card */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Plus className="w-5 h-5" />
-                  Nový jedálny plán
+                  Nový nákupný zoznam
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* File Upload */}
-                  <div>
-                    <Label
-                      htmlFor="file-upload"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      PDF súbor *
-                    </Label>
-                    <div className="relative">
-                      <input
-                        id="file-upload"
-                        type="file"
-                        accept=".pdf"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                      />
-                      <label
-                        htmlFor="file-upload"
-                        className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-eatrivo-purple transition-colors"
-                      >
-                        <div className="text-center">
-                          <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                          <p className="text-sm text-gray-600">
-                            {selectedFile
-                              ? selectedFile.name
-                              : "Kliknite pre výber PDF súboru"}
-                          </p>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-
                   {/* Title */}
                   <div>
                     <Label htmlFor="title">Názov *</Label>
@@ -287,7 +269,7 @@ export default function AdminDashboard() {
                       onChange={(e) =>
                         handleInputChange("title", e.target.value)
                       }
-                      placeholder="Plán na tento týždeň"
+                      placeholder="Nákupný zoznam - Týždeň 42"
                       required
                     />
                   </div>
@@ -301,8 +283,8 @@ export default function AdminDashboard() {
                       onChange={(e) =>
                         handleInputChange("description", e.target.value)
                       }
-                      placeholder="Personalizovaný plán na 7 dní s kalóriovým deficitom"
-                      rows={3}
+                      placeholder="Personalizovaný nákupný zoznam na 7 dní"
+                      rows={2}
                     />
                   </div>
 
@@ -374,13 +356,13 @@ export default function AdminDashboard() {
                           }
                         >
                           <SelectTrigger className="min-h-[40px] h-auto py-3 bg-secondary-foreground border-gray-200 hover:border-eatrivo-purple transition-colors">
-                            <SelectValue 
+                            <SelectValue
                               placeholder={
                                 <div className="flex items-center gap-2 text-gray-500">
                                   <User className="w-4 h-4" />
-                                  Vyberte používateľa 
+                                  Vyberte používateľa
                                 </div>
-                              } 
+                              }
                             />
                           </SelectTrigger>
                           <SelectContent className="bg-secondary-foreground border-4 max-h-[300px]">
@@ -390,71 +372,94 @@ export default function AdminDashboard() {
                                   <User className="w-4 h-4 text-gray-400" />
                                 </div>
                                 <div>
-                                  <span className="font-medium text-gray-700">Bez priradenia</span>
-                                  <div className="text-xs text-gray-500">Plán nebude priradený žiadnemu používateľovi</div>
+                                  <span className="font-medium text-gray-700">
+                                    Bez priradenia
+                                  </span>
+                                  <div className="text-xs text-gray-500">
+                                    Zoznam nebude priradený žiadnemu
+                                    používateľovi
+                                  </div>
                                 </div>
                               </div>
                             </SelectItem>
-                            {users.length > 0 ? users.map((user) => {
-                              const getMembershipColor = (membership: string) => {
-                                switch (membership?.toLowerCase()) {
-                                  case 'premium':
-                                    return 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-white';
-                                  case 'basic':
-                                    return 'bg-gradient-to-r from-blue-400 to-blue-500 text-white';
-                                  case 'free':
-                                    return 'bg-gradient-to-r from-gray-400 to-gray-500 text-white';
-                                  default:
-                                    return 'bg-gradient-to-r from-green-400 to-green-500 text-white';
-                                }
-                              };
+                            {users.length > 0 ? (
+                              users.map((user) => {
+                                const getMembershipColor = (
+                                  membership: string
+                                ) => {
+                                  switch (membership?.toLowerCase()) {
+                                    case "premium":
+                                      return "bg-gradient-to-r from-yellow-400 to-yellow-500 text-white";
+                                    case "basic":
+                                      return "bg-gradient-to-r from-blue-400 to-blue-500 text-white";
+                                    case "free":
+                                      return "bg-gradient-to-r from-gray-400 to-gray-500 text-white";
+                                    default:
+                                      return "bg-gradient-to-r from-green-400 to-green-500 text-white";
+                                  }
+                                };
 
-                              const getMembershipIcon = (membership: string) => {
-                                switch (membership?.toLowerCase()) {
-                                  case 'premium':
-                                    return '👑';
-                                  case 'basic':
-                                    return '⭐';
-                                  case 'free':
-                                    return '👤';
-                                  default:
-                                    return '✨';
-                                }
-                              };
+                                const getMembershipIcon = (
+                                  membership: string
+                                ) => {
+                                  switch (membership?.toLowerCase()) {
+                                    case "premium":
+                                      return "👑";
+                                    case "basic":
+                                      return "⭐";
+                                    case "free":
+                                      return "👤";
+                                    default:
+                                      return "✨";
+                                  }
+                                };
 
-                              return (
-                                <SelectItem
-                                  key={user?.id}
-                                  value={user?.profileId || user?.id}
-                                  className="p-3 bg-secondary-foreground hover:bg-gray-50 cursor-pointer"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${getMembershipColor(user?.membership)}`}>
-                                      {getMembershipIcon(user?.membership)}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-medium text-gray-900 truncate">
-                                          {user?.fullName || user?.name || "Bez mena"}
-                                        </span>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getMembershipColor(user?.membership)}`}>
-                                          {user?.membership}
-                                        </span>
+                                return (
+                                  <SelectItem
+                                    key={user?.id}
+                                    value={user?.profileId || user?.id}
+                                    className="p-3 bg-secondary-foreground hover:bg-gray-50 cursor-pointer"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div
+                                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${getMembershipColor(
+                                          user?.membership
+                                        )}`}
+                                      >
+                                        {getMembershipIcon(user?.membership)}
                                       </div>
-                                      <div className="text-xs text-gray-500 truncate">
-                                        {user?.email}
-                                      </div>
-                                      {user?.isProfileComplete && (
-                                        <div className="flex items-center gap-1 mt-1">
-                                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                          <span className="text-xs text-green-600">Profil kompletný</span>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-medium text-gray-900 truncate">
+                                            {user?.fullName ||
+                                              user?.name ||
+                                              "Bez mena"}
+                                          </span>
+                                          <span
+                                            className={`px-2 py-1 rounded-full text-xs font-medium ${getMembershipColor(
+                                              user?.membership
+                                            )}`}
+                                          >
+                                            {user?.membership}
+                                          </span>
                                         </div>
-                                      )}
+                                        <div className="text-xs text-gray-500 truncate">
+                                          {user?.email}
+                                        </div>
+                                        {user?.isProfileComplete && (
+                                          <div className="flex items-center gap-1 mt-1">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            <span className="text-xs text-green-600">
+                                              Profil kompletný
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                </SelectItem>
-                              );
-                            }) : (
+                                  </SelectItem>
+                                );
+                              })
+                            ) : (
                               <SelectItem value="nic" className="p-3">
                                 <div className="flex items-center gap-3 text-gray-500">
                                   <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
@@ -466,23 +471,86 @@ export default function AdminDashboard() {
                             )}
                           </SelectContent>
                         </Select>
-                        
+
                         {/* Enhanced stats and info */}
                         <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
                           <div className="flex items-center gap-2">
                             <Users className="w-4 h-4" />
-                            <span>Počet používateľov: <strong className="text-gray-700">{users.length}</strong></span>
+                            <span>
+                              Počet používateľov:{" "}
+                              <strong className="text-gray-700">
+                                {users.length}
+                              </strong>
+                            </span>
                           </div>
                           {users.length > 0 && (
                             <div className="flex gap-4">
-                              <span>Premium: {users.filter(u => u.membership?.toLowerCase() === 'premium').length}</span>
-                              <span>Basic: {users.filter(u => u.membership?.toLowerCase() === 'basic').length}</span>
-                              <span>Free: {users.filter(u => u.membership?.toLowerCase() === 'free').length}</span>
+                              <span>
+                                Premium:{" "}
+                                {
+                                  users.filter(
+                                    (u) =>
+                                      u.membership?.toLowerCase() === "premium"
+                                  ).length
+                                }
+                              </span>
+                              <span>
+                                Basic:{" "}
+                                {
+                                  users.filter(
+                                    (u) =>
+                                      u.membership?.toLowerCase() === "basic"
+                                  ).length
+                                }
+                              </span>
+                              <span>
+                                Free:{" "}
+                                {
+                                  users.filter(
+                                    (u) =>
+                                      u.membership?.toLowerCase() === "free"
+                                  ).length
+                                }
+                              </span>
                             </div>
                           )}
                         </div>
                       </div>
                     )}
+                  </div>
+
+                  {/* Markdown Editor */}
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      Obsah nákupného zoznamu (Markdown) *
+                    </Label>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <MdEditor
+                        value={formData.markdownContent}
+                        style={{ height: "500px" }}
+                        renderHTML={(text) => mdParser.render(text)}
+                        onChange={handleMarkdownChange}
+                        placeholder="# Nákupný zoznam
+
+## 🥬 Zelenina
+- Paradajky (500g)
+- Uhorky (3ks)
+- Šalát (1ks)
+
+## 🍎 Ovocie
+- Jablká (1kg)
+- Banány (6ks)
+
+## 🥩 Mäso a ryby
+- Kuracie prsia (600g)
+- Losos (400g)"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      💡 Tip: Používajte Markdown syntax pre formátovanie.
+                      Preview vidíte v pravej časti.
+                    </p>
                   </div>
 
                   {/* Submit Button */}
@@ -491,24 +559,9 @@ export default function AdminDashboard() {
                     disabled={isUploading}
                     className="w-full bg-eatrivo-purple hover:bg-eatrivo-purple/90"
                   >
-                    {isUploading ? "Nahráva sa..." : "Nahrať jedálny plán"}
+                    {isUploading ? "Vytvára sa..." : "Vytvoriť nákupný zoznam"}
                   </Button>
                 </form>
-              </CardContent>
-            </Card>
-
-            {/* Preview/Status Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Prehľad</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="text-center text-gray-500 py-8">
-                    <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>Vyberte súbor a vyplňte formulár pre prehľad</p>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>

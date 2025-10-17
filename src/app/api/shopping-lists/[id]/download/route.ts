@@ -1,92 +1,54 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '../../../../../../auth'
-import { v2 as cloudinary } from 'cloudinary'
-import { db } from '@/index'
-import { shoppingLists, shoppingListDownloads, userProfiles, users } from '@/db/schema'
-import { eq, and } from 'drizzle-orm'
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "../../../../../index";
+import { shoppingLists } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import  generatePDFFromMarkdown  from "@/lib/pdfGenerate";
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
-  api_key: process.env.CLOUDINARY_API_KEY!,
-  api_secret: process.env.CLOUDINARY_API_SECRET!,
-  secure: true,
-});
 
 export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const params = await context.params
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const { id } = await params;
 
-    console.log(params)
-
-    // Get user profile and meal plan
-    const [userProfile] = await db
-      .select()
-      .from(userProfiles)
-      .where(eq(userProfiles.userId, session.user.id))
-
-    if (!userProfile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
-    }
-
-    // Get shopping list and verify ownership
+    // Fetch shopping list from database
     const [shoppingList] = await db
-      .select({
-        id: shoppingLists.id,
-        title: shoppingLists.title,
-        cloudinaryPublicId: shoppingLists.cloudinaryPublicId,
-        userProfileId: shoppingLists.userProfileId,
-      })
+      .select()
       .from(shoppingLists)
-      .where(
-        and(
-          eq(shoppingLists.id, params.id),
-          eq(shoppingLists.userProfileId, userProfile.id)
-        )
-      )
+      .where(eq(shoppingLists.id, id))
+      .limit(1);
 
     if (!shoppingList) {
-      return NextResponse.json({ error: 'Shopping list not found' }, { status: 404 })
+      return NextResponse.json(
+        { error: "Shopping list not found" },
+        { status: 404 }
+      );
     }
 
-    // Get user membership for access control
-    const [user] = await db
-      .select({ membership: users.membership })
-      .from(users)
-      .where(eq(users.id, session.user.id))
+    // Generate PDF from markdown
+    const pdfBuffer = await generatePDFFromMarkdown({
+      title: shoppingList.title,
+      markdownContent: shoppingList.markdownContent,
+      weekStartDate: shoppingList.weekStartDate.toISOString(),
+      weekEndDate: shoppingList.weekEndDate.toISOString(),
+    });
 
-    // Get cloud name from environment
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME!;
-    
-    // Construct the full Cloudinary public ID with folder path
-    const fullPublicId = `eatrivo/shopping-lists/${shoppingList.cloudinaryPublicId}`;
-    
-    // Simple direct Cloudinary URL format
-    // For PDFs, we use 'image' or 'raw' in the URL path
-    const downloadUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${fullPublicId}.pdf`;
-
-    console.log('Generated Download URL:', downloadUrl);
-
-    // Track download
-    await db.insert(shoppingListDownloads).values({
-      shoppingListId: shoppingList.id,
-      userProfileId: userProfile.id,
-    })
-
-    return NextResponse.json({ 
-      downloadUrl: downloadUrl,
-      filename: `${shoppingList.title}.pdf`,
-      userMembership: user?.membership || 'basic'
-    })
+    // Return PDF file
+    return new NextResponse(pdfBuffer, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${encodeURIComponent(
+          shoppingList.title
+        )}.pdf"`,
+      },
+    });
   } catch (error) {
-    console.error('Download error:', error)
-    return NextResponse.json({ error: 'Failed to generate download link' }, { status: 500 })
+    console.error("Error generating PDF:", error);
+    return NextResponse.json(
+      { error: "Failed to generate PDF" },
+      { status: 500 }
+    );
   }
 }
