@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   ReceiptText,
   UtensilsCrossed,
@@ -9,6 +10,7 @@ import {
   Target,
   Mail,
   ChefHat,
+  LogOut,
   User,
 } from "lucide-react";
 import Image from "next/image";
@@ -17,7 +19,7 @@ import ReceiptCard from "@/components/dashboard/ReceiptCard";
 import ShoppingListCard from "@/components/dashboard/ShoppingListCard";
 import { toast } from "sonner";
 import type { Session } from "next-auth";
-import { EatrivoAIService } from "@/lib/langchain";
+import { getCurrentDaySlovak, getMembershipStatus } from "@/lib/functions";
 
 interface ShoppingList {
   id: string;
@@ -34,27 +36,27 @@ interface DashboardPageProps {
   session: Session;
 }
 
+interface Meal {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  cookTime: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  type: string;
+}
+
 export default function DashboardPage({ session }: DashboardPageProps) {
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
-  const [isLoadingShoppingLists, setIsLoadingShoppingLists] = useState(true);
+  const [isLoading, setIsLoading] = useState({
+    shoppingLists: true,
+    mealPlan: false,
+  });
   const [mealPlanData, setMealPlanData] = useState<any[]>([]);
-  const [isLoadingMealPlan, setIsLoadingMealPlan] = useState(false);
-
-  //HELPER TO GET DAY
-  const getCurrentDaySlovak = (): string => {
-    const daysMap: { [key: number]: string } = {
-      0: "Nedeľa",
-      1: "Pondelok",
-      2: "Utorok",
-      3: "Streda",
-      4: "Štvrtok",
-      5: "Piatok",
-      6: "Sobota",
-    };
-
-    const today = new Date().getDay();
-    return daysMap[today];
-  };
+  const currentDay = useMemo(() => getCurrentDaySlovak(), []);
 
   //FETCH SHOPPING LISTS
   useEffect(() => {
@@ -62,13 +64,11 @@ export default function DashboardPage({ session }: DashboardPageProps) {
       if (!session?.user) return;
 
       try {
-        setIsLoadingShoppingLists(true);
+        setIsLoading((prev) => ({ ...prev, shoppingLists: true }));
         const response = await fetch("/api/shopping-lists");
-
         if (!response.ok) {
           throw new Error("Failed to fetch shopping lists");
         }
-
         const data = await response.json();
         setShoppingLists(data.shoppingLists || []);
       } catch (error) {
@@ -76,7 +76,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
         toast.error("Nepodarilo sa načítať jedálne plány");
         setShoppingLists([]);
       } finally {
-        setIsLoadingShoppingLists(false);
+        setIsLoading((prev) => ({ ...prev, shoppingLists: false }));
       }
     };
     fetchShoppingLists();
@@ -88,8 +88,8 @@ export default function DashboardPage({ session }: DashboardPageProps) {
       if (!session?.user) return;
 
       try {
-        setIsLoadingMealPlan(true);
-
+        setIsLoading((prev) => ({ ...prev, mealPlan: true }));
+        console.log("Fetching meal plan...");
         const response = await fetch("/api/meal-plans", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -99,12 +99,16 @@ export default function DashboardPage({ session }: DashboardPageProps) {
 
         const data = await response.json();
 
+        if (!data.success || !data.insights?.week) {
+          throw new Error(data.message || "Invalid meal plan data");
+        }
+
         setMealPlanData(data.insights.week);
       } catch (error) {
         console.error("Error:", error);
         toast.error("Failed to load meal plan");
       } finally {
-        setIsLoadingMealPlan(false);
+        setIsLoading((prev) => ({ ...prev, mealPlan: false }));
       }
     };
 
@@ -114,8 +118,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
   const todaysMeals = useMemo(() => {
     if (!mealPlanData || mealPlanData.length === 0) return [];
 
-    const todayName = getCurrentDaySlovak();
-    const todayPlan = mealPlanData.find((day) => day.day === todayName);
+    const todayPlan = mealPlanData.find((day) => day.day === currentDay);
 
     if (!todayPlan || !todayPlan.meals) return [];
 
@@ -123,7 +126,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
     const mealTypes = ["breakfast", "lunch", "dinner", "snack"]; // Podľa počtu jedál
 
     return todayPlan.meals.map((meal: any, index: number) => ({
-      id: `${todayName}-${index}`, // Unikátny ID pre React key
+      id: `${currentDay}-${index}`, // Unikátny ID pre React key
       title: meal.name,
       description: `${meal.difficulty} • ${meal.prepTime} minút`, // Generujeme popis
       type: mealTypes[index] || "snack", // Priradíme typ podľa poradia
@@ -140,8 +143,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
   const todaysNutrition = useMemo(() => {
     if (!mealPlanData || mealPlanData.length === 0) return null;
 
-    const todayName = getCurrentDaySlovak();
-    const todayPlan = mealPlanData.find((day) => day.day === todayName);
+    const todayPlan = mealPlanData.find((day) => day.day === currentDay);
 
     return todayPlan
       ? {
@@ -160,19 +162,60 @@ export default function DashboardPage({ session }: DashboardPageProps) {
       <div className="w-64 bg-white shadow-sm border-r border-gray-100 flex flex-col">
         {/* Profile card */}
         <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center mb-4">
-            <Image
-              src={session?.user?.image || "/default-avatar.png"}
-              alt={session?.user?.name || "User"}
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-            <div className="ml-3">
-              <h2 className="text-sm font-semibold text-gray-900">
-                {session?.user?.name}
-              </h2>
-              <p className="text-xs text-gray-500">Premium účet</p>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                {session?.user?.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={session?.user?.name || "User"}
+                    width={48}
+                    height={48}
+                    className="rounded-full ring-2 ring-eatrivo-purple/20"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-eatrivo-purple/10 flex items-center justify-center">
+                    <User className="w-6 h-6 text-eatrivo-purple" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <h2 className="text-sm font-semibold text-gray-900 truncate">
+                  {session?.user?.name}
+                </h2>
+                <p
+                  className={`text-xs capitalize ${getMembershipStatus(
+                    session?.user?.membership
+                  )}`}
+                >
+                  {session?.user?.membership || "basic"} účet
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 text-xs bg-primary-foreground text-secondary-text"
+                asChild
+              >
+                <Link href="/profile">
+                  <User className="w-3 h-3 mr-1" />
+                  Profil
+                </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                asChild
+              >
+                <Link href="/signout">
+                  <LogOut className="w-3 h-3 mr-1" />
+                  Odhlásiť
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -204,6 +247,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
           </div>
         </nav>
       </div>
+
       {/* Main content */}
       <div className="w-5/6 p-6">
         {/* Welcome */}
@@ -229,10 +273,10 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                 {/* Nutrition Summary Circles */}
                 <div className="flex gap-3">
                   <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-xl bg-eatrivo-purple/10 border-2 border-eatrivo-purple flex items-center justify-center">
-                      <div className="text-center">
+                    <div className="w-16 h-12 rounded-xl bg-eatrivo-purple/10 border-2 border-eatrivo-purple flex items-center justify-center">
+                      <div className="text-center ">
                         <div className="text-sm font-bold text-eatrivo-purple">
-                          {todaysNutrition?.calories || "0"}
+                          {todaysNutrition?.calories ?? "—"}
                         </div>
                       </div>
                     </div>
@@ -243,7 +287,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                   <div className="flex flex-col items-center">
                     <div className="w-12 h-12 rounded-full bg-eatrivo-green/10 border-2 border-eatrivo-green flex items-center justify-center">
                       <div className="text-sm font-bold text-eatrivo-green">
-                        {todaysNutrition?.protein || "0"}
+                        {todaysNutrition?.protein ?? "—"}
                       </div>
                     </div>
                     <span className="text-xs text-gray-600 mt-1">
@@ -253,7 +297,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                   <div className="flex flex-col items-center">
                     <div className="w-12 h-12 rounded-full bg-eatrivo-orange/10 border-2 border-eatrivo-orange flex items-center justify-center">
                       <div className="text-sm font-bold text-eatrivo-orange">
-                        {todaysNutrition?.carbs || "0"}
+                        {todaysNutrition?.carbs ?? "—"}
                       </div>
                     </div>
                     <span className="text-xs text-gray-600 mt-1">
@@ -263,31 +307,48 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                   <div className="flex flex-col items-center">
                     <div className="w-12 h-12 rounded-full bg-eatrivo-pink/10 border-2 border-eatrivo-pink flex items-center justify-center">
                       <div className="text-sm font-bold text-eatrivo-pink">
-                        {todaysNutrition?.fats || "0"}
+                        {todaysNutrition?.fats ?? "—"}
                       </div>
                     </div>
                     <span className="text-xs text-gray-600 mt-1">Tuky</span>
                   </div>
                 </div>
               </div>
+
               {/* Meal Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {isLoadingMealPlan ? (
-                  // Loading skeleton
-                  [1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="bg-gray-100 animate-pulse rounded-xl h-64"
-                    ></div>
-                  ))
+                {isLoading.mealPlan ? (
+                  <div className="col-span-3 flex flex-col items-center justify-center py-12">
+                    {/* Spinning Loader */}
+                    <div className="relative mb-6">
+                      <div className="w-16 h-16 border-4 border-eatrivo-purple/20 border-t-eatrivo-purple rounded-full animate-spin"></div>
+                      <ChefHat className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-eatrivo-purple" />
+                    </div>
+
+                    {/* Animovaný text */}
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Pripravujem váš jedálny plán
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4 flex items-center gap-1">
+                      <span>Generujem personalizované recepty</span>
+                      <span className="animate-pulse">...</span>
+                    </p>
+
+                    {/* Odhadovaný čas */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+                      <p className="text-xs text-blue-700">
+                        ⏱️ Zvyčajne to trvá 1-2 minúty. Ďakujeme za vašu
+                        trpezlivosť!
+                      </p>
+                    </div>
+                  </div>
                 ) : todaysMeals.length > 0 ? (
                   // Render meals
-                  todaysMeals.map((meal) => (
+                  todaysMeals.map((meal: Meal) => (
                     <ReceiptCard
                       key={meal.id}
                       icon={<ChefHat className="w-6 h-6 text-white" />}
                       title={meal.title}
-                      type={meal.type}
                       description={meal.description}
                       difficulty={meal.difficulty}
                       cookTime={meal.cookTime}
@@ -295,6 +356,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                       protein={meal.protein}
                       carbs={meal.carbs}
                       fat={meal.fat}
+                      meal_type={meal.type}
                     />
                   ))
                 ) : (
@@ -307,6 +369,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
               </div>
             </div>
           </div>
+
           {/* Goals Section */}
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <div className="flex items-center mb-4">
@@ -319,6 +382,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
               COMING SOON
             </div>
           </div>
+
           {/* Shopping Lists Section */}
           <div className="lg:col-span-2">
             <Card className="bg-secondary-foreground rounded-xl shadow-2xl p-6">
@@ -339,7 +403,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                 </div>
               </CardHeader>
               <CardContent>
-                {isLoadingShoppingLists ? (
+                {isLoading.shoppingLists ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[1, 2, 3].map((i) => (
                       <div
@@ -388,6 +452,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
               </CardContent>
             </Card>
           </div>
+
           {/* Messages Section */}
           <div className="space-y-6">
             <div className="bg-white rounded-2xl p-6 shadow-lg">

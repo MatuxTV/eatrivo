@@ -87,7 +87,7 @@ export class EatrivoAIService {
 
         VÝSTUP: Čistý JSON objekt (začni {, skonči }), BEZ markdown wrapperu!
 
-        {"week":[{"day":"Pondelok","totalDailyCalories":"2400kcal","totalDailyProtein":"120g","totalDailyCarbs":"130g","totalDailyFats":"62g","meals":[{"name":"Názov","prepTime":20,"difficulty":"ľahké","calories":450,"protein":30,"carbs":40,"fat":15}]},{"day":"Utorok",...},{"day":"Streda",...},{"day":"Štvrtok",...},{"day":"Piatok",...},{"day":"Sobota",...},{"day":"Nedeľa",...}]}
+        {"week":[{"day":"Pondelok","totalDailyCalories":"2400kcal","totalDailyProtein":"120g","totalDailyCarbs":"130g","totalDailyFats":"62g","meals":[{"name":"Názov","prepTime":20,"difficulty":"ľahké","meal_type":obed,"calories":450,"protein":30,"carbs":40,"fat":15}]},{"day":"Utorok",...},{"day":"Streda",...},{"day":"Štvrtok",...},{"day":"Piatok",...},{"day":"Sobota",...},{"day":"Nedeľa",...}]}
 
         DÔLEŽITÉ: Vytvor ${
                 userProfile.mealsPerDay

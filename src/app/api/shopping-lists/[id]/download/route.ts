@@ -1,53 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "../../../../../index";
-import { shoppingLists } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import  generatePDFFromMarkdown  from "@/lib/pdfGenerate";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
+/**
+ * Download endpoint now 
+ * redirects to the view page,
+ * which has client-side PDF generation (html2canvas + jsPDF).
+ * This avoids server-side PDF generation dependencies (PhantomJS, etc.)
+ */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-
-    // Fetch shopping list from database
-    const [shoppingList] = await db
-      .select()
-      .from(shoppingLists)
-      .where(eq(shoppingLists.id, id))
-      .limit(1);
-
-    if (!shoppingList) {
-      return NextResponse.json(
-        { error: "Shopping list not found" },
-        { status: 404 }
-      );
-    }
-
-    // Generate PDF from markdown
-    const pdfBuffer = await generatePDFFromMarkdown({
-      title: shoppingList.title,
-      markdownContent: shoppingList.markdownContent,
-      weekStartDate: shoppingList.weekStartDate.toISOString(),
-      weekEndDate: shoppingList.weekEndDate.toISOString(),
-    });
-
-    // Return PDF file
-    return new NextResponse(pdfBuffer, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${encodeURIComponent(
-          shoppingList.title
-        )}.pdf"`,
-      },
-    });
-  } catch (error) {
-    console.error("Error generating PDF:", error);
+    
+    // Redirect to view page where client-side PDF generation is available
+    return NextResponse.redirect(
+      new URL(`/api/shopping-lists/${id}/view`, req.url)
+    );
+  } catch (err) {
+    console.error("[API] Error redirecting to view:", err);
     return NextResponse.json(
-      { error: "Failed to generate PDF" },
+      { error: "Failed to redirect" },
       { status: 500 }
     );
   }

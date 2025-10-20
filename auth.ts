@@ -21,6 +21,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;
+        session.user.membership = (user as any).membership;
       }
       return session;
     },
