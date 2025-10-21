@@ -41,33 +41,33 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
   }
 
   return (
-    <Card className=" text-black">
+    <Card className="text-black">
       <CardHeader>
-        <CardTitle>Jedálne preferencie</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-xl md:text-2xl">Jedálne preferencie</CardTitle>
+        <CardDescription className="text-sm md:text-base">
           Pomôžte nám vytvoriť pre vás personalizované jedálne odporúčania.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
             {/* Basic Info */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <FormField
                 control={form.control}
                 name="sex"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Pohlavie *</FormLabel>
+                    <FormLabel className="text-sm md:text-base">Pohlavie *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Vyberte pohlavie" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="man">Muž</SelectItem>
-                        <SelectItem value="woman">Žena</SelectItem>
+                      <SelectContent className=" bg-primary-foreground text-primary-text ">
+                        <SelectItem className=" hover:bg-primary/10" value="man">Muž</SelectItem>
+                        <SelectItem className=" hover:bg-primary/10" value="woman">Žena</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -80,7 +80,7 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
                 name="age"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Vek *</FormLabel>
+                    <FormLabel className="text-sm md:text-base">Vek *</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -96,13 +96,13 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
             </div>
 
             {/* Physical Info */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <FormField
                 control={form.control}
                 name="height"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Výška (cm) *</FormLabel>
+                    <FormLabel className="text-sm md:text-base">Výška (cm) *</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -121,7 +121,7 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
                 name="weight"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hmotnosť (kg) *</FormLabel>
+                    <FormLabel className="text-sm md:text-base">Hmotnosť (kg) *</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -143,19 +143,19 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
               name="activity_level"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Úroveň aktivity *</FormLabel>
+                  <FormLabel className="text-sm md:text-base">Úroveň aktivity *</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Vyberte úroveň aktivity" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="sedentary">Sedavý (kancelárska práca)</SelectItem>
-                      <SelectItem value="lightly_active">Mierne aktívny (1-2x týždenne)</SelectItem>
-                      <SelectItem value="moderately_active">Stredne aktívny (3-5x týždenne)</SelectItem>
-                      <SelectItem value="very_active">Veľmi aktívny (6-7x týždenne)</SelectItem>
-                      <SelectItem value="athlete">Športovec (Viac krát denne)</SelectItem>
+                    <SelectContent className="bg-primary-foreground text-primary-text">
+                      <SelectItem className="hover:bg-primary/10" value="sedentary">Sedavý (kancelárska práca)</SelectItem>
+                      <SelectItem className="hover:bg-primary/10" value="lightly_active">Mierne aktívny (1-2x týždenne)</SelectItem>
+                      <SelectItem className="hover:bg-primary/10" value="moderately_active">Stredne aktívny (3-5x týždenne)</SelectItem>
+                      <SelectItem className="hover:bg-primary/10" value="very_active">Veľmi aktívny (6-7x týždenne)</SelectItem>
+                      <SelectItem className="hover:bg-primary/10" value="athlete">Športovec (Viac krát denne)</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -169,17 +169,17 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
               name="goal"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cieľ *</FormLabel>
+                  <FormLabel className="text-sm md:text-base">Cieľ *</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Vyberte cieľ" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="lose_weight">Schudnúť</SelectItem>
-                      <SelectItem value="maintain_weight">Udržať váhu</SelectItem>
-                      <SelectItem value="gain_muscle">Získať svalovú hmotu</SelectItem>
+                    <SelectContent className="bg-primary-foreground text-primary-text">
+                      <SelectItem className="hover:bg-primary/10" value="lose_weight">Schudnúť</SelectItem>
+                      <SelectItem className="hover:bg-primary/10" value="maintain_weight">Udržať váhu</SelectItem>
+                      <SelectItem className="hover:bg-primary/10" value="gain_muscle">Získať svalovú hmotu</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -188,13 +188,13 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
             />
 
             {/* Meal Preferences */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <FormField
                 control={form.control}
                 name="meal_per_day"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Jedál denne</FormLabel>
+                    <FormLabel className="text-sm md:text-base">Jedál denne</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -213,17 +213,17 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
                 name="cooking_time_pref"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Čas na varenie</FormLabel>
+                    <FormLabel className="text-sm md:text-base">Čas na varenie</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Vyberte preferenciu" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="quick">Rýchlo (do 15 min)</SelectItem>
-                        <SelectItem value="normal">Normálne (15-45 min)</SelectItem>
-                        <SelectItem value="slow">Pomaly (45+ min)</SelectItem>
+                      <SelectContent className="bg-primary-foreground text-primary-text">
+                        <SelectItem className="hover:bg-primary/10" value="quick">Rýchlo (do 15 min)</SelectItem>
+                        <SelectItem className="hover:bg-primary/10" value="normal">Normálne (15-45 min)</SelectItem>
+                        <SelectItem className="hover:bg-primary/10" value="slow">Pomaly (45+ min)</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -233,27 +233,27 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
             </div>
 
             {/* Diet & Budget */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <FormField
                 control={form.control}
                 name="diet_preferences"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Stravovanie</FormLabel>
+                    <FormLabel className="text-sm md:text-base">Stravovanie</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Vyberte typ stravovania" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">Žiadne obmedzenie</SelectItem>
-                        <SelectItem value="lactosefree">Bez laktózy</SelectItem>
-                        <SelectItem value="vegetarian">Vegetariánske</SelectItem>
-                        <SelectItem value="vegan">Vegánske</SelectItem>
-                        <SelectItem value="pescatarian">Pescatariánske</SelectItem>
-                        <SelectItem value="ketogenic">Ketogénne</SelectItem>
-                        <SelectItem value="paleolithic">Paleo</SelectItem>
+                      <SelectContent className="bg-primary-foreground text-primary-text">
+                        <SelectItem className="hover:bg-primary/10" value="none">Žiadne obmedzenie</SelectItem>
+                        <SelectItem className="hover:bg-primary/10" value="lactosefree">Bez laktózy</SelectItem>
+                        <SelectItem className="hover:bg-primary/10" value="vegetarian">Vegetariánske</SelectItem>
+                        <SelectItem className="hover:bg-primary/10" value="vegan">Vegánske</SelectItem>
+                        <SelectItem className="hover:bg-primary/10" value="pescatarian">Pescatariánske</SelectItem>
+                        <SelectItem className="hover:bg-primary/10" value="ketogenic">Ketogénne</SelectItem>
+                        <SelectItem className="hover:bg-primary/10" value="paleolithic">Paleo</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -266,17 +266,17 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
                 name="budget_preference"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Rozpočet</FormLabel>
+                    <FormLabel className="text-sm md:text-base">Rozpočet</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Vyberte rozpočet" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="low">Nízky</SelectItem>
-                        <SelectItem value="medium">Stredný</SelectItem>
-                        <SelectItem value="high">Vysoký</SelectItem>
+                      <SelectContent className="bg-primary-foreground text-primary-text">
+                        <SelectItem className="hover:bg-primary/10" value="low">Nízky</SelectItem>
+                        <SelectItem className="hover:bg-primary/10" value="medium">Stredný</SelectItem>
+                        <SelectItem className="hover:bg-primary/10" value="high">Vysoký</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -291,7 +291,7 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
               name="likes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Obľúbené jedlá</FormLabel>
+                  <FormLabel className="text-sm md:text-base">Obľúbené jedlá</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="Napíšte jedlá, ktoré máte radi..."
@@ -308,7 +308,7 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
               name="dislikes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Neobľúbené jedlá</FormLabel>
+                  <FormLabel className="text-sm md:text-base">Neobľúbené jedlá</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="Napíšte jedlá, ktoré nemáte radi..."
@@ -325,7 +325,7 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
               name="allergies"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Alergie a intolerancie</FormLabel>
+                  <FormLabel className="text-sm md:text-base">Alergie a intolerancie</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="Napíšte vaše alergie alebo intolerancie..."
@@ -338,18 +338,20 @@ export default function FoodPreferences({ onComplete, onPrevious, isLoading }: F
             />
 
             {/* Buttons */}
-            <div className="flex justify-between">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 md:gap-4">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={onPrevious}
                 disabled={isLoading}
+                className="w-full sm:w-auto"
               >
                 Späť
               </Button>
               <Button 
                 type="submit" 
                 disabled={isLoading}
+                className="w-full sm:w-auto"
               >
                 {isLoading ? "Dokončuje sa..." : "Dokončiť nastavenie"}
               </Button>

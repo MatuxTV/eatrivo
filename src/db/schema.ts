@@ -19,6 +19,10 @@ export const users = pgTable("users", {
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   membership: membershipEnum("membership").default("basic").notNull(),
   image: text("image"),
+
+  //Stamp for NewUpdate window tracking
+  lastSeenWelcomeVersion: text("last_seen_welcome_version"),
+  lastSeenWelcomeAt: timestamp("last_seen_welcome_at", { withTimezone: true }),
 });
 
 // Your app's main user profile table
