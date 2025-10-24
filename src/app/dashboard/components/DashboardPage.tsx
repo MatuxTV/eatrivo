@@ -39,12 +39,10 @@ interface MealData {
 interface DayMealPlan {
   day: string;
   meals: MealData[];
-  nutrition: {
-    totalCalories: number;
-    totalProtein: number;
-    totalCarbohydrates: number;
-    totalFat: number;
-  };
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbohydrates: number;
+  totalFat: number;
 }
 
 interface ShoppingList {
@@ -107,7 +105,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
     } catch (error) {
       logger.error("Failed to update welcome dialog version", error, {
         context: "DashboardPage",
-        metadata: { userId: session?.user?.id }
+        metadata: { userId: session?.user?.id },
       });
     }
   };
@@ -128,7 +126,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
       } catch (error) {
         logger.error("Error fetching shopping lists", error, {
           context: "DashboardPage",
-          metadata: { userId: session?.user?.id }
+          metadata: { userId: session?.user?.id },
         });
         toast.error("Nepodarilo sa načítať jedálne plány");
         setShoppingLists([]);
@@ -163,7 +161,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
       } catch (error) {
         logger.error("Error loading meal plan", error, {
           context: "DashboardPage",
-          metadata: { userId: session?.user?.id }
+          metadata: { userId: session?.user?.id },
         });
         toast.error("Failed to load meal plan");
       } finally {
@@ -206,10 +204,10 @@ export default function DashboardPage({ session }: DashboardPageProps) {
 
     return todayPlan
       ? {
-          calories: todayPlan.nutrition.totalCalories,
-          protein: todayPlan.nutrition.totalProtein,
-          carbs: todayPlan.nutrition.totalCarbohydrates,
-          fats: todayPlan.nutrition.totalFat,
+          calories: todayPlan.totalCalories,
+          protein: todayPlan.totalProtein,
+          carbs: todayPlan.totalCarbohydrates,
+          fats: todayPlan.totalFat,
         }
       : null;
   }, [mealPlanData, currentDay]);
@@ -221,14 +219,16 @@ export default function DashboardPage({ session }: DashboardPageProps) {
         onOpenChange={handleCloseDialog}
         session={session}
         version={APP_CONFIG.WELCOME_DIALOG_VERSION}
-        changelog={APP_CONFIG.WELCOME_DIALOG_CHANGELOG[APP_CONFIG.WELCOME_DIALOG_VERSION]}
+        changelog={
+          APP_CONFIG.WELCOME_DIALOG_CHANGELOG[APP_CONFIG.WELCOME_DIALOG_VERSION]
+        }
       />
       <div className="min-h-screen flex flex-col md:flex-row w-full bg-primary-foreground pb-20 md:pb-0">
         {/* Trial badge - adjust position for mobile */}
         <div className="fixed top-16 right-2 md:top-4 md:right-4 bg-eatrivo-purple text-white px-2 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold shadow-lg z-50">
           {`Trial v${APP_CONFIG.WELCOME_DIALOG_VERSION}`}
         </div>
-        
+
         {/* Mobile top bar with user info */}
         <div className="md:hidden fixed top-0 left-0 right-0 bg-white shadow-sm border-b border-gray-100 z-40 p-3">
           <div className="flex items-center justify-between">
@@ -250,7 +250,11 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                 <h2 className="text-xs font-semibold text-gray-900 truncate max-w-[150px]">
                   {session?.user?.name}
                 </h2>
-                <p className={`text-[10px] capitalize ${getMembershipStatus(session?.user?.membership)}`}>
+                <p
+                  className={`text-[10px] capitalize ${getMembershipStatus(
+                    session?.user?.membership
+                  )}`}
+                >
                   {session?.user?.membership || "basic"} účet
                 </p>
               </div>
@@ -372,7 +376,10 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                 {/* Header - responsive layout */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 md:mb-6 gap-4">
                   <div className="flex items-center">
-                    <ReceiptText className="mr-2 md:mr-3 text-blue-600" size={20} />
+                    <ReceiptText
+                      className="mr-2 md:mr-3 text-blue-600"
+                      size={20}
+                    />
                     <h1 className="text-base md:text-xl font-bold text-gray-800">
                       Váš denný plán na dnes
                     </h1>
@@ -472,7 +479,9 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                     // Empty state - responsive
                     <div className="col-span-full text-center py-6 md:py-8">
                       <ChefHat className="w-10 h-10 md:w-12 md:h-12 mx-auto text-gray-300 mb-3 md:mb-4" />
-                      <p className="text-sm md:text-base text-gray-500">Žiadne jedlá na dnes</p>
+                      <p className="text-sm md:text-base text-gray-500">
+                        Žiadne jedlá na dnes
+                      </p>
                     </div>
                   )}
                 </div>
@@ -482,7 +491,10 @@ export default function DashboardPage({ session }: DashboardPageProps) {
             {/* Goals Section - responsive */}
             <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg">
               <div className="flex items-center mb-3 md:mb-4">
-                <Target className="mr-2 md:mr-3 text-eatrivo-purple" size={18} />
+                <Target
+                  className="mr-2 md:mr-3 text-eatrivo-purple"
+                  size={18}
+                />
                 <h2 className="text-base md:text-lg font-bold text-gray-800">
                   Ciele na tento týždeň
                 </h2>
@@ -566,8 +578,13 @@ export default function DashboardPage({ session }: DashboardPageProps) {
             <div className="space-y-4 md:space-y-6">
               <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg">
                 <div className="flex items-center mb-3 md:mb-4">
-                  <Mail className="mr-2 md:mr-3 text-eatrivo-purple" size={18} />
-                  <h2 className="text-base md:text-lg font-bold text-gray-800">Správy</h2>
+                  <Mail
+                    className="mr-2 md:mr-3 text-eatrivo-purple"
+                    size={18}
+                  />
+                  <h2 className="text-base md:text-lg font-bold text-gray-800">
+                    Správy
+                  </h2>
                 </div>
                 <div>
                   <p className="flex justify-center w-full text-center text-eatrivo-purple font-bold h-32 md:h-full items-center text-sm md:text-base">
@@ -578,7 +595,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
             </div>
           </div>
         </div>
-        
+
         {/* Mobile bottom navigation */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
           <div className="grid grid-cols-3 gap-1 p-2">
