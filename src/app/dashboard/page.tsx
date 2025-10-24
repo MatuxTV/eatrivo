@@ -14,7 +14,7 @@ export default async function DashboardPageWrapper() {
     redirect("/signin")
   }
 
-  return (
-    <DashboardPage />
+  return (  
+    <DashboardPage session={session} />
   )
 }

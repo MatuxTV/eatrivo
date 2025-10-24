@@ -30,7 +30,6 @@ export async function POST(request: NextRequest) {
     const validationResult = completeOnboardingSchema.safeParse(body)
     
     if (!validationResult.success) {
-    console.log(validationResult.error.issues)
       return NextResponse.json(
         { error: "Invalid data", details: validationResult.error.issues },
         { status: 400 }
@@ -62,6 +61,7 @@ export async function POST(request: NextRequest) {
       cooking_time_pref: foodPreferences.cooking_time_pref || null,
       diet_preferences: foodPreferences.diet_preferences || "none",
       budget_preference: foodPreferences.budget_preference || "medium",
+      goal: foodPreferences.goal || "maintain_weight",
       likes: foodPreferences.likes || null,
       dislikes: foodPreferences.dislikes || null,
       allergies: foodPreferences.allergies || null,

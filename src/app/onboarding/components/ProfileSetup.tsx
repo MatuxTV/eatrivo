@@ -60,22 +60,22 @@ export default function ProfileSetup({
   };
 
   return (
-    <Card>
+    <Card className="text-black">
       <CardHeader>
-        <CardTitle>Osobné údaje</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-xl md:text-2xl">Osobné údaje</CardTitle>
+        <CardDescription className="text-sm md:text-base">
           Povedzte nám niečo o sebe, aby sme mohli prispôsobiť vašu skúsenosť.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
             <FormField
               control={form.control}
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Celé meno *</FormLabel>
+                  <FormLabel className="text-sm md:text-base">Celé meno *</FormLabel>
                   <FormControl>
                     <Input placeholder="Vaše celé meno" {...field} />
                   </FormControl>
@@ -89,7 +89,7 @@ export default function ProfileSetup({
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Používateľské meno *</FormLabel>
+                  <FormLabel className="text-sm md:text-base">Používateľské meno *</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="vase_meno123"
@@ -113,7 +113,7 @@ export default function ProfileSetup({
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Telefónne číslo</FormLabel>
+                  <FormLabel className="text-sm md:text-base">Telefónne číslo *</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="+421 XXX XXX XXX"
@@ -131,7 +131,7 @@ export default function ProfileSetup({
               name="dateOfBirth"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Dátum narodenia *</FormLabel>
+                  <FormLabel className="text-sm md:text-base">Dátum narodenia *</FormLabel>
                   <FormControl>
                     <Input
                       type="date"
