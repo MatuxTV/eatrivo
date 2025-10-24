@@ -21,7 +21,7 @@ export default function OnboardingClient() {
     
     try {
       // Here you'll save both profile and food preferences to database
-      const response = await fetch("/api/onboarding", {
+      const response = await fetch("/api/onboarding/post", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
