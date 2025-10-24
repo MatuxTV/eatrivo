@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Download, Eye, Calendar, FileText } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 // ak máš util na classNames, použi ho (ináč vynechaj a spoj reťazce ručne)
 const cn = (...a: (string | false | null | undefined)[]) =>
@@ -58,7 +59,10 @@ export default function ShoppingListCard({
       const url = `/api/shopping-lists/${id}/view`;
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (error) {
-      console.error("Download error:", error);
+      logger.error("Download error", error, {
+        context: "ShoppingListCard",
+        metadata: { shoppingListId: id }
+      });
       toast.error("Failed to open shopping list");
     } finally {
       setTimeout(() => setIsDownloading(false), 500);
@@ -72,7 +76,10 @@ export default function ShoppingListCard({
       const url = `/api/shopping-lists/${id}/view`;
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (error) {
-      console.error("View error:", error);
+      logger.error("View error", error, {
+        context: "ShoppingListCard",
+        metadata: { shoppingListId: id }
+      });
       toast.error("Failed to open shopping list");
     } finally {
       setIsViewing(false);

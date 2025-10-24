@@ -1,5 +1,6 @@
 // lib/cache.ts
 import { redis } from './redis'
+import { cacheLogger } from './logger'
 
 export class CacheService {
   static async get<T>(key: string): Promise<T | null> {
@@ -14,19 +15,19 @@ export class CacheService {
       }
       return data as T
     } catch (error) {
-      console.error('❌ Cache get error:', error)
+      cacheLogger.error('Cache get error', error, { metadata: { key } })
       return null
     }
   }
 
-  static async set(key: string, data: any, ttl: number = 300): Promise<void> {
+  static async set<T>(key: string, data: T, ttl: number = 300): Promise<void> {
     try {
       // Always stringify for consistency
       const serialized = typeof data === 'string' ? data : JSON.stringify(data)
       await redis.setex(key, ttl, serialized)
     
     } catch (error) {
-      console.error('❌ Cache set error:', error)
+      cacheLogger.error('Cache set error', error, { metadata: { key, ttl } })
       // Don't throw - caching is optional
     }
   }
@@ -36,7 +37,7 @@ export class CacheService {
       await redis.del(key)
     
     } catch (error) {
-      console.error('❌ Cache delete error:', error)
+      cacheLogger.error('Cache delete error', error, { metadata: { key } })
     }
   }
 
@@ -48,22 +49,22 @@ export class CacheService {
       
       }
     } catch (error) {
-      console.error('❌ Cache invalidation error:', error)
+      cacheLogger.error('Cache invalidation error', error, { metadata: { pattern } })
     }
   }
 
   // Helper for meal plans
-  static async getMealPlan(userProfileId: string, shoppingListId: string) {
+  static async getMealPlan<T = unknown>(userProfileId: string, shoppingListId: string): Promise<T | null> {
     const key = `meal-plan:${userProfileId}:${shoppingListId}`
-    return this.get<any>(key)
+    return this.get<T>(key)
   }
 
-  static async setMealPlan(
+  static async setMealPlan<T>(
     userProfileId: string, 
     shoppingListId: string, 
-    mealPlan: any, 
+    mealPlan: T, 
     ttl: number = 86400 // 24 hours default
-  ) {
+  ): Promise<void> {
     const key = `meal-plan:${userProfileId}:${shoppingListId}`
     await this.set(key, mealPlan, ttl)
   }

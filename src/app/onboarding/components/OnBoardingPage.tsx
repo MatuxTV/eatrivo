@@ -3,7 +3,8 @@
 import { useState } from "react";
 import ProfileSetup from "./ProfileSetup";
 import FoodPreferences from "./FoodPreferences";
-import { UserProfileOnboarding, UserFoodPreferences } from "../../../lib/schemas/user";
+import type { UserProfileOnboarding, UserFoodPreferences } from "../../../lib/schemas/user";
+import { logger } from "@/lib/logger";
 
 export default function OnboardingClient() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -38,7 +39,9 @@ export default function OnboardingClient() {
         throw new Error("Failed to save onboarding data");
       }
     } catch (error) {
-      console.error("Error saving onboarding:", error);
+      logger.error("Error saving onboarding", error, {
+        context: "OnBoardingPage"
+      });
       alert("Chyba pri ukladaní údajov. Skúste to znovu.");
     } finally {
       setIsLoading(false);

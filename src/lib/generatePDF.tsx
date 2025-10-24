@@ -21,9 +21,9 @@ export default async function generatePDFFromMarkdown(
     const fullMarkdown = header + opts.markdownContent;
 
     // Nastavenia pre markdown-pdf
-    const options: any = {
-      paperFormat: "A4",
-      paperOrientation: "portrait",
+    const options = {
+      paperFormat: "A4" as const,
+      paperOrientation: "portait" as const, // typo in library types
       paperBorder: "1cm",
       remarkable: {
         breaks: true,
@@ -34,7 +34,7 @@ export default async function generatePDFFromMarkdown(
     // Použij to.buffer() API na získanie Buffer
     markdownpdf(options)
       .from.string(fullMarkdown)
-      .to.buffer({}, (err: any, buffer: any) => {
+      .to.buffer({}, (err: unknown, buffer: ArrayBuffer) => {
         if (err) {
           reject(err);
         } else {

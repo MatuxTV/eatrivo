@@ -1,9 +1,11 @@
-import { NextRequest, NextResponse } from "next/server"
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server"
 import { auth } from "../../../../auth"
 import { db } from "@/index"
 import { userProfiles, userInfoTable } from "@/db/schema"
 import { completeOnboardingSchema } from "@/lib/schemas/user"
 import { checkUserProfileExists } from "@/lib/user-utils"
+import { apiLogger } from "@/lib/logger"
 
 export async function POST(request: NextRequest) {
   try {
@@ -74,7 +76,9 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error("Error creating profile:", error)
+    apiLogger.error("Error creating profile", error, {
+      metadata: { userId: (await auth())?.user?.id }
+    })
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

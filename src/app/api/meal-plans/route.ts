@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "../../../../auth";
 import { db } from "@/index";
 import {
@@ -25,7 +26,7 @@ const STATIC_FALLBACK = {
   ]
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   // console.log('\n🚀 ========== MEAL PLAN API CALLED ==========');
   // console.log('⏰ Timestamp:', new Date().toISOString());
   
@@ -264,15 +265,13 @@ export async function POST(request: NextRequest) {
       };
 
       // console.log('   Calling EatrivoAIService.generateWeeklyMealPlan...');
-      const startTime = Date.now();
       
       mealPlan = await EatrivoAIService.generateWeeklyMealPlan(
         userInfoForAi,
         shoppingData
       );
 
-      const duration = Date.now() - startTime;
-      // console.log(`✅ AI generation completed in ${duration}ms`);
+      // console.log(`✅ AI generation completed`);
       // console.log('   Meal plan structure:', JSON.stringify(Object.keys(mealPlan), null, 2));
       // console.log('   Has week array:', !!mealPlan?.week);
       // console.log('   Week length:', mealPlan?.week?.length);
@@ -299,7 +298,7 @@ export async function POST(request: NextRequest) {
       // Save to database
       try {
         // console.log('   Saving to database...');
-        const [savedMealPlan] = await db.insert(mealPlans).values({
+        await db.insert(mealPlans).values({
           userProfileId: userProfile.id,
           shoppingListId: latestShoppingList.id,
           weekStartDate: latestShoppingList.weekStartDate,
@@ -307,7 +306,7 @@ export async function POST(request: NextRequest) {
           meals: mealPlan,
         }).returning();
 
-        // console.log(`   ✅ Saved to DB: meal_plans.id = ${savedMealPlan.id}`);
+        // console.log(`   ✅ Saved to DB`);
       } catch (dbError) {
         console.error('   ⚠️ Database save failed:', dbError);
       }

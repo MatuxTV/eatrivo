@@ -14,13 +14,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Upload,
   FileText,
   Users,
   Settings,
   Plus,
   User,
-  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
@@ -161,7 +159,7 @@ export default function AdminDashboard() {
         throw new Error(errorData.error || "Upload failed");
       }
 
-      const result = await response.json();
+      await response.json();
       toast.success("Nákupný zoznam bol úspešne vytvorený!");
 
       // Reset form
