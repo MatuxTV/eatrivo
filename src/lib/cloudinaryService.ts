@@ -30,7 +30,7 @@ export class CloudinaryPDFService {
 
       return result
     } catch (error) {
-      console.log('Cloudinary upload error:', error)
+     
       throw new Error('Failed to upload PDF')
     }
   }

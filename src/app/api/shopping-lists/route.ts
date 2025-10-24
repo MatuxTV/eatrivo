@@ -18,12 +18,10 @@ export async function GET(request: NextRequest) {
 
     const cachedData = await CacheService.get(cacheKey)
     if (cachedData) {
-      console.log('📋 Cache hit for shopping lists')
       return NextResponse.json(cachedData)
     }
 
     // Database fallback
-    console.log('🔄 Cache miss - fetching from database')
     const [userProfile] = await db
       .select()
       .from(userProfiles)

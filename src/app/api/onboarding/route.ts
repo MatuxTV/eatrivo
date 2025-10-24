@@ -30,7 +30,6 @@ export async function POST(request: NextRequest) {
     const validationResult = completeOnboardingSchema.safeParse(body)
     
     if (!validationResult.success) {
-    console.log(validationResult.error.issues)
       return NextResponse.json(
         { error: "Invalid data", details: validationResult.error.issues },
         { status: 400 }

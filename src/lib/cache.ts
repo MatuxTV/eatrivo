@@ -24,7 +24,7 @@ export class CacheService {
       // Always stringify for consistency
       const serialized = typeof data === 'string' ? data : JSON.stringify(data)
       await redis.setex(key, ttl, serialized)
-      console.log(`✅ Cached: ${key} (TTL: ${ttl}s)`)
+    
     } catch (error) {
       console.error('❌ Cache set error:', error)
       // Don't throw - caching is optional
@@ -34,7 +34,7 @@ export class CacheService {
   static async del(key: string): Promise<void> {
     try {
       await redis.del(key)
-      console.log(`🗑️ Deleted cache: ${key}`)
+    
     } catch (error) {
       console.error('❌ Cache delete error:', error)
     }
@@ -45,7 +45,7 @@ export class CacheService {
       const keys = await redis.keys(pattern)
       if (keys.length > 0) {
         await redis.del(...keys)
-        console.log(`🗑️ Invalidated ${keys.length} keys matching: ${pattern}`)
+      
       }
     } catch (error) {
       console.error('❌ Cache invalidation error:', error)

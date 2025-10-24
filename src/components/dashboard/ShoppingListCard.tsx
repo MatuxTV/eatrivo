@@ -122,20 +122,25 @@ export default function ShoppingListCard({
             aria-busy={isViewing}
             className="flex-1 bg-secondary-foreground hover:scale-105 text-primary-text/60"
           >
-            <Eye className="w-4 h-4 mr-2" />
-            {isViewing ? "Opening..." : "View"}
+            <Eye className="w-4 h-4 md:mr-2" />
+            <span className="hidden md:inline">
+              {isViewing ? "Opening..." : "View"}
+            </span>
           </Button>
           <Button
             size="sm"
             onClick={handleDownload}
             disabled={isDownloading}
             aria-busy={isDownloading}
-            className="flex-1 hover:scale-105"
+            className="flex-1 hover:scale-105 "
           >
-            <Download className="w-4 h-4 mr-2" />
-            {isDownloading ? "Downloading..." : "Download"}
+            <Download className="w-4 h-4 md:mr-2" />
+            <span className="hidden md:inline">
+              {isDownloading ? "Downloading..." : "Download"}
+            </span>
           </Button>
         </div>
+
       </div>
     </Card>
   );

@@ -116,7 +116,6 @@ export default function DashboardPage({ session }: DashboardPageProps) {
 
       try {
         setIsLoading((prev) => ({ ...prev, mealPlan: true }));
-        console.log("Fetching meal plan...");
         const response = await fetch("/api/meal-plans", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -181,7 +180,6 @@ export default function DashboardPage({ session }: DashboardPageProps) {
         }
       : null;
   }, [mealPlanData]);
-  console.log("Meal plan:", todaysMeals);
 
   return (
     <>
@@ -304,20 +302,20 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                 <ReceiptText className="mr-3 w-4 h-4" />
                 Dashboard
               </Link>
-              <Link
+              {/* <Link
                 className="flex items-center p-3 rounded-lg text-gray-600 hover:bg-gray-50"
                 href="/profile"
               >
                 <UtensilsCrossed className="mr-3 w-4 h-4" />
                 Profil
-              </Link>
-              <Link
+              </Link> */}
+              {/* <Link
                 className="flex items-center p-3 rounded-lg text-gray-600 hover:bg-gray-50"
                 href="/settings"
               >
                 <MessageCircle className="mr-3 w-4 h-4" />
                 Nastavenia
-              </Link>
+              </Link> */}
             </div>
           </nav>
         </div>
@@ -558,20 +556,20 @@ export default function DashboardPage({ session }: DashboardPageProps) {
               <ReceiptText className="w-5 h-5 mb-1" />
               <span className="text-[10px] font-medium">Dashboard</span>
             </Link>
-            <Link
+            {/* <Link
               className="flex flex-col items-center justify-center p-2 rounded-lg text-gray-600 hover:bg-gray-50 active:bg-gray-100"
               href="/profile"
             >
               <User className="w-5 h-5 mb-1" />
               <span className="text-[10px]">Profil</span>
-            </Link>
-            <Link
+            </Link> */}
+            {/* <Link
               className="flex flex-col items-center justify-center p-2 rounded-lg text-gray-600 hover:bg-gray-50 active:bg-gray-100"
               href="/settings"
             >
               <MessageCircle className="w-5 h-5 mb-1" />
               <span className="text-[10px]">Nastavenia</span>
-            </Link>
+            </Link> */}
           </div>
         </nav>
       </div>

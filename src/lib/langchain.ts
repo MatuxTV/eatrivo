@@ -97,7 +97,7 @@ export class EatrivoAIService {
       ;
 
       const response = await model.invoke([new HumanMessage(prompt)]);
-      console.log(response);
+ 
 
       // Spracuj odpoveď
       let contentText: string;

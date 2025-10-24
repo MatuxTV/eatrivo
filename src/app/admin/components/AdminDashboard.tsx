@@ -81,10 +81,8 @@ export default function AdminDashboard() {
         const response = await fetch("/api/admin/users");
         if (response.ok) {
           const data = await response.json();
-          console.log("API Response:", data);
           if (data.users && Array.isArray(data.users)) {
             setUsers(data.users);
-            console.log("Users set successfully:", data.users);
           } else {
             console.error("Invalid users data:", data);
             setUsers([]);
@@ -164,7 +162,6 @@ export default function AdminDashboard() {
       }
 
       const result = await response.json();
-      console.log("Upload successful:", result);
       toast.success("Nákupný zoznam bol úspešne vytvorený!");
 
       // Reset form
