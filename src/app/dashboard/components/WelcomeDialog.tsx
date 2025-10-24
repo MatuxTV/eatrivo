@@ -149,13 +149,6 @@ export default function WelcomeDialog({
         <DialogFooter className="p-6 pt-0 sm:justify-center bg-primary-foreground">
           <div className="flex gap-3 w-full">
             <Button
-              variant="outline"
-              onClick={handleClose}
-              className="flex-1 text-primary-text hover:scale-105"
-            >
-              {isUpdate ? "Neskôr" : "Zavrieť"}
-            </Button>
-            <Button
               onClick={handleClose}
               className="flex-1 bg-eatrivo-purple hover:bg-eatrivo-purple/90 hover:scale-105"
             >
