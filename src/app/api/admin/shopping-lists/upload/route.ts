@@ -144,3 +144,13 @@
 //     );
 //   }
 // }
+
+import { NextResponse } from "next/server";
+
+// Temporary placeholder - file is deprecated/unused
+export async function POST() {
+  return NextResponse.json(
+    { error: "This endpoint is deprecated" },
+    { status: 410 }
+  );
+}
