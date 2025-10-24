@@ -39,12 +39,21 @@ export default function ReceiptCard({
         {/* Header with Icon and Title */}
         <div className="flex items-start gap-4">
           {/* Icon */}
+
+
           <div
-            className={`w-16 h-16 ${getMealTypeColor(
-              meal_type
-            )} rounded-2xl flex items-center justify-center flex-shrink-0`}
+            className={`w-16 h-16 md:w-16 md:h-16 sm:w-20 sm:h-20
+              ${getMealTypeColor(meal_type)}
+              rounded-2xl flex flex-col items-center justify-center flex-shrink-0
+              shadow-lg transition-transform duration-200 
+              bg-gradient-to-br from-white/30 to-white/0 relative group
+            `}
+            aria-label={meal_type}
+            role="img"
           >
-            {icon || <Star className="w-8 h-8 text-white" />}
+            <span className="absolute inset-0 rounded-2xl pointer-events-none group-hover:opacity-80 transition-opacity duration-200" style={{background: 'radial-gradient(circle at 60% 40%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.01) 80%)'}} />
+            {icon || <Star className="w-9 h-9 md:w-10 md:h-10 text-white drop-shadow-lg transition-transform duration-200 group-hover:scale-110" />}
+            <span className="block text-xs md:text-sm font-medium text-white/90 mt-1 text-center capitalize drop-shadow-sm" aria-hidden>{meal_type}</span>
           </div>
 
           {/* Title and Description */}
@@ -99,13 +108,13 @@ export default function ReceiptCard({
         </div>
 
         {/* Action Button */}
-        <Button
+        {/* <Button
           onClick={onViewRecipe}
           className="w-full bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white"
           size="lg"
         >
           Zobraziť recept
-        </Button>
+        </Button> */}
       </CardContent>
     </Card>
   );

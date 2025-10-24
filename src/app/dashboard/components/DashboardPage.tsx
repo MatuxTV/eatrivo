@@ -26,25 +26,24 @@ import { logger } from "@/lib/logger";
 // Type definitions
 interface MealData {
   name: string;
-  difficulty: string;
-  prepTime: number;
   calories: number;
   protein: number;
-  carbohydrates: number;
+  carbs: number;
   fat: number;
-  ingredients: string[];
-  instructions: string[];
+  difficulty: string;
+  prepTime: number;
+  meal_type: string; 
 }
 
 interface DayMealPlan {
   day: string;
   meals: MealData[];
-  totalCalories: number;
-  totalProtein: number;
-  totalCarbohydrates: number;
-  totalFat: number;
+  totalDailyCalories: number;
+  totalDailyProtein: number;
+  totalDailyCarbs: number;
+  totalDailyFats: number;
 }
-
+  
 interface ShoppingList {
   id: string;
   title: string;
@@ -156,7 +155,6 @@ export default function DashboardPage({ session }: DashboardPageProps) {
         if (!data.success || !data.insights?.week) {
           throw new Error(data.message || "Invalid meal plan data");
         }
-
         setMealPlanData(data.insights.week);
       } catch (error) {
         logger.error("Error loading meal plan", error, {
@@ -179,19 +177,16 @@ export default function DashboardPage({ session }: DashboardPageProps) {
 
     if (!todayPlan || !todayPlan.meals) return [];
 
-    // 2️⃣ Transformuj meals na formát pre ReceiptCard
-    const mealTypes = ["breakfast", "lunch", "dinner", "snack"]; // Podľa počtu jedál
-
     return todayPlan.meals.map((meal: MealData, index: number) => ({
       id: `${currentDay}-${index}`, // Unikátny ID pre React key
       title: meal.name,
       description: `${meal.difficulty} • ${meal.prepTime} minút`, // Generujeme popis
-      type: mealTypes[index] || "snack", // Priradíme typ podľa poradia
+      type: meal.meal_type || "snack", // Priradíme typ podľa poradia
       cookTime: `${meal.prepTime} min`, // Pretvoríme číslo na string
       difficulty: meal.difficulty,
       calories: meal.calories,
       protein: meal.protein,
-      carbs: meal.carbohydrates,
+      carbs: meal.carbs,
       fat: meal.fat,
     }));
   }, [mealPlanData, currentDay]);
@@ -202,15 +197,19 @@ export default function DashboardPage({ session }: DashboardPageProps) {
 
     const todayPlan = mealPlanData.find((day) => day.day === currentDay);
 
+    console.log("Today's Plan:", todayPlan);
+
     return todayPlan
-      ? {
-          calories: todayPlan.totalCalories,
-          protein: todayPlan.totalProtein,
-          carbs: todayPlan.totalCarbohydrates,
-          fats: todayPlan.totalFat,
+      ?   {
+          calories: todayPlan.totalDailyCalories,
+          protein: todayPlan.totalDailyProtein,
+          carbs: todayPlan.totalDailyCarbs,
+          fats: todayPlan.totalDailyFats,
         }
       : null;
   }, [mealPlanData, currentDay]);
+
+  console.log("Today's Nutrition:", todaysNutrition);
 
   return (
     <>
