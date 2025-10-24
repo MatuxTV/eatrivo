@@ -55,7 +55,7 @@ export default function ProfileSetup({
       onComplete(data);
     } catch (error) {
       logger.error("Error submitting profile", error, {
-        context: "ProfileSetup"
+        context: "ProfileSetup",
       });
     } finally {
       setIsSubmitting(false);
@@ -72,13 +72,18 @@ export default function ProfileSetup({
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 md:space-y-6"
+          >
             <FormField
               control={form.control}
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm md:text-base">Celé meno *</FormLabel>
+                  <FormLabel className="text-sm md:text-base">
+                    Celé meno *
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Vaše celé meno" {...field} />
                   </FormControl>
@@ -92,17 +97,43 @@ export default function ProfileSetup({
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm md:text-base">Používateľské meno *</FormLabel>
+                  <FormLabel className="text-sm md:text-base">
+                    Používateľské meno *
+                  </FormLabel>
                   <FormControl>
                     <Input
                       placeholder="vase_meno123"
                       {...field}
                       onChange={(e) => {
-                        // Convert to lowercase and remove spaces
                         const value = e.target.value
                           .toLowerCase()
                           .replace(/\s/g, "_");
                         field.onChange(value);
+                      }}
+                      onBlur={async (e) => {
+                        field.onBlur?.();
+                        const value = e.target.value;
+                        if (!value || value.length < 3) return;
+                        try {
+                          const res = await fetch(
+                            `/api/onboarding/check-username?username=${encodeURIComponent(
+                              value
+                            )}`
+                          );
+                          const data = await res.json();
+                          if (data.exists) {
+                            form.setError("username", {
+                              type: "manual",
+                              message: "Používateľské meno je už obsadené",
+                            });
+                          } else {
+                            form.clearErrors("username");
+                          }
+                        } catch (err) {
+                          logger.error("Error checking username", err, {
+                            context: "ProfileSetup",
+                          });
+                        }
                       }}
                     />
                   </FormControl>
@@ -116,7 +147,9 @@ export default function ProfileSetup({
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm md:text-base">Telefónne číslo *</FormLabel>
+                  <FormLabel className="text-sm md:text-base">
+                    Telefónne číslo *
+                  </FormLabel>
                   <FormControl>
                     <Input
                       placeholder="+421 XXX XXX XXX"
@@ -134,7 +167,9 @@ export default function ProfileSetup({
               name="dateOfBirth"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm md:text-base">Dátum narodenia *</FormLabel>
+                  <FormLabel className="text-sm md:text-base">
+                    Dátum narodenia *
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="date"
@@ -150,7 +185,7 @@ export default function ProfileSetup({
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting|| !!form.formState.errors.username}>
               {isSubmitting ? "Ukladá sa..." : "Pokračovať"}
             </Button>
           </form>

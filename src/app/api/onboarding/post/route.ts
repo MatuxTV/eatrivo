@@ -1,6 +1,6 @@
 import type { NextRequest} from "next/server";
 import { NextResponse } from "next/server"
-import { auth } from "../../../../auth"
+import { auth } from "../../../../../auth"
 import { db } from "@/index"
 import { userProfiles, userInfoTable } from "@/db/schema"
 import { completeOnboardingSchema } from "@/lib/schemas/user"

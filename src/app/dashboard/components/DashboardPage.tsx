@@ -197,7 +197,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
 
     const todayPlan = mealPlanData.find((day) => day.day === currentDay);
 
-    console.log("Today's Plan:", todayPlan);
+    
 
     return todayPlan
       ?   {
@@ -209,7 +209,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
       : null;
   }, [mealPlanData, currentDay]);
 
-  console.log("Today's Nutrition:", todaysNutrition);
+
 
   return (
     <>
