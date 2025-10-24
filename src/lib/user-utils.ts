@@ -1,6 +1,7 @@
 import { db } from "@/index"
 import { userProfiles } from "@/db/schema"
 import { eq } from "drizzle-orm"
+import { logger } from "./logger"
 
 export async function checkUserProfileExists(userId: string) {
   try {
@@ -12,7 +13,10 @@ export async function checkUserProfileExists(userId: string) {
 
     return existingProfile.length > 0 ? existingProfile[0] : null
   } catch (error) {
-    console.error("Error checking user profile:", error)
+    logger.error("Error checking user profile", error, {
+      context: "UserUtils",
+      metadata: { userId }
+    })
     return null
   }
 }

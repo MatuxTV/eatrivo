@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
+import { apiLogger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,7 +23,9 @@ export async function GET(
       new URL(`/api/shopping-lists/${id}/view`, req.url)
     );
   } catch (err) {
-    console.error("[API] Error redirecting to view:", err);
+    apiLogger.error("[API] Error redirecting to view", err, {
+      metadata: { shoppingListId: (await params).id }
+    });
     return NextResponse.json(
       { error: "Failed to redirect" },
       { status: 500 }

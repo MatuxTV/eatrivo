@@ -3,8 +3,9 @@ import { auth } from "../../../../../auth";
 import { db } from "@/index";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { apiLogger } from "@/lib/logger";
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
     const session = await auth();
     
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { version } = await req.json();
+    const { version } = await request.json();
 
     if (!version) {
       return NextResponse.json(
@@ -38,7 +39,9 @@ export async function POST(req: Request) {
       message: "Welcome dialog version updated"
     });
   } catch (error) {
-    console.error("Error updating welcome dialog version:", error);
+    apiLogger.error("Error updating welcome dialog version", error, {
+      metadata: { userId: (await auth())?.user?.id }
+    });
     return NextResponse.json(
       { error: "Failed to update welcome dialog version" },
       { status: 500 }

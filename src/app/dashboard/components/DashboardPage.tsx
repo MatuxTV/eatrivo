@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   ReceiptText,
   UtensilsCrossed,
-  MessageCircle,
   Target,
   Mail,
   ChefHat,
@@ -22,6 +21,31 @@ import type { Session } from "next-auth";
 import { getCurrentDaySlovak, getMembershipStatus } from "@/lib/functions";
 import WelcomeDialog from "../components/WelcomeDialog";
 import { APP_CONFIG } from "@/app/config/app";
+import { logger } from "@/lib/logger";
+
+// Type definitions
+interface MealData {
+  name: string;
+  difficulty: string;
+  prepTime: number;
+  calories: number;
+  protein: number;
+  carbohydrates: number;
+  fat: number;
+  ingredients: string[];
+  instructions: string[];
+}
+
+interface DayMealPlan {
+  day: string;
+  meals: MealData[];
+  nutrition: {
+    totalCalories: number;
+    totalProtein: number;
+    totalCarbohydrates: number;
+    totalFat: number;
+  };
+}
 
 interface ShoppingList {
   id: string;
@@ -57,7 +81,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
     shoppingLists: true,
     mealPlan: false,
   });
-  const [mealPlanData, setMealPlanData] = useState<any[]>([]);
+  const [mealPlanData, setMealPlanData] = useState<DayMealPlan[]>([]);
   const currentDay = useMemo(() => getCurrentDaySlovak(), []);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(() => {
     // Porovnať session verziu s aktuálnou verziou
@@ -81,7 +105,10 @@ export default function DashboardPage({ session }: DashboardPageProps) {
         }),
       });
     } catch (error) {
-      console.error("Failed to update welcome dialog version:", error);
+      logger.error("Failed to update welcome dialog version", error, {
+        context: "DashboardPage",
+        metadata: { userId: session?.user?.id }
+      });
     }
   };
 
@@ -99,7 +126,10 @@ export default function DashboardPage({ session }: DashboardPageProps) {
         const data = await response.json();
         setShoppingLists(data.shoppingLists || []);
       } catch (error) {
-        console.error("Error fetching shopping lists:", error);
+        logger.error("Error fetching shopping lists", error, {
+          context: "DashboardPage",
+          metadata: { userId: session?.user?.id }
+        });
         toast.error("Nepodarilo sa načítať jedálne plány");
         setShoppingLists([]);
       } finally {
@@ -131,7 +161,10 @@ export default function DashboardPage({ session }: DashboardPageProps) {
 
         setMealPlanData(data.insights.week);
       } catch (error) {
-        console.error("Error:", error);
+        logger.error("Error loading meal plan", error, {
+          context: "DashboardPage",
+          metadata: { userId: session?.user?.id }
+        });
         toast.error("Failed to load meal plan");
       } finally {
         setIsLoading((prev) => ({ ...prev, mealPlan: false }));
@@ -151,7 +184,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
     // 2️⃣ Transformuj meals na formát pre ReceiptCard
     const mealTypes = ["breakfast", "lunch", "dinner", "snack"]; // Podľa počtu jedál
 
-    return todayPlan.meals.map((meal: any, index: number) => ({
+    return todayPlan.meals.map((meal: MealData, index: number) => ({
       id: `${currentDay}-${index}`, // Unikátny ID pre React key
       title: meal.name,
       description: `${meal.difficulty} • ${meal.prepTime} minút`, // Generujeme popis
@@ -160,10 +193,10 @@ export default function DashboardPage({ session }: DashboardPageProps) {
       difficulty: meal.difficulty,
       calories: meal.calories,
       protein: meal.protein,
-      carbs: meal.carbs,
+      carbs: meal.carbohydrates,
       fat: meal.fat,
     }));
-  }, [mealPlanData]);
+  }, [mealPlanData, currentDay]);
 
   // 3️⃣ Získaj aj denné súčty pre dnešný deň
   const todaysNutrition = useMemo(() => {
@@ -173,13 +206,13 @@ export default function DashboardPage({ session }: DashboardPageProps) {
 
     return todayPlan
       ? {
-          calories: todayPlan.totalDailyCalories,
-          protein: todayPlan.totalDailyProtein,
-          carbs: todayPlan.totalDailyCarbs,
-          fats: todayPlan.totalDailyFats,
+          calories: todayPlan.nutrition.totalCalories,
+          protein: todayPlan.nutrition.totalProtein,
+          carbs: todayPlan.nutrition.totalCarbohydrates,
+          fats: todayPlan.nutrition.totalFat,
         }
       : null;
-  }, [mealPlanData]);
+  }, [mealPlanData, currentDay]);
 
   return (
     <>

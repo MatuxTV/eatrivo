@@ -1,11 +1,13 @@
-import { NextResponse,NextRequest } from 'next/server'
+import type {NextRequest } from 'next/server';
+import { NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 import { db } from '@/index'
 import { shoppingLists, userProfiles } from '@/db/schema'
 import { eq, desc } from 'drizzle-orm'
 import { CacheService } from '@/lib/cache'
+import { apiLogger } from '@/lib/logger'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await auth()
     
@@ -48,7 +50,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response)
   } catch (error) {
-    console.error('Failed to fetch shopping lists:', error)
+    apiLogger.error('Failed to fetch shopping lists', error, {
+      metadata: { userId: (await auth())?.user?.id }
+    })
     return NextResponse.json(
       { error: 'Failed to fetch shopping lists' },
       { status: 500 }

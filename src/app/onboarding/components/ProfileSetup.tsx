@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 import {
   Card,
   CardContent,
@@ -53,7 +54,9 @@ export default function ProfileSetup({
       await new Promise((resolve) => setTimeout(resolve, 500));
       onComplete(data);
     } catch (error) {
-      console.error("Error submitting profile:", error);
+      logger.error("Error submitting profile", error, {
+        context: "ProfileSetup"
+      });
     } finally {
       setIsSubmitting(false);
     }

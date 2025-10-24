@@ -20,6 +20,28 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    rules: {
+      // Zakáž explicit any
+      "@typescript-eslint/no-explicit-any": "error",
+      
+      // Zakáž console v produkcii
+      "no-console": ["warn", {
+        allow: ["warn", "error"]  // Povoľ len warn a error
+      }],
+      
+      // Zakáž unused variables
+      "@typescript-eslint/no-unused-vars": ["error", {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_"
+      }],
+      
+      // Enforce type imports
+      "@typescript-eslint/consistent-type-imports": ["error", {
+        prefer: "type-imports"
+      }]
+    }
+  }
 ];
 
 export default eslintConfig;

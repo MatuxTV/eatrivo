@@ -1,6 +1,7 @@
 // src/lib/langchain.ts
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HumanMessage } from "@langchain/core/messages";
+import { apiLogger } from "./logger";
 
 interface UserProfile {
   age: number;
@@ -119,7 +120,9 @@ export class EatrivoAIService {
 
       return JSON.parse(contentText);
     } catch (error) {
-      console.error("❌ Error generating meal plan:", error);
+      apiLogger.error("Error generating meal plan", error, {
+        context: "LangChain"
+      });
       throw new Error("Failed to generate AI meal plan");
     }
   }
