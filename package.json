@@ -25,6 +25,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@types/markdown-pdf": "^9.0.5",
     "@upstash/redis": "^1.35.4",
+    "@vercel/analytics": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",

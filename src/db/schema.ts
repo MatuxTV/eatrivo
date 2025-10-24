@@ -56,6 +56,7 @@ export const userInfoTable = pgTable("user_info", {
   likes: text("likes"),
   dislikes: text("dislikes"),
   allergies: text("allergies"),
+  profileSnapshot: jsonb("profile_snapshot"), // Complete user profile in JSON format for easy AI access
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

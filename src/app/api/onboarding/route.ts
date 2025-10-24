@@ -67,6 +67,31 @@ export async function POST(request: NextRequest) {
       likes: foodPreferences.likes || null,
       dislikes: foodPreferences.dislikes || null,
       allergies: foodPreferences.allergies || null,
+      // Store complete profile snapshot in JSON format
+      profileSnapshot: {
+        // User basic info
+        age: foodPreferences.age,
+        
+        // Physical attributes
+        sex: foodPreferences.sex,
+        height: foodPreferences.height,
+        weight: Number(foodPreferences.weight),
+        
+        // Goals & lifestyle
+        goal: foodPreferences.goal || "maintain_weight",
+        activity_level: foodPreferences.activity_level,
+        
+        // Meal preferences
+        meal_per_day: foodPreferences.meal_per_day || 3,
+        cooking_time_pref: foodPreferences.cooking_time_pref || "normal",
+        budget_preference: foodPreferences.budget_preference || "medium",
+        
+        // Dietary restrictions
+        diet_preferences: foodPreferences.diet_preferences || "none",
+        likes: foodPreferences.likes || "",
+        dislikes: foodPreferences.dislikes || "",
+        allergies: foodPreferences.allergies || "",
+      },
     }).returning()
 
     return NextResponse.json({
