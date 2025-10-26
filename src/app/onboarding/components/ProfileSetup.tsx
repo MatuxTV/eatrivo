@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getAgeFromDate } from "@/lib/functions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,6 @@ export default function ProfileSetup({
     defaultValues: {
       fullName: initialData?.fullName || "",
       username: initialData?.username || "",
-      phone: initialData?.phone || "",
       dateOfBirth: initialData?.dateOfBirth || undefined,
     },
   });
@@ -50,9 +50,9 @@ export default function ProfileSetup({
   const onSubmit = async (data: UserProfileOnboarding) => {
     setIsSubmitting(true);
     try {
+      onComplete({ ...data });
       // Simulate API call delay
       await new Promise((resolve) => setTimeout(resolve, 500));
-      onComplete(data);
     } catch (error) {
       logger.error("Error submitting profile", error, {
         context: "ProfileSetup",
@@ -135,26 +135,6 @@ export default function ProfileSetup({
                           });
                         }
                       }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm md:text-base">
-                    Telefónne číslo *
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="+421 XXX XXX XXX"
-                      type="tel"
-                      {...field}
                     />
                   </FormControl>
                   <FormMessage />

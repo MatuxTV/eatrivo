@@ -1,4 +1,5 @@
 import { pgTable, uuid, text, pgEnum, timestamp, integer,jsonb, numeric, primaryKey, boolean } from "drizzle-orm/pg-core";
+import { date } from "zod";
 
 // Define the role enum
 export const roleEnum = pgEnum("role", ["user","coach", "admin"]);
@@ -31,7 +32,6 @@ export const userProfiles = pgTable("user_profiles", {
   userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   fullName: text("fullName").notNull(),
   username: text("username").unique(),
-  phone: text("phone"),
   dateOfBirth: timestamp("dateOfBirth"),
   role: roleEnum("role").default("user").notNull(),
   isProfileComplete: boolean("isProfileComplete").default(false).notNull(),
@@ -44,7 +44,8 @@ export const userInfoTable = pgTable("user_info", {
   id: uuid("id").primaryKey().defaultRandom(),
   userProfileId: uuid("userProfileId").notNull().references(() => userProfiles.id, { onDelete: "cascade" }),
   sex: sexEnum("sex").notNull(),
-  age: integer("age").notNull(),
+  age: integer("age"),
+  dateOfBirth: timestamp("dateOfBirth"),
   height: integer("height").notNull(),
   weight: numeric("weight", { precision: 5, scale: 2 }).notNull(),
   activity_level: activityLevelEnum("activity_level").notNull(),

@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
       userId: userId,
       fullName: profile.fullName,
       username: profile.username,
-      phone: profile.phone || null,
       dateOfBirth: new Date(profile.dateOfBirth),
       isProfileComplete: true,
     }).returning()
@@ -55,6 +54,7 @@ export async function POST(request: NextRequest) {
     const [userFoodInfoRecord] = await db.insert(userInfoTable).values({
       userProfileId: userProfile.id,
       sex: foodPreferences.sex,
+      dateOfBirth: profile.dateOfBirth,
       age: foodPreferences.age,
       height: foodPreferences.height,
       weight: foodPreferences.weight.toString(),

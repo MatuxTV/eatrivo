@@ -1,15 +1,15 @@
+import { get } from "http";
 import { z } from "zod";
+import { getAgeFromDate } from "../functions";
 
 // User profile onboarding schema (after Google OAuth)
 export const userProfileOnboardingSchema = z.object({
   fullName: z.string().min(2, "Celé meno musí mať aspoň 2 znaky").max(100, "Celé meno je príliš dlhé"),
   username: z.string().min(3, "Používateľské meno musí mať aspoň 3 znaky").max(20, "Používateľské meno je príliš dlhé").regex(/^[a-zA-Z0-9_]+$/, "Používateľské meno môže obsahovať len písmená, čísla a podčiarkovníky"),
-  phone: z.string().regex(/^\+?[\d\s\-\(\)]+$/, "Neplatný formát telefónneho čísla").optional(),
   dateOfBirth: z.string()
     .min(1, "Dátum narodenia je povinný")
     .refine((date) => {
-      const birthDate = new Date(date)
-      const age = new Date().getFullYear() - birthDate.getFullYear()
+      const age = getAgeFromDate(date);
       return age >= 13
     }, "Musíte mať aspoň 13 rokov"),
 });
@@ -19,7 +19,7 @@ export const userFoodPreferencesSchema = z.object({
   sex: z.enum(["man", "woman"], {
     message: "Prosím vyberte svoje pohlavie"
   }),
-  age: z.number().min(13, "Musíte mať aspoň 13 rokov").max(120, "Neplatný vek"),
+  age: z.number().min(13, "Musíte mať aspoň 13 rokov").max(120, "Zadajte platný vek"),
   height: z.number().min(100, "Výška musí byť aspoň 100cm").max(250, "Výška nemôže presiahnuť 250cm"),
   weight: z.number().min(30, "Hmotnosť musí byť aspoň 30kg").max(300, "Hmotnosť nemôže presiahnuť 300kg"),
   activity_level: z.enum(["sedentary", "lightly_active", "moderately_active", "very_active", "athlete"], {
