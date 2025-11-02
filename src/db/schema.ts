@@ -1,5 +1,4 @@
 import { pgTable, uuid, text, pgEnum, timestamp, integer,jsonb, numeric, primaryKey, boolean } from "drizzle-orm/pg-core";
-import { date } from "zod";
 
 // Define the role enum
 export const roleEnum = pgEnum("role", ["user","coach", "admin"]);
@@ -31,9 +30,9 @@ export const userProfiles = pgTable("user_profiles", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   fullName: text("fullName").notNull(),
-  username: text("username").unique(),
-  dateOfBirth: timestamp("dateOfBirth"),
+  // username: text("username").unique(),
   role: roleEnum("role").default("user").notNull(),
+  dateOfBirth: timestamp("dateOfBirth"),
   isProfileComplete: boolean("isProfileComplete").default(false).notNull(),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
@@ -44,7 +43,6 @@ export const userInfoTable = pgTable("user_info", {
   id: uuid("id").primaryKey().defaultRandom(),
   userProfileId: uuid("userProfileId").notNull().references(() => userProfiles.id, { onDelete: "cascade" }),
   sex: sexEnum("sex").notNull(),
-  age: integer("age"),
   dateOfBirth: timestamp("dateOfBirth"),
   height: integer("height").notNull(),
   weight: numeric("weight", { precision: 5, scale: 2 }).notNull(),
@@ -57,7 +55,7 @@ export const userInfoTable = pgTable("user_info", {
   likes: text("likes"),
   dislikes: text("dislikes"),
   allergies: text("allergies"),
-  profileSnapshot: jsonb("profile_snapshot"), // Complete user profile in JSON format for easy AI access
+  profileSnapshot: jsonb("profile_snapshot"), // Complete user profile in JSON format
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

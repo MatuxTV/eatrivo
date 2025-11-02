@@ -45,8 +45,7 @@ export async function POST(request: NextRequest) {
     const [userProfile] = await db.insert(userProfiles).values({
       userId: userId,
       fullName: profile.fullName,
-      username: profile.username,
-      dateOfBirth: new Date(profile.dateOfBirth),
+      // username: profile.username,
       isProfileComplete: true,
     }).returning()
 
@@ -54,8 +53,7 @@ export async function POST(request: NextRequest) {
     const [userFoodInfoRecord] = await db.insert(userInfoTable).values({
       userProfileId: userProfile.id,
       sex: foodPreferences.sex,
-      dateOfBirth: profile.dateOfBirth,
-      age: foodPreferences.age,
+      dateOfBirth: new Date(profile.dateOfBirth),
       height: foodPreferences.height,
       weight: foodPreferences.weight.toString(),
       activity_level: foodPreferences.activity_level,
@@ -69,24 +67,20 @@ export async function POST(request: NextRequest) {
       allergies: foodPreferences.allergies || null,
       // Store complete profile snapshot in JSON format
       profileSnapshot: {
-        // User basic info
         age: foodPreferences.age,
-        
-        // Physical attributes
         sex: foodPreferences.sex,
+        dateOfBirth: new Date(profile.dateOfBirth),
         height: foodPreferences.height,
         weight: Number(foodPreferences.weight),
-        
-        // Goals & lifestyle
+        //
         goal: foodPreferences.goal || "maintain_weight",
         activity_level: foodPreferences.activity_level,
-        
-        // Meal preferences
+        // 
         meal_per_day: foodPreferences.meal_per_day || 3,
         cooking_time_pref: foodPreferences.cooking_time_pref || "normal",
         budget_preference: foodPreferences.budget_preference || "medium",
         
-        // Dietary restrictions
+        //
         diet_preferences: foodPreferences.diet_preferences || "none",
         likes: foodPreferences.likes || "",
         dislikes: foodPreferences.dislikes || "",

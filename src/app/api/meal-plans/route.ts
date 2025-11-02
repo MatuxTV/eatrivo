@@ -12,6 +12,7 @@ import {
 import { eq, desc, and, gte } from "drizzle-orm";
 import { EatrivoAIService } from "../../../lib/langchain";
 import { CacheService } from "@/lib/cache";
+import { apiLogger } from "@/lib/logger";
 
 const STATIC_FALLBACK = {
   week: [
@@ -27,48 +28,44 @@ const STATIC_FALLBACK = {
 };
 
 export async function POST(_request: NextRequest) {
-  // console.log('\n🚀 ========== MEAL PLAN API CALLED ==========');
-  // console.log('⏰ Timestamp:', new Date().toISOString());
+  apiLogger.info('🚀 ========== MEAL PLAN API CALLED ==========', { metadata: { route: 'meal-plans' } });
   
   try {
-    // 1️⃣ AUTH CHECK
-    // console.log('\n1️⃣ Checking authentication...');
+  // 1️⃣ AUTH CHECK
+  apiLogger.debug('1️⃣ Checking authentication...');
     const session = await auth();
     
     if (!session?.user?.id) {
-      // console.log('❌ No session found');
+      apiLogger.warn('❌ No session found');
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    // console.log('✅ User authenticated:', session.user.id);
-    // console.log('   User email:', session.user.email);
+    apiLogger.info('✅ User authenticated', { metadata: { userId: session.user.id, email: session.user.email } });
 
-    // 2️⃣ USER PROFILE
-    // console.log('\n2️⃣ Fetching user profile...');
+  // 2️⃣ USER PROFILE
+  apiLogger.debug('2️⃣ Fetching user profile...', { metadata: { userId: session.user.id } });
     const [userProfile] = await db
       .select()
       .from(userProfiles)
       .where(eq(userProfiles.userId, session.user.id));
 
     if (!userProfile) {
-      // console.log('❌ User profile not found for userId:', session.user.id);
+      apiLogger.warn('❌ User profile not found', { metadata: { userId: session.user.id } });
       return NextResponse.json(
         { error: "User profile not found" },
         { status: 404 }
       );
     }
-    // console.log('✅ User profile found:', userProfile.id);
-    // console.log('   Full name:', userProfile.fullName);
-    // console.log('   Profile complete:', userProfile.isProfileComplete);
+    apiLogger.info('✅ User profile found', { metadata: { profileId: userProfile.id, fullName: userProfile.fullName, profileComplete: userProfile.isProfileComplete } });
 
-    // 3️⃣ USER INFO
-    // console.log('\n3️⃣ Fetching user info...');
+  // 3️⃣ USER INFO
+  apiLogger.debug('3️⃣ Fetching user info...', { metadata: { profileId: userProfile.id } });
     const [userInfo] = await db
       .select()
       .from(userInfoTable)
       .where(eq(userInfoTable.userProfileId, userProfile.id));
 
     if (!userInfo) {
-      // console.log('❌ User info not found - profile incomplete');
+      apiLogger.warn('❌ User info not found - profile incomplete', { metadata: { profileId: userProfile.id } });
       return NextResponse.json(
         {
           success: false,
@@ -79,14 +76,10 @@ export async function POST(_request: NextRequest) {
         { status: 422 }
       );
     }
-    // console.log('✅ User info found');
-    // console.log('   Age:', userInfo.age);
-    // console.log('   Weight:', userInfo.weight);
-    // console.log('   Goal:', userInfo.goal);
-    // console.log('   Activity:', userInfo.activity_level);
+    apiLogger.info('✅ User info found', { metadata: userInfo });
 
-    // 4️⃣ SHOPPING LISTS
-    // console.log('\n4️⃣ Calculating week start...');
+  // 4️⃣ SHOPPING LISTS
+  apiLogger.debug('4️⃣ Calculating week start...');
     const now = new Date();
     const currentDay = now.getDay();
     const daysFromMonday = currentDay === 0 ? 6 : currentDay - 1;
@@ -99,13 +92,13 @@ export async function POST(_request: NextRequest) {
     // Convert to ISO string but keep local date (strip timezone for DB comparison)
     const startOfWeekLocal = new Date(startOfWeek.getTime() - startOfWeek.getTimezoneOffset() * 60000);
     
-    // console.log('   Current date:', now.toISOString());
-    // console.log('   Current day of week:', currentDay, '(0=Sun, 1=Mon, ...)');
-    // console.log('   Week starts (local):', startOfWeek.toLocaleString('sk-SK'));
-    // console.log('   Week starts (for DB):', startOfWeekLocal.toISOString());
+  apiLogger.debug('   Current date', { metadata: { now: now.toISOString() } });
+  apiLogger.debug('   Current day of week', { metadata: { currentDay } });
+  apiLogger.debug('   Week starts (local)', { metadata: { local: startOfWeek.toLocaleString('sk-SK') } });
+  apiLogger.debug('   Week starts (for DB)', { metadata: { iso: startOfWeekLocal.toISOString() } });
 
-    // console.log('\n5️⃣ Fetching shopping lists...');
-    // console.log('   Strategy 1: Try finding by weekStartDate first...');
+  apiLogger.debug('5️⃣ Fetching shopping lists...');
+  apiLogger.debug('   Strategy 1: Try finding by weekStartDate first...');
 
     // Try to find by weekStartDate (more reliable)
     let userShoppingLists = await db
@@ -119,11 +112,11 @@ export async function POST(_request: NextRequest) {
       )
       .orderBy(desc(shoppingLists.created_at));
 
-    // console.log('   Found by weekStartDate:', userShoppingLists.length);
+  apiLogger.debug('   Found by weekStartDate', { metadata: { count: userShoppingLists.length } });
 
     // Fallback: Try last 7 days by created_at
     if (userShoppingLists.length === 0) {
-      // console.log('   Strategy 2: Trying last 7 days by created_at...');
+  apiLogger.debug('   Strategy 2: Trying last 7 days by created_at...');
       const sevenDaysAgo = new Date(now);
       sevenDaysAgo.setDate(now.getDate() - 7);
       sevenDaysAgo.setHours(0, 0, 0, 0);
@@ -140,12 +133,12 @@ export async function POST(_request: NextRequest) {
         )
         .orderBy(desc(shoppingLists.created_at));
 
-      // console.log('   Found by created_at (last 7 days):', userShoppingLists.length);
+  apiLogger.debug('   Found by created_at (last 7 days)', { metadata: { count: userShoppingLists.length } });
     }
 
     // Ultimate fallback: Get any shopping list for this user
     if (userShoppingLists.length === 0) {
-      // console.log('   Strategy 3: Getting ANY shopping list for this user...');
+  apiLogger.debug('   Strategy 3: Getting ANY shopping list for this user...');
       userShoppingLists = await db
         .select()
         .from(shoppingLists)
@@ -153,19 +146,19 @@ export async function POST(_request: NextRequest) {
         .orderBy(desc(shoppingLists.created_at))
         .limit(1);
 
-      // console.log('   Found (any):', userShoppingLists.length);
+  apiLogger.debug('   Found (any)', { metadata: { count: userShoppingLists.length } });
       
-      // if (userShoppingLists.length > 0) {
-      //   console.log('   ⚠️  Using older shopping list - not from current week');
-      //   console.log('   Shopping list created:', userShoppingLists[0].created_at);
-      //   console.log('   Shopping list weekStart:', userShoppingLists[0].weekStartDate);
-      // }
+      if (userShoppingLists.length > 0) {
+    apiLogger.warn('⚠️  Using older shopping list - not from current week', { metadata: { shoppingListId: userShoppingLists[0].id } });
+    apiLogger.debug('   Shopping list created', { metadata: { createdAt: userShoppingLists[0].created_at } });
+    apiLogger.debug('   Shopping list weekStart', { metadata: { weekStart: userShoppingLists[0].weekStartDate } });
+      }
     }
 
-    // console.log('\n   📊 Final result: Found', userShoppingLists.length, 'shopping list(s)');
+  apiLogger.info('📊 Final result: Found shopping lists', { metadata: { count: userShoppingLists.length } });
     
     if (userShoppingLists.length === 0) {
-      // console.log('❌ No shopping lists found for this week');
+  apiLogger.warn('❌ No shopping lists found for this week', { metadata: { userId: session.user.id } });
       return NextResponse.json({
         success: true,
         insights: { week: [] },
@@ -176,21 +169,18 @@ export async function POST(_request: NextRequest) {
     }
 
     const latestShoppingList = userShoppingLists[0];
-    // console.log('✅ Using latest shopping list:', latestShoppingList.id);
-    // console.log('   Title:', latestShoppingList.title);
-    // console.log('   Created:', latestShoppingList.created_at);
-    // console.log('   Markdown length:', latestShoppingList.markdownContent?.length || 0);
+  apiLogger.info('✅ Using latest shopping list', { metadata: { shoppingListId: latestShoppingList.id, title: latestShoppingList.title, createdAt: latestShoppingList.created_at, markdownLength: latestShoppingList.markdownContent?.length || 0 } });
 
     // 6️⃣ CACHE CHECK
     const cacheKey = `meal-plan:${latestShoppingList.id}`;
-    // console.log(`\n6️⃣ Checking cache with key: ${cacheKey}`);
+  apiLogger.debug('6️⃣ Checking cache', { metadata: { cacheKey } });
     
     const cachedMealPlan = await CacheService.get(cacheKey);
 
     if (cachedMealPlan) {
-      // console.log(`✅ CACHE HIT! Returning cached meal plan`);
-      // console.log('   Cached data type:', typeof cachedMealPlan);
-      // console.log('   Has week array:', !!(cachedMealPlan as any)?.week);
+  apiLogger.info('✅ CACHE HIT! Returning cached meal plan', { metadata: { cacheKey } });
+  apiLogger.debug('   Cached data type', { metadata: { type: typeof cachedMealPlan } });
+  apiLogger.debug('   Has week array', { metadata: { hasWeek: Array.isArray((cachedMealPlan as { week?: unknown })?.week) } });
       
       return NextResponse.json({
         success: true,
@@ -201,10 +191,10 @@ export async function POST(_request: NextRequest) {
       });
     }
 
-    // console.log(`❌ Cache MISS`);
+  apiLogger.debug('❌ Cache MISS', { metadata: { cacheKey } });
 
     // 7️⃣ DATABASE CHECK
-    // console.log('\n7️⃣ Checking database for existing meal plan...');
+  apiLogger.debug('7️⃣ Checking database for existing meal plan...');
     const [existingMealPlan] = await db
       .select()
       .from(mealPlans)
@@ -213,15 +203,14 @@ export async function POST(_request: NextRequest) {
       .limit(1);
 
     if (existingMealPlan) {
-      // console.log(`✅ DATABASE HIT! Found existing meal plan`);
-      // console.log('   Meal plan ID:', existingMealPlan.id);
-      // console.log('   Created at:', existingMealPlan.created_at);
-      // console.log('   Meals data type:', typeof existingMealPlan.meals);
-      // console.log('   Has week array:', !!(existingMealPlan.meals as any)?.week);
+  apiLogger.info('✅ DATABASE HIT! Found existing meal plan', { metadata: { mealPlanId: existingMealPlan.id } });
+  apiLogger.debug('   Created at', { metadata: { createdAt: existingMealPlan.created_at } });
+  apiLogger.debug('   Meals data type', { metadata: { type: typeof existingMealPlan.meals } });
+  apiLogger.debug('   Has week array', { metadata: { hasWeek: Array.isArray((existingMealPlan.meals as { week?: unknown })?.week) } });
       
       // Cache it for 1 hour
       await CacheService.set(cacheKey, existingMealPlan.meals, 3600);
-      // console.log('   ✅ Saved to cache for future requests');
+  apiLogger.debug('   ✅ Saved to cache for future requests', { metadata: { cacheKey } });
       
       return NextResponse.json({
         success: true,
@@ -233,12 +222,12 @@ export async function POST(_request: NextRequest) {
       });
     }
 
-    // console.log(`❌ Database MISS - need to generate new meal plan`);
+  apiLogger.debug('❌ Database MISS - need to generate new meal plan');
 
     // 8️⃣ PREPARE AI DATA
-    // console.log('\n8️⃣ Preparing user data for AI...');
+  apiLogger.debug('8️⃣ Preparing user data for AI...');
     const userInfoForAi = {
-      age: userInfo.age || 25,
+      dateOfBirth: userInfo.date_of_birth || "1990-01-01",
       weight: Number(userInfo.weight) || 70,
       height: userInfo.height || 170,
       sex: userInfo.sex || "man",
@@ -252,10 +241,10 @@ export async function POST(_request: NextRequest) {
       dislikedFoods: userInfo.dislikes || "",
       allergies: userInfo.allergies || "",
     };
-    // console.log('   User data prepared:', JSON.stringify(userInfoForAi, null, 2));
+  apiLogger.debug('   User data prepared', { metadata: userInfoForAi });
 
     // 9️⃣ AI GENERATION
-    // console.log('\n9️⃣ Calling AI to generate meal plan...');
+  apiLogger.debug('9️⃣ Calling AI to generate meal plan...');
     let mealPlan;
     let fallbackUsed = 'none';
 
@@ -264,40 +253,37 @@ export async function POST(_request: NextRequest) {
         markdown: latestShoppingList.markdownContent
       };
 
-      // console.log('   Calling EatrivoAIService.generateWeeklyMealPlan...');
+  apiLogger.debug('   Calling EatrivoAIService.generateWeeklyMealPlan...');
       
       mealPlan = await EatrivoAIService.generateWeeklyMealPlan(
         userInfoForAi,
         shoppingData
       );
 
-      // console.log(`✅ AI generation completed`);
-      // console.log('   Meal plan structure:', JSON.stringify(Object.keys(mealPlan), null, 2));
-      // console.log('   Has week array:', !!mealPlan?.week);
-      // console.log('   Week length:', mealPlan?.week?.length);
+  apiLogger.info('✅ AI generation completed');
+  apiLogger.debug('   Meal plan structure', { metadata: { keys: Object.keys(mealPlan) } });
+  apiLogger.debug('   Has week array', { metadata: { hasWeek: !!mealPlan?.week } });
+  apiLogger.debug('   Week length', { metadata: { weekLength: mealPlan?.week?.length } });
       
     } catch (aiError) {
-      console.error('❌ AI generation FAILED:', aiError);
-      // console.error('   Error type:', aiError instanceof Error ? aiError.constructor.name : typeof aiError);
-      // console.error('   Error message:', aiError instanceof Error ? aiError.message : String(aiError));
-      
+      apiLogger.error('❌ AI generation FAILED', aiError);
+      apiLogger.error('   Error type', aiError instanceof Error ? aiError.constructor.name : typeof aiError);
+      apiLogger.error('   Error message', aiError instanceof Error ? aiError.message : String(aiError));
       mealPlan = STATIC_FALLBACK;
       fallbackUsed = 'static';
-      // console.log('⚠️  Using STATIC_FALLBACK');
+      apiLogger.warn('⚠️  Using STATIC_FALLBACK');
     }
 
     // 🔟 SAVE TO CACHE & DATABASE
     if (fallbackUsed === 'none') {
-      // console.log('\n🔟 Saving generated meal plan...');
-      
+      apiLogger.debug('🔟 Saving generated meal plan...');
       // Save to cache
-      // console.log('   Saving to cache (1 hour)...');
+      apiLogger.debug('   Saving to cache (1 hour)...', { metadata: { cacheKey } });
       await CacheService.set(cacheKey, mealPlan, 3600);
-      // console.log(`   ✅ Cached: ${cacheKey}`);
-
+      apiLogger.debug('   ✅ Cached', { metadata: { cacheKey } });
       // Save to database
       try {
-        // console.log('   Saving to database...');
+        apiLogger.debug('   Saving to database...', { metadata: { shoppingListId: latestShoppingList.id } });
         await db.insert(mealPlans).values({
           userProfileId: userProfile.id,
           shoppingListId: latestShoppingList.id,
@@ -305,15 +291,14 @@ export async function POST(_request: NextRequest) {
           weekEndDate: latestShoppingList.weekEndDate,
           meals: mealPlan,
         }).returning();
-
-        // console.log(`   ✅ Saved to DB`);
+        apiLogger.debug('   ✅ Saved to DB', { metadata: { shoppingListId: latestShoppingList.id } });
       } catch (dbError) {
-        console.error('   ⚠️ Database save failed:', dbError);
+        apiLogger.error('⚠️ Database save failed', dbError);
       }
     }
 
     // 1️⃣1️⃣ AI INSIGHTS (OPTIONAL)
-    // console.log('\n1️⃣1️⃣ Saving to AI insights audit trail...');
+  apiLogger.debug('1️⃣1️⃣ Saving to AI insights audit trail...');
     const expirationDate = new Date();
     expirationDate.setHours(expirationDate.getHours() + 24);
 
@@ -332,13 +317,13 @@ export async function POST(_request: NextRequest) {
         },
         expiresAt: expirationDate,
       });
-      // console.log('   ✅ Saved to ai_insights');
+      apiLogger.debug('   ✅ Saved to ai_insights', { metadata: { shoppingListId: latestShoppingList.id } });
     } catch (dbError) {
-      console.error('   ⚠️ AI insights save failed (non-critical):', dbError);
+      apiLogger.error('⚠️ AI insights save failed (non-critical)', dbError);
     }
 
     // 1️⃣2️⃣ RETURN RESPONSE
-    // console.log('\n1️⃣2️⃣ Returning response...');
+  apiLogger.debug('1️⃣2️⃣ Returning response...');
     const response = {
       success: true,
       insights: mealPlan,
@@ -351,21 +336,17 @@ export async function POST(_request: NextRequest) {
         : 'Fresh meal plan generated'
     };
     
-    // console.log('   Response structure:', JSON.stringify({
-    //   ...response,
-    //   insights: '... (meal plan data)'
-    // }, null, 2));
-    // console.log('\n✅ ========== MEAL PLAN API COMPLETED ==========\n');
+    apiLogger.debug('   Response structure', { metadata: { ...response, insights: '... (meal plan data)' } });
+    apiLogger.info('✅ ========== MEAL PLAN API COMPLETED ==========', { metadata: { route: 'meal-plans' } });
     
     return NextResponse.json(response);
 
   } catch (error) {
-    console.error("\n❌ ========== CRITICAL ERROR ==========");
-    console.error("Error type:", error instanceof Error ? error.constructor.name : typeof error);
-    console.error("Error message:", error instanceof Error ? error.message : String(error));
-    console.error("Stack trace:", error instanceof Error ? error.stack : 'No stack trace');
-    console.error("========================================\n");
-    
+    apiLogger.error('❌ ========== CRITICAL ERROR ==========', error);
+    apiLogger.error('Error type', error instanceof Error ? error.constructor.name : typeof error);
+    apiLogger.error('Error message', error instanceof Error ? error.message : String(error));
+    apiLogger.error('Stack trace', error instanceof Error ? error.stack : 'No stack trace');
+    apiLogger.error('========================================', { metadata: { route: 'meal-plans' } });
     // ULTIMATE FALLBACK
     return NextResponse.json({
       success: true,
