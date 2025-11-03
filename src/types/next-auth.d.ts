@@ -4,6 +4,7 @@ declare module "next-auth" {
   interface User {
     id: string;
     membership?: "basic" | "premium" | "trainer";
+    role: "admin";
     lastSeenWelcomeVersion?: string;
   }
 

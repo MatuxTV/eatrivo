@@ -1,4 +1,4 @@
-import { hasAccess,permissions } from "@/app/config/permission"
+import { permissions, hasAccess } from "@/app/config/permission"
 import { auth } from "./auth"
 import { NextResponse } from "next/server"
 
@@ -22,8 +22,8 @@ export default auth((req) => {
     return NextResponse.redirect(new URL('/signin', nextUrl));
   }
 
-  // If route is protected and user does not have access
-  if (protectedRoute && !hasAccess(nextUrl.pathname, userRole)) {
+  // Check admin access specifically
+  if (nextUrl.pathname.startsWith('/admin') && !hasAccess(nextUrl.pathname, userRole)) {
     return NextResponse.redirect(new URL('/not-authorized', nextUrl));
   }
 
