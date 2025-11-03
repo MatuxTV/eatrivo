@@ -36,7 +36,7 @@ export function getMealTypeColor(mealType: string): string {
     
     const normalizedType = mealType.toLowerCase();
     switch (normalizedType) {
-      case "ranajky":
+      case "ranajky||raňajky":
         return "bg-eatrivo-green";
       case "desiata":
         return "bg-eatrivo-blue";
@@ -44,9 +44,22 @@ export function getMealTypeColor(mealType: string): string {
         return "bg-eatrivo-yellow";
       case "olovrant":
         return "bg-eatrivo-orange";
-      case "vecera":
+      case "vecera ||večera":
         return "bg-eatrivo-red";
       default:
         return "bg-gray-500";
     }
+  }
+
+
+
+    export function getAgeFromDate(dateOfBirth: string | Date): number {
+    const dob = typeof dateOfBirth === "string" ? new Date(dateOfBirth) : dateOfBirth;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age;
   }

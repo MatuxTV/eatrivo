@@ -41,8 +41,6 @@ export default function ProfileSetup({
     resolver: zodResolver(userProfileOnboardingSchema),
     defaultValues: {
       fullName: initialData?.fullName || "",
-      username: initialData?.username || "",
-      phone: initialData?.phone || "",
       dateOfBirth: initialData?.dateOfBirth || undefined,
     },
   });
@@ -50,9 +48,9 @@ export default function ProfileSetup({
   const onSubmit = async (data: UserProfileOnboarding) => {
     setIsSubmitting(true);
     try {
+      onComplete({ ...data });
       // Simulate API call delay
       await new Promise((resolve) => setTimeout(resolve, 500));
-      onComplete(data);
     } catch (error) {
       logger.error("Error submitting profile", error, {
         context: "ProfileSetup",
@@ -92,7 +90,7 @@ export default function ProfileSetup({
               )}
             />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="username"
               render={({ field }) => (
@@ -140,27 +138,7 @@ export default function ProfileSetup({
                   <FormMessage />
                 </FormItem>
               )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm md:text-base">
-                    Telefónne číslo *
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="+421 XXX XXX XXX"
-                      type="tel"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            /> */}
 
             <FormField
               control={form.control}
@@ -185,7 +163,7 @@ export default function ProfileSetup({
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting|| !!form.formState.errors.username}>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Ukladá sa..." : "Pokračovať"}
             </Button>
           </form>

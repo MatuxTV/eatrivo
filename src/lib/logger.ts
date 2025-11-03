@@ -33,11 +33,6 @@ class Logger {
 
   error(message: string, error?: Error | unknown, options?: LoggerOptions): void {
     console.error(this.formatMessage("error", message, options), error, options?.metadata || "");
-    
-    // TODO: Integrácia so Sentry/DataDog pre production
-    // if (!this.isDevelopment && typeof window !== "undefined") {
-    //   Sentry.captureException(error, { extra: options?.metadata });
-    // }
   }
 
   debug(message: string, options?: LoggerOptions): void {

@@ -30,10 +30,9 @@ export const userProfiles = pgTable("user_profiles", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   fullName: text("fullName").notNull(),
-  username: text("username").unique(),
-  phone: text("phone"),
-  dateOfBirth: timestamp("dateOfBirth"),
+  // username: text("username").unique(),
   role: roleEnum("role").default("user").notNull(),
+  dateOfBirth: timestamp("dateOfBirth"),
   isProfileComplete: boolean("isProfileComplete").default(false).notNull(),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
@@ -44,7 +43,7 @@ export const userInfoTable = pgTable("user_info", {
   id: uuid("id").primaryKey().defaultRandom(),
   userProfileId: uuid("userProfileId").notNull().references(() => userProfiles.id, { onDelete: "cascade" }),
   sex: sexEnum("sex").notNull(),
-  age: integer("age").notNull(),
+  dateOfBirth: timestamp("dateOfBirth"),
   height: integer("height").notNull(),
   weight: numeric("weight", { precision: 5, scale: 2 }).notNull(),
   activity_level: activityLevelEnum("activity_level").notNull(),
@@ -56,7 +55,7 @@ export const userInfoTable = pgTable("user_info", {
   likes: text("likes"),
   dislikes: text("dislikes"),
   allergies: text("allergies"),
-  profileSnapshot: jsonb("profile_snapshot"), // Complete user profile in JSON format for easy AI access
+  profileSnapshot: jsonb("profile_snapshot"), // Complete user profile in JSON format
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -140,19 +139,6 @@ export const aiInsights = pgTable('ai_insights', {
   isActive: boolean('is_active').default(true),
   generatedAt: timestamp('generated_at').defaultNow(),
   expiresAt: timestamp('expires_at'), // For cache-like behavior
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow()
-})
-
-export const userAIPreferences = pgTable('user_ai_preferences', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userProfileId: uuid('user_profile_id').references(() => userProfiles.id).notNull(),
-  dietaryRestrictions: text('dietary_restrictions').array(),
-  preferredCuisines: text('preferred_cuisines').array(),
-  dislikedIngredients: text('disliked_ingredients').array(),
-  maxCookingTime: integer('max_cooking_time').default(30),
-  complexityLevel: text('complexity_level').default('medium'), // simple, medium, complex
-  autoGenerateEnabled: boolean('auto_generate_enabled').default(true),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow()
 })

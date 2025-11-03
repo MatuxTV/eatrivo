@@ -18,6 +18,7 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "src/app/api/onboarding/check-username/route.ts"
     ],
   },
   {

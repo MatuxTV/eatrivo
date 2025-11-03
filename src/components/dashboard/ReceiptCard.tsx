@@ -1,8 +1,18 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
-// import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Clock, Star } from "lucide-react";
 import { getMealTypeColor } from "@/lib/functions";
+import RecipeDialog from "./RecipeDialog";
+import { useState } from "react";
+
+interface Ingredient {
+  name: string;
+  amount: string;
+  type?: string;
+}
 
 interface ReceiptCardProps {
   icon?: React.ReactNode;
@@ -15,7 +25,7 @@ interface ReceiptCardProps {
   carbs: number;
   meal_type: string;
   fat: number;
-  onViewRecipe?: () => void;
+  ingerdients?: (string | Ingredient)[];
 }
 
 export default function ReceiptCard({
@@ -29,12 +39,13 @@ export default function ReceiptCard({
   carbs,
   fat,
   meal_type,
-  // onViewRecipe,
+  ingerdients
 }: ReceiptCardProps) {
-  ;
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
-    <Card className="max-w-sm hover:shadow-md transition-shadow duration-200">
+    <>
+      <Card className="max-w-sm hover:shadow-md transition-shadow duration-200">
       <CardHeader className="pb-4">
         {/* Header with Icon and Title */}
         <div className="flex items-start gap-4">
@@ -108,14 +119,32 @@ export default function ReceiptCard({
         </div>
 
         {/* Action Button */}
-        {/* <Button
-          onClick={onViewRecipe}
+        <Button
+          onClick={() => setIsDialogOpen(true)}
           className="w-full bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white"
           size="lg"
         >
           Zobraziť recept
-        </Button> */}
+        </Button>
       </CardContent>
     </Card>
+
+    {/* Recipe Dialog */}
+    <RecipeDialog
+      open={isDialogOpen}
+      onOpenChange={setIsDialogOpen}
+      title={title}
+      description={description}
+      difficulty={difficulty}
+      cookTime={cookTime}
+      calories={calories}
+      protein={protein}
+      carbs={carbs}
+      fat={fat}
+      meal_type={meal_type}
+      ingredients={ingerdients}
+      icon={icon}
+    />
+    </>
   );
 }

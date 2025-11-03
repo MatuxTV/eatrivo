@@ -24,6 +24,12 @@ import { APP_CONFIG } from "@/app/config/app";
 import { logger } from "@/lib/logger";
 
 // Type definitions
+interface Ingredient {
+  name: string;
+  amount: string;
+  type?: string;
+}
+
 interface MealData {
   name: string;
   calories: number;
@@ -33,6 +39,7 @@ interface MealData {
   difficulty: string;
   prepTime: number;
   meal_type: string; 
+  ingredients?: (string | Ingredient)[];
 }
 
 interface DayMealPlan {
@@ -70,6 +77,7 @@ interface Meal {
   carbs: number;
   fat: number;
   type: string;
+  ingredients?: (string | Ingredient)[];
 }
 
 export default function DashboardPage({ session }: DashboardPageProps) {
@@ -188,6 +196,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
       protein: meal.protein,
       carbs: meal.carbs,
       fat: meal.fat,
+      ingredients: meal.ingredients || [],
     }));
   }, [mealPlanData, currentDay]);
 
@@ -472,6 +481,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                         carbs={meal.carbs}
                         fat={meal.fat}
                         meal_type={meal.type}
+                        ingerdients={meal.ingredients}
                       />
                     ))
                   ) : (

@@ -14,7 +14,6 @@ export async function GET() {
         membership: users.membership,
         profileId: userProfiles.id,
         fullName: userProfiles.fullName,
-        username: userProfiles.username,
         isProfileComplete: userProfiles.isProfileComplete,
       })
       .from(users)
