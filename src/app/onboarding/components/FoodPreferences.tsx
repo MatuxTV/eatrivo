@@ -50,7 +50,6 @@ export default function FoodPreferences({
       sex: undefined,
       height: 170,
       weight: 70,
-      age: 25,
       activity_level: undefined,
       meal_per_day: 3,
       cooking_time_pref: undefined,

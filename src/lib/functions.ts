@@ -36,7 +36,7 @@ export function getMealTypeColor(mealType: string): string {
     
     const normalizedType = mealType.toLowerCase();
     switch (normalizedType) {
-      case "ranajky":
+      case "ranajky||raňajky":
         return "bg-eatrivo-green";
       case "desiata":
         return "bg-eatrivo-blue";
@@ -44,7 +44,7 @@ export function getMealTypeColor(mealType: string): string {
         return "bg-eatrivo-yellow";
       case "olovrant":
         return "bg-eatrivo-orange";
-      case "vecera":
+      case "vecera ||večera":
         return "bg-eatrivo-red";
       default:
         return "bg-gray-500";

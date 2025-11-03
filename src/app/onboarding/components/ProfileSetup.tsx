@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { getAgeFromDate } from "@/lib/functions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -42,7 +41,6 @@ export default function ProfileSetup({
     resolver: zodResolver(userProfileOnboardingSchema),
     defaultValues: {
       fullName: initialData?.fullName || "",
-      username: initialData?.username || "",
       dateOfBirth: initialData?.dateOfBirth || undefined,
     },
   });
@@ -92,7 +90,7 @@ export default function ProfileSetup({
               )}
             />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="username"
               render={({ field }) => (
@@ -140,7 +138,7 @@ export default function ProfileSetup({
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
 
             <FormField
               control={form.control}
@@ -165,7 +163,7 @@ export default function ProfileSetup({
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting|| !!form.formState.errors.username}>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Ukladá sa..." : "Pokračovať"}
             </Button>
           </form>

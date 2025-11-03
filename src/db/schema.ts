@@ -142,16 +142,3 @@ export const aiInsights = pgTable('ai_insights', {
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow()
 })
-
-export const userAIPreferences = pgTable('user_ai_preferences', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userProfileId: uuid('user_profile_id').references(() => userProfiles.id).notNull(),
-  dietaryRestrictions: text('dietary_restrictions').array(),
-  preferredCuisines: text('preferred_cuisines').array(),
-  dislikedIngredients: text('disliked_ingredients').array(),
-  maxCookingTime: integer('max_cooking_time').default(30),
-  complexityLevel: text('complexity_level').default('medium'), // simple, medium, complex
-  autoGenerateEnabled: boolean('auto_generate_enabled').default(true),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow()
-})

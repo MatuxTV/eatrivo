@@ -67,7 +67,6 @@ export async function POST(request: NextRequest) {
       allergies: foodPreferences.allergies || null,
       // Store complete profile snapshot in JSON format
       profileSnapshot: {
-        age: foodPreferences.age,
         sex: foodPreferences.sex,
         dateOfBirth: new Date(profile.dateOfBirth),
         height: foodPreferences.height,

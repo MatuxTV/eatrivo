@@ -1,16 +1,16 @@
 export const APP_CONFIG = {
   // Current welcome dialog version
-  WELCOME_DIALOG_VERSION: "0.0.6",
+  WELCOME_DIALOG_VERSION: "0.1.0",
   
   // Changelog for each version
   WELCOME_DIALOG_CHANGELOG: {
-    "0.0.6": {
+    "0.1.0": {
       title: "Vitajte v Eatrivo!",
       features: [
-        "Personalizované jedálne plány",
-        "AI-generované recepty",
+        "Zobrazenie nutričných hodnôt jedál a použitých surovín",
+        "Redizajn používateľského rozhrania pre lepšiu použiteľnosť",
       ],
-      releaseDate: "2025-10-24",
+      releaseDate: "2025-11-3",
     },
   } as const,
 } as const;
