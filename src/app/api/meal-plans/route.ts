@@ -12,7 +12,7 @@ import {
 import { eq, desc, and, gte } from "drizzle-orm";
 import { EatrivoAIService } from "../../../lib/langchain";
 import { CacheService } from "@/lib/cache";
-import { apiLogger } from "@/lib/logger";
+import { logger } from "@/lib/logger";
 
 const STATIC_FALLBACK = {
   week: [
@@ -28,44 +28,48 @@ const STATIC_FALLBACK = {
 };
 
 export async function POST(_request: NextRequest) {
-  apiLogger.info('🚀 ========== MEAL PLAN API CALLED ==========', { metadata: { route: 'meal-plans' } });
+  logger.debug('\n🚀 ========== MEAL PLAN API CALLED ==========');
   
   try {
-  // 1️⃣ AUTH CHECK
-  apiLogger.debug('1️⃣ Checking authentication...');
+    // 1️⃣ AUTH CHECK
+    logger.debug('\n1️⃣ Checking authentication...');
     const session = await auth();
     
     if (!session?.user?.id) {
-      apiLogger.warn('❌ No session found');
+      logger.warn('❌ No session found');
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    apiLogger.info('✅ User authenticated', { metadata: { userId: session.user.id, email: session.user.email } });
+  logger.debug('✅ User authenticated:', session.user.id);
+  logger.debug('   User email:', session.user.email);
 
   // 2️⃣ USER PROFILE
-  apiLogger.debug('2️⃣ Fetching user profile...', { metadata: { userId: session.user.id } });
+  logger.debug('\n2️⃣ Fetching user profile...');
+  logger.debug("",userProfiles.userId);
     const [userProfile] = await db
       .select()
       .from(userProfiles)
       .where(eq(userProfiles.userId, session.user.id));
 
     if (!userProfile) {
-      apiLogger.warn('❌ User profile not found', { metadata: { userId: session.user.id } });
+      logger.warn('❌ User profile not found for userId:', session.user.id);
       return NextResponse.json(
         { error: "User profile not found" },
         { status: 404 }
       );
     }
-    apiLogger.info('✅ User profile found', { metadata: { profileId: userProfile.id, fullName: userProfile.fullName, profileComplete: userProfile.isProfileComplete } });
+  logger.debug('✅ User profile found:', userProfile.id);
+  logger.debug('   Full name:', userProfile.fullName);
+  logger.debug('   Profile complete:', userProfile.isProfileComplete);
 
   // 3️⃣ USER INFO
-  apiLogger.debug('3️⃣ Fetching user info...', { metadata: { profileId: userProfile.id } });
+  logger.debug('\n3️⃣ Fetching user info...');
     const [userInfo] = await db
       .select()
       .from(userInfoTable)
       .where(eq(userInfoTable.userProfileId, userProfile.id));
 
     if (!userInfo) {
-      apiLogger.warn('❌ User info not found - profile incomplete', { metadata: { profileId: userProfile.id } });
+      logger.warn('❌ User info not found - profile incomplete');
       return NextResponse.json(
         {
           success: false,
@@ -76,10 +80,14 @@ export async function POST(_request: NextRequest) {
         { status: 422 }
       );
     }
-    apiLogger.info('✅ User info found', { metadata: userInfo });
+  logger.debug('✅ User info found');
+  logger.debug('   Age:', userInfo.age);
+  logger.debug('   Weight:', userInfo.weight);
+  logger.debug('   Goal:', userInfo.goal);
+  logger.debug('   Activity:', userInfo.activity_level);
 
   // 4️⃣ SHOPPING LISTS
-  apiLogger.debug('4️⃣ Calculating week start...');
+  logger.debug('\n4️⃣ Calculating week start...');
     const now = new Date();
     const currentDay = now.getDay();
     const daysFromMonday = currentDay === 0 ? 6 : currentDay - 1;
@@ -92,13 +100,13 @@ export async function POST(_request: NextRequest) {
     // Convert to ISO string but keep local date (strip timezone for DB comparison)
     const startOfWeekLocal = new Date(startOfWeek.getTime() - startOfWeek.getTimezoneOffset() * 60000);
     
-  apiLogger.debug('   Current date', { metadata: { now: now.toISOString() } });
-  apiLogger.debug('   Current day of week', { metadata: { currentDay } });
-  apiLogger.debug('   Week starts (local)', { metadata: { local: startOfWeek.toLocaleString('sk-SK') } });
-  apiLogger.debug('   Week starts (for DB)', { metadata: { iso: startOfWeekLocal.toISOString() } });
+  logger.debug('   Current date:', now.toISOString());
+  logger.debug('   Current day of week:', currentDay, '(0=Sun, 1=Mon, ...)');
+  logger.debug('   Week starts (local):', startOfWeek.toLocaleString('sk-SK'));
+  logger.debug('   Week starts (for DB):', startOfWeekLocal.toISOString());
 
-  apiLogger.debug('5️⃣ Fetching shopping lists...');
-  apiLogger.debug('   Strategy 1: Try finding by weekStartDate first...');
+  logger.debug('\n5️⃣ Fetching shopping lists...');
+  logger.debug('   Strategy 1: Try finding by weekStartDate first...');
 
     // Try to find by weekStartDate (more reliable)
     let userShoppingLists = await db
@@ -112,11 +120,11 @@ export async function POST(_request: NextRequest) {
       )
       .orderBy(desc(shoppingLists.created_at));
 
-  apiLogger.debug('   Found by weekStartDate', { metadata: { count: userShoppingLists.length } });
+  logger.debug('   Found by weekStartDate:', userShoppingLists.length);
 
     // Fallback: Try last 7 days by created_at
     if (userShoppingLists.length === 0) {
-  apiLogger.debug('   Strategy 2: Trying last 7 days by created_at...');
+  logger.debug('   Strategy 2: Trying last 7 days by created_at...');
       const sevenDaysAgo = new Date(now);
       sevenDaysAgo.setDate(now.getDate() - 7);
       sevenDaysAgo.setHours(0, 0, 0, 0);
@@ -133,12 +141,12 @@ export async function POST(_request: NextRequest) {
         )
         .orderBy(desc(shoppingLists.created_at));
 
-  apiLogger.debug('   Found by created_at (last 7 days)', { metadata: { count: userShoppingLists.length } });
+  logger.debug('   Found by created_at (last 7 days):', userShoppingLists.length);
     }
 
     // Ultimate fallback: Get any shopping list for this user
     if (userShoppingLists.length === 0) {
-  apiLogger.debug('   Strategy 3: Getting ANY shopping list for this user...');
+  logger.debug('   Strategy 3: Getting ANY shopping list for this user...');
       userShoppingLists = await db
         .select()
         .from(shoppingLists)
@@ -146,19 +154,19 @@ export async function POST(_request: NextRequest) {
         .orderBy(desc(shoppingLists.created_at))
         .limit(1);
 
-  apiLogger.debug('   Found (any)', { metadata: { count: userShoppingLists.length } });
+  logger.debug('   Found (any):', userShoppingLists.length);
       
       if (userShoppingLists.length > 0) {
-    apiLogger.warn('⚠️  Using older shopping list - not from current week', { metadata: { shoppingListId: userShoppingLists[0].id } });
-    apiLogger.debug('   Shopping list created', { metadata: { createdAt: userShoppingLists[0].created_at } });
-    apiLogger.debug('   Shopping list weekStart', { metadata: { weekStart: userShoppingLists[0].weekStartDate } });
+        logger.warn('   ⚠️  Using older shopping list - not from current week');
+        logger.debug('   Shopping list created:', userShoppingLists[0].created_at);
+        logger.debug('   Shopping list weekStart:', userShoppingLists[0].weekStartDate);
       }
     }
 
-  apiLogger.info('📊 Final result: Found shopping lists', { metadata: { count: userShoppingLists.length } });
+  logger.debug('\n   📊 Final result: Found', userShoppingLists.length, 'shopping list(s)');
     
     if (userShoppingLists.length === 0) {
-  apiLogger.warn('❌ No shopping lists found for this week', { metadata: { userId: session.user.id } });
+    logger.warn('❌ No shopping lists found for this week');
       return NextResponse.json({
         success: true,
         insights: { week: [] },
@@ -169,18 +177,21 @@ export async function POST(_request: NextRequest) {
     }
 
     const latestShoppingList = userShoppingLists[0];
-  apiLogger.info('✅ Using latest shopping list', { metadata: { shoppingListId: latestShoppingList.id, title: latestShoppingList.title, createdAt: latestShoppingList.created_at, markdownLength: latestShoppingList.markdownContent?.length || 0 } });
+  logger.debug('✅ Using latest shopping list:', latestShoppingList.id);
+  logger.debug('   Title:', latestShoppingList.title);
+  logger.debug('   Created:', latestShoppingList.created_at);
+  logger.debug('   Markdown length:', latestShoppingList.markdownContent?.length || 0);
 
     // 6️⃣ CACHE CHECK
     const cacheKey = `meal-plan:${latestShoppingList.id}`;
-  apiLogger.debug('6️⃣ Checking cache', { metadata: { cacheKey } });
+  logger.debug(`\n6️⃣ Checking cache with key: ${cacheKey}`);
     
     const cachedMealPlan = await CacheService.get(cacheKey);
 
     if (cachedMealPlan) {
-  apiLogger.info('✅ CACHE HIT! Returning cached meal plan', { metadata: { cacheKey } });
-  apiLogger.debug('   Cached data type', { metadata: { type: typeof cachedMealPlan } });
-  apiLogger.debug('   Has week array', { metadata: { hasWeek: Array.isArray((cachedMealPlan as { week?: unknown })?.week) } });
+  logger.debug('✅ CACHE HIT! Returning cached meal plan');
+  logger.debug('   Cached data type:', typeof cachedMealPlan);
+  logger.debug('   Has week array:', !!(cachedMealPlan as any)?.week);
       
       return NextResponse.json({
         success: true,
@@ -191,10 +202,10 @@ export async function POST(_request: NextRequest) {
       });
     }
 
-  apiLogger.debug('❌ Cache MISS', { metadata: { cacheKey } });
+  logger.debug('❌ Cache MISS');
 
     // 7️⃣ DATABASE CHECK
-  apiLogger.debug('7️⃣ Checking database for existing meal plan...');
+  logger.debug('\n7️⃣ Checking database for existing meal plan...');
     const [existingMealPlan] = await db
       .select()
       .from(mealPlans)
@@ -203,14 +214,15 @@ export async function POST(_request: NextRequest) {
       .limit(1);
 
     if (existingMealPlan) {
-  apiLogger.info('✅ DATABASE HIT! Found existing meal plan', { metadata: { mealPlanId: existingMealPlan.id } });
-  apiLogger.debug('   Created at', { metadata: { createdAt: existingMealPlan.created_at } });
-  apiLogger.debug('   Meals data type', { metadata: { type: typeof existingMealPlan.meals } });
-  apiLogger.debug('   Has week array', { metadata: { hasWeek: Array.isArray((existingMealPlan.meals as { week?: unknown })?.week) } });
+  logger.debug('✅ DATABASE HIT! Found existing meal plan');
+  logger.debug('   Meal plan ID:', existingMealPlan.id);
+  logger.debug('   Created at:', existingMealPlan.created_at);
+  logger.debug('   Meals data type:', typeof existingMealPlan.meals);
+  logger.debug('   Has week array:', !!(existingMealPlan.meals as any)?.week);
       
       // Cache it for 1 hour
       await CacheService.set(cacheKey, existingMealPlan.meals, 3600);
-  apiLogger.debug('   ✅ Saved to cache for future requests', { metadata: { cacheKey } });
+  logger.debug('   ✅ Saved to cache for future requests');
       
       return NextResponse.json({
         success: true,
@@ -222,12 +234,12 @@ export async function POST(_request: NextRequest) {
       });
     }
 
-  apiLogger.debug('❌ Database MISS - need to generate new meal plan');
+  logger.debug('❌ Database MISS - need to generate new meal plan');
 
     // 8️⃣ PREPARE AI DATA
-  apiLogger.debug('8️⃣ Preparing user data for AI...');
+  logger.debug('\n8️⃣ Preparing user data for AI...');
     const userInfoForAi = {
-      dateOfBirth: userInfo.date_of_birth || "1990-01-01",
+      age: userInfo.age || 25,
       weight: Number(userInfo.weight) || 70,
       height: userInfo.height || 170,
       sex: userInfo.sex || "man",
@@ -241,10 +253,10 @@ export async function POST(_request: NextRequest) {
       dislikedFoods: userInfo.dislikes || "",
       allergies: userInfo.allergies || "",
     };
-  apiLogger.debug('   User data prepared', { metadata: userInfoForAi });
+  logger.debug('   User data prepared:', JSON.stringify(userInfoForAi, null, 2));
 
     // 9️⃣ AI GENERATION
-  apiLogger.debug('9️⃣ Calling AI to generate meal plan...');
+  logger.debug('\n9️⃣ Calling AI to generate meal plan...');
     let mealPlan;
     let fallbackUsed = 'none';
 
@@ -253,37 +265,40 @@ export async function POST(_request: NextRequest) {
         markdown: latestShoppingList.markdownContent
       };
 
-  apiLogger.debug('   Calling EatrivoAIService.generateWeeklyMealPlan...');
+  logger.debug('   Calling EatrivoAIService.generateWeeklyMealPlan...');
       
       mealPlan = await EatrivoAIService.generateWeeklyMealPlan(
         userInfoForAi,
         shoppingData
       );
 
-  apiLogger.info('✅ AI generation completed');
-  apiLogger.debug('   Meal plan structure', { metadata: { keys: Object.keys(mealPlan) } });
-  apiLogger.debug('   Has week array', { metadata: { hasWeek: !!mealPlan?.week } });
-  apiLogger.debug('   Week length', { metadata: { weekLength: mealPlan?.week?.length } });
+  logger.debug('✅ AI generation completed');
+  logger.debug('   Meal plan structure:', JSON.stringify(Object.keys(mealPlan), null, 2));
+  logger.debug('   Has week array:', !!mealPlan?.week);
+  logger.debug('   Week length:', mealPlan?.week?.length);
       
     } catch (aiError) {
-      apiLogger.error('❌ AI generation FAILED', aiError);
-      apiLogger.error('   Error type', aiError instanceof Error ? aiError.constructor.name : typeof aiError);
-      apiLogger.error('   Error message', aiError instanceof Error ? aiError.message : String(aiError));
+  logger.error('❌ AI generation FAILED:', aiError);
+  logger.error('   Error type:', aiError instanceof Error ? aiError.constructor.name : typeof aiError);
+  logger.error('   Error message:', aiError instanceof Error ? aiError.message : String(aiError));
+      
       mealPlan = STATIC_FALLBACK;
       fallbackUsed = 'static';
-      apiLogger.warn('⚠️  Using STATIC_FALLBACK');
+  logger.warn('⚠️  Using STATIC_FALLBACK');
     }
 
     // 🔟 SAVE TO CACHE & DATABASE
     if (fallbackUsed === 'none') {
-      apiLogger.debug('🔟 Saving generated meal plan...');
+    logger.debug('\n🔟 Saving generated meal plan...');
+      
       // Save to cache
-      apiLogger.debug('   Saving to cache (1 hour)...', { metadata: { cacheKey } });
+  logger.debug('   Saving to cache (1 hour)...');
       await CacheService.set(cacheKey, mealPlan, 3600);
-      apiLogger.debug('   ✅ Cached', { metadata: { cacheKey } });
+  logger.debug(`   ✅ Cached: ${cacheKey}`);
+
       // Save to database
       try {
-        apiLogger.debug('   Saving to database...', { metadata: { shoppingListId: latestShoppingList.id } });
+  logger.debug('   Saving to database...');
         await db.insert(mealPlans).values({
           userProfileId: userProfile.id,
           shoppingListId: latestShoppingList.id,
@@ -291,14 +306,15 @@ export async function POST(_request: NextRequest) {
           weekEndDate: latestShoppingList.weekEndDate,
           meals: mealPlan,
         }).returning();
-        apiLogger.debug('   ✅ Saved to DB', { metadata: { shoppingListId: latestShoppingList.id } });
+
+  logger.debug('   ✅ Saved to DB');
       } catch (dbError) {
-        apiLogger.error('⚠️ Database save failed', dbError);
+  logger.error('   ⚠️ Database save failed:', dbError);
       }
     }
 
     // 1️⃣1️⃣ AI INSIGHTS (OPTIONAL)
-  apiLogger.debug('1️⃣1️⃣ Saving to AI insights audit trail...');
+  logger.debug('\n1️⃣1️⃣ Saving to AI insights audit trail...');
     const expirationDate = new Date();
     expirationDate.setHours(expirationDate.getHours() + 24);
 
@@ -317,13 +333,13 @@ export async function POST(_request: NextRequest) {
         },
         expiresAt: expirationDate,
       });
-      apiLogger.debug('   ✅ Saved to ai_insights', { metadata: { shoppingListId: latestShoppingList.id } });
+  logger.debug('   ✅ Saved to ai_insights');
     } catch (dbError) {
-      apiLogger.error('⚠️ AI insights save failed (non-critical)', dbError);
+  logger.error('   ⚠️ AI insights save failed (non-critical):', dbError);
     }
 
     // 1️⃣2️⃣ RETURN RESPONSE
-  apiLogger.debug('1️⃣2️⃣ Returning response...');
+  logger.debug('\n1️⃣2️⃣ Returning response...');
     const response = {
       success: true,
       insights: mealPlan,
@@ -336,17 +352,21 @@ export async function POST(_request: NextRequest) {
         : 'Fresh meal plan generated'
     };
     
-    apiLogger.debug('   Response structure', { metadata: { ...response, insights: '... (meal plan data)' } });
-    apiLogger.info('✅ ========== MEAL PLAN API COMPLETED ==========', { metadata: { route: 'meal-plans' } });
+    logger.debug('   Response structure:', JSON.stringify({
+      ...response,
+      insights: '... (meal plan data)'
+    }, null, 2));
+    logger.debug('\n✅ ========== MEAL PLAN API COMPLETED ==========\n');
     
     return NextResponse.json(response);
 
   } catch (error) {
-    apiLogger.error('❌ ========== CRITICAL ERROR ==========', error);
-    apiLogger.error('Error type', error instanceof Error ? error.constructor.name : typeof error);
-    apiLogger.error('Error message', error instanceof Error ? error.message : String(error));
-    apiLogger.error('Stack trace', error instanceof Error ? error.stack : 'No stack trace');
-    apiLogger.error('========================================', { metadata: { route: 'meal-plans' } });
+  logger.error("\n❌ ========== CRITICAL ERROR ==========");
+  logger.error("Error type:", error instanceof Error ? error.constructor.name : typeof error);
+  logger.error("Error message:", error instanceof Error ? error.message : String(error));
+  logger.error("Stack trace:", error instanceof Error ? error.stack : 'No stack trace');
+  logger.error("========================================\n");
+    
     // ULTIMATE FALLBACK
     return NextResponse.json({
       success: true,
