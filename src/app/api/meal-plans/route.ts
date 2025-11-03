@@ -12,7 +12,6 @@ import {
 import { eq, desc, and, gte } from "drizzle-orm";
 import { EatrivoAIService } from "../../../lib/langchain";
 import { CacheService } from "@/lib/cache";
-import { logger } from "@/lib/logger";
 
 const STATIC_FALLBACK = {
   week: [
@@ -277,7 +276,6 @@ export async function POST(_request: NextRequest) {
     let mealPlan;
     let fallbackUsed = 'none';
 
-    try {
       const shoppingData = {
         markdown: latestShoppingList.markdownContent
       };
@@ -293,7 +291,7 @@ export async function POST(_request: NextRequest) {
   // logger.debug('   Meal plan structure', { metadata: { keys: Object.keys(mealPlan) } });
   // logger.debug('   Has week array', { metadata: { hasWeek: !!mealPlan?.week, weekLength: mealPlan?.week?.length } });
       
-    } catch (aiError) {
+   
   // logger.error('❌ AI generation FAILED:', aiError);
   // logger.error('   Error type:', aiError instanceof Error ? aiError.constructor.name : typeof aiError);
   // logger.error('   Error message:', aiError instanceof Error ? aiError.message : String(aiError));
@@ -301,7 +299,6 @@ export async function POST(_request: NextRequest) {
       mealPlan = STATIC_FALLBACK;
       fallbackUsed = 'static';
   // logger.warn('⚠️  Using STATIC_FALLBACK');
-    }
 
     // 🔟 SAVE TO CACHE & DATABASE
     if (fallbackUsed === 'none') {
@@ -313,7 +310,7 @@ export async function POST(_request: NextRequest) {
   // logger.debug(`   ✅ Cached: ${cacheKey}`);
 
       // Save to database
-      try {
+  
   // logger.debug('   Saving to database...');
         await db.insert(mealPlans).values({
           userProfileId: userProfile.id,
@@ -324,9 +321,8 @@ export async function POST(_request: NextRequest) {
         }).returning();
 
   // logger.debug('   ✅ Saved to DB');
-      } catch (dbError) {
   // logger.error('   ⚠️ Database save failed:', dbError);
-      }
+    
     }
 
     // 1️⃣1️⃣ AI INSIGHTS (OPTIONAL)
@@ -334,7 +330,6 @@ export async function POST(_request: NextRequest) {
     const expirationDate = new Date();
     expirationDate.setHours(expirationDate.getHours() + 24);
 
-    try {
       await db.insert(aiInsights).values({
         userProfileId: userProfile.id,
         insightType: "meal_plan",
@@ -350,9 +345,9 @@ export async function POST(_request: NextRequest) {
         expiresAt: expirationDate,
       });
   // logger.debug('   ✅ Saved to ai_insights');
-    } catch (dbError) {
+    
   // logger.error('   ⚠️ AI insights save failed (non-critical):', dbError);
-    }
+   
 
     // 1️⃣2️⃣ RETURN RESPONSE
   // logger.debug('\n1️⃣2️⃣ Returning response...');
