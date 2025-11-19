@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,11 +25,16 @@ import {
   Settings,
   Plus,
   User,
+  LayoutDashboard,
+  Search,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import MarkdownIt from "markdown-it";
 import "react-markdown-editor-lite/lib/index.css";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Dynamic import to avoid SSR issues
 const MdEditor = dynamic(() => import("react-markdown-editor-lite"), {
@@ -184,17 +195,36 @@ export default function AdminDashboard() {
     }
   };
 
+  const tabs = [
+    { id: "upload", label: "Vytvoriť zoznam", icon: Plus },
+    { id: "users", label: "Používatelia", icon: Users },
+    { id: "settings", label: "Nastavenia", icon: Settings },
+  ] as const;
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50/50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Admin Dashboard - Eatrivo
-            </h1>
-            <div className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
-              BETA
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-eatrivo-purple/10 rounded-xl flex items-center justify-center text-eatrivo-purple">
+                <LayoutDashboard className="w-6 h-6" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  Admin Dashboard
+                </h1>
+                <p className="text-xs text-gray-500">
+                  Správa aplikácie Eatrivo
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3" />
+                Beta Verzia
+              </div>
             </div>
           </div>
         </div>
@@ -202,393 +232,458 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto p-6">
         {/* Navigation Tabs */}
-        <div className="mb-8">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex p-1 bg-white rounded-xl border border-gray-200 shadow-sm w-fit">
+            {tabs.map((tab) => (
               <button
-                onClick={() => setActiveTab("upload")}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === "upload"
-                    ? "border-eatrivo-purple text-eatrivo-purple"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 ${
+                  activeTab === tab.id
+                    ? "text-eatrivo-purple bg-eatrivo-purple/5"
+                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
                 }`}
               >
-                <Plus className="w-5 h-5 inline mr-2" />
-                Vytvoriť nákupný zoznam
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 border border-eatrivo-purple/20 rounded-lg"
+                    transition={{ type: "spring", duration: 0.5 }}
+                  />
+                )}
               </button>
-              <button
-                onClick={() => setActiveTab("users")}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === "users"
-                    ? "border-eatrivo-purple text-eatrivo-purple"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                <Users className="w-5 h-5 inline mr-2" />
-                Používatelia
-              </button>
-              <button
-                onClick={() => setActiveTab("settings")}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === "settings"
-                    ? "border-eatrivo-purple text-eatrivo-purple"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                <Settings className="w-5 h-5 inline mr-2" />
-                Nastavenia
-              </button>
-            </nav>
+            ))}
           </div>
         </div>
 
         {/* Content */}
-        {activeTab === "upload" && (
-          <div className="space-y-6 text-primary-text">
-            {/* Main Form Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Plus className="w-5 h-5" />
-                  Nový nákupný zoznam
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Title */}
-                  <div>
-                    <Label htmlFor="title">Názov *</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) =>
-                        handleInputChange("title", e.target.value)
-                      }
-                      placeholder="Nákupný zoznam - Týždeň 42"
-                      required
-                    />
-                  </div>
+        <AnimatePresence mode="wait">
+          {activeTab === "upload" && (
+            <motion.div
+              key="upload"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column - Form */}
+                <div className="lg:col-span-2 space-y-6">
+                  <Card className="border-none shadow-lg bg-white/80 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-xl">
+                        <div className="w-8 h-8 rounded-lg bg-eatrivo-purple/10 flex items-center justify-center text-eatrivo-purple">
+                          <Plus className="w-5 h-5" />
+                        </div>
+                        Nový nákupný zoznam
+                      </CardTitle>
+                      <CardDescription>
+                        Vytvorte a priraďte nákupný zoznam používateľovi.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <form onSubmit={handleSubmit} className="space-y-8">
+                        {/* Basic Info Section */}
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b border-gray-100">
+                            <FileText className="w-4 h-4 text-eatrivo-purple" />
+                            Základné informácie
+                          </h3>
 
-                  {/* Description */}
-                  <div>
-                    <Label htmlFor="description">Popis</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) =>
-                        handleInputChange("description", e.target.value)
-                      }
-                      placeholder="Personalizovaný nákupný zoznam na 7 dní"
-                      rows={2}
-                    />
-                  </div>
+                          <div className="grid gap-4">
+                            <div>
+                              <Label htmlFor="title" className="mb-1.5 block">
+                                Názov zoznamu
+                              </Label>
+                              <Input
+                                id="title"
+                                value={formData.title}
+                                onChange={(e) =>
+                                  handleInputChange("title", e.target.value)
+                                }
+                                placeholder="Napr. Nákupný zoznam - Týždeň 42"
+                                required
+                                className="h-11"
+                              />
+                            </div>
 
-                  {/* Date Range */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="startDate">Začiatok týždňa *</Label>
-                      <Input
-                        id="startDate"
-                        type="date"
-                        value={formData.weekStartDate}
-                        onChange={(e) =>
-                          handleInputChange("weekStartDate", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="endDate">Koniec týždňa *</Label>
-                      <Input
-                        id="endDate"
-                        type="date"
-                        value={formData.weekEndDate}
-                        onChange={(e) =>
-                          handleInputChange("weekEndDate", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
+                            <div>
+                              <Label
+                                htmlFor="description"
+                                className="mb-1.5 block"
+                              >
+                                Popis (voliteľné)
+                              </Label>
+                              <Textarea
+                                id="description"
+                                value={formData.description}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "description",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Krátky popis zoznamu..."
+                                rows={2}
+                                className="min-h-[80px]"
+                              />
+                            </div>
+                          </div>
+                        </div>
 
-                  {/* Status */}
-                  <div>
-                    <Label htmlFor="status">Stav</Label>
-                    <Select
-                      value={formData.status}
-                      onValueChange={(
-                        value: "active" | "completed" | "cancelled"
-                      ) => handleInputChange("status", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Vyberte stav" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Aktívny</SelectItem>
-                        <SelectItem value="completed">Dokončený</SelectItem>
-                        <SelectItem value="cancelled">Zrušený</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                        {/* Timing Section */}
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b border-gray-100">
+                            <LayoutDashboard className="w-4 h-4 text-eatrivo-purple" />
+                            Plánovanie
+                          </h3>
 
-                  {/* User Selection */}
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      Priradiť používateľovi *
-                    </Label>
-                    {isLoadingUsers ? (
-                      <div className="flex items-center gap-3 p-4 text-sm text-gray-500 border border-gray-200 rounded-lg bg-gray-50">
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-eatrivo-purple"></div>
-                        Načítavajú sa používatelia...
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <Select
-                          value={formData.userId || ""}
-                          onValueChange={(value: string) =>
-                            handleInputChange("userId", value)
-                          }
-                        >
-                          <SelectTrigger className="min-h-[40px] h-auto py-3 bg-secondary-foreground border-gray-200 hover:border-eatrivo-purple transition-colors">
-                            <SelectValue
-                              placeholder={
-                                <div className="flex items-center gap-2 text-gray-500">
-                                  <User className="w-4 h-4" />
-                                  Vyberte používateľa
-                                </div>
-                              }
-                            />
-                          </SelectTrigger>
-                          <SelectContent className="bg-secondary-foreground border-4 max-h-[300px]">
-                            <SelectItem value="0" className="p-3">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                                  <User className="w-4 h-4 text-gray-400" />
-                                </div>
-                                <div>
-                                  <span className="font-medium text-gray-700">
-                                    Bez priradenia
-                                  </span>
-                                  <div className="text-xs text-gray-500">
-                                    Zoznam nebude priradený žiadnemu
-                                    používateľovi
-                                  </div>
-                                </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <Label
+                                htmlFor="startDate"
+                                className="mb-1.5 block"
+                              >
+                                Začiatok týždňa
+                              </Label>
+                              <Input
+                                id="startDate"
+                                type="date"
+                                value={formData.weekStartDate}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "weekStartDate",
+                                    e.target.value
+                                  )
+                                }
+                                required
+                                className="h-11"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="endDate" className="mb-1.5 block">
+                                Koniec týždňa
+                              </Label>
+                              <Input
+                                id="endDate"
+                                type="date"
+                                value={formData.weekEndDate}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "weekEndDate",
+                                    e.target.value
+                                  )
+                                }
+                                required
+                                className="h-11"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Assignment Section */}
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b border-gray-100">
+                            <User className="w-4 h-4 text-eatrivo-purple" />
+                            Priradenie
+                          </h3>
+
+                          <div>
+                            <Label className="mb-1.5 block">Používateľ</Label>
+                            {isLoadingUsers ? (
+                              <div className="flex items-center gap-3 p-4 text-sm text-gray-500 border border-gray-200 rounded-xl bg-gray-50">
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-eatrivo-purple"></div>
+                                Načítavajú sa používatelia...
                               </div>
-                            </SelectItem>
-                            {users.length > 0 ? (
-                              users.map((user) => {
-                                const getMembershipColor = (
-                                  membership: string
-                                ) => {
-                                  switch (membership?.toLowerCase()) {
-                                    case "premium":
-                                      return "bg-gradient-to-r from-yellow-400 to-yellow-500 text-white";
-                                    case "basic":
-                                      return "bg-gradient-to-r from-blue-400 to-blue-500 text-white";
-                                    case "free":
-                                      return "bg-gradient-to-r from-gray-400 to-gray-500 text-white";
-                                    default:
-                                      return "bg-gradient-to-r from-green-400 to-green-500 text-white";
-                                  }
-                                };
-
-                                const getMembershipIcon = (
-                                  membership: string
-                                ) => {
-                                  switch (membership?.toLowerCase()) {
-                                    case "premium":
-                                      return "👑";
-                                    case "basic":
-                                      return "⭐";
-                                    case "free":
-                                      return "👤";
-                                    default:
-                                      return "✨";
-                                  }
-                                };
-
-                                return (
-                                  <SelectItem
-                                    key={user?.id}
-                                    value={user?.profileId || user?.id}
-                                    className="p-3 bg-secondary-foreground hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    <div className="flex items-center gap-3">
-                                      <div
-                                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${getMembershipColor(
-                                          user?.membership
-                                        )}`}
-                                      >
-                                        {getMembershipIcon(user?.membership)}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                          <span className="font-medium text-gray-900 truncate">
-                                            {user?.fullName ||
-                                              user?.name ||
-                                              "Bez mena"}
-                                          </span>
-                                          <span
-                                            className={`px-2 py-1 rounded-full text-xs font-medium ${getMembershipColor(
-                                              user?.membership
-                                            )}`}
-                                          >
-                                            {user?.membership}
-                                          </span>
-                                        </div>
-                                        <div className="text-xs text-gray-500 truncate">
-                                          {user?.email}
-                                        </div>
-                                        {user?.isProfileComplete && (
-                                          <div className="flex items-center gap-1 mt-1">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                            <span className="text-xs text-green-600">
-                                              Profil kompletný
-                                            </span>
-                                          </div>
-                                        )}
-                                      </div>
+                            ) : (
+                              <Select
+                                value={formData.userId || ""}
+                                onValueChange={(value: string) =>
+                                  handleInputChange("userId", value)
+                                }
+                              >
+                                <SelectTrigger className="h-12">
+                                  <SelectValue placeholder="Vyberte používateľa" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-[300px]">
+                                  <div className="p-2 sticky top-0 bg-white z-10 border-b border-gray-100 mb-1">
+                                    <div className="relative">
+                                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                                      <input
+                                        className="w-full pl-8 pr-2 py-1 text-xs border border-gray-200 rounded-md focus:outline-none focus:border-eatrivo-purple"
+                                        placeholder="Hľadať..."
+                                      />
+                                    </div>
+                                  </div>
+                                  <SelectItem value="0" className="py-3">
+                                    <div className="flex items-center gap-2 text-gray-500">
+                                      <User className="w-4 h-4" />
+                                      <span>Bez priradenia (Test)</span>
                                     </div>
                                   </SelectItem>
-                                );
-                              })
-                            ) : (
-                              <SelectItem value="nic" className="p-3">
-                                <div className="flex items-center gap-3 text-gray-500">
-                                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                                    <Users className="w-4 h-4 text-gray-400" />
-                                  </div>
-                                  <span>Žiadni používatelia</span>
-                                </div>
-                              </SelectItem>
+                                  {users.map((user) => (
+                                    <SelectItem
+                                      key={user.id}
+                                      value={user.profileId || user.id}
+                                      className="py-2"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div
+                                          className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white
+                                          ${
+                                            user.membership === "Premium"
+                                              ? "bg-gradient-to-r from-yellow-400 to-orange-500"
+                                              : user.membership === "Basic"
+                                              ? "bg-gradient-to-r from-blue-400 to-blue-600"
+                                              : "bg-gray-400"
+                                          }`}
+                                        >
+                                          {user.fullName?.[0] ||
+                                            user.email[0].toUpperCase()}
+                                        </div>
+                                        <div className="flex flex-col text-left">
+                                          <span className="font-medium text-gray-900">
+                                            {user.fullName || "Bez mena"}
+                                          </span>
+                                          <span className="text-xs text-gray-500">
+                                            {user.email}
+                                          </span>
+                                        </div>
+                                        {user.membership === "Premium" && (
+                                          <Sparkles className="w-3 h-3 text-yellow-500 ml-auto" />
+                                        )}
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             )}
-                          </SelectContent>
-                        </Select>
-
-                        {/* Enhanced stats and info */}
-                        <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4" />
-                            <span>
-                              Počet používateľov:{" "}
-                              <strong className="text-gray-700">
-                                {users.length}
-                              </strong>
-                            </span>
                           </div>
-                          {users.length > 0 && (
-                            <div className="flex gap-4">
-                              <span>
-                                Premium:{" "}
-                                {
-                                  users.filter(
-                                    (u) =>
-                                      u.membership?.toLowerCase() === "premium"
-                                  ).length
-                                }
-                              </span>
-                              <span>
-                                Basic:{" "}
-                                {
-                                  users.filter(
-                                    (u) =>
-                                      u.membership?.toLowerCase() === "basic"
-                                  ).length
-                                }
-                              </span>
-                              <span>
-                                Free:{" "}
-                                {
-                                  users.filter(
-                                    (u) =>
-                                      u.membership?.toLowerCase() === "free"
-                                  ).length
-                                }
-                              </span>
-                            </div>
-                          )}
+
+                          <div>
+                            <Label htmlFor="status" className="mb-1.5 block">
+                              Stav zoznamu
+                            </Label>
+                            <Select
+                              value={formData.status}
+                              onValueChange={(
+                                value: "active" | "completed" | "cancelled"
+                              ) => handleInputChange("status", value)}
+                            >
+                              <SelectTrigger className="h-11">
+                                <SelectValue placeholder="Vyberte stav" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="active">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                                    Aktívny
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="completed">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                    Dokončený
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="cancelled">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-red-500" />
+                                    Zrušený
+                                  </div>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        {/* Editor Section */}
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b border-gray-100">
+                            <FileText className="w-4 h-4 text-eatrivo-purple" />
+                            Obsah (Markdown)
+                          </h3>
+                          <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-eatrivo-purple/20 focus-within:border-eatrivo-purple transition-all">
+                            <MdEditor
+                              value={formData.markdownContent}
+                              style={{ height: "500px" }}
+                              renderHTML={(text) => mdParser.render(text)}
+                              onChange={handleMarkdownChange}
+                              placeholder="# Nákupný zoznam..."
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pt-4">
+                          <Button
+                            type="submit"
+                            disabled={isUploading}
+                            className="w-full h-12 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink hover:from-eatrivo-purple/90 hover:to-eatrivo-pink/90 text-white font-semibold rounded-xl shadow-lg shadow-eatrivo-purple/20 hover:shadow-eatrivo-purple/40 transition-all duration-300"
+                          >
+                            {isUploading ? (
+                              <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Vytvára sa...
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                Vytvoriť nákupný zoznam
+                                <ChevronRight className="w-4 h-4" />
+                              </div>
+                            )}
+                          </Button>
+                        </div>
+                      </form>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Right Column - Stats/Info */}
+                <div className="space-y-6">
+                  <Card className="border-none shadow-lg bg-gradient-to-br from-eatrivo-purple to-eatrivo-pink text-white overflow-hidden relative">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl" />
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-10 -mb-10 blur-xl" />
+
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <Users className="w-5 h-5" />
+                        Prehľad používateľov
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4 relative z-10">
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <p className="text-white/80 text-sm">
+                              Celkom používateľov
+                            </p>
+                            <p className="text-4xl font-bold">{users.length}</p>
+                          </div>
+                          <div className="bg-white/20 p-2 rounded-lg">
+                            <Users className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 pt-4 border-t border-white/20">
+                          <div className="text-center p-2 bg-white/10 rounded-lg">
+                            <p className="text-xs text-white/80">Premium</p>
+                            <p className="font-bold">
+                              {
+                                users.filter(
+                                  (u) =>
+                                    u.membership?.toLowerCase() === "premium"
+                                ).length
+                              }
+                            </p>
+                          </div>
+                          <div className="text-center p-2 bg-white/10 rounded-lg">
+                            <p className="text-xs text-white/80">Basic</p>
+                            <p className="font-bold">
+                              {
+                                users.filter(
+                                  (u) => u.membership?.toLowerCase() === "basic"
+                                ).length
+                              }
+                            </p>
+                          </div>
+                          <div className="text-center p-2 bg-white/10 rounded-lg">
+                            <p className="text-xs text-white/80">Free</p>
+                            <p className="font-bold">
+                              {
+                                users.filter(
+                                  (u) => u.membership?.toLowerCase() === "free"
+                                ).length
+                              }
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    )}
-                  </div>
+                    </CardContent>
+                  </Card>
 
-                  {/* Markdown Editor */}
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
-                      Obsah nákupného zoznamu (Markdown) *
-                    </Label>
-                    <div className="border border-gray-200 rounded-lg overflow-hidden">
-                      <MdEditor
-                        value={formData.markdownContent}
-                        style={{ height: "500px" }}
-                        renderHTML={(text) => mdParser.render(text)}
-                        onChange={handleMarkdownChange}
-                        placeholder="# Nákupný zoznam
-
-## 🥬 Zelenina
-- Paradajky (500g)
-- Uhorky (3ks)
-- Šalát (1ks)
-
-## 🍎 Ovocie
-- Jablká (1kg)
-- Banány (6ks)
-
-## 🥩 Mäso a ryby
-- Kuracie prsia (600g)
-- Losos (400g)"
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      💡 Tip: Používajte Markdown syntax pre formátovanie.
-                      Preview vidíte v pravej časti.
-                    </p>
-                  </div>
-
-                  {/* Submit Button */}
-                  <Button
-                    type="submit"
-                    disabled={isUploading}
-                    className="w-full bg-eatrivo-purple hover:bg-eatrivo-purple/90"
-                  >
-                    {isUploading ? "Vytvára sa..." : "Vytvoriť nákupný zoznam"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {activeTab === "users" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Správa používateľov</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center text-gray-500 py-8">
-                <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>Správa používateľov bude dostupná v budúcej verzii</p>
+                  <Card className="border-none shadow-md bg-white">
+                    <CardHeader>
+                      <CardTitle className="text-base">Rýchle tipy</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 text-sm text-gray-500">
+                      <div className="flex gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-50 flex-shrink-0 flex items-center justify-center text-blue-500">
+                          1
+                        </div>
+                        <p>
+                          Používajte <strong>Markdown</strong> pre formátovanie
+                          zoznamov. Nadpisy vytvoríte pomocou #.
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="w-8 h-8 rounded-full bg-green-50 flex-shrink-0 flex items-center justify-center text-green-500">
+                          2
+                        </div>
+                        <p>
+                          Zoznamy priraďujte vždy konkrétnemu používateľovi pre
+                          personalizáciu.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </motion.div>
+          )}
 
-        {activeTab === "settings" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Nastavenia systému</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center text-gray-500 py-8">
-                <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>Nastavenia budú dostupné v budúcej verzii</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          {activeTab === "users" && (
+            <motion.div
+              key="users"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="border-none shadow-lg">
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                    <Users className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    Správa používateľov
+                  </h3>
+                  <p className="text-gray-500 max-w-md mx-auto">
+                    Pokročilá správa používateľov, ich profilov a predplatného
+                    bude dostupná v nasledujúcej aktualizácii.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {activeTab === "settings" && (
+            <motion.div
+              key="settings"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="border-none shadow-lg">
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                    <Settings className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    Nastavenia systému
+                  </h3>
+                  <p className="text-gray-500 max-w-md mx-auto">
+                    Globálne nastavenia aplikácie a konfigurácia parametrov budú
+                    dostupné čoskoro.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

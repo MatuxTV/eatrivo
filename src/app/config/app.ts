@@ -1,10 +1,10 @@
 export const APP_CONFIG = {
   // Current welcome dialog version
-  WELCOME_DIALOG_VERSION: "0.1.2",
+  WELCOME_DIALOG_VERSION: "0.1.3",
   
   // Changelog for each version
   WELCOME_DIALOG_CHANGELOG: {
-    "0.1.2": {
+    "0.1.3": {
       title: "Vitajte v Eatrivo!",
       features: [
         "Zobrazenie nutričných hodnôt jedál a použitých surovín",
