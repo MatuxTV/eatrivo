@@ -8,8 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Star, ChefHat } from "lucide-react";
-import { getMealTypeColor } from "@/lib/functions";
+import { Clock, Star, ChefHat, Flame, Droplet, Wheat, Beef } from "lucide-react";
+import { getMealTypeColor, roundNumber } from "@/lib/functions";
 
 interface Ingredient {
   name: string;
@@ -50,132 +50,123 @@ export default function RecipeDialog({
 }: RecipeDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto bg-primary-foreground p-4 sm:p-6 mx-auto">
-        <DialogHeader>
-          {/* Header with Icon and Title */}
-          <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-            {/* Meal Type Icon */}
-            <div
-              className={`w-12 h-12 sm:w-16 sm:h-16 ${getMealTypeColor(
-                meal_type
-              )} rounded-xl sm:rounded-2xl flex flex-col items-center justify-center flex-shrink-0 shadow-lg bg-gradient-to-br from-white/30 to-white/0 relative`}
-              aria-label={meal_type}
-              role="img"
-            >
-              <span
-                className="absolute inset-0 rounded-xl sm:rounded-2xl pointer-events-none"
-                style={{
-                  background:
-                    "radial-gradient(circle at 60% 40%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.01) 80%)",
-                }}
-              />
-              {icon || (
-                <Star className="w-6 h-6 sm:w-9 sm:h-9 text-white drop-shadow-lg" />
-              )}
-              <span className="block text-[10px] sm:text-xs font-medium text-white/90 mt-0.5 sm:mt-1 text-center capitalize drop-shadow-sm">
-                {meal_type}
-              </span>
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white p-0 gap-0 border-none shadow-2xl rounded-3xl">
+        
+        {/* Header Section with Gradient Background */}
+        <div className={`relative p-6 sm:p-8 ${getMealTypeColor(meal_type)} bg-opacity-10 overflow-hidden`}>
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10" 
+               style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '24px 24px' }}>
+          </div>
+
+          <div className="relative z-10 flex flex-col sm:flex-row gap-6 items-start">
+             {/* Icon Box */}
+            <div className={`
+              w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center flex-shrink-0
+              bg-white shadow-lg text-eatrivo-purple
+            `}>
+              {icon || <Star className="w-8 h-8 sm:w-10 sm:h-10" />}
             </div>
 
-            <div className="flex-1 min-w-0">
-              <DialogTitle className="text-lg sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 leading-tight">
+            <div className="flex-1 space-y-2">
+              <div className="flex flex-wrap gap-2 mb-2">
+                <Badge variant="secondary" className="bg-white/60 backdrop-blur-sm text-gray-700 hover:bg-white/80">
+                  <Star className="w-3 h-3 mr-1 text-yellow-500" />
+                  {difficulty}
+                </Badge>
+                <Badge variant="secondary" className="bg-white/60 backdrop-blur-sm text-gray-700 hover:bg-white/80">
+                  <Clock className="w-3 h-3 mr-1 text-blue-500" />
+                  {cookTime}
+                </Badge>
+              </div>
+              
+              <DialogTitle className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
                 {title}
               </DialogTitle>
-              <DialogDescription className="text-gray-600 text-sm sm:text-base line-clamp-3 sm:line-clamp-none">
+              
+              <DialogDescription className="text-gray-600 text-base leading-relaxed">
                 {description}
               </DialogDescription>
             </div>
           </div>
-
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 mb-4 sm:mb-6">
-            <Badge
-              variant="outline"
-              className="text-gray-600 border-gray-300 bg-gray-50 text-xs sm:text-sm"
-            >
-              <Star className="w-3 h-3 mr-1" />
-              {difficulty}
-            </Badge>
-            <Badge
-              variant="outline"
-              className="text-gray-600 border-gray-300 bg-gray-50 text-xs sm:text-sm"
-            >
-              <Clock className="w-3 h-3 mr-1" />
-              {cookTime}
-            </Badge>
-          </div>
-        </DialogHeader>
-
-        {/* Nutrition Info Section */}
-        <div className="mb-4 sm:mb-6">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
-            <span className="text-eatrivo-purple text-lg sm:text-xl">📊</span>
-            Nutričné hodnoty
-          </h3>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 bg-gray-50 p-3 sm:p-4 rounded-lg">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-              <span className="text-gray-600 text-xs sm:text-sm">Kalórie:</span>
-              <span className="font-semibold text-gray-900 text-sm sm:text-lg">
-                {calories} kcal
-              </span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-              <span className="text-gray-600 text-xs sm:text-sm">Proteíny:</span>
-              <span className="font-semibold text-gray-900 text-sm sm:text-lg">
-                {protein}g
-              </span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-              <span className="text-gray-600 text-xs sm:text-sm">Sacharidy:</span>
-              <span className="font-semibold text-gray-900 text-sm sm:text-lg">
-                {carbs}g
-              </span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-              <span className="text-gray-600 text-xs sm:text-sm">Tuky:</span>
-              <span className="font-semibold text-gray-900 text-sm sm:text-lg">
-                {fat}g
-              </span>
-            </div>
-          </div>
         </div>
 
-        {/* Ingredients Section */}
-        {ingredients && ingredients.length > 0 && (
+        <div className="p-6 sm:p-8 space-y-8">
+          {/* Nutrition Grid */}
           <div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
-              <ChefHat className="w-4 h-4 sm:w-5 sm:h-5 text-eatrivo-purple" />
-              Ingrediencie
+            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
+              Nutričné hodnoty
+              <div className="h-px flex-1 bg-gray-100"></div>
             </h3>
-            <ul className="space-y-2 bg-gray-50 p-3 sm:p-4 rounded-lg">
-              {ingredients.map((ingredient, index) => {
-                // Handle both object and string formats
-                const isObject = typeof ingredient === 'object' && ingredient !== null;
-                const displayText = isObject 
-                  ? `${ingredient.name} - ${ingredient.amount}`
-                  : ingredient;
-                
-                return (
-                  <li
-                    key={index}
-                    className="flex items-start gap-2 sm:gap-3 text-gray-700 text-sm sm:text-base"
-                  >
-                    <span className="text-eatrivo-purple font-bold mt-0.5 sm:mt-1 text-sm sm:text-base">•</span>
-                    <span className="flex-1 leading-relaxed">{displayText}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
+            
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-eatrivo-purple/10 flex items-center justify-center mb-2 text-eatrivo-purple">
+                  <Flame className="w-4 h-4" />
+                </div>
+                <span className="text-xl font-bold text-gray-900">{roundNumber(calories)}</span>
+                <span className="text-xs font-medium text-gray-500 uppercase">Kcal</span>
+              </div>
+              
+              <div className="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-eatrivo-green/10 flex items-center justify-center mb-2 text-eatrivo-green">
+                  <Beef className="w-4 h-4" />
+                </div>
+                <span className="text-xl font-bold text-gray-900">{roundNumber(protein)}g</span>
+                <span className="text-xs font-medium text-gray-500 uppercase">Proteíny</span>
+              </div>
 
-        {/* Empty State for Ingredients */}
-        {(!ingredients || ingredients.length === 0) && (
-          <div className="text-center py-6 sm:py-8 text-gray-500">
-            <ChefHat className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3 text-gray-300" />
-            <p className="text-sm sm:text-base">Zoznam ingrediencií zatiaľ nie je k dispozícii.</p>
+              <div className="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-eatrivo-orange/10 flex items-center justify-center mb-2 text-eatrivo-orange">
+                  <Wheat className="w-4 h-4" />
+                </div>
+                <span className="text-xl font-bold text-gray-900">{roundNumber(carbs)}g</span>
+                <span className="text-xs font-medium text-gray-500 uppercase">Sacharidy</span>
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-eatrivo-pink/10 flex items-center justify-center mb-2 text-eatrivo-pink">
+                  <Droplet className="w-4 h-4" />
+                </div>
+                <span className="text-xl font-bold text-gray-900">{roundNumber(fat)}g</span>
+                <span className="text-xs font-medium text-gray-500 uppercase">Tuky</span>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Ingredients Section */}
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
+              Ingrediencie
+              <div className="h-px flex-1 bg-gray-100"></div>
+            </h3>
+
+            {ingredients && ingredients.length > 0 ? (
+              <div className="grid sm:grid-cols-2 gap-3">
+                {ingredients.map((ingredient, index) => {
+                  const isObject = typeof ingredient === 'object' && ingredient !== null;
+                  const name = isObject ? ingredient.name : ingredient;
+                  const amount = isObject ? ingredient.amount : '';
+                  
+                  return (
+                    <div key={index} className="flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+                      <div className="w-2 h-2 rounded-full bg-eatrivo-purple mr-3 flex-shrink-0" />
+                      <span className="text-gray-700 font-medium flex-1">{name}</span>
+                      {amount && (
+                        <span className="text-sm text-gray-400 font-medium ml-2">{amount}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                <ChefHat className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                <p className="text-gray-500 font-medium">Zoznam ingrediencií nie je k dispozícii</p>
+              </div>
+            )}
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

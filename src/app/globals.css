@@ -1,540 +1,165 @@
 @import "tailwindcss";
 
-/* === HYBRID APPROACH: CSS Variables + Tailwind Integration === */
-/* This approach works with current Tailwind CSS and provides maximum compatibility */
-
-:root {
+@theme {
   /* Typography */
   --font-sans: "Inter", "Public Sans", system-ui, sans-serif;
   --font-heading: "Public Sans", "Inter", system-ui, sans-serif;
 
-  /* Base Colors */
-  --background: #ffffff;
-  --foreground: #171717;
-  --muted: #f9fafb;
-  --muted-foreground: #6b7280;
-  --border: #e5e7eb;
-  --input: #f3f4f6;
-  --ring: #7b3ff2;
-
   /* EatRivo Brand Colors */
-  --primary: #7b3ff2;
-  --primary-foreground: #ffffff;
-  --secondary: #f3f4f6;
-  --secondary-foreground: #1f2937;
-  --accent: #059669;
-  --accent-foreground: #ffffff;
+  --color-eatrivo-purple: #7b3ff2;
+  --color-eatrivo-pink: #ec4899;
+  --color-eatrivo-green: #22c55e;
+  --color-eatrivo-orange: #f97316;
+  --color-eatrivo-blue: #3b82f6;
+  --color-eatrivo-yellow: #eab308;
+  --color-eatrivo-red: #ef4444;
+  --color-eatrivo-gray: #6b7280;
+  --color-eatrivo-dark: #1f2937;
+  --color-eatrivo-light: #f8fafc;
+  --color-eatrivo-black-primary: #333333;
+  --color-eatrivo-black-secondary: #6b7280;
+  --color-eatrivo-white-primary: #fffafo;
+  --color-eatrivo-white-secondary: #f3f4f6;
 
-  /* Food Category Colors */
-  --food-fresh: #16a34a;
-  --food-spicy: #dc2626;
-  --food-sweet: #d946ef;
-  --food-healthy: #059669;
-  --food-premium: #7c2d12;
+  /* Semantic Colors */
+  --color-primary: var(--color-eatrivo-purple);
+  --color-primary-foreground: var(--color-eatrivo-white-primary);
 
-  /* Status Colors */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --destructive: #ef4444;
-  --info: #3b82f6;
-}
-@theme inline {
+  --color-secondary: var(--color-eatrivo-white-secondary);
+  --color-secondary-foreground: var(--color-eatrivo-white-secondary);
 
-  /* Primary color   */
-  --color-primary: #7b3ff2;
-  --color-secondary: #f3f4f6;
+  --color-accent: #059669;
+  --color-accent-foreground: #333333;
 
-  /* Color background */
-  --color-primary-foreground: #F9FAFB;
-  --color-secondary-foreground: #FFFFFF;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #333333;
 
-  /* Color text */
-  --color-primary-text: #1E2939;
-  --color-secondary-text: #4A5565;
+  --color-muted: #f9fafb;
+  --color-muted-foreground: #6b7280;
 
+  --color-popover: #ffffff;
+  --color-popover-foreground: #333333;
 
-  /* EatRivo Custom Colors */
-  --eatrivo-green: #22c55e;
-  --eatrivo-orange: #f97316;
-  --eatrivo-purple: #7b3ff2;
-  --eatrivo-pink: #ec4899;
-  --eatrivo-blue: #3b82f6;
-  --eatrivo-yellow: #eab308;
-  --eatrivo-red: #ef4444;
-  --eatrivo-gray: #6b7280;
-  --eatrivo-dark: #1f2937;
-  --eatrivo-light: #f8fafc;
-}
+  --color-card: #ffffff;
+  --color-card-foreground: #333333;
 
-/* === DARK MODE SUPPORT === */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f1f5f9;
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    --border: #334155;
-    --input: #1e293b;
-    --ring: #7b3ff2;
+  --color-border: #e5e7eb;
+  --color-input: #f3f4f6;
+  --color-ring: var(--color-eatrivo-purple);
 
-    --eatrivo-light: #1e293b;
-    --eatrivo-dark: #f8fafc;
+  /* Food Categories */
+  --color-food-fresh: #16a34a;
+  --color-food-spicy: #dc2626;
+  --color-food-sweet: #d946ef;
+  --color-food-healthy: #059669;
+  --color-food-premium: #7c2d12;
+
+  /* Animations */
+  --animate-fade-in: fadeIn 0.5s ease-in-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
+  --animate-blob: blob 7s infinite;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
   }
 }
 
-/* === CUSTOM UTILITY CLASSES === */
-/* Using CSS variables in utility classes for maximum flexibility */
-
-/* Background Colors */
-.bg-eatrivo-green {
-  background-color: var(--eatrivo-green);
-}
-.bg-eatrivo-orange {
-  background-color: var(--eatrivo-orange);
-}
-.bg-eatrivo-purple {
-  background-color: var(--eatrivo-purple);
-}
-.bg-eatrivo-pink {
-  background-color: var(--eatrivo-pink);
-}
-.bg-eatrivo-blue {
-  background-color: var(--eatrivo-blue);
-}
-.bg-eatrivo-yellow {
-  background-color: var(--eatrivo-yellow);
-}
-.bg-eatrivo-red {
-  background-color: var(--eatrivo-red);
-}
-.bg-eatrivo-gray {
-  background-color: var(--eatrivo-gray);
-}
-.bg-eatrivo-dark {
-  background-color: var(--eatrivo-dark);
-}
-.bg-eatrivo-light {
-  background-color: var(--eatrivo-light);
-}
-
-/* Text Colors */
-.text-eatrivo-green {
-  color: var(--eatrivo-green);
-}
-.text-eatrivo-orange {
-  color: var(--eatrivo-orange);
-}
-.text-eatrivo-purple {
-  color: var(--eatrivo-purple);
-}
-.text-eatrivo-pink {
-  color: var(--eatrivo-pink);
-}
-.text-eatrivo-blue {
-  color: var(--eatrivo-blue);
-}
-.text-eatrivo-yellow {
-  color: var(--eatrivo-yellow);
-}
-.text-eatrivo-red {
-  color: var(--eatrivo-red);
-}
-.text-eatrivo-gray {
-  color: var(--eatrivo-gray);
-}
-.text-eatrivo-dark {
-  color: var(--eatrivo-dark);
-}
-.text-eatrivo-light {
-  color: var(--eatrivo-light);
-}
-
-/* Border Colors */
-.border-eatrivo-green {
-  border-color: var(--eatrivo-green);
-}
-.border-eatrivo-orange {
-  border-color: var(--eatrivo-orange);
-}
-.border-eatrivo-purple {
-  border-color: var(--eatrivo-purple);
-}
-.border-eatrivo-pink {
-  border-color: var(--eatrivo-pink);
-}
-.border-eatrivo-blue {
-  border-color: var(--eatrivo-blue);
-}
-
-/* Food Category Utilities */
-.bg-food-fresh {
-  background-color: var(--food-fresh);
-}
-.bg-food-spicy {
-  background-color: var(--food-spicy);
-}
-.bg-food-sweet {
-  background-color: var(--food-sweet);
-}
-.bg-food-healthy {
-  background-color: var(--food-healthy);
-}
-.bg-food-premium {
-  background-color: var(--food-premium);
-}
-
-.text-food-fresh {
-  color: var(--food-fresh);
-}
-.text-food-spicy {
-  color: var(--food-spicy);
-}
-.text-food-sweet {
-  color: var(--food-sweet);
-}
-.text-food-healthy {
-  color: var(--food-healthy);
-}
-.text-food-premium {
-  color: var(--food-premium);
-}
-
-/* Status Colors */
-.bg-status-success {
-  background-color: var(--success);
-}
-.bg-status-warning {
-  background-color: var(--warning);
-}
-.bg-status-destructive {
-  background-color: var(--destructive);
-}
-.bg-status-info {
-  background-color: var(--info);
-}
-
-.text-status-success {
-  color: var(--success);
-}
-.text-status-warning {
-  color: var(--warning);
-}
-.text-status-destructive {
-  color: var(--destructive);
-}
-.text-status-info {
-  color: var(--info);
-}
-
-/* === CUSTOM COMPONENTS === */
-/* Component-specific styles */
-
-.eatrivo-gradient {
-  background: linear-gradient(
-    135deg,
-    var(--eatrivo-purple),
-    var(--eatrivo-pink)
-  );
-}
-
-.eatrivo-gradient-text {
-  background: linear-gradient(
-    135deg,
-    var(--eatrivo-purple),
-    var(--eatrivo-pink)
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.food-card-shadow {
-  box-shadow: 0 4px 20px rgba(var(--eatrivo-purple), 0.1);
-}
-
-.hero-glow {
-  box-shadow: 0 0 100px rgba(var(--eatrivo-purple), 0.3);
-}
-
-/* === GLOBAL STYLES === */
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: var(--font-sans);
-  background-color: var(--background);
-  color: var(--foreground);
-  line-height: 1.6;
-}
-
-/* Typography Improvements */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-/* Focus States */
-*:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-/* Selection */
-::selection {
-  background-color: var(--eatrivo-purple);
-  color: white;
-}
-
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--muted);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--eatrivo-purple);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--eatrivo-pink);
-}
-
-/* CSS Variables for Manual Use */
-:root {
-  /* Typography */
-  --font-sans: var(--font-family-sans);
-  --font-heading: var(--font-family-heading);
-
-  /* Colors */
-  --background: var(--color-background);
-  --foreground: var(--color-foreground);
-  --muted: var(--color-muted);
-  --muted-foreground: var(--color-muted-foreground);
-  --border: var(--color-border);
-  --input: var(--color-input);
-  --ring: var(--color-ring);
-
-  /* EatRivo Brand Colors */
-  --primary: var(--color-primary);
-  --primary-foreground: var(--color-primary-foreground);
-  --secondary: var(--color-secondary);
-  --secondary-foreground: var(--color-secondary-foreground);
-  --accent: var(--color-accent);
-  --accent-foreground: var(--color-accent-foreground);
-  --secondary: #f3f4f6;
-  --secondary-foreground: #1f2937;
-  --accent: #059669;
-  --accent-foreground: #ffffff;
-
-  --main-purple: #7b3ff2; /* New main purple color variable */
-
-  /* Status Colors */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --destructive: #ef4444;
-  --info: #3b82f6;
-
-  /* Layout */
-  --radius: 0.5rem;
-}
-
-/* Dark Mode */
+/* Dark Mode Overrides */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f172a;
-    --foreground: #f1f5f9;
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    --border: #334155;
-    --input: #1e293b;
-    --ring: #22c55e;
-
-    --primary: #7b3ff2;
-    --primary-foreground: #0f172a;
-    --secondary: #1e293b;
-    --secondary-foreground: #f1f5f9;
-    --accent: #16a34a;
-    --accent-foreground: #ffffff;
+    --color-background: #0f172a;
+    --color-foreground: #f1f5f9;
+    --color-muted: #1e293b;
+    --color-muted-foreground: #94a3b8;
+    --color-border: #334155;
+    --color-input: #1e293b;
+    --color-card: #0f172a;
+    --color-card-foreground: #f1f5f9;
+    --color-popover: #0f172a;
+    --color-popover-foreground: #f1f5f9;
+    --color-secondary: #1e293b;
+    --color-secondary-foreground: #f1f5f9;
   }
 }
 
 /* Base Styles */
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: var(--font-sans);
-  background-color: var(--background);
-  color: var(--foreground);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Typography */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-/* Custom Font Classes */
-.font-heading {
-  font-family: var(--font-heading);
-}
-
-.font-body {
-  font-family: var(--font-sans);
-}
-
-.font-public-sans {
-  font-family: "Public Sans", "Inter", system-ui, sans-serif;
-}
-
-/* Custom Components */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius);
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.15s ease-in-out;
-  cursor: pointer;
-  border: none;
-  outline: none;
-  padding: 0.5rem 1rem;
-}
-
-.btn:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-.btn-primary {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-}
-
-.btn-primary:hover {
-  background-color: var(--accent);
-}
-
-.btn-secondary {
-  background-color: var(--secondary);
-  color: var(--secondary-foreground);
-}
-
-.btn-secondary:hover {
-  background-color: var(--muted);
-}
-
-/* Card Component */
-.card {
-  background-color: var(--background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  transition: box-shadow 0.3s ease-in-out;
-}
-
-.card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* Input Component */
-.input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background-color: var(--input);
-  color: var(--foreground);
-  font-size: 0.875rem;
-  transition: border-color 0.15s ease-in-out;
-}
-
-.input:focus {
-  outline: none;
-  border-color: var(--ring);
-  box-shadow: 0 0 0 3px rgb(16 185 129 / 0.1);
-}
-
-.input::placeholder {
-  color: var(--muted-foreground);
-}
-
-/* Utilities */
-.gradient-food {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-}
-
-.gradient-food-light {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-}
-
-.shadow-custom {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+@layer base {
+  html {
+    scroll-behavior: smooth;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  body {
+    @apply bg-white text-gray-900 antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-semibold tracking-tight;
   }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+/* Component Utilities */
+@layer components {
+  .eatrivo-gradient {
+    @apply bg-gradient-to-br from-eatrivo-purple/80 to-eatrivo-purple/70;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .eatrivo-gradient-text {
+    @apply bg-gradient-to-br from-eatrivo-purple to-eatrivo-pink bg-clip-text text-transparent;
   }
-}
 
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.3s ease-out;
-}
-
-/* Responsive Utilities */
-@media (max-width: 640px) {
-  .mobile-hidden {
-    display: none;
+  .glass-panel {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
   }
-}
 
-@media (min-width: 641px) {
-  .mobile-only {
-    display: none;
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2;
+  }
+
+  .card {
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm transition-shadow hover:shadow-md;
   }
 }
