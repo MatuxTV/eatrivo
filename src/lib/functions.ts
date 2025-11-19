@@ -63,3 +63,12 @@ export function getMealTypeColor(mealType: string): string {
     }
     return age;
   }
+
+  export function roundNumber(num: number | string): number {
+    
+    if (typeof num === 'string') {
+      const parsed = parseFloat(num.replace(/[^\d.-]/g, ''));
+      return isNaN(parsed) ? 0 : Math.round(parsed);
+    }
+    return isNaN(num) ? 0 : Math.round(num);
+  }

@@ -68,68 +68,67 @@ export class EatrivoAIService {
 
     return cleaned;
   }
+
   static async generateWeeklyMealPlan(
     userProfile: UserProfile,
     shoppingListData: ShoppingData
   ) {
     try {
-      const prompt = `Vytvor JEDÁLNIČEK NA CELÝ TÝŽDEŇ (7 dní: Pondelok–Nedeľa) z nasledujúceho nákupného zoznamu. 
-Použi IBA suroviny z tohto zoznamu a zachovaj reálne množstvá podľa dostupných potravín.
-
-🎯 CIEĽ:
-Vytvoriť realistický, nutrične vyvážený a praktický 7-dňový plán stravovania pre klienta.
+      const userAge = new Date().getFullYear() - new Date(userProfile.dateofBirth).getFullYear();
+      const totalMeals = userProfile.mealsPerDay * 7;
+      
+      const prompt = `Vytvor 7-dňový jedálny plán (Pondelok–Nedeľa) z tohto nákupného zoznamu.
 
 📋 PROFIL KLIENTA:
-Narodený/á: ${userProfile.dateofBirth},  
-Pohlavie: ${userProfile.sex},  
-Váha: ${userProfile.weight} kg,  
-Výška: ${userProfile.height} cm,  
-Cieľ: ${userProfile.goal},  
-Úroveň aktivity: ${userProfile.activityLevel},  
-Jedál denne: ${userProfile.mealsPerDay},  
+Vek: ${userAge} rokov
+Pohlavie: ${userProfile.sex}
+Váha: ${userProfile.weight} kg
+Výška: ${userProfile.height} cm
+Cieľ: ${userProfile.goal}
+Aktivita: ${userProfile.activityLevel}
+Jedál/deň: ${userProfile.mealsPerDay}
 Alergie: ${userProfile.allergies || "žiadne"}
 
 🛒 NÁKUPNÝ ZOZNAM:
 ${shoppingListData.markdown}
 
----
+⚙️ PRAVIDLÁ:
+1. Použi IBA potraviny z nákupného zoznamu
+2. Množstvá v gramoch/ml (realistické porcie)
+3. Každé jedlo min. 2 ingrediencie
+4. Slovenské názvy jedál
+5. Čas prípravy: 10–30 minút
+6. Rozumne opakuj jedlá (raňajky môžu byť 2× rovnaké)
 
-⚙️ PRAVIDLÁ TVORBY:
-1. Použi výlučne potraviny z nákupného zoznamu.  
-2. Každé jedlo musí obsahovať realistické **množstvo ingrediencií v gramoch alebo ml**.  
-3. Zachovaj logiku cieľa (napr. chudnutie → menej kalórií, naberanie → viac sacharidov a tukov).  
-4. Rozdeľ makrá rovnomerne počas dňa.  
-5. Použi slovenské názvy jedál.  
-6. Jedlá musia byť jednoduché, rýchle (10–30 minút).  
-7. Opakuj len vhodné jedlá (napr. raňajky 1–2× týždenne).  
-8. V každom jedle uveď **zoznam ingrediencií s názvom, množstvom a typom**.  
-9. Typ suroviny musí byť jedna z kategórií: "bielkovina", "sacharid", "tuk", "zelenina", "ovocie", "dochucovadlo".
+⚠️ KRITICKÉ - FORMÁT DÁTOVÝCH TYPOV:
 
----
+JEDLO (meal objekty) - nutričné hodnoty sú ČÍSLA:
+{
+  "calories": 420,
+  "protein": 28,
+  "carbs": 52,
+  "fat": 11
+}
 
-📦 VÝSTUP:
-Čistý **JSON objekt** (začni {, skonči }), BEZ markdown wrapperu.
+DEŇ (day objekty) - denné súčty sú STRINGY s jednotkou:
+{
+  "totalDailyCalories": "1850 kcal",
+  "totalDailyProtein": "120 g",
+  "totalDailyCarbs": "170 g",
+  "totalDailyFats": "50 g"
+}
 
-Každý deň obsahuje:
-- day: názov dňa (Pondelok–Nedeľa)
-- totalDailyCalories, totalDailyProtein, totalDailyCarbs, totalDailyFats
-- meals: zoznam jedál dňa
+INGREDIENCIE - amount je STRING s jednotkou:
+{
+  "name": "Kuracie prsia",
+  "amount": "120 g",
+  "type": "protein"
+}
 
-Každé jedlo obsahuje:
-- name: názov jedla
-- meal_type: raňajky, desiata, obed, olovrant, večera
-- prepTime: čas prípravy (min)
-- difficulty: “ľahké”, “stredné”, “pokročilé”
-- calories, protein, carbs, fat: nutričné hodnoty
-- ingredients: zoznam ingrediencií vo forme:
-  - name: názov potraviny
-  - amount: množstvo (g, ml, ks)
-  - type: kategória potraviny (bielkovina/sacharid/tuk/zelenina/ovocie/dochucovadlo)
-- ingredientCount: automaticky počet položiek z poľa ingredients
+Typy ingrediencií: protein, carb, fat, vegetable, fruit, seasoning
 
----
+📊 VÝSTUPNÝ FORMÁT:
 
-📊 Príklad formátu výstupu:
 {
   "week": [
     {
@@ -140,61 +139,50 @@ Každé jedlo obsahuje:
       "totalDailyFats": "50 g",
       "meals": [
         {
-          "name": "Ovsená kaša s jogurtom a mangom",
+          "name": "Proteínová ovsená kaša",
           "meal_type": "raňajky",
           "prepTime": 10,
           "difficulty": "ľahké",
-          "calories": 400,
-          "protein": 25,
-          "carbs": 50,
-          "fat": 10,
+          "calories": 420,
+          "protein": 28,
+          "carbs": 52,
+          "fat": 11,
           "ingredients": [
-            {"name": "Ovsené vločky", "amount": "50 g"},
-            {"name": "Skyr", "amount": "150 g"},
-            {"name": "Mango", "amount": "80 g"},
-            {"name": "Chia semienka", "amount": "5 g"},
-            {"name": "Med", "amount": "5 g"}
+            {"name": "Ovsené vločky", "amount": "60 g", "type": "carb"},
+            {"name": "Proteinový jogurt", "amount": "150 g", "type": "protein"},
+            {"name": "Banán", "amount": "100 g", "type": "fruit"}
           ],
-          "ingredientCount": 5
-        },
-        {
-          "name": "Kuracie prsia s ryžou a brokolicou",
-          "meal_type": "obed",
-          "prepTime": 25,
-          "difficulty": "stredné",
-          "calories": 500,
-          "protein": 40,
-          "carbs": 45,
-          "fat": 12,
-          "ingredients": [
-            {"name": "Kuracie prsia", "amount": "120 g"},
-            {"name": "Ryža", "amount": "100 g"},
-            {"name": "Brokolica", "amount": "80 g"},
-            {"name": "Olivový olej", "amount": "5 ml"}
-          ],
-          "ingredientCount": 4
+          "ingredientCount": 3
         }
       ]
     }
   ]
 }
 
----
-
 📈 NUTRIČNÉ CIELE:
-- Vytvor presne ${userProfile.mealsPerDay} jedál na deň × 7 dní (spolu ${
-        userProfile.mealsPerDay * 7
-      } jedál).
-- Kalorické hodnoty podľa cieľa (napr. 1700–1900 kcal pre chudnutie, 2800–3200 pre objem).
-- Pomery makronutrientov: bielkoviny 25–30 %, tuky 25–30 %, sacharidy 40–50 %.
-- Použi výhradne potraviny z nákupného zoznamu.
-- Názvy jedál musia byť **v slovenčine**.
+- Počet jedál: ${userProfile.mealsPerDay} jedál/deň × 7 dní = ${totalMeals} jedál celkom
+- Kalórie podľa cieľa:
+  * lose_weight: 1700–1900 kcal/deň
+  * maintain_weight: 2000–2300 kcal/deň
+  * gain_muscle: 2800–3200 kcal/deň
+- Makrá: protein 25-30%, tuky 25-30%, sacharidy 40-50%
+- Súčet calories všetkých meals = totalDailyCalories (±5%)
 
----
+💡 FALLBACK:
+- Ak chýbajú suroviny, použi najbližšie alternatívy
+- Opakuj vhodné kombinácie namiesto nových jedál
+- Prioritizuj nutričnú hodnotu
 
-🧠 POZNÁMKA:
-Výstup musí byť **syntakticky validný JSON** – bez markdownu, komentárov, alebo textového vysvetlenia.
-`;
+✅ VALIDÁCIA:
+1. Všetky calories/protein/carbs/fat v meals sú NUMBER (nie string)
+2. Všetky totalDaily* sú STRING s jednotkou
+3. Každé jedlo má min. 2 ingrediencie
+4. Každá ingrediencia má name, amount, type
+5. Presne 7 dní (Pondelok–Nedeľa)
+6. Presne ${userProfile.mealsPerDay} meals na deň
+
+VÝSTUP: Čistý JSON objekt. Začni {, skonči }. Žiadne markdown, žiadne komentáre.`;
+
       const response = await model.invoke([new HumanMessage(prompt)]);
 
       // Spracuj odpoveď

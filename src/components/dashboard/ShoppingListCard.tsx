@@ -3,10 +3,11 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, Eye, Calendar, FileText } from "lucide-react";
+import { Download, Eye, Calendar, FileText, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
+import { motion } from "framer-motion";
 
 // ak máš util na classNames, použi ho (ináč vynechaj a spoj reťazce ručne)
 const cn = (...a: (string | false | null | undefined)[]) =>
@@ -28,16 +29,16 @@ const formatDate = (dateString: string) =>
     year: "numeric",
   });
 
-const getStatusColor = (status: ShoppingListCardProps["status"]) => {
+const getStatusConfig = (status: ShoppingListCardProps["status"]) => {
   switch (status) {
     case "active":
-      return "bg-green-100 text-green-800";
+      return { color: "text-green-700", bg: "bg-green-50", border: "border-green-100", label: "Aktívny" };
     case "completed":
-      return "bg-blue-100 text-blue-800";
+      return { color: "text-blue-700", bg: "bg-blue-50", border: "border-blue-100", label: "Dokončený" };
     case "cancelled":
-      return "bg-red-100 text-red-800";
+      return { color: "text-red-700", bg: "bg-red-50", border: "border-red-100", label: "Zrušený" };
     default:
-      return "bg-gray-100 text-gray-800";
+      return { color: "text-gray-700", bg: "bg-gray-50", border: "border-gray-100", label: "Neznámy" };
   }
 };
 
@@ -51,6 +52,7 @@ export default function ShoppingListCard({
 }: ShoppingListCardProps) {
   const [isViewing, setIsViewing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const statusConfig = getStatusConfig(status);
 
   const handleDownload = async () => {
     try {
@@ -63,7 +65,7 @@ export default function ShoppingListCard({
         context: "ShoppingListCard",
         metadata: { shoppingListId: id }
       });
-      toast.error("Failed to open shopping list");
+      toast.error("Nepodarilo sa stiahnuť nákupný zoznam");
     } finally {
       setTimeout(() => setIsDownloading(false), 500);
     }
@@ -80,75 +82,85 @@ export default function ShoppingListCard({
         context: "ShoppingListCard",
         metadata: { shoppingListId: id }
       });
-      toast.error("Failed to open shopping list");
+      toast.error("Nepodarilo sa otvoriť nákupný zoznam");
     } finally {
       setIsViewing(false);
     }
   };
 
   return (
-    <Card className="p-6 hover:shadow-md transition-shadow">
-      <div className="flex flex-col space-y-4">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-              {title}
-            </h3>
-            {description && (
-              <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                {description}
-              </p>
-            )}
+    <motion.div
+      whileHover={{ y: -4 }}
+      transition={{ type: "spring", stiffness: 300 }}
+    >
+      <Card className="group relative overflow-hidden border-none shadow-md hover:shadow-xl transition-all duration-300 bg-white h-full flex flex-col">
+        {/* Status Bar */}
+        <div className={`h-1.5 w-full ${status === 'active' ? 'bg-eatrivo-purple' : 'bg-gray-200'}`} />
+
+        <div className="p-5 flex flex-col h-full">
+          {/* Header */}
+          <div className="flex justify-between items-start gap-4 mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge 
+                  variant="secondary" 
+                  className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 h-5 border", statusConfig.bg, statusConfig.color, statusConfig.border)}
+                >
+                  {statusConfig.label}
+                </Badge>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 leading-tight group-hover:text-eatrivo-purple transition-colors">
+                {title}
+              </h3>
+            </div>
+            
+            <div className="w-10 h-10 rounded-xl bg-eatrivo-purple/10 flex items-center justify-center flex-shrink-0 text-eatrivo-purple">
+              <ShoppingCart className="w-5 h-5" />
+            </div>
           </div>
-          <Badge className={cn("whitespace-nowrap", getStatusColor(status))}>
-            {status.charAt(0).toUpperCase() + status.slice(1)}
-          </Badge>
-        </div>
 
-        {/* Date Range */}
-        <div className="flex items-center space-x-2 text-sm text-gray-500">
-          <Calendar className="w-4 h-4" />
-          <span>
-            {formatDate(weekStartDate)} - {formatDate(weekEndDate)}
-          </span>
-        </div>
+          {/* Description */}
+          {description && (
+            <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-grow">
+              {description}
+            </p>
+          )}
 
-        {/* File Info */}
-        <div className="flex items-center space-x-2 text-sm text-gray-500">
-          <FileText className="w-4 h-4" />
-          <span>PDF Document</span>
-        </div>
+          {/* Meta Info */}
+          <div className="space-y-2 mb-5 pt-4 border-t border-gray-50 mt-auto">
+            <div className="flex items-center text-xs text-gray-500 font-medium">
+              <Calendar className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              {formatDate(weekStartDate)} - {formatDate(weekEndDate)}
+            </div>
+            <div className="flex items-center text-xs text-gray-500 font-medium">
+              <FileText className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              PDF Dokument
+            </div>
+          </div>
 
-        {/* Actions */}
-        <div className="flex space-x-2 pt-2">
-          <Button
-            size="sm"
-            onClick={handleView}
-            disabled={isViewing}
-            aria-busy={isViewing}
-            className="flex-1 bg-secondary-foreground hover:scale-105 text-primary-text/60"
-          >
-            <Eye className="w-4 h-4 md:mr-2" />
-            <span className="hidden md:inline">
-              {isViewing ? "Opening..." : "View"}
-            </span>
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleDownload}
-            disabled={isDownloading}
-            aria-busy={isDownloading}
-            className="flex-1 hover:scale-105 "
-          >
-            <Download className="w-4 h-4 md:mr-2" />
-            <span className="hidden md:inline">
-              {isDownloading ? "Downloading..." : "Download"}
-            </span>
-          </Button>
+          {/* Actions */}
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              size="sm"
+              onClick={handleView}
+              disabled={isViewing}
+              className="w-full bg-eatrivo-white-secondary border-2 border-gray-200 hover:bg-gray-50 text-gray-700 hover:text-eatrivo-purple hover:border-eatrivo-purple/30 transition-all"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Zobraziť
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleDownload}
+              disabled={isDownloading}
+              className="w-full bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white shadow-sm hover:shadow transition-all"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Stiahnuť
+            </Button>
+          </div>
         </div>
-
-      </div>
-    </Card>
+      </Card>
+    </motion.div>
   );
 }
