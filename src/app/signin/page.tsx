@@ -25,8 +25,8 @@ export default async function SignInPage() {
         </div>
 
         {/* Sign In Card */}
-        <Card>
-          <CardHeader className="text-center text-primary-text">
+        <Card className=" bg-eatrivo-white-primary">
+          <CardHeader className="text-center text-eatrivo-black-primary">
             <CardTitle>Vitajte späť</CardTitle>
             <CardDescription>
               Prihláste sa do svojho účtu pomocou Google

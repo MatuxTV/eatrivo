@@ -11,13 +11,13 @@ export default function SignOutPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 text-primary-text">
       <div className="w-full max-w-md">
-        <Card>
+        <Card className=" bg-eatrivo-white-primary text-eatrivo-black-primary/90">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-              <LogOut className="w-6 h-6 text-red-600" />
+              <LogOut className="w-6 h-6 text-eatrivo-red" />
             </div>
             <CardTitle>Odhlásenie</CardTitle>
-            <CardDescription>
+            <CardDescription >
               Naozaj sa chcete odhlásiť z Eatrivo?
             </CardDescription>
           </CardHeader>
@@ -34,8 +34,7 @@ export default function SignOutPage() {
               </Button>
             </form>
             <Button 
-              variant="outline" 
-              className="w-full hover:scale-105 hover:bg-gray-100" 
+              className="w-full bg-eatrivo-white-secondary border-1 border-eatrivo-black/50 hover:scale-105 hover:bg-gray-100" 
               size="lg"
               asChild
             >

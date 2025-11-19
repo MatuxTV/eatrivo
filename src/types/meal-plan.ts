@@ -41,3 +41,9 @@ export interface MealPlanResponse {
   } | null;
   error?: string;
 }
+
+export interface Ingredient {
+  name: string;
+  amount: string;
+  type?: string;
+}

@@ -25,10 +25,12 @@ import {
   userProfileOnboardingSchema,
   type UserProfileOnboarding,
 } from "@/lib/schemas/user";
+import { motion } from "framer-motion";
+import { User, Calendar, ArrowRight } from "lucide-react";
 
 interface ProfileSetupProps {
   onComplete: (data: UserProfileOnboarding) => void;
-  initialData?: UserProfileOnboarding | null; // Add this prop
+  initialData?: UserProfileOnboarding | null;
 }
 
 export default function ProfileSetup({
@@ -49,7 +51,6 @@ export default function ProfileSetup({
     setIsSubmitting(true);
     try {
       onComplete({ ...data });
-      // Simulate API call delay
       await new Promise((resolve) => setTimeout(resolve, 500));
     } catch (error) {
       logger.error("Error submitting profile", error, {
@@ -61,114 +62,90 @@ export default function ProfileSetup({
   };
 
   return (
-    <Card className="text-black">
-      <CardHeader>
-        <CardTitle className="text-xl md:text-2xl">Osobné údaje</CardTitle>
-        <CardDescription className="text-sm md:text-base">
-          Povedzte nám niečo o sebe, aby sme mohli prispôsobiť vašu skúsenosť.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 md:space-y-6"
-          >
-            <FormField
-              control={form.control}
-              name="fullName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm md:text-base">
-                    Celé meno *
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Vaše celé meno" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card className="border-none shadow-2xl rounded-3xl bg-white overflow-hidden">
+        <div className="h-2 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink" />
+        <CardHeader className="text-center pb-2 pt-8">
+          <div className="w-16 h-16 bg-eatrivo-purple/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-eatrivo-purple">
+            <User className="w-8 h-8" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-gray-900">
+            Osobné údaje
+          </CardTitle>
+          <CardDescription className="text-base text-gray-500 max-w-md mx-auto">
+            Povedzte nám niečo o sebe, aby sme mohli prispôsobiť vašu skúsenosť.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-8">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <User className="w-4 h-4 text-eatrivo-purple" />
+                      Celé meno
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        className="bg-white border-gray-200 focus:border-eatrivo-purple focus:ring-eatrivo-purple/20 h-12 rounded-xl"
+                        placeholder="Janko Hraško"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm md:text-base">
-                    Používateľské meno *
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="vase_meno123"
-                      {...field}
-                      onChange={(e) => {
-                        const value = e.target.value
-                          .toLowerCase()
-                          .replace(/\s/g, "_");
-                        field.onChange(value);
-                      }}
-                      onBlur={async (e) => {
-                        field.onBlur?.();
-                        const value = e.target.value;
-                        if (!value || value.length < 3) return;
-                        try {
-                          const res = await fetch(
-                            `/api/onboarding/check-username?username=${encodeURIComponent(
-                              value
-                            )}`
-                          );
-                          const data = await res.json();
-                          if (data.exists) {
-                            form.setError("username", {
-                              type: "manual",
-                              message: "Používateľské meno je už obsadené",
-                            });
-                          } else {
-                            form.clearErrors("username");
-                          }
-                        } catch (err) {
-                          logger.error("Error checking username", err, {
-                            context: "ProfileSetup",
-                          });
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
+              <FormField
+                control={form.control}
+                name="dateOfBirth"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-eatrivo-purple" />
+                      Dátum narodenia
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        className="bg-white border-gray-200 focus:border-eatrivo-purple focus:ring-eatrivo-purple/20 h-12 rounded-xl"
+                        type="date"
+                        value={field.value || ""}
+                        onChange={(e) => {
+                          field.onChange(e.target.value || undefined);
+                        }}
+                        max={new Date().toISOString().split("T")[0]}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="dateOfBirth"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm md:text-base">
-                    Dátum narodenia *
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      value={field.value || ""}
-                      onChange={(e) => {
-                        field.onChange(e.target.value || undefined);
-                      }}
-                      max={new Date().toISOString().split("T")[0]}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Ukladá sa..." : "Pokračovať"}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-semibold bg-eatrivo-purple hover:bg-eatrivo-purple/90 rounded-xl shadow-lg shadow-eatrivo-purple/20 hover:shadow-eatrivo-purple/40 transition-all duration-300 mt-4"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  "Ukladá sa..."
+                ) : (
+                  <span className="flex items-center">
+                    Pokračovať <ArrowRight className="w-4 h-4 ml-2" />
+                  </span>
+                )}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

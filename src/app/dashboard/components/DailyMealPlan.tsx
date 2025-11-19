@@ -3,6 +3,7 @@
 import { ChefHat } from "lucide-react";
 import ReceiptCard from "@/components/dashboard/ReceiptCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { Ingredient } from "@/types/meal-plan";
 
 interface Meal {
   id: string;
@@ -15,7 +16,7 @@ interface Meal {
   carbs: number;
   fat: number;
   type: string;
-  ingredients?: any[];
+  ingredients?: (string | Ingredient)[];
 }
 
 interface DailyMealPlanProps {
@@ -23,12 +24,18 @@ interface DailyMealPlanProps {
   isLoading: boolean;
 }
 
-export default function DailyMealPlan({ meals, isLoading }: DailyMealPlanProps) {
+export default function DailyMealPlan({
+  meals,
+  isLoading,
+}: DailyMealPlanProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm space-y-4">
+          <div
+            key={i}
+            className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm space-y-4"
+          >
             <div className="flex gap-4">
               <Skeleton className="w-16 h-16 rounded-2xl" />
               <div className="space-y-2 flex-1">
@@ -57,7 +64,9 @@ export default function DailyMealPlan({ meals, isLoading }: DailyMealPlanProps) 
         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
           <ChefHat className="w-8 h-8 text-gray-300" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">Žiadne jedlá na dnes</h3>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Žiadne jedlá na dnes
+        </h3>
         <p className="text-sm text-gray-500 max-w-xs text-center mt-1">
           Váš tréner pre vás zatiaľ nepripravil jedálny plán na tento deň.
         </p>
@@ -80,7 +89,7 @@ export default function DailyMealPlan({ meals, isLoading }: DailyMealPlanProps) 
           carbs={meal.carbs}
           fat={meal.fat}
           meal_type={meal.type}
-          ingerdients={meal.ingredients}
+          ingredients={meal.ingredients}
         />
       ))}
     </div>

@@ -1,59 +1,56 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Upload, Sparkles, ArrowRight } from "lucide-react"
+import { motion } from "framer-motion";
+import { UserPlus, FileText, Sparkles } from "lucide-react";
 
 const steps = [
   {
     id: 1,
-    title: "Zaregistrujte sa",
-    description: "Vytvorte si bezplatný účet a vyplňte základné informácie o vašich cieľoch a preferenciách.",
-    icon: Sparkles,
-    color: "bg-blue-50 text-blue-600",
+    title: "Registrácia",
+    description:
+      "Vytvorte si účet a vyplňte svoj profil s preferenciami a cieľmi.",
+    icon: UserPlus,
+    color: "bg-blue-500",
   },
   {
     id: 2,
-    title: "Spracujeme vaše údaje",
-    description: "Naša AI v spolupráci s odborníkmi pripraví ideálnu kombináciu jedál a surovín presne pre vás.",
-    icon: Sparkles, // Changed icon to Sparkles or similar to represent processing
-    color: "bg-purple-50 text-purple-600",
+    title: "Priradenie Plánu",
+    description:
+      "Váš osobný coach vám pripraví nákupný zoznam a jedálny plán na mieru.",
+    icon: FileText,
+    color: "bg-eatrivo-purple",
   },
   {
     id: 3,
     title: "Hotovo!",
-    description: "Dostanete hotový nákupný lístok aj s receptami na celý týždeň. Stačí len nakúpiť a variť.",
-    icon: ArrowRight,
-    color: "bg-green-50 text-green-600",
+    description:
+      "Sledujte svoj plán v aplikácii a užívajte si zdravé stravovanie bez starostí.",
+    icon: Sparkles,
+    color: "bg-green-500",
   },
-]
+];
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 bg-gray-50 relative overflow-hidden">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10">
-        <div className="text-center mb-16">
-          <motion.h2 
+    <section className="py-24 bg-gray-50 overflow-hidden">
+      <div className="container px-4 md:px-6 mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4"
+            className="text-3xl md:text-4xl font-bold tracking-tighter text-gray-900 mb-4"
           >
             Ako to funguje?
           </motion.h2>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-lg text-gray-600 max-w-2xl mx-auto"
-          >
-            Cesta k zdravšiemu stravovaniu v troch jednoduchých krokoch
-          </motion.p>
+          <p className="text-lg text-gray-600">
+            Cesta k vášmu zdravšiemu ja je jednoduchšia, než si myslíte.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-          {/* Connecting Line (Desktop) */}
-          <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-blue-200 via-purple-200 to-green-200 z-0"></div>
+        <div className="relative grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
+          {/* Connecting Line */}
+          <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gray-200 -z-10" />
 
           {steps.map((step, index) => (
             <motion.div
@@ -62,15 +59,28 @@ export function HowItWorks() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.2 }}
-              className="relative z-10 flex flex-col items-center text-center"
+              className="relative flex flex-col items-center text-center"
             >
-              <div className={`w-24 h-24 rounded-2xl ${step.color} flex items-center justify-center shadow-lg mb-6 transition-transform hover:scale-110 duration-300`}>
-                <step.icon className="w-10 h-10" />
+              <div
+                className={`w-24 h-24 rounded-3xl ${step.color} bg-opacity-10 flex items-center justify-center mb-6 relative group`}
+              >
+                <div
+                  className={`absolute inset-0 ${step.color} opacity-10 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500`}
+                />
+                <div
+                  className={`w-16 h-16 ${step.color} rounded-2xl flex items-center justify-center text-white shadow-lg relative z-10`}
+                >
+                  <step.icon className="w-8 h-8" />
+                </div>
+                <div className="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full border-4 border-gray-50 flex items-center justify-center font-bold text-gray-400 text-sm">
+                  {step.id}
+                </div>
               </div>
+
               <h3 className="text-xl font-bold text-gray-900 mb-3">
-                {step.id}. {step.title}
+                {step.title}
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed max-w-xs">
                 {step.description}
               </p>
             </motion.div>
@@ -78,5 +88,5 @@ export function HowItWorks() {
         </div>
       </div>
     </section>
-  )
+  );
 }

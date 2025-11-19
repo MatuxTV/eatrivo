@@ -4,14 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { 
-  ReceiptText, 
-  User, 
-  LogOut, 
-  Settings, 
-  LayoutDashboard,
-  UtensilsCrossed
-} from "lucide-react";
+import { User, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
 import type { Session } from "next-auth";
@@ -31,7 +24,7 @@ export default function DashboardSidebar({ session }: DashboardSidebarProps) {
   ];
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       className="hidden md:flex w-64 bg-white border-r border-gray-100 flex-col h-screen sticky top-0"
@@ -60,7 +53,11 @@ export default function DashboardSidebar({ session }: DashboardSidebarProps) {
               <h2 className="text-sm font-bold text-gray-900 truncate">
                 {session?.user?.name}
               </h2>
-              <p className={`text-xs capitalize ${getMembershipStatus(session?.user?.membership)}`}>
+              <p
+                className={`text-xs capitalize ${getMembershipStatus(
+                  session?.user?.membership
+                )}`}
+              >
                 {session?.user?.membership || "basic"} člen
               </p>
             </div>
@@ -102,13 +99,18 @@ export default function DashboardSidebar({ session }: DashboardSidebarProps) {
               href={item.href}
               className={`
                 flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                ${isActive 
-                  ? "bg-eatrivo-purple/10 text-eatrivo-purple" 
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                ${
+                  isActive
+                    ? "bg-eatrivo-purple/10 text-eatrivo-purple"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }
               `}
             >
-              <item.icon className={`w-4 h-4 mr-3 ${isActive ? "text-eatrivo-purple" : "text-gray-400"}`} />
+              <item.icon
+                className={`w-4 h-4 mr-3 ${
+                  isActive ? "text-eatrivo-purple" : "text-gray-400"
+                }`}
+              />
               {item.label}
             </Link>
           );

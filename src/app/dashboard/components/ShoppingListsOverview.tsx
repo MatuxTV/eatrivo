@@ -1,8 +1,8 @@
 "use client";
 
-import { UtensilsCrossed, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import ShoppingListCard from "@/components/dashboard/ShoppingListCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ShoppingList {
@@ -21,7 +21,10 @@ interface ShoppingListsOverviewProps {
   isLoading: boolean;
 }
 
-export default function ShoppingListsOverview({ lists, isLoading }: ShoppingListsOverviewProps) {
+export default function ShoppingListsOverview({
+  lists,
+  isLoading,
+}: ShoppingListsOverviewProps) {
   return (
     <div className="space-y-6">
       {/* Section Header */}
@@ -34,7 +37,12 @@ export default function ShoppingListsOverview({ lists, isLoading }: ShoppingList
         </h2>
         {!isLoading && lists.length > 0 && (
           <span className="text-xs font-bold px-3 py-1 bg-white border border-gray-200 text-gray-600 rounded-full shadow-sm">
-            {lists.length} {lists.length === 1 ? "zoznam" : lists.length >= 2 && lists.length <= 4 ? "zoznamy" : "zoznamov"}
+            {lists.length}{" "}
+            {lists.length === 1
+              ? "zoznam"
+              : lists.length >= 2 && lists.length <= 4
+              ? "zoznamy"
+              : "zoznamov"}
           </span>
         )}
       </div>
@@ -43,7 +51,10 @@ export default function ShoppingListsOverview({ lists, isLoading }: ShoppingList
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 space-y-4 shadow-sm">
+            <div
+              key={i}
+              className="bg-white border border-gray-100 rounded-2xl p-5 space-y-4 shadow-sm"
+            >
               <div className="flex justify-between">
                 <Skeleton className="h-5 w-1/2 rounded-md" />
                 <Skeleton className="h-5 w-16 rounded-full" />
@@ -72,7 +83,8 @@ export default function ShoppingListsOverview({ lists, isLoading }: ShoppingList
               Žiadne nákupné zoznamy
             </h3>
             <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
-              Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Váš tréner alebo AI vám čoskoro pripraví plán na mieru.
+              Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Váš tréner
+              alebo AI vám čoskoro pripraví plán na mieru.
             </p>
           </CardContent>
         </Card>
