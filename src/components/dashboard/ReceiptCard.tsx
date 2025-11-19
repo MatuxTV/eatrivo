@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Star } from "lucide-react";
-import { getMealTypeColor } from "@/lib/functions";
+import { getMealTypeColor,roundNumber } from "@/lib/functions";
 import RecipeDialog from "./RecipeDialog";
 import { useState } from "react";
 
@@ -102,19 +102,19 @@ export default function ReceiptCard({
         <div className="grid grid-cols-2 gap-y-3 gap-x-6">
           <div className="flex justify-between">
             <span className="text-gray-600 text-sm">Kalórie:</span>
-            <span className="font-medium text-gray-900">{calories}</span>
+            <span className="font-medium text-gray-900">{roundNumber(calories)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600 text-sm">Proteíny:</span>
-            <span className="font-medium text-gray-900">{protein}g</span>
+            <span className="font-medium text-gray-900">{roundNumber(protein)}g</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600 text-sm">Sacharidy:</span>
-            <span className="font-medium text-gray-900">{carbs}g</span>
+            <span className="font-medium text-gray-900">{roundNumber(carbs)}g</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600 text-sm">Tuky:</span>
-            <span className="font-medium text-gray-900">{fat}g</span>
+            <span className="font-medium text-gray-900">{roundNumber(fat)}g</span>
           </div>
         </div>
 

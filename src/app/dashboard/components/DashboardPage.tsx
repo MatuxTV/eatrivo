@@ -18,7 +18,7 @@ import ReceiptCard from "@/components/dashboard/ReceiptCard";
 import ShoppingListCard from "@/components/dashboard/ShoppingListCard";
 import { toast } from "sonner";
 import type { Session } from "next-auth";
-import { getCurrentDaySlovak, getMembershipStatus } from "@/lib/functions";
+import { getCurrentDaySlovak, getMembershipStatus,roundNumber } from "@/lib/functions";
 import WelcomeDialog from "../components/WelcomeDialog";
 import { APP_CONFIG } from "@/app/config/app";
 import { logger } from "@/lib/logger";
@@ -398,7 +398,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                       <div className="w-14 h-10 md:w-16 md:h-12 rounded-xl bg-eatrivo-purple/10 border-2 border-eatrivo-purple flex items-center justify-center">
                         <div className="text-center">
                           <div className="text-xs md:text-sm font-bold text-eatrivo-purple">
-                            {todaysNutrition?.calories ?? "—"}
+                            {todaysNutrition?.calories ? roundNumber(todaysNutrition.calories) : "—"}kcal
                           </div>
                         </div>
                       </div>
@@ -409,7 +409,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                     <div className="flex flex-col items-center min-w-fit">
                       <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-eatrivo-green/10 border-2 border-eatrivo-green flex items-center justify-center">
                         <div className="text-xs md:text-sm font-bold text-eatrivo-green">
-                          {todaysNutrition?.protein ?? "—"}
+                          {todaysNutrition?.protein ? roundNumber(todaysNutrition.protein) : "—"}g
                         </div>
                       </div>
                       <span className="text-[10px] md:text-xs text-gray-600 mt-1 text-center">
@@ -419,7 +419,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                     <div className="flex flex-col items-center min-w-fit">
                       <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-eatrivo-orange/10 border-2 border-eatrivo-orange flex items-center justify-center">
                         <div className="text-xs md:text-sm font-bold text-eatrivo-orange">
-                          {todaysNutrition?.carbs ?? "—"}
+                          {todaysNutrition?.carbs ? roundNumber(todaysNutrition.carbs) : "—"}g
                         </div>
                       </div>
                       <span className="text-[10px] md:text-xs text-gray-600 mt-1 text-center">
@@ -429,7 +429,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                     <div className="flex flex-col items-center min-w-fit">
                       <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-eatrivo-pink/10 border-2 border-eatrivo-pink flex items-center justify-center">
                         <div className="text-xs md:text-sm font-bold text-eatrivo-pink">
-                          {todaysNutrition?.fats ?? "—"}
+                          {todaysNutrition?.fats ? roundNumber(todaysNutrition.fats) : "—"}g
                         </div>
                       </div>
                       <span className="text-[10px] md:text-xs text-gray-600 mt-1 text-center">
@@ -481,7 +481,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
                         carbs={meal.carbs}
                         fat={meal.fat}
                         meal_type={meal.type}
-                        ingerdients={meal.ingredients}
+                        ingerdients={meal.ingredients}  
                       />
                     ))
                   ) : (
