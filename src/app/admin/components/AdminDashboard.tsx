@@ -685,7 +685,9 @@ export default function AdminDashboard() {
                             <p className="text-white/80 text-sm">
                               Celkom používateľov
                             </p>
-                            <p className="text-4xl font-bold">{users.length}</p>
+                            <p className="text-4xl font-bold">
+                              {users.length - users.filter((u) => u.membership?.toLowerCase() === "trainer").length}
+                            </p>
                           </div>
                           <div className="bg-white/20 p-2 rounded-lg">
                             <Users className="w-6 h-6 text-white" />
@@ -767,7 +769,7 @@ export default function AdminDashboard() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="border-none shadow-lg">
+              <Card className="border-none shadow-lg bg-eatrivo-light">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-xl text-eatrivo-black-primary">
                     <div className="w-8 h-8 rounded-lg bg-eatrivo-purple/10 flex items-center justify-center text-eatrivo-purple">
@@ -815,6 +817,8 @@ export default function AdminDashboard() {
                                   ? "bg-gradient-to-br from-yellow-400 to-orange-500"
                                   : user.membership === "basic"
                                   ? "bg-gradient-to-br from-blue-400 to-blue-600"
+                                  : user.membership === "trainer"
+                                  ? "bg-gradient-to-br from-green-400 to-green-600"
                                   : "bg-gradient-to-br from-gray-400 to-gray-600"
                               }`}
                             >
@@ -884,7 +888,7 @@ export default function AdminDashboard() {
                               <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
                                 <Button
                                   size="sm"
-                                  variant="outline"
+
                                   className="h-8 text-xs hover:bg-eatrivo-purple hover:text-white hover:border-eatrivo-purple transition-colors"
                                   onClick={() => {
                                     if (user.profileId) {
@@ -899,8 +903,7 @@ export default function AdminDashboard() {
                                 </Button>
                                 <Button
                                   size="sm"
-                                  variant="ghost"
-                                  className="h-8 text-xs text-gray-600 hover:text-eatrivo-purple"
+                                  className="h-8 bg-eatrivo-light text-xs text-gray-600 hover:text-eatrivo-purple"
                                   onClick={() => {
                                     navigator.clipboard.writeText(user.email);
                                     toast.success("Email skopírovaný do schránky");

@@ -7,13 +7,10 @@ import { motion } from "framer-motion";
 import { User, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
-import type { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 
-interface DashboardSidebarProps {
-  session: Session | null;
-}
-
-export default function DashboardSidebar({ session }: DashboardSidebarProps) {
+export default function DashboardSidebar() {
+  const { data: session } = useSession();
   const pathname = usePathname();
 
   const navItems = [

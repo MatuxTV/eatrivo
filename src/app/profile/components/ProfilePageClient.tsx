@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { User, Settings, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,10 +9,6 @@ import { Button } from "@/components/ui/button";
 import PersonalInfoSection from "./PersonalInfoSection";
 import NutritionPreferencesSection from "./NutritionPreferencesSection";
 import Link from "next/link";
-
-interface ProfilePageClientProps {
-  session: Session;
-}
 
 interface UserProfileData {
   fullName: string;
@@ -36,7 +32,8 @@ interface UserNutritionData {
   allergies: string;
 }
 
-export default function ProfilePageClient({ session }: ProfilePageClientProps) {
+export default function ProfilePageClient() {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<"personal" | "nutrition">("personal");
   const [isLoading, setIsLoading] = useState(true);
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
@@ -94,7 +91,7 @@ export default function ProfilePageClient({ session }: ProfilePageClientProps) {
             </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-eatrivo-purple to-eatrivo-pink rounded-full flex items-center justify-center text-white font-bold text-sm">
-                {session.user?.name?.[0] || session.user?.email?.[0].toUpperCase()}
+                {session?.user?.name?.[0] || session?.user?.email?.[0]?.toUpperCase() || "U"}
               </div>
             </div>
           </div>

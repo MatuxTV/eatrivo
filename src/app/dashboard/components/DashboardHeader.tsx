@@ -5,13 +5,11 @@ import Image from "next/image";
 import { LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
-import type { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 
-interface DashboardHeaderProps {
-  session: Session | null;
-}
+export default function DashboardHeader() {
+  const { data: session } = useSession();
 
-export default function DashboardHeader({ session }: DashboardHeaderProps) {
   return (
     <div className="md:hidden fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-100 z-40 px-4 py-3">
       <div className="flex items-center justify-between">
