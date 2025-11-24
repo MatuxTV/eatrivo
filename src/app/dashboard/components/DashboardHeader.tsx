@@ -15,7 +15,7 @@ export default function DashboardHeader({ session }: DashboardHeaderProps) {
   return (
     <div className="md:hidden fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-100 z-40 px-4 py-3">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <Link href="/profile" className="flex items-center gap-3 active:opacity-70 transition-opacity">
           {session?.user?.image ? (
             <Image
               src={session.user.image}
@@ -37,7 +37,7 @@ export default function DashboardHeader({ session }: DashboardHeaderProps) {
               {session?.user?.membership || "basic"}
             </p>
           </div>
-        </div>
+        </Link>
         <Link href="/signout">
           <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full">
             <LogOut className="w-5 h-5" />

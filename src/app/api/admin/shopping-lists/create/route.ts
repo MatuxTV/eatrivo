@@ -2,6 +2,7 @@ import type { NextRequest} from "next/server";
 import { NextResponse } from "next/server";
 import { db } from "../../../../../";
 import { shoppingLists } from "@/db/schema";
+import { EatrivoAIService } from "@/lib/langchain";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,22 +16,50 @@ export async function POST(req: NextRequest) {
       status,
       userProfileId,
       markdownContent,
+      generateWithAI,
+      userInfo,
     } = body;
 
     // Validate required fields
-    if (!title || !weekStartDate || !weekEndDate || !userProfileId || !markdownContent) {
+    if (!title || !weekStartDate || !weekEndDate || !userProfileId) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Validate markdown content is not empty
-    if (!markdownContent.trim()) {
-      return NextResponse.json(
-        { error: "Markdown content cannot be empty" },
-        { status: 400 }
-      );
+    let finalMarkdownContent = markdownContent;
+
+    // AI Generation logic
+    if (generateWithAI) {
+      if (!userInfo) {
+        return NextResponse.json(
+          { error: "userInfo is required when generateWithAI is true" },
+          { status: 400 }
+        );
+      }
+
+      const requiredFields = ['sex', 'dateOfBirth', 'height', 'weight', 'activity_level', 'goal', 'meal_per_day', 'budget_preference'];
+      for (const field of requiredFields) {
+        if (!userInfo[field]) {
+          return NextResponse.json(
+            { error: `userInfo.${field} is required for AI generation` },
+            { status: 400 }
+          );
+        }
+      }
+
+      finalMarkdownContent = await EatrivoAIService.generateShoppingList({
+        ...userInfo,
+        dateOfBirth: new Date(userInfo.dateOfBirth),
+      });
+    } else {
+      if (!markdownContent || !markdownContent.trim()) {
+        return NextResponse.json(
+          { error: "markdownContent is required when generateWithAI is false" },
+          { status: 400 }
+        );
+      }
     }
 
     // Create shopping list
@@ -42,7 +71,7 @@ export async function POST(req: NextRequest) {
         description: description || null,
         weekStartDate: new Date(weekStartDate),
         weekEndDate: new Date(weekEndDate),
-        markdownContent,
+        markdownContent: finalMarkdownContent,
         status: status || "active",
       })
       .returning();
