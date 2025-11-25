@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import type { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 import { getCurrentDaySlovak } from "@/lib/functions";
 import { APP_CONFIG } from "@/app/config/app";
 import { logger } from "@/lib/logger";
@@ -56,11 +56,8 @@ interface ShoppingList {
   createdAt: string;
 }
 
-interface DashboardPageProps {
-  session: Session;
-}
-
-export default function DashboardPage({ session }: DashboardPageProps) {
+export default function DashboardPage() {
+  const { data: session } = useSession();
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
   const [isLoading, setIsLoading] = useState({
     shoppingLists: true,
@@ -186,7 +183,6 @@ export default function DashboardPage({ session }: DashboardPageProps) {
       <WelcomeDialog
         open={showWelcomeDialog}
         onOpenChange={handleCloseDialog}
-        session={session}
         version={APP_CONFIG.WELCOME_DIALOG_VERSION}
         changelog={
           APP_CONFIG.WELCOME_DIALOG_CHANGELOG[APP_CONFIG.WELCOME_DIALOG_VERSION]
@@ -194,10 +190,10 @@ export default function DashboardPage({ session }: DashboardPageProps) {
       />
 
       {/* Desktop Sidebar */}
-      <DashboardSidebar session={session} />
+      <DashboardSidebar />
 
       {/* Mobile Header */}
-      <DashboardHeader session={session} />
+      <DashboardHeader />
 
       {/* Main Content */}
       <main className="flex-1 w-full md:max-w-[calc(100vw-256px)] pt-20 md:pt-8 pb-24 md:pb-8 px-4 md:px-8 overflow-y-auto h-screen">

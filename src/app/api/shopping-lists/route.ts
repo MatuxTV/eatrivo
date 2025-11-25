@@ -17,11 +17,17 @@ export async function GET(_request: NextRequest) {
 
     const cacheKey = `shopping-lists:${session.user.id}`
 
-
+    // Try Redis cache first (10 minute TTL for shopping lists)
     const cachedData = await CacheService.get(cacheKey)
     if (cachedData) {
-      return NextResponse.json(cachedData)
+      apiLogger.debug('Shopping lists cache HIT', { metadata: { userId: session.user.id } })
+      return NextResponse.json({
+        ...cachedData,
+        cached: true
+      })
     }
+
+    apiLogger.debug('Shopping lists cache MISS', { metadata: { userId: session.user.id } })
 
     // Database fallback
     const [userProfile] = await db
@@ -45,8 +51,8 @@ export async function GET(_request: NextRequest) {
       total: userShoppingLists.length
     }
 
-    // Cache for 5 minutes
-    await CacheService.set(cacheKey, response, 300)
+    // Cache for 10 minutes (600 seconds)
+    await CacheService.set(cacheKey, response, 600)
 
     return NextResponse.json(response)
   } catch (error) {

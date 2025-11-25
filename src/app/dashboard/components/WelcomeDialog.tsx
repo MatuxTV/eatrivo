@@ -12,13 +12,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import type { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 
 interface WelcomeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  session: Session;
   version: string;
   changelog?: {
     title: string;
@@ -30,10 +29,11 @@ interface WelcomeDialogProps {
 export default function WelcomeDialog({
   open,
   onOpenChange,
-  session,
   version,
   changelog,
 }: WelcomeDialogProps) {
+  const { data: session } = useSession();
+  
   const handleClose = () => {
     onOpenChange(false);
   };

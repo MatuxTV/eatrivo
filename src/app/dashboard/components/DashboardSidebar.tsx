@@ -7,13 +7,10 @@ import { motion } from "framer-motion";
 import { User, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
-import type { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 
-interface DashboardSidebarProps {
-  session: Session | null;
-}
-
-export default function DashboardSidebar({ session }: DashboardSidebarProps) {
+export default function DashboardSidebar() {
+  const { data: session } = useSession();
   const pathname = usePathname();
 
   const navItems = [
@@ -27,7 +24,7 @@ export default function DashboardSidebar({ session }: DashboardSidebarProps) {
     <motion.div
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="hidden md:flex w-64 bg-white border-r border-gray-100 flex-col h-screen sticky top-0"
+      className="hidden md:flex w-64 bg-white border-r bor border-gray-100 flex-col h-screen sticky top-0"
     >
       {/* User Profile Section */}
       <div className="p-6 border-b border-gray-100">
@@ -65,9 +62,8 @@ export default function DashboardSidebar({ session }: DashboardSidebarProps) {
 
           <div className="flex gap-2">
             <Button
-              variant="outline"
               size="sm"
-              className="flex-1 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700"
+              className="flex-1 border-2 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700"
               asChild
             >
               <Link href="/profile">
@@ -76,9 +72,8 @@ export default function DashboardSidebar({ session }: DashboardSidebarProps) {
               </Link>
             </Button>
             <Button
-              variant="ghost"
               size="sm"
-              className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="h-8 px-2  bg-eatrivo-light text-red-600 hover:text-red-700 hover:bg-red-50"
               asChild
             >
               <Link href="/signout">

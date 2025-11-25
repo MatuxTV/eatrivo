@@ -81,6 +81,7 @@ export default function AdminDashboard() {
   const [isUploading, setIsUploading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   // Fetch users on component mount
   useEffect(() => {
@@ -173,16 +174,11 @@ export default function AdminDashboard() {
       await response.json();
       toast.success("Nákupný zoznam bol úspešne vytvorený!");
 
-      // Reset form
-      setFormData({
-        title: "",
-        description: "",
-        weekStartDate: "",
-        weekEndDate: "",
-        status: "active",
-        userId: "",
+      // Reset only markdown content, keep other fields
+      setFormData((prev) => ({
+        ...prev,
         markdownContent: "",
-      });
+      }));
     } catch (error) {
       console.error("Upload error:", error);
       toast.error(
@@ -192,6 +188,115 @@ export default function AdminDashboard() {
       );
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!formData.userId || formData.userId === "0") {
+      toast.error("Prosím vyberte používateľa pre AI generovanie");
+      return;
+    }
+
+    if (!formData.title || !formData.weekStartDate || !formData.weekEndDate) {
+      toast.error("Prosím vyplňte názov a dátumy pred generovaním");
+      return;
+    }
+
+    setIsGeneratingAI(true);
+
+    try {
+      // Fetch user_info from backend
+      const userInfoResponse = await fetch(`/api/admin/users/${formData.userId}/info`);
+      
+      if (!userInfoResponse.ok) {
+        const errorData = await userInfoResponse.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.error || `HTTP ${userInfoResponse.status}: Nepodarilo sa načítať informácie o používateľovi`);
+      }
+
+      const userInfoData = await userInfoResponse.json();
+
+      if (!userInfoData.userInfo) {
+        toast.error("Používateľ nemá vyplnené nutričné informácie. Používateľ musí najprv dokončiť onboarding.");
+        setIsGeneratingAI(false);
+        return;
+      }
+
+      const userInfo = userInfoData.userInfo;
+
+      // Validate required fields from userInfo
+      const missingFields = [];
+      if (!userInfo.sex) missingFields.push("pohlavie");
+      if (!userInfo.dateOfBirth) missingFields.push("dátum narodenia");
+      if (!userInfo.height) missingFields.push("výška");
+      if (!userInfo.weight) missingFields.push("váha");
+      if (!userInfo.activity_level) missingFields.push("úroveň aktivity");
+      if (!userInfo.goal) missingFields.push("cieľ");
+
+      if (missingFields.length > 0) {
+        toast.error(`Používateľovi chýbajú údaje: ${missingFields.join(", ")}. Prosím, doplňte ich v profile.`);
+        setIsGeneratingAI(false);
+        return;
+      }
+
+      // Call AI generation endpoint
+      const response = await fetch("/api/admin/shopping-lists/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          weekStartDate: formData.weekStartDate,
+          weekEndDate: formData.weekEndDate,
+          status: formData.status,
+          userProfileId: formData.userId,
+          generateWithAI: true,
+          userInfo: {
+            sex: userInfo.sex,
+            dateOfBirth: userInfo.dateOfBirth,
+            height: userInfo.height,
+            weight: userInfo.weight,
+            activity_level: userInfo.activity_level,
+            goal: userInfo.goal,
+            meal_per_day: userInfo.meal_per_day || 3,
+            cooking_time_pref: userInfo.cooking_time_pref,
+            diet_preferences: userInfo.diet_preferences,
+            budget_preference: userInfo.budget_preference || "medium",
+            likes: userInfo.likes,
+            dislikes: userInfo.dislikes,
+            allergies: userInfo.allergies,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.error || `HTTP ${response.status}: AI generovanie zlyhalo`);
+      }
+
+      const result = await response.json();
+      
+      toast.success("AI úspešne vygenerovalo nákupný zoznam!");
+
+      // Update markdown editor with generated content
+      setFormData((prev) => ({
+        ...prev,
+        markdownContent: result.shoppingList.markdownContent,
+      }));
+
+    } catch (error) {
+      console.error("AI generation error:", error);
+      
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        toast.error("Chyba siete: Skontrolujte internetové pripojenie");
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Nepodarilo sa vygenerovať nákupný zoznam pomocou AI");
+      }
+    } finally {
+      setIsGeneratingAI(false);
     }
   };
 
@@ -274,7 +379,7 @@ export default function AdminDashboard() {
                 <div className="lg:col-span-2 space-y-6">
                   <Card className="border-none shadow-lg bg-white/80 backdrop-blur-sm">
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-xl">
+                      <CardTitle className="flex items-center gap-2 text-xl text-eatrivo-black-primary ">
                         <div className="w-8 h-8 rounded-lg bg-eatrivo-purple/10 flex items-center justify-center text-eatrivo-purple">
                           <Plus className="w-5 h-5" />
                         </div>
@@ -502,17 +607,37 @@ export default function AdminDashboard() {
 
                         {/* Editor Section */}
                         <div className="space-y-4">
-                          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b border-gray-100">
-                            <FileText className="w-4 h-4 text-eatrivo-purple" />
-                            Obsah (Markdown)
-                          </h3>
+                          <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-eatrivo-purple" />
+                              Obsah (Markdown)
+                            </h3>
+                            <Button
+                              type="button"
+                              onClick={handleGenerateWithAI}
+                              disabled={isGeneratingAI || !formData.userId || formData.userId === "0"}
+                              className="h-9 px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {isGeneratingAI ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                  Generuje AI...
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <Sparkles className="w-4 h-4" />
+                                  Generovať AI
+                                </div>
+                              )}
+                            </Button>
+                          </div>
                           <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-eatrivo-purple/20 focus-within:border-eatrivo-purple transition-all">
                             <MdEditor
                               value={formData.markdownContent}
                               style={{ height: "500px" }}
                               renderHTML={(text) => mdParser.render(text)}
                               onChange={handleMarkdownChange}
-                              placeholder="# Nákupný zoznam..."
+                              placeholder="# Nákupný zoznam...&#10;&#10;Alebo kliknite na 'Generovať AI' pre automatické vytvorenie."
                             />
                           </div>
                         </div>
@@ -560,7 +685,9 @@ export default function AdminDashboard() {
                             <p className="text-white/80 text-sm">
                               Celkom používateľov
                             </p>
-                            <p className="text-4xl font-bold">{users.length}</p>
+                            <p className="text-4xl font-bold">
+                              {users.length - users.filter((u) => u.membership?.toLowerCase() === "trainer").length}
+                            </p>
                           </div>
                           <div className="bg-white/20 p-2 rounded-lg">
                             <Users className="w-6 h-6 text-white" />
@@ -606,7 +733,7 @@ export default function AdminDashboard() {
 
                   <Card className="border-none shadow-md bg-white">
                     <CardHeader>
-                      <CardTitle className="text-base">Rýchle tipy</CardTitle>
+                      <CardTitle className="text-base text-eatrivo-black-primary">Rýchle tipy</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 text-sm text-gray-500">
                       <div className="flex gap-3">
@@ -642,18 +769,155 @@ export default function AdminDashboard() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="border-none shadow-lg">
-                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-                    <Users className="w-10 h-10 text-gray-400" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Správa používateľov
-                  </h3>
-                  <p className="text-gray-500 max-w-md mx-auto">
-                    Pokročilá správa používateľov, ich profilov a predplatného
-                    bude dostupná v nasledujúcej aktualizácii.
-                  </p>
+              <Card className="border-none shadow-lg bg-eatrivo-light">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl text-eatrivo-black-primary">
+                    <div className="w-8 h-8 rounded-lg bg-eatrivo-purple/10 flex items-center justify-center text-eatrivo-purple">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    Zoznam používateľov
+                  </CardTitle>
+                  <CardDescription>
+                    Prehľad všetkých registrovaných používateľov a ich základné informácie
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingUsers ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-3 border-eatrivo-purple/30 border-t-eatrivo-purple rounded-full animate-spin" />
+                        <p className="text-sm text-gray-500">Načítavajú sa používatelia...</p>
+                      </div>
+                    </div>
+                  ) : users.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <Users className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                        Žiadni používatelia
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        V systéme ešte nie sú registrovaní žiadni používatelia
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {users.map((user) => (
+                        <div
+                          key={user.id}
+                          className="group p-4 border border-gray-200 rounded-xl hover:border-eatrivo-purple/30 hover:shadow-md transition-all duration-200 bg-white"
+                        >
+                          <div className="flex items-start gap-4">
+                            {/* Avatar */}
+                            <div
+                              className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0
+                              ${
+                                user.membership === "premium"
+                                  ? "bg-gradient-to-br from-yellow-400 to-orange-500"
+                                  : user.membership === "basic"
+                                  ? "bg-gradient-to-br from-blue-400 to-blue-600"
+                                  : user.membership === "trainer"
+                                  ? "bg-gradient-to-br from-green-400 to-green-600"
+                                  : "bg-gradient-to-br from-gray-400 to-gray-600"
+                              }`}
+                            >
+                              {user.fullName?.[0] || user.email[0].toUpperCase()}
+                            </div>
+
+                            {/* User Info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="text-base font-semibold text-gray-900 truncate">
+                                    {user.fullName || "Bez mena"}
+                                  </h3>
+                                  <p className="text-sm text-gray-500 truncate">
+                                    {user.email}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  {user.membership === "premium" && (
+                                    <Sparkles className="w-4 h-4 text-yellow-500" />
+                                  )}
+                                  <span
+                                    className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize
+                                    ${
+                                      user.membership === "premium"
+                                        ? "bg-yellow-100 text-yellow-700"
+                                        : user.membership === "basic"
+                                        ? "bg-blue-100 text-blue-700"
+                                        : "bg-gray-100 text-gray-700"
+                                    }`}
+                                  >
+                                    {user.membership || "free"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Details Grid */}
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-3 pt-3 border-t border-gray-100">
+                                <div className="flex items-center gap-2 text-xs">
+                                  <span className="text-gray-500">ID:</span>
+                                  <span className="font-mono text-gray-700 truncate">
+                                    {user.id.slice(0, 8)}...
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs">
+                                  <span className="text-gray-500">Profil:</span>
+                                  <span
+                                    className={`px-1.5 py-0.5 rounded text-xs font-medium
+                                    ${
+                                      user.isProfileComplete
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-orange-100 text-orange-700"
+                                    }`}
+                                  >
+                                    {user.isProfileComplete ? "Dokončený" : "Neúplný"}
+                                  </span>
+                                </div>
+                                {user.username && (
+                                  <div className="flex items-center gap-2 text-xs col-span-2">
+                                    <span className="text-gray-500">Username:</span>
+                                    <span className="text-gray-700">@{user.username}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Action Buttons */}
+                              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+                                <Button
+                                  size="sm"
+
+                                  className="h-8 text-xs hover:bg-eatrivo-purple hover:text-white hover:border-eatrivo-purple transition-colors"
+                                  onClick={() => {
+                                    if (user.profileId) {
+                                      handleInputChange("userId", user.profileId);
+                                      setActiveTab("upload");
+                                      toast.success(`Vybraný používateľ: ${user.fullName || user.email}`);
+                                    }
+                                  }}
+                                >
+                                  <Plus className="w-3 h-3 mr-1" />
+                                  Vytvoriť zoznam
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="h-8 bg-eatrivo-light text-xs text-gray-600 hover:text-eatrivo-purple"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(user.email);
+                                    toast.success("Email skopírovaný do schránky");
+                                  }}
+                                >
+                                  Kopírovať email
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>

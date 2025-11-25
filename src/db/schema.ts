@@ -11,13 +11,24 @@ export const membershipEnum = pgEnum("membership", ["basic", "premium", "trainer
 export const shoppingListStatusEnum = pgEnum("shopping_list_status", ["active", "completed", "cancelled"]);
 export const goalEnum = pgEnum("goal", ["lose_weight", "maintain_weight", "gain_muscle"]);
 
+export const foodItems = pgTable("food_items", {
+	id: integer("id").primaryKey().notNull(),
+	name: text().notNull(),
+	category: text(),
+	unit: text(),
+	kcalPerUnit: integer("kcal_per_unit"),
+	protein: numeric(),
+	carbs: numeric(),
+	fat: numeric(),
+});
+
 // NextAuth users table (minimal, just for OAuth)
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name"),
   email: text("email").notNull().unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
-  membership: membershipEnum("membership").default("basic").notNull(),
+  membership: membershipEnum("membership").default("premium").notNull(),
   image: text("image"),
 
   //Stamp for NewUpdate window tracking

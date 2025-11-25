@@ -49,7 +49,7 @@ export function Navbar() {
             Funkcie
           </Link>
           <Link href="/signin">
-            <Button variant="ghost" className="font-medium hover:text-eatrivo-purple">
+            <Button  className="font-medium bg-eatrivo-light border-2  border-eatrivo-purple text-eatrivo-purple hover:bg-eatrivo-purple hover:text-white rounded-full px-6">
               Prihlásiť sa
             </Button>
           </Link>

@@ -15,6 +15,6 @@ export default async function DashboardPageWrapper() {
   }
 
   return (  
-    <DashboardPage session={session} />
+    <DashboardPage />
   )
 }

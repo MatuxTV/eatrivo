@@ -60,18 +60,6 @@ export function Hero() {
                 </Button>
               </Link>
             </div>
-
-            {/* Social Proof / Stats (Optional) */}
-            <div className="mt-12 flex items-center justify-center lg:justify-start gap-8 text-sm text-gray-500">
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white" />
-                  ))}
-                </div>
-                <span>Pripoj sa k 1000+ užívateľom</span>
-              </div>
-            </div>
           </motion.div>
 
           {/* Visual Content */}
