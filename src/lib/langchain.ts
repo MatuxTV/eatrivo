@@ -265,7 +265,7 @@ ${
         sedentary: 1,
         lightly_active: 1.175,
         moderately_active: 1.35,
-        very_active: 1.525,
+        very_active: 1.52,
         athlete: 1.7,
       };
 
@@ -275,7 +275,6 @@ ${
       let dailyCalories;
       if (userInfo.goal === "lose_weight") {
         // For weight loss: Deficit adjusted by activity level
-        // Higher activity = smaller deficit (to maintain energy)
         const deficitByActivity = {
           sedentary: 300, // Less active = can handle bigger deficit
           lightly_active: 280,
