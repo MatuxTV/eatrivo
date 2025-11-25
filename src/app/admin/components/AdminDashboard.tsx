@@ -150,7 +150,7 @@ export default function AdminDashboard() {
     setIsUploading(true);
 
     try {
-      const response = await fetch("/api/admin/shopping-lists/create", {
+      const response = await fetch("/api/admin/shopping-lists", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -197,11 +197,6 @@ export default function AdminDashboard() {
       return;
     }
 
-    if (!formData.title || !formData.weekStartDate || !formData.weekEndDate) {
-      toast.error("Prosím vyplňte názov a dátumy pred generovaním");
-      return;
-    }
-
     setIsGeneratingAI(true);
 
     try {
@@ -238,20 +233,13 @@ export default function AdminDashboard() {
         return;
       }
 
-      // Call AI generation endpoint
+      // Call shopping list generation endpoint (only generate, don't save to DB)
       const response = await fetch("/api/admin/shopping-lists/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          weekStartDate: formData.weekStartDate,
-          weekEndDate: formData.weekEndDate,
-          status: formData.status,
-          userProfileId: formData.userId,
-          generateWithAI: true,
           userInfo: {
             sex: userInfo.sex,
             dateOfBirth: userInfo.dateOfBirth,
@@ -277,12 +265,12 @@ export default function AdminDashboard() {
 
       const result = await response.json();
       
-      toast.success("AI úspešne vygenerovalo nákupný zoznam!");
+      toast.success("AI úspešne vygenerovalo nákupný zoznam! Skontrolujte a upravte pred uložením.");
 
-      // Update markdown editor with generated content
+      // Update markdown editor with generated content (don't save to DB yet)
       setFormData((prev) => ({
         ...prev,
-        markdownContent: result.shoppingList.markdownContent,
+        markdownContent: result.markdown || result.shoppingList || "",
       }));
 
     } catch (error) {
