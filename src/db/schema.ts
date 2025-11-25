@@ -153,3 +153,18 @@ export const aiInsights = pgTable('ai_insights', {
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow()
 })
+
+// Feedback table
+export const feedbackTypeEnum = pgEnum("feedback_type", ["bug", "feature", "improvement"]);
+
+export const feedback = pgTable("feedback", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userProfileId: uuid("userProfileId").references(() => userProfiles.id, { onDelete: "set null" }),
+  userEmail: text("userEmail").notNull(),
+  userName: text("userName"),
+  type: feedbackTypeEnum("type").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  status: text("status").default("new").notNull(), // new, in_progress, resolved
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+})

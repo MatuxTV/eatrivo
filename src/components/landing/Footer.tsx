@@ -50,7 +50,7 @@ export function Footer() {
         </div>
         
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 text-sm" suppressHydrationWarning>
             © {new Date().getFullYear()} EatRivo. Všetky práva vyhradené.
           </p>
           <div className="flex gap-6">

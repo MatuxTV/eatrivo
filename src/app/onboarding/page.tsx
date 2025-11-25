@@ -21,5 +21,5 @@ export default async function OnboardingPage() {
     redirect("/dashboard")
   }
 
-  return <OnboardingClient />;
+  return <OnboardingClient userEmail={session.user.email || undefined} />;
 }

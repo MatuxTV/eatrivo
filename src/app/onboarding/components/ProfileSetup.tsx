@@ -47,9 +47,12 @@ export default function ProfileSetup({
     },
   });
 
+  
+
   const onSubmit = async (data: UserProfileOnboarding) => {
     setIsSubmitting(true);
     try {
+      // Complete onboarding
       onComplete({ ...data });
       await new Promise((resolve) => setTimeout(resolve, 500));
     } catch (error) {
