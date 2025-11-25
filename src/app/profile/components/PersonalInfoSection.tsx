@@ -28,7 +28,7 @@ interface PersonalInfoSectionProps {
     membership: string;
   } | null;
   isLoading: boolean;
-  onUpdate: (data: any) => void;
+  onUpdate: (data: { fullName: string; dateOfBirth: string; email: string; membership: string }) => void;
 }
 
 export default function PersonalInfoSection({

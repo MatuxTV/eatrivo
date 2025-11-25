@@ -1,8 +1,10 @@
 import type { NextRequest} from "next/server";
 import { NextResponse } from "next/server";
 import { db } from "../../../../../";
-import { shoppingLists } from "@/db/schema";
+import { shoppingLists, userProfiles } from "@/db/schema";
 import { EatrivoAIService } from "@/lib/langchain";
+import { CacheService } from "@/lib/cache";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   try {
@@ -75,6 +77,28 @@ export async function POST(req: NextRequest) {
         status: status || "active",
       })
       .returning();
+
+    // Invalidate relevant caches (parallel for better performance)
+    const [userProfile] = await db
+      .select()
+      .from(userProfiles)
+      .where(eq(userProfiles.id, userProfileId));
+
+    if (userProfile) {
+      const weekStart = new Date(weekStartDate);
+      const cacheInvalidations = [
+        // Invalidate user's shopping lists cache
+        CacheService.del(`shopping-lists:${userProfile.userId}`),
+        // Invalidate meal plan caches for this shopping list
+        CacheService.del(`meal-plan:${newShoppingList.id}`),
+        // Invalidate user's weekly meal plan cache
+        CacheService.del(`user-meal-plan:${userProfileId}:${weekStart.toISOString().split('T')[0]}`),
+        // Invalidate any meal plans for this user (pattern match)
+        CacheService.invalidatePattern(`user-meal-plan:${userProfileId}:*`)
+      ];
+
+      await Promise.allSettled(cacheInvalidations);
+    }
 
     return NextResponse.json(
       {

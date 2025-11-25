@@ -153,28 +153,46 @@ export async function POST(_request: NextRequest) {
     }
 
     const latestShoppingList = userShoppingLists[0];
-    // logger.debug(`Using shopping list: ${latestShoppingList.title}`);
 
-    // Cache check
+    // Multi-level cache strategy:
+    // 1. Redis cache (fastest) - 1 hour TTL
+    // 2. Database (fast) - persistent storage
+    // 3. AI generation (slowest) - only when needed
+
     const cacheKey = `meal-plan:${latestShoppingList.id}`;
-    // logger.debug(`Checking cache: ${cacheKey}`);
+    const userCacheKey = `user-meal-plan:${userProfile.id}:${startOfWeek.toISOString().split('T')[0]}`;
 
-    const cachedMealPlan = await CacheService.get(cacheKey);
+    // Try Redis cache first (user-specific + shopping list specific)
+    const [cachedMealPlan, userCachedPlan] = await Promise.all([
+      CacheService.get(cacheKey),
+      CacheService.get(userCacheKey)
+    ]);
 
     if (cachedMealPlan) {
-      // logger.debug('Cache HIT - returning cached meal plan');
+      logger.debug('Redis cache HIT (shopping list key)');
       return NextResponse.json({
         success: true,
         insights: cachedMealPlan,
         cached: true,
         cacheKey,
-        message: "Returning cached meal plan"
+        message: "Cached meal plan"
       });
     }
 
-    // logger.debug('Cache MISS - checking database');
+    if (userCachedPlan) {
+      logger.debug('Redis cache HIT (user weekly key)');
+      return NextResponse.json({
+        success: true,
+        insights: userCachedPlan,
+        cached: true,
+        cacheKey: userCacheKey,
+        message: "Cached meal plan"
+      });
+    }
+
+    logger.debug('Redis cache MISS - checking database');
     
-    // Database check
+    // Try database next
     const [existingMealPlan] = await db
       .select()
       .from(mealPlans)
@@ -189,9 +207,13 @@ export async function POST(_request: NextRequest) {
       .limit(1);
 
     if (existingMealPlan) {
-      // logger.debug('Database HIT - returning existing meal plan');
-      // Cache it for 1 hour
-      await CacheService.set(cacheKey, existingMealPlan.meals, 3600);
+      logger.debug('Database HIT - caching and returning');
+      
+      // Cache with dual keys for better hit rate (1 hour TTL)
+      await Promise.all([
+        CacheService.set(cacheKey, existingMealPlan.meals, 3600),
+        CacheService.set(userCacheKey, existingMealPlan.meals, 3600)
+      ]);
       
       return NextResponse.json({
         success: true,
@@ -199,7 +221,7 @@ export async function POST(_request: NextRequest) {
         cached: false,
         fromDatabase: true,
         mealPlanId: existingMealPlan.id,
-        message: "Returning meal plan from database"
+        message: "Meal plan from database"
       });
     }
 
@@ -245,23 +267,30 @@ export async function POST(_request: NextRequest) {
       logger.warn('Using STATIC_FALLBACK meal plan');
     }
 
-    // Save to cache & database
+    // Save to cache & database (parallel for better performance)
     if (fallbackUsed === 'none') {
-      // logger.debug('Saving meal plan to cache and database');
-      await CacheService.set(cacheKey, mealPlan, 3600);
+      logger.debug('Saving meal plan to Redis and database');
       
-      try {
-        await db.insert(mealPlans).values({
+      // Parallel cache and database save
+      const savePromises = [
+        // Cache with dual keys (1 hour TTL)
+        CacheService.set(cacheKey, mealPlan, 3600),
+        CacheService.set(userCacheKey, mealPlan, 3600),
+        // Database insert
+        db.insert(mealPlans).values({
           userProfileId: userProfile.id,
           shoppingListId: latestShoppingList.id,
           weekStartDate: latestShoppingList.weekStartDate,
           weekEndDate: latestShoppingList.weekEndDate,
           meals: mealPlan,
-        }).returning();
-        // logger.debug('Meal plan saved to database successfully');
-      } catch (dbError) {
-        logger.error('Database save FAILED:', dbError instanceof Error ? dbError.message : String(dbError));
-      }
+        }).returning().catch((dbError) => {
+          logger.error('Database save FAILED:', dbError instanceof Error ? dbError.message : String(dbError));
+          return null;
+        })
+      ];
+
+      await Promise.allSettled(savePromises);
+      logger.debug('Meal plan saved successfully');
     }
 
     // Save to AI insights audit trail

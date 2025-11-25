@@ -20,16 +20,16 @@ interface UserProfileData {
 interface UserNutritionData {
   sex: "man" | "woman";
   height: number;
-  weight: string;
+  weight: string | number;
   activity_level: string;
   goal: string;
-  meal_per_day: number;
-  cooking_time_pref: string;
-  diet_preferences: string;
-  budget_preference: string;
-  likes: string;
-  dislikes: string;
-  allergies: string;
+  meal_per_day: number | null;
+  cooking_time_pref: string | null;
+  diet_preferences: string | null;
+  budget_preference: string | null;
+  likes: string | null;
+  dislikes: string | null;
+  allergies: string | null;
 }
 
 export default function ProfilePageClient() {

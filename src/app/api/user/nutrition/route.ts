@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "../../../../../auth";
 import { db } from "@/index";
 import { userProfiles, userInfoTable } from "@/db/schema";
@@ -65,12 +66,12 @@ export async function PUT(request: NextRequest) {
         sex: validation.data.sex,
         height: validation.data.height,
         weight: validation.data.weight.trim(),
-        activity_level: validation.data.activity_level.trim() as any,
-        goal: validation.data.goal.trim() as any,
+        activity_level: validation.data.activity_level.trim() as "sedentary" | "lightly_active" | "moderately_active" | "very_active" | "athlete",
+        goal: validation.data.goal.trim() as "lose_weight" | "maintain_weight" | "gain_muscle",
         meal_per_day: validation.data.meal_per_day,
-        cooking_time_pref: validation.data.cooking_time_pref.trim() as any,
-        diet_preferences: validation.data.diet_preferences.trim() as any,
-        budget_preference: validation.data.budget_preference.trim() as any,
+        cooking_time_pref: validation.data.cooking_time_pref.trim() as "quick" | "normal" | "slow",
+        diet_preferences: validation.data.diet_preferences.trim() as "none" | "lactosefree" | "vegetarian" | "vegan" | "pescatarian" | "ketogenic" | "paleolithic",
+        budget_preference: validation.data.budget_preference.trim() as "low" | "medium" | "high",
         likes: validation.data.likes?.trim(),
         dislikes: validation.data.dislikes?.trim(),
         allergies: validation.data.allergies?.trim(),

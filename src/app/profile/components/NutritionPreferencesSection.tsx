@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Loader2, Save, Scale, Activity, Target, UtensilsCrossed, Clock, DollarSign, Heart, X, AlertCircle } from "lucide-react";
+import { Loader2, Save, Scale, Activity, UtensilsCrossed, Clock, DollarSign, Heart, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,23 +38,25 @@ const nutritionSchema = z.object({
 
 type NutritionFormData = z.infer<typeof nutritionSchema>;
 
+interface UserNutritionData {
+  sex: "man" | "woman";
+  height: number;
+  weight: string | number;
+  activity_level: string;
+  goal: string;
+  meal_per_day: number | null;
+  cooking_time_pref: string | null;
+  diet_preferences: string | null;
+  budget_preference: string | null;
+  likes: string | null;
+  dislikes: string | null;
+  allergies: string | null;
+}
+
 interface NutritionPreferencesSectionProps {
-  nutritionData: {
-    sex: "man" | "woman";
-    height: number;
-    weight: string | number;
-    activity_level: string;
-    goal: string;
-    meal_per_day: number | null;
-    cooking_time_pref: string | null;
-    diet_preferences: string | null;
-    budget_preference: string | null;
-    likes: string | null;
-    dislikes: string | null;
-    allergies: string | null;
-  } | null;
+  nutritionData: UserNutritionData | null;
   isLoading: boolean;
-  onUpdate: (data: any) => void;
+  onUpdate: (data: UserNutritionData) => void;
 }
 
 export default function NutritionPreferencesSection({
@@ -91,7 +93,6 @@ export default function NutritionPreferencesSection({
 
   useEffect(() => {
     if (nutritionData) {
-      console.log("🔍 Načítané nutrition data:", nutritionData);
       // Ensure all values are properly formatted for the form
       const formData = {
         sex: nutritionData.sex,
@@ -107,7 +108,6 @@ export default function NutritionPreferencesSection({
         dislikes: nutritionData.dislikes || "",
         allergies: nutritionData.allergies || "",
       };
-      console.log("📝 Form data po konverzii:", formData);
       reset(formData);
     }
   }, [nutritionData, reset]);
@@ -164,7 +164,7 @@ export default function NutritionPreferencesSection({
       transition={{ duration: 0.3 }}
     >
       <Card className="p-8 bg-eatrivo-light">
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               Nutričné preferencie
