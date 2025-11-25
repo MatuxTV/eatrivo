@@ -6,7 +6,11 @@ import FoodPreferences from "./FoodPreferences";
 import type { UserProfileOnboarding, UserFoodPreferences } from "../../../lib/schemas/user";
 import { logger } from "@/lib/logger";
 
-export default function OnboardingClient() {
+interface OnboardingClientProps {
+  userEmail?: string;
+}
+
+export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [profileData, setProfileData] = useState<UserProfileOnboarding | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +24,7 @@ export default function OnboardingClient() {
     setIsLoading(true);
     
     try {
-      // Here you'll save both profile and food preferences to database
+      // Save both profile and food preferences to database
       const response = await fetch("/api/onboarding/post", {
         method: "POST",
         headers: {
@@ -33,7 +37,36 @@ export default function OnboardingClient() {
       });
 
       if (response.ok) {
-        // Redirect to dashboard or success page
+        // Send welcome email after successful onboarding (non-blocking)
+        if (userEmail && profileData?.fullName) {
+          try {
+            await fetch("/api/send-email", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                type: "welcome",
+                to: userEmail,
+                userName: profileData.fullName,
+              }),
+            });
+            logger.info(`Welcome email sent successfully to ${userEmail}`, {
+              context: "OnBoardingPage",
+            });
+          } catch (emailError) {
+            logger.error(`Failed to send welcome email to ${userEmail}`, emailError, {
+              context: "OnBoardingPage",
+            });
+            // Don't block dashboard redirect if email fails
+          }
+        } else {
+          logger.warn("User email or name not available for welcome email", {
+            context: "OnBoardingPage",
+          });
+        }
+
+        // Redirect to dashboard
         window.location.href = "/dashboard";
       } else {
         throw new Error("Failed to save onboarding data");
@@ -116,7 +149,10 @@ export default function OnboardingClient() {
       {/* Main Content */}
       <main className="flex-1 max-w-2xl mx-auto w-full px-3 md:px-4 py-4 md:py-8">
         {currentStep === 1 && (
-          <ProfileSetup onComplete={handleProfileComplete} initialData={profileData} />
+          <ProfileSetup 
+            onComplete={handleProfileComplete} 
+            initialData={profileData}
+          />
         )}
         
         {currentStep === 2 && (

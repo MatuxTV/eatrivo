@@ -174,6 +174,30 @@ export default function AdminDashboard() {
       await response.json();
       toast.success("Nákupný zoznam bol úspešne vytvorený!");
 
+      // Send shopping list notification email to user
+      const selectedUser = users.find(u => u.profileId === formData.userId || u.id === formData.userId);
+      if (selectedUser?.email && selectedUser?.fullName) {
+        try {
+          await fetch("/api/send-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              type: "shopping-list",
+              to: selectedUser.email,
+              clientName: selectedUser.fullName,
+              shoppingListName: formData.title,
+              shoppingListDate: new Date(formData.weekStartDate).toLocaleDateString("sk-SK"),
+              dashboardUrl: "https://eatrivo.sk/dashboard",
+            }),
+          });
+        } catch (emailError) {
+          console.error("Failed to send shopping list notification:", emailError);
+          // Don't block the success flow if email fails
+        }
+      }
+
       // Reset only markdown content, keep other fields
       setFormData((prev) => ({
         ...prev,
@@ -233,6 +257,7 @@ export default function AdminDashboard() {
         return;
       }
 
+
       // Call shopping list generation endpoint (only generate, don't save to DB)
       const response = await fetch("/api/admin/shopping-lists/create", {
         method: "POST",
@@ -287,6 +312,46 @@ export default function AdminDashboard() {
       setIsGeneratingAI(false);
     }
   };
+
+  // const handleTestShoppingListEmail = async () => {
+  //   setIsTestingEmail(true);
+    
+  //   try {
+  //     const response = await fetch("/api/send-email", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         type: "shopping-list",
+  //         to: "magyar.bb87@gmail.com",
+  //         clientName: "Matúš Magyar",
+  //         shoppingListName: "Týždenný nákupný zoznam",
+  //         shoppingListDate: new Date().toLocaleDateString("sk-SK"),
+  //         itemCount: 25,
+  //         dashboardUrl: "https://eatrivo.sk/dashboard",
+  //       }),
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+  //       throw new Error(errorData.error || "Failed to send email");
+  //     }
+
+  //     const result = await response.json();
+  //     toast.success("Test shopping list email bol úspešne odoslaný!");
+  //     console.log("Email sent:", result);
+  //   } catch (error) {
+  //     console.error("Error sending test email:", error);
+  //     toast.error(
+  //       error instanceof Error
+  //         ? error.message
+  //         : "Nepodarilo sa odoslať test email"
+  //     );
+  //   } finally {
+  //     setIsTestingEmail(false);
+  //   }
+  // };
 
   const tabs = [
     { id: "upload", label: "Vytvoriť zoznam", icon: Plus },
@@ -744,6 +809,31 @@ export default function AdminDashboard() {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* <Card className="border-none shadow-md bg-white">
+                    <CardHeader>
+                      <CardTitle className="text-base text-eatrivo-black-primary">Test Email</CardTitle>
+                      <CardDescription className="text-xs">
+                        Otestujte shopping list notifikačný email
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button
+                        onClick={handleTestShoppingListEmail}
+                        disabled={isTestingEmail}
+                        className="w-full h-10 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-all duration-200"
+                      >
+                        {isTestingEmail ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Odosiela sa...
+                          </div>
+                        ) : (
+                          "Odoslať test email"
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card> */}
                 </div>
               </div>
             </motion.div>

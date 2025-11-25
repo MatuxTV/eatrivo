@@ -1,0 +1,168 @@
+import * as React from "react";
+import {
+  Body,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Preview,
+  Section,
+  Text,
+} from "@react-email/components";
+
+interface AdminNotificationEmailProps {
+  emailType: "welcome" | "shopping-list";
+  recipientEmail: string;
+  recipientName: string;
+  additionalInfo?: string;
+}
+
+export function AdminNotificationEmail({
+  emailType,
+  recipientEmail,
+  recipientName,
+  additionalInfo,
+}: AdminNotificationEmailProps) {
+  const emailTypeLabel = emailType === "welcome" ? "Welcome Email" : "Shopping List Notification";
+  const emoji = emailType === "welcome" ? "" : "";
+
+  return (
+    <Html>
+      <Head />
+      <Preview>Eatrivo - Email odoslaný: {emailTypeLabel}</Preview>
+      <Body style={styles.body}>
+        <Container style={styles.container}>
+          <Section style={styles.headerSection}>
+            <Heading style={styles.heading}>
+              Email System Notification {emoji}
+            </Heading>
+            <Text style={styles.subtitle}>
+              Automaticka notifikacia z Eatrivo systemu
+            </Text>
+          </Section>
+
+          <Section style={styles.contentSection}>
+            <Text style={styles.infoTitle}>Email bol úspešne odoslaný</Text>
+            
+            <table style={styles.infoTable}>
+              <tr>
+                <td style={styles.infoLabel}>Typ emailu:</td>
+                <td style={styles.infoValue}>{emailTypeLabel}</td>
+              </tr>
+            </table>
+
+            <table style={styles.infoTable}>
+              <tr>
+                <td style={styles.infoLabel}>Príjemca:</td>
+                <td style={styles.infoValue}>{recipientEmail}</td>
+              </tr>
+            </table>
+
+            <table style={styles.infoTable}>
+              <tr>
+                <td style={styles.infoLabel}>Meno:</td>
+                <td style={styles.infoValue}>{recipientName}</td>
+              </tr>
+            </table>
+
+            {additionalInfo && (
+              <table style={styles.infoTable}>
+                <tr>
+                  <td style={styles.infoLabel}>Detaily:</td>
+                  <td style={styles.infoValue}>{additionalInfo}</td>
+                </tr>
+              </table>
+            )}
+
+            <table style={styles.infoTable}>
+              <tr>
+                <td style={styles.infoLabel}>Čas odoslania:</td>
+                <td style={styles.infoValue}>{new Date().toLocaleString("sk-SK")}</td>
+              </tr>
+            </table>
+          </Section>
+
+          <Section style={styles.footer}>
+            <Text style={styles.footerText}>
+              Toto je automaticka notifikacia z Eatrivo email systemu.
+            </Text>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  );
+}
+
+const styles = {
+  body: {
+    backgroundColor: "#f9fafb",
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    margin: 0,
+    padding: 0,
+  },
+  container: {
+    maxWidth: "600px",
+    margin: "32px auto",
+    backgroundColor: "#ffffff",
+    borderRadius: "12px",
+    padding: "32px",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+  },
+  headerSection: {
+    textAlign: "center" as const,
+    marginBottom: "24px",
+    paddingBottom: "16px",
+    borderBottom: "2px solid #9333ea",
+  },
+  heading: {
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: "#111827",
+    margin: "0 0 8px 0",
+  },
+  subtitle: {
+    fontSize: "14px",
+    color: "#6b7280",
+    margin: 0,
+  },
+  contentSection: {
+    marginBottom: "24px",
+  },
+  infoTitle: {
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#059669",
+    marginBottom: "16px",
+  },
+  infoTable: {
+    width: "100%",
+    marginBottom: "12px",
+    paddingBottom: "12px",
+    borderBottom: "1px solid #e5e7eb",
+  },
+  infoLabel: {
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#374151",
+    textAlign: "left" as const,
+    width: "40%",
+  },
+  infoValue: {
+    fontSize: "14px",
+    color: "#111827",
+    textAlign: "left" as const,
+  },
+  footer: {
+    marginTop: "24px",
+    paddingTop: "16px",
+    borderTop: "1px solid #e5e7eb",
+    textAlign: "center" as const,
+  },
+  footerText: {
+    fontSize: "12px",
+    color: "#9ca3af",
+    margin: 0,
+  },
+};
+
+export default AdminNotificationEmail;

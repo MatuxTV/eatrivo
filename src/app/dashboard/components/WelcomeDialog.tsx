@@ -33,7 +33,7 @@ export default function WelcomeDialog({
   changelog,
 }: WelcomeDialogProps) {
   const { data: session } = useSession();
-  
+
   const handleClose = () => {
     onOpenChange(false);
   };

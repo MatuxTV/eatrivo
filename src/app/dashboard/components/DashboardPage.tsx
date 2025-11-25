@@ -66,11 +66,16 @@ export default function DashboardPage() {
   const [mealPlanData, setMealPlanData] = useState<DayMealPlan[]>([]);
   const currentDay = useMemo(() => getCurrentDaySlovak(), []);
 
-  const [showWelcomeDialog, setShowWelcomeDialog] = useState(() => {
-    const userVersion = session?.user?.lastSeenWelcomeVersion;
-    const currentVersion = APP_CONFIG.WELCOME_DIALOG_VERSION;
-    return !userVersion || userVersion !== currentVersion;
-  });
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+
+  // Check welcome dialog visibility after session loads (prevents hydration mismatch)
+  useEffect(() => {
+    if (session?.user) {
+      const userVersion = session.user.lastSeenWelcomeVersion;
+      const currentVersion = APP_CONFIG.WELCOME_DIALOG_VERSION;
+      setShowWelcomeDialog(!userVersion || userVersion !== currentVersion);
+    }
+  }, [session?.user]);
 
   const handleCloseDialog = async () => {
     setShowWelcomeDialog(false);
