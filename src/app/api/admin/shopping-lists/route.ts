@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/index';
 import { shoppingLists, userProfiles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { CacheService } from '@/lib/cache';
+import { CacheService } from '@/lib/redis';
 import { apiLogger } from '@/lib/logger';
 
 // POST endpoint - Save shopping list to database (with markdown content)
