@@ -60,11 +60,17 @@ export default function DashboardPage() {
   const { data: session } = useSession();
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
   const [isLoading, setIsLoading] = useState({
-    shoppingLists: true,
-    mealPlan: false,
+    shoppingLists: false,
+    mealPlan: true, // Always start loading
   });
   const [mealPlanData, setMealPlanData] = useState<DayMealPlan[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
   const currentDay = useMemo(() => getCurrentDaySlovak(), []);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
 
@@ -97,8 +103,9 @@ export default function DashboardPage() {
 
   // FETCH SHOPPING LISTS
   useEffect(() => {
+    if (!isMounted || !session?.user) return;
+    
     const fetchShoppingLists = async () => {
-      if (!session?.user) return;
       try {
         setIsLoading((prev) => ({ ...prev, shoppingLists: true }));
         const response = await fetch("/api/shopping-lists");
@@ -117,38 +124,97 @@ export default function DashboardPage() {
       }
     };
     fetchShoppingLists();
-  }, [session]);
+  }, [isMounted, session]);
 
-  // FETCH MEAL PLAN
+  // FETCH MEAL PLAN with polling for generation status
   useEffect(() => {
-    const fetchMealPlan = async () => {
-      if (!session?.user) return;
+    if (!isMounted || !session?.user) return;
+
+    let statusCheckInterval: NodeJS.Timeout | null = null;
+    let isComponentMounted = true;
+
+    const checkGenerationStatus = async (): Promise<boolean> => {
       try {
-        setIsLoading((prev) => ({ ...prev, mealPlan: true }));
+        const statusResponse = await fetch("/api/meal-plans/status");
+        if (!statusResponse.ok) return false;
+        
+        const statusData = await statusResponse.json();
+        return statusData.isGenerating === true;
+      } catch (error) {
+        logger.error("Error checking generation status", error);
+        return false;
+      }
+    };
+
+    const fetchMealPlan = async () => {
+      if (!isComponentMounted) return;
+
+      try {
+        // Call API - it will check shopping list → cache → DB → lock+generate
         const response = await fetch("/api/meal-plans", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });
 
-        if (!response.ok) throw new Error("Failed to generate meal plan");
         const data = await response.json();
 
-        if (!data.success || !data.insights?.week) {
+        // Handle 202 - generation in progress, start polling
+        if (response.status === 202 && data.isGenerating) {
+          logger.info("Meal plan generation in progress, starting polling");
+          
+          // Start polling every 3 seconds
+          if (!statusCheckInterval) {
+            statusCheckInterval = setInterval(async () => {
+              const stillGenerating = await checkGenerationStatus();
+              logger.debug("Poll check", { metadata: { stillGenerating } });
+              
+              if (!stillGenerating && isComponentMounted) {
+                logger.info("Generation completed, fetching meal plan");
+                if (statusCheckInterval) clearInterval(statusCheckInterval);
+                toast.success("Jedálny plán je pripravený!", { duration: 3000 });
+                fetchMealPlan(); // Re-fetch to get the result
+              }
+            }, 3000);
+          }
+          return;
+        }
+
+        if (!response.ok) throw new Error("Failed to load meal plan");
+
+        if (!data.success) {
           throw new Error(data.message || "Invalid meal plan data");
         }
-        setMealPlanData(data.insights.week);
+
+        // Successfully loaded meal plan (from cache, DB, or fresh generation)
+        const hasData = data.insights?.week && data.insights.week.length > 0;
+        setMealPlanData(hasData ? data.insights.week : []);
+        setIsLoading((prev) => ({ ...prev, mealPlan: false }));
+        
+        // Only show success toast if we have data and it's freshly generated (not cached/DB)
+        if (hasData && !data.cached && !data.fromDatabase && data.fallbackUsed !== 'no-data') {
+          toast.success("Jedálny plán je pripravený!");
+        }
+
       } catch (error) {
         logger.error("Error loading meal plan", error, {
           context: "DashboardPage",
           metadata: { userId: session?.user?.id },
         });
         toast.error("Nepodarilo sa načítať jedálny plán");
-      } finally {
         setIsLoading((prev) => ({ ...prev, mealPlan: false }));
       }
     };
+
     fetchMealPlan();
-  }, [session]);
+
+    // Cleanup function
+    return () => {
+      isComponentMounted = false;
+      if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+      }
+    };
+  }, [isMounted, session]);
 
   const todaysMeals = useMemo(() => {
     if (!mealPlanData || mealPlanData.length === 0) return [];

@@ -4,7 +4,7 @@ import { auth } from '../../../../auth'
 import { db } from '@/index'
 import { shoppingLists, userProfiles } from '@/db/schema'
 import { eq, desc } from 'drizzle-orm'
-import { CacheService } from '@/lib/cache'
+import { CacheService } from '@/lib/redis'
 import { apiLogger } from '@/lib/logger'
 
 export async function GET(_request: NextRequest) {

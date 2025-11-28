@@ -54,8 +54,9 @@ export default function DailyMealPlan({
                 />
               </div>
               <div className="text-center space-y-1">
-                <p className="text-sm font-semibold text-gray-900">Pripravujeme váš jedálny plán</p>
-                <p className="text-xs text-gray-500">AI analyzuje vaše preferencie a vytvára personalizované jedlá...</p>
+                <p className="text-sm font-semibold text-gray-900">Generujeme váš jedálny plán</p>
+                <p className="text-xs text-gray-500">AI vytvára personalizované recepty z vášho nákupného zoznamu...</p>
+                <p className="text-xs text-eatrivo-purple font-medium mt-2">Toto môže trvať 1-3 minúty</p>
               </div>
             </div>
 
