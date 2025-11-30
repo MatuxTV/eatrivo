@@ -205,7 +205,7 @@ export default function NutritionPreferencesSection({
                 <Input
                   id="height"
                   type="number"
-                  {...register("height")}
+                  {...register("height", { valueAsNumber: true })}
                   placeholder="175"
                   className={errors.height ? "border-red-500" : ""}
                 />
@@ -230,7 +230,7 @@ export default function NutritionPreferencesSection({
                 <Input
                   id="meal_per_day"
                   type="number"
-                  {...register("meal_per_day")}
+                  {...register("meal_per_day", { valueAsNumber: true })}
                   min={1}
                   max={6}
                   className={errors.meal_per_day ? "border-red-500" : ""}
