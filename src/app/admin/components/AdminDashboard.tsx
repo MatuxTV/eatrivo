@@ -115,6 +115,7 @@ export default function AdminDashboard() {
     message: string;
     sent?: number;
     failed?: number;
+    errors?: string[];
   } | null>(null);
 
   // Fetch users on component mount
@@ -508,6 +509,7 @@ export default function AdminDashboard() {
         message: result.message,
         sent: result.sent,
         failed: result.failed,
+        errors: result.errors,
       });
       toast.success(`Emaily odoslané ${result.sent} používateľom!`);
     } catch (error) {
@@ -1389,7 +1391,7 @@ export default function AdminDashboard() {
                             ) : (
                               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                             )}
-                            <div>
+                            <div className="flex-1 min-w-0">
                               <p
                                 className={`text-sm font-medium ${
                                   emailSendResult.success ? "text-green-800" : "text-red-800"
@@ -1402,6 +1404,16 @@ export default function AdminDashboard() {
                                   Odoslaných: {emailSendResult.sent}
                                   {emailSendResult.failed ? `, Chýb: ${emailSendResult.failed}` : ""}
                                 </p>
+                              )}
+                              {emailSendResult.errors && emailSendResult.errors.length > 0 && (
+                                <div className="mt-3 p-3 bg-red-100 rounded-lg">
+                                  <p className="text-xs font-semibold text-red-700 mb-2">Chyby pri odosielaní:</p>
+                                  <ul className="text-xs text-red-600 space-y-1 max-h-32 overflow-y-auto">
+                                    {emailSendResult.errors.map((err, idx) => (
+                                      <li key={idx} className="truncate">{err}</li>
+                                    ))}
+                                  </ul>
+                                </div>
                               )}
                             </div>
                           </div>
