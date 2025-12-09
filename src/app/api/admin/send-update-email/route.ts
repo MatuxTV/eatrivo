@@ -87,55 +87,48 @@ export async function POST(request: Request) {
         errors: [] as string[],
       };
 
-      // Send emails in batches to avoid rate limits
-      const batchSize = 10;
-      for (let i = 0; i < usersWithProfiles.length; i += batchSize) {
-        const batch = usersWithProfiles.slice(i, i + batchSize);
-        
-        await Promise.all(
-          batch.map(async (user) => {
-            try {
-              const { error } = await resend.emails.send({
-                from: DEFAULT_FROM_EMAIL,
-                to: user.email,
-                subject: `🎉 Eatrivo ${version} - ${updateTitle}`,
-                react: UpdateNotificationEmail({
-                  recipientName: user.fullName || "Používateľ",
-                  version,
-                  updateTitle,
-                  updateDescription,
-                  updates,
-                }),
-              });
+      // Send emails sequentially with delay to respect rate limits (2 req/sec)
+      for (const user of usersWithProfiles) {
+        try {
+          const { error } = await resend.emails.send({
+            from: DEFAULT_FROM_EMAIL,
+            to: user.email,
+            subject: `🎉 Eatrivo ${version} - ${updateTitle}`,
+            react: UpdateNotificationEmail({
+              recipientName: user.fullName || "Používateľ",
+              version,
+              updateTitle,
+              updateDescription,
+              updates,
+            }),
+          });
 
-              if (error) {
-                results.failed++;
-                results.errors.push(`${user.email}: ${error.message}`);
-              } else {
-                results.sent++;
-              }
-            } catch (err) {
-              results.failed++;
-              results.errors.push(`${user.email}: ${err instanceof Error ? err.message : "Unknown error"}`);
-            }
-          })
-        );
-
-        // Add small delay between batches
-        if (i + batchSize < usersWithProfiles.length) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          if (error) {
+            results.failed++;
+            results.errors.push(`${user.email}: ${error.message}`);
+          } else {
+            results.sent++;
+          }
+        } catch (err) {
+          results.failed++;
+          results.errors.push(`${user.email}: ${err instanceof Error ? err.message : "Unknown error"}`);
         }
+
+        // Wait 600ms between each email to stay under 2 req/sec limit
+        await new Promise(resolve => setTimeout(resolve, 600));
       }
 
       logger.info("Update emails sent", { 
         context: "SendUpdateEmail",
-        metadata: { sent: results.sent, failed: results.failed, version } 
+        metadata: { sent: results.sent, failed: results.failed, version, errors: results.errors } 
       });
 
       return NextResponse.json({
         success: true,
         message: `Update emails sent to ${results.sent} users`,
-        ...results,
+        sent: results.sent,
+        failed: results.failed,
+        errors: results.errors.slice(0, 10), // Return first 10 errors for debugging
       });
     }
 

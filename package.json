@@ -42,7 +42,7 @@
     "markdown-it": "^14.1.0",
     "markdown-pdf": "^11.0.0",
     "nanoid": "^5.1.6",
-    "next": "15.5.3",
+    "next": "15.5.7",
     "next-auth": "^5.0.0-beta.29",
     "nodemailer": "^6.10.1",
     "pdf-parse": "^2.3.12",
