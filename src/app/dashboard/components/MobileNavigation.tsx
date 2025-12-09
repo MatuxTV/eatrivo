@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard , User } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function MobileNavigation() {
@@ -11,7 +11,7 @@ export default function MobileNavigation() {
   const navItems = [
     { href: "/dashboard", label: "Home", icon: LayoutDashboard },
     // { href: "/meal-plans", label: "Plány", icon: UtensilsCrossed },
-    // { href: "/profile", label: "Profil", icon: User },
+    { href: "/profile", label: "Profil", icon: User },
   ];
 
   return (

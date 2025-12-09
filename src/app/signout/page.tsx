@@ -29,12 +29,12 @@ export default function SignOutPage() {
               }}
               className="space-y-3"
             >
-              <Button type="submit" variant="destructive" className="w-full bg-eatrivo-red hover:scale-105 hover:bg-eatrivo-red/60" size="lg">
+              <Button type="submit" className="w-full bg-eatrivo-red hover:scale-105 hover:bg-eatrivo-red/60" size="lg">
                 Áno, odhlásiť ma
               </Button>
             </form>
             <Button 
-              className="w-full bg-eatrivo-white-secondary border-1 border-eatrivo-black/50 hover:scale-105 hover:bg-gray-100" 
+              className="w-full text-eatrivo-black-secondary bg-eatrivo-white-secondary border-1 border-eatrivo-black/50 hover:scale-105 hover:bg-gray-100" 
               size="lg"
               asChild
             >

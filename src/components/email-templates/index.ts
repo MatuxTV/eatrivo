@@ -10,3 +10,4 @@ export type {
   FeedbackNotificationEmailProps,
   EmailResponse,
 } from "../../types/email.types";
+export { UpdateNotificationEmail } from "./UpdateNotificationEmail";
