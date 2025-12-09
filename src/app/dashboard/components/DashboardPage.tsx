@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { getCurrentDaySlovak } from "@/lib/functions";
 import { APP_CONFIG } from "@/app/config/app";
 import { logger } from "@/lib/logger";
-import { ReceiptText, Target, Mail } from "lucide-react";
+import { ReceiptText } from "lucide-react";
 
 // Components
 import WelcomeDialog from "../components/WelcomeDialog";
@@ -16,6 +16,8 @@ import MobileNavigation from "./MobileNavigation";
 import DailyNutritionSummary from "./DailyNutritionSummary";
 import DailyMealPlan from "./DailyMealPlan";
 import ShoppingListsOverview from "./ShoppingListsOverview";
+import BodyHealthCircle from "./BodyHealtCircle";
+import WeightTracker from "./WeightTracker";
 
 // Type definitions
 interface Ingredient {
@@ -56,9 +58,17 @@ interface ShoppingList {
   createdAt: string;
 }
 
+interface UserHealthData {
+  weight: number;
+  height: number;
+  activityLevel: string;
+  goal: "lose_weight" | "maintain_weight" | "gain_muscle";
+}
+
 export default function DashboardPage() {
   const { data: session } = useSession();
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
+  const [userHealthData, setUserHealthData] = useState<UserHealthData | null>(null);
   const [isLoading, setIsLoading] = useState({
     shoppingLists: false,
     mealPlan: true, // Always start loading
@@ -124,6 +134,34 @@ export default function DashboardPage() {
       }
     };
     fetchShoppingLists();
+  }, [isMounted, session]);
+
+  // FETCH USER HEALTH DATA
+  useEffect(() => {
+    if (!isMounted || !session?.user) return;
+    
+    const fetchUserHealthData = async () => {
+      try {
+        const response = await fetch("/api/user/profile");
+        if (!response.ok) throw new Error("Failed to fetch profile");
+        const data = await response.json();
+        
+        if (data.nutrition) {
+          setUserHealthData({
+            weight: parseFloat(data.nutrition.weight) || 70,
+            height: data.nutrition.height || 170,
+            activityLevel: data.nutrition.activity_level || "sedentary",
+            goal: data.nutrition.goal || "maintain_weight",
+          });
+        }
+      } catch (error) {
+        logger.error("Error fetching user health data", error, {
+          context: "DashboardPage",
+          metadata: { userId: session?.user?.id },
+        });
+      }
+    };
+    fetchUserHealthData();
   }, [isMounted, session]);
 
   // FETCH MEAL PLAN with polling for generation status
@@ -312,57 +350,46 @@ export default function DashboardPage() {
           </section>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Shopping Lists - Takes up 2 columns on large screens */}
-            <div className="lg:col-span-2">
+            {/* Shopping Lists - Takes up 2 columns on large screens, last on mobile */}
+            <div className="lg:col-span-2 order-2 lg:order-1">
               <ShoppingListsOverview
                 lists={shoppingLists}
                 isLoading={isLoading.shoppingLists}
               />
             </div>
 
-            {/* Right Column: Goals & Messages */}
-            <div className="space-y-6">
-              {/* Goals Card */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-fit">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-eatrivo-purple/10 rounded-lg">
-                    <Target className="w-5 h-5 text-eatrivo-purple" />
+            {/* Right Column: Health Circle & Weight Tracker - first on mobile */}
+            <div className="space-y-6 order-1 lg:order-2">
+              {/* Body Health Circle */}
+              {userHealthData ? (
+                <BodyHealthCircle
+                  weight={userHealthData.weight}
+                  height={userHealthData.height}
+                  activityLevel={userHealthData.activityLevel}
+                />
+              ) : (
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-fit animate-pulse">
+                  <div className="h-6 bg-gray-200 rounded w-1/2 mb-6"></div>
+                  <div className="flex justify-center">
+                    <div className="w-[180px] h-[180px] bg-gray-200 rounded-full"></div>
                   </div>
-                  <h3 className="font-bold text-gray-900">Týždenné ciele</h3>
-                </div>
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                    <Target className="w-6 h-6 text-gray-300" />
+                  <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="h-20 bg-gray-200 rounded-xl"></div>
+                    <div className="h-20 bg-gray-200 rounded-xl"></div>
                   </div>
-                  <p className="text-sm font-medium text-gray-900">
-                    Pripravujeme
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Sledovanie cieľov už čoskoro
-                  </p>
                 </div>
-              </div>
+              )}
 
-              {/* Messages Card */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-fit">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-eatrivo-pink/10 rounded-lg">
-                    <Mail className="w-5 h-5 text-eatrivo-pink" />
-                  </div>
-                  <h3 className="font-bold text-gray-900">Správy</h3>
-                </div>
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                    <Mail className="w-6 h-6 text-gray-300" />
-                  </div>
-                  <p className="text-sm font-medium text-gray-900">
-                    Žiadne nové správy
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Schránka je prázdna
-                  </p>
-                </div>
-              </div>
+              {/* Weight Tracker */}
+              <WeightTracker
+                initialWeight={userHealthData?.weight}
+                goal={userHealthData?.goal}
+                onWeightUpdate={(newWeight) => {
+                  if (userHealthData) {
+                    setUserHealthData({ ...userHealthData, weight: newWeight });
+                  }
+                }}
+              />
             </div>
           </div>
         </div>

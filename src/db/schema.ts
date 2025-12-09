@@ -168,3 +168,13 @@ export const feedback = pgTable("feedback", {
   status: text("status").default("new").notNull(), // new, in_progress, resolved
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 })
+
+// Weight history tracking table
+export const weightHistory = pgTable("weight_history", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userProfileId: uuid("userProfileId").notNull().references(() => userProfiles.id, { onDelete: "cascade" }),
+  weight: numeric("weight", { precision: 5, scale: 2 }).notNull(), // e.g., 75.50 kg
+  recordedAt: timestamp("recorded_at", { withTimezone: true }).defaultNow().notNull(),
+  note: text("note"), // Optional note (e.g., "after workout", "morning weight")
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+})
