@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
+import { useTranslations, useLocale } from "next-intl";
 
 interface WeightEntry {
   id: string;
@@ -39,7 +40,21 @@ interface WeightTrackerProps {
   onWeightUpdate?: (weight: number) => void;
 }
 
+const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { weight: number; fullDate: string } }> }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white px-3 py-2 rounded-lg shadow-lg border border-gray-100">
+        <p className="text-sm font-semibold text-gray-900">{payload[0].payload.weight.toFixed(1)} kg</p>
+        <p className="text-xs text-gray-500">{payload[0].payload.fullDate}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: WeightTrackerProps) {
+  const t = useTranslations("dashboard.weightTracker");
+  const locale = useLocale();
   const [currentWeight, setCurrentWeight] = useState<number | null>(initialWeight || null);
   const [history, setHistory] = useState<WeightEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,7 +81,7 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
       setHistory(data.history || []);
     } catch (error) {
       console.error("Error fetching weight:", error);
-      toast.error("Nepodarilo sa nacitat historiu vahy");
+      toast.error(t("errors.fetch"));
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +92,7 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
     
     const weightValue = parseFloat(newWeight);
     if (isNaN(weightValue) || weightValue < 20 || weightValue > 500) {
-      toast.error("Zadajte platnu vahu (20-500 kg)");
+      toast.error(t("errors.invalid"));
       return;
     }
 
@@ -104,10 +119,10 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
       setNote("");
       setIsDialogOpen(false);
       
-      toast.success("Vaha bola uspesne zaznamenana");
+      toast.success(t("success.added"));
     } catch (error) {
       console.error("Error adding weight:", error);
-      toast.error("Nepodarilo sa pridat vahu");
+      toast.error(t("errors.add"));
     } finally {
       setIsSubmitting(false);
     }
@@ -138,7 +153,7 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("sk-SK", {
+    return date.toLocaleDateString(locale, {
       day: "numeric",
       month: "short",
     });
@@ -151,11 +166,12 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
     .map((entry) => ({
       date: formatDate(entry.recordedAt),
       weight: entry.weight,
-      fullDate: new Date(entry.recordedAt).toLocaleDateString("sk-SK", {
+      fullDate: new Date(entry.recordedAt).toLocaleDateString(locale, {
         day: "numeric",
         month: "long",
         year: "numeric",
       }),
+      timestamp: entry.recordedAt,
     }));
 
   // Calculate min/max for Y axis with padding
@@ -164,18 +180,7 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
   const maxWeight = weights.length > 0 ? Math.ceil(Math.max(...weights) + 2) : 100;
   const avgWeight = weights.length > 0 ? weights.reduce((a, b) => a + b, 0) / weights.length : 0;
 
-  // Custom tooltip component
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { weight: number; fullDate: string } }> }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white px-3 py-2 rounded-lg shadow-lg border border-gray-100">
-          <p className="text-sm font-semibold text-gray-900">{payload[0].payload.weight.toFixed(1)} kg</p>
-          <p className="text-xs text-gray-500">{payload[0].payload.fullDate}</p>
-        </div>
-      );
-    }
-    return null;
-  };
+
 
   if (isLoading) {
     return (
@@ -194,7 +199,7 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
           <div className="p-2 bg-blue-50 rounded-lg">
             <Scale className="w-5 h-5 text-blue-600" />
           </div>
-          <h3 className="font-bold text-gray-900">Vaha</h3>
+          <h3 className="font-bold text-gray-900">{t("title")}</h3>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -204,26 +209,26 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
               className="bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink hover:opacity-90"
             >
               <Plus className="w-4 h-4 mr-1" />
-              Pridat
+              {t("add")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md bg-eatrivo-white-primary">
             <DialogHeader>
-              <DialogTitle>Zaznamenat vahu</DialogTitle>
+              <DialogTitle>{t("addTitle")}</DialogTitle>
               <DialogDescription>
-                Pridajte svoju aktualnu vahu pre sledovanie progresu
+                {t("addDescription")}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label htmlFor="weight">Vaha (kg)</Label>
+                <Label htmlFor="weight">{t("weightLabel")}</Label>
                 <Input
                   id="weight"
                   type="number"
                   step="0.1"
                   min="20"
                   max="500"
-                  placeholder="napr. 75.5"
+                  placeholder={t("weightPlaceholder")}
                   value={newWeight}
                   onChange={(e) => setNewWeight(e.target.value)}
                   className="text-lg"
@@ -231,11 +236,11 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="note">Poznamka (volitelne)</Label>
+                <Label htmlFor="note">{t("noteLabel")}</Label>
                 <Input
                   id="note"
                   type="text"
-                  placeholder="napr. rano, po treningu..."
+                  placeholder={t("notePlaceholder")}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   maxLength={100}
@@ -247,7 +252,7 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
                   className="flex-1 bg-eatrivo-white-secondary border-2 border-gray-200 hover:bg-gray-50 text-gray-700 hover:text-eatrivo-purple hover:border-eatrivo-purple/30 transition-all"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  Zrusit
+                  {t("cancel")}
                 </Button>
                 <Button
                   type="submit"
@@ -257,10 +262,10 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Ukladam...
+                      {t("saving")}
                     </>
                   ) : (
-                    "Ulozit"
+                    t("save")
                   )}
                 </Button>
               </div>
@@ -288,7 +293,7 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
               {weightChange.isLoss ? "-" : weightChange.isGain ? "+" : ""}
               {weightChange.value} kg
             </span>
-            <span className="text-gray-400 text-xs ml-1">od posledneho merania</span>
+            <span className="text-gray-400 text-xs ml-1">{t("sinceLast")}</span>
           </div>
         )}
       </div>
@@ -297,7 +302,7 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
       {chartData.length >= 1 && (
         <div className="mt-4 pt-4 border-t border-gray-100">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
-            Priebeh vahy
+            {t("chartTitle")}
           </p>
           <div className="h-40 -mx-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -312,11 +317,12 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
                   </linearGradient>
                 </defs>
                 <XAxis
-                  dataKey="date"
+                  dataKey="timestamp"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 10, fill: "#9CA3AF" }}
                   dy={5}
+                  tickFormatter={(value) => formatDate(value)}
                 />
                 <YAxis
                   domain={[minWeight, maxWeight]}
@@ -332,7 +338,7 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
                   stroke="#E5E7EB"
                   strokeDasharray="3 3"
                   label={{
-                    value: "priemer",
+                    value: t("average"),
                     position: "right",
                     fill: "#9CA3AF",
                     fontSize: 10,
@@ -367,7 +373,7 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
       {history.length > 0 && (
         <div className="mt-4 pt-4 border-t border-gray-100">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
-            Posledne zaznamy
+            {t("recentHistory")}
           </p>
           <div className="space-y-2">
             {history.slice(0, 5).map((entry, index) => (
@@ -395,8 +401,8 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
       {history.length === 0 && !currentWeight && (
         <div className="text-center py-6 text-gray-400">
           <Scale className="w-8 h-8 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">Zatial ziadne zaznamy</p>
-          <p className="text-xs mt-1">Pridajte svoju prvu vahu</p>
+          <p className="text-sm">{t("noData")}</p>
+          <p className="text-xs mt-1">{t("addFirst")}</p>
         </div>
       )}
     </div>
