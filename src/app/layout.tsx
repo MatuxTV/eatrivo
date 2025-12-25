@@ -17,9 +17,46 @@ const quicksand = Quicksand({
 export const metadata: Metadata = {
   title: {
     template: "%s | Eatrivo",
-    default: "Eatrivo"
+    default: "Eatrivo - Váš osobný plánovač jedál"
   },
-  description: "Your food delivery app",
+  description: "Eatrivo vám pomôže plánovať jedlá, generovať nákupné zoznamy a dosiahnuť vaše nutričné ciele pomocou AI odporúčaní. | Eatrivo helps you plan your meals.",
+  keywords: ["plánovač jedál", "výživa", "diéta", "zdravé stravovanie", "nákupný zoznam", "AI jedálniček", "meal planner", "nutrition", "diet", "healthy eating", "shopping list"],
+  authors: [{ name: "Eatrivo Team" }],
+  creator: "Eatrivo",
+  publisher: "Eatrivo",
+  openGraph: {
+    type: "website",
+    locale: "sk_SK",
+    alternateLocale: "en_US",
+    url: process.env.NEXT_PUBLIC_APP_URL || "https://eatrivo.com",
+    title: "Eatrivo - Váš osobný plánovač jedál",
+    description: "Plánujte jedlá, generujte nákupné zoznamy a dosiahnite svoje ciele.",
+    siteName: "Eatrivo",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Eatrivo - Váš osobný plánovač jedál",
+    description: "Plánujte jedlá, generujte nákupné zoznamy a dosiahnite svoje ciele.",
+    creator: "@eatrivo",
+  },
+  alternates: {
+    canonical: '/',
+    languages: {
+      'en': '/en',
+      'sk': '/sk',
+    },
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default async function RootLayout({
