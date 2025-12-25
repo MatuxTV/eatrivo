@@ -3,39 +3,42 @@
 import { motion } from "framer-motion"
 import { Target, Zap, Wallet, Activity } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
-const features = [
-  {
-    icon: Target,
-    title: "Personalizácia",
-    description: "Jedálny plán prispôsobený vašim cieľom, či už chcete schudnúť, nabrať svaly alebo sa len zdravo stravovať.",
-    color: "text-blue-500",
-    bg: "bg-blue-50",
-  },
-  {
-    icon: Zap,
-    title: "Rýchlosť",
-    description: "Zabudnite na hodiny plánovania. S našou AI máte hotový plán za pár sekúnd.",
-    color: "text-yellow-500",
-    bg: "bg-yellow-50",
-  },
-  {
-    icon: Wallet,
-    title: "Úspora peňazí",
-    description: "Využite ingrediencie, ktoré už máte doma. Minimalizujte odpad a ušetrite na nákupoch.",
-    color: "text-green-500",
-    bg: "bg-green-50",
-  },
-  {
-    icon: Activity,
-    title: "Nutričný prehľad",
-    description: "Automatický výpočet kalórií a makroživín pre každé jedlo. Majte svoje zdravie pod kontrolou.",
-    color: "text-red-500",
-    bg: "bg-red-50",
-  },
-]
+import { useTranslations } from "next-intl"
 
 export function Features() {
+  const t = useTranslations("landing")
+
+  const features = [
+    {
+      icon: Target,
+      title: t("features.items.personalization.title"),
+      description: t("features.items.personalization.description"),
+      color: "text-blue-500",
+      bg: "bg-blue-50",
+    },
+    {
+      icon: Zap,
+      title: t("features.items.speed.title"),
+      description: t("features.items.speed.description"),
+      color: "text-yellow-500",
+      bg: "bg-yellow-50",
+    },
+    {
+      icon: Wallet,
+      title: t("features.items.savings.title"),
+      description: t("features.items.savings.description"),
+      color: "text-green-500",
+      bg: "bg-green-50",
+    },
+    {
+      icon: Activity,
+      title: t("features.items.nutrition.title"),
+      description: t("features.items.nutrition.description"),
+      color: "text-red-500",
+      bg: "bg-red-50",
+    },
+  ]
+
   return (
     <section id="features" className="py-24 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -46,10 +49,10 @@ export function Features() {
             viewport={{ once: true }}
             className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4"
           >
-            Prečo si vybrať EatRivo?
+            {t("features.title")}
           </motion.h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Všetko, čo potrebujete pre efektívne a chutné stravovanie
+            {t("features.subtitle")}
           </p>
         </div>
 

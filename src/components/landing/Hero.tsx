@@ -5,8 +5,16 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import { Sparkles, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTranslations } from "next-intl"
+import { usePathname } from "next/navigation"
+import { getLocaleFromPathname } from "@/i18n/routing"
 
 export function Hero() {
+  const t = useTranslations("landing")
+  const tCommon = useTranslations("common")
+  const pathname = usePathname()
+  const locale = getLocaleFromPathname(pathname)
+
   return (
     <section className="relative pt-32 pb-16 md:pt-48 md:pb-32 overflow-hidden">
       {/* Background Elements */}
@@ -32,31 +40,30 @@ export function Hero() {
               className="inline-flex items-center gap-2 bg-white border border-gray-200 shadow-sm px-4 py-2 rounded-full text-sm font-medium text-eatrivo-purple mb-8"
             >
               <Sparkles className="w-4 h-4" />
-              <span>AI-powered personalizácia</span>
+              <span>{t("hero.badge")}</span>
             </motion.div>
             
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 leading-[1.1]">
-              Váš inteligentný <br/>
+              {t("hero.titleLine1")} <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink">
-                jedálny asistent
+                {t("hero.titleAccent")}
               </span>
             </h1>
             
             <p className="mt-6 text-lg sm:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              Získajte kompletný nákupný lístok a personalizovaný jedálny plán na celý týždeň. 
-              Všetko pripravené presne pre vás a vaše ciele.
+              {t("hero.description")}
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <Link href="/signin">
+              <Link href={`/${locale}/signin`}>
                 <Button size="lg" className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-8 h-14 text-lg shadow-lg hover:shadow-eatrivo-purple/25 transition-all">
-                  Začať zadarmo
+                  {tCommon("startFree")}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
               <Link href="#how-it-works">
                 <Button variant="ghost" size="lg" className="rounded-full h-14 text-lg text-gray-600 hover:text-eatrivo-purple">
-                  Ako to funguje
+                  {t("navbar.howItWorks")}
                 </Button>
               </Link>
             </div>
@@ -93,8 +100,8 @@ export function Hero() {
                         🥗
                       </div>
                       <div>
-                        <div className="text-xs text-gray-500">Obed</div>
-                        <div className="text-sm font-bold text-gray-900">Kurací šalát</div>
+                        <div className="text-xs text-gray-500">{t("hero.sampleMealLabel")}</div>
+                          <div className="text-sm font-bold text-gray-900">{t("hero.sampleMealTitle")}</div>
                       </div>
                     </div>
                     <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
@@ -110,9 +117,9 @@ export function Hero() {
                     className="absolute top-8 right-8 bg-white/90 backdrop-blur p-4 rounded-2xl shadow-xl border border-white/50"
                  >
                     <div className="text-center">
-                      <div className="text-xs text-gray-500 uppercase tracking-wider">Kalórie</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider">{t("hero.sampleCaloriesLabel")}</div>
                       <div className="text-2xl font-bold text-eatrivo-purple">1,850</div>
-                      <div className="text-xs text-green-600 font-medium">Perfektný cieľ</div>
+                      <div className="text-xs text-green-600 font-medium">{t("hero.sampleGoal")}</div>
                     </div>
                  </motion.div>
               </div>

@@ -48,6 +48,7 @@ export async function GET(
         likes: userInfo.likes,
         dislikes: userInfo.dislikes,
         allergies: userInfo.allergies,
+        language: userInfo.language ?? "sk",
       },
     });
   } catch (error) {

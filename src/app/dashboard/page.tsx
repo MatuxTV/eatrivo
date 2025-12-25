@@ -1,20 +1,7 @@
-import { auth } from "../../../auth"
-import { redirect } from "next/navigation"
-import DashboardPage from "./components/DashboardPage";
+import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Dashboard - EatRivo"
-}
+import { defaultLocale } from "@/i18n/routing";
 
-export default async function DashboardPageWrapper() {
-  // Server-side authentication check
-  const session = await auth()
-  
-  if (!session?.user) {
-    redirect("/signin")
-  }
-
-  return (  
-    <DashboardPage />
-  )
+export default function DashboardPageWrapper() {
+  redirect(`/${defaultLocale}/dashboard`);
 }

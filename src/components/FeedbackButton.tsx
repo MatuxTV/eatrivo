@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { MessageSquarePlus, X, Bug, Lightbulb, Zap, Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -21,8 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 export default function FeedbackButton() {
+  const t = useTranslations("feedback");
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,11 +33,15 @@ export default function FeedbackButton() {
     description: "",
   });
 
+  const typeId = useId();
+  const titleId = useId();
+  const descriptionId = useId();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.type || !formData.title || !formData.description) {
-      toast.error("Prosim vyplnte vsetky polia");
+      toast.error(t("errors.fillAllFields"));
       return;
     }
 
@@ -56,7 +62,7 @@ export default function FeedbackButton() {
         throw new Error(data.error || "Failed to submit feedback");
       }
 
-      toast.success("Dakujeme za vas feedback!");
+      toast.success(t("success"));
       setIsOpen(false);
       setFormData({
         type: "",
@@ -68,7 +74,7 @@ export default function FeedbackButton() {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Nepodarilo sa odoslat feedback"
+          : t("errors.submitFailed")
       );
     } finally {
       setIsSubmitting(false);
@@ -78,21 +84,21 @@ export default function FeedbackButton() {
   const feedbackTypes = [
     {
       value: "bug",
-      label: "Bug / Chyba",
+      label: t("types.bug.label"),
       icon: Bug,
-      description: "Nieco nefunguje spravne",
+      description: t("types.bug.description"),
     },
     {
       value: "feature",
-      label: "Napad na vylepšenie",
+      label: t("types.feature.label"),
       icon: Lightbulb,
-      description: "Novy napad alebo funkcia",
+      description: t("types.feature.description"),
     },
     {
       value: "improvement",
-      label: "Zlepsenie",
+      label: t("types.improvement.label"),
       icon: Zap,
-      description: "Vylepsenie existujucej funkcie",
+      description: t("types.improvement.description"),
     },
   ];
 
@@ -101,39 +107,32 @@ export default function FeedbackButton() {
       {/* Floating Button - Fixed Bottom Right */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 group"
-        aria-label="Odoslat feedback"
+        className="fixed bottom-6 right-6 z-50 group flex items-center justify-center w-14 h-14 bg-white rounded-full shadow-lg border border-gray-100 hover:border-eatrivo-purple/20 hover:shadow-xl transition-all duration-300 hover:scale-105"
+        aria-label={t("buttonLabel")}
       >
-        <div className="relative">
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
-          
-          {/* Button */}
-          <div className="relative flex items-center gap-2 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink text-white px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-            <MessageSquarePlus className="w-5 h-5" />
-          </div>
-        </div>
+        <MessageSquarePlus className="w-6 h-6 text-gray-500 group-hover:text-eatrivo-purple transition-colors" />
       </button>
 
       {/* Feedback Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-eatrivo-light max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[500px] bg-white max-h-[90vh] overflow-y-auto border-gray-100 shadow-xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-2xl">
-              <MessageSquarePlus className="w-6 h-6 text-eatrivo-purple" />
-              Poslite nam feedback
+            <DialogTitle className="flex items-center gap-3 text-xl font-bold text-gray-900">
+              <span className="flex items-center justify-center p-2 bg-eatrivo-purple/10 rounded-lg">
+                <MessageSquarePlus className="w-5 h-5 text-eatrivo-purple" />
+              </span>
+              {t("title")}
             </DialogTitle>
-            <DialogDescription>
-              Pomozte nam vylepsit Eatrivo. Nahlaste bug, navrhnite nove funkcie
-              alebo zdielate svoje napady.
+            <DialogDescription className="text-gray-500">
+              {t("description")}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-5 mt-4">
             {/* Feedback Type */}
             <div className="space-y-2">
-              <Label htmlFor="type" className="text-sm font-semibold">
-                Typ feedbacku *
+              <Label htmlFor={typeId} className="text-sm font-semibold">
+                {t("typeLabel")} *
               </Label>
               <Select
                 value={formData.type}
@@ -141,8 +140,8 @@ export default function FeedbackButton() {
                   setFormData((prev) => ({ ...prev, type: value }))
                 }
               >
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Vyberte typ..." />
+                <SelectTrigger id={typeId} className="h-11">
+                  <SelectValue placeholder={t("typePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {feedbackTypes.map((type) => (
@@ -164,32 +163,32 @@ export default function FeedbackButton() {
 
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-sm font-semibold">
-                Nazov *
+              <Label htmlFor={titleId} className="text-sm font-semibold">
+                {t("subjectLabel")} *
               </Label>
               <Input
-                id="title"
+                id={titleId}
                 value={formData.title}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, title: e.target.value }))
                 }
-                placeholder="Napr. Tlacidlo nefunguje na mobile"
+                placeholder={t("subjectPlaceholder")}
                 maxLength={200}
                 className="h-11"
                 required
               />
               <p className="text-xs text-gray-500">
-                {formData.title.length}/200 znakov
+                {formData.title.length}/200 {t("chars")}
               </p>
             </div>
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-semibold">
-                Popis *
+              <Label htmlFor={descriptionId} className="text-sm font-semibold">
+                {t("descriptionLabel")} *
               </Label>
               <Textarea
-                id="description"
+                id={descriptionId}
                 value={formData.description}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -197,14 +196,14 @@ export default function FeedbackButton() {
                     description: e.target.value,
                   }))
                 }
-                placeholder="Popiste problem alebo vas napad co najpodrobnejsie..."
+                placeholder={t("descriptionPlaceholder")}
                 maxLength={2000}
                 rows={6}
                 className="resize-none"
                 required
               />
               <p className="text-xs text-gray-500">
-                {formData.description.length}/2000 znakov
+                {formData.description.length}/2000 {t("chars")}
               </p>
             </div>
 
@@ -213,26 +212,27 @@ export default function FeedbackButton() {
               <Button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="flex-1 h-11 bg-eatrivo-light border-1 text-eatrivo-black-primary/90"
+                variant="outline"
+                className="flex-1 h-11 border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                 disabled={isSubmitting}
               >
                 <X className="w-4 h-4 mr-2" />
-                Zrusit
+                {t("cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 h-11 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink hover:from-eatrivo-purple/90 hover:to-eatrivo-pink/90"
+                className="flex-1 h-11 bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white shadow-sm"
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Odosiela sa...
+                    {t("sending")}
                   </>
                 ) : (
                   <>
                     <MessageSquarePlus className="w-4 h-4 mr-2" />
-                    Odoslat feedback
+                    {t("submit")}
                   </>
                 )}
               </Button>

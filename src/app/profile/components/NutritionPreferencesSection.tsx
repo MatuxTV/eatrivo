@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,23 +20,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslations } from "next-intl";
 
-const nutritionSchema = z.object({
-  sex: z.enum(["man", "woman"]),
-  height: z.number().min(100, "Výška musí byť aspoň 100 cm").max(250, "Výška musí byť max 250 cm"),
-  weight: z.string().min(2, "Zadajte hmotnosť"),
-  activity_level: z.string().min(1, "Vyberte úroveň aktivity"),
-  goal: z.string().min(1, "Vyberte cieľ"),
-  meal_per_day: z.number().min(1).max(6),
-  cooking_time_pref: z.string().min(1, "Vyberte preferovaný čas"),
-  diet_preferences: z.string().min(1, "Vyberte typ stravovania"),
-  budget_preference: z.string().min(1, "Vyberte rozpočet"),
-  likes: z.string().optional(),
-  dislikes: z.string().optional(),
-  allergies: z.string().optional(),
-});
-
-type NutritionFormData = z.infer<typeof nutritionSchema>;
+type NutritionFormData = {
+  sex: "man" | "woman";
+  height: number;
+  weight: string;
+  activity_level: string;
+  goal: string;
+  meal_per_day: number;
+  cooking_time_pref: string;
+  diet_preferences: string;
+  budget_preference: string;
+  likes?: string;
+  dislikes?: string;
+  allergies?: string;
+};
 
 interface UserNutritionData {
   sex: "man" | "woman";
@@ -64,7 +63,38 @@ export default function NutritionPreferencesSection({
   isLoading,
   onUpdate,
 }: NutritionPreferencesSectionProps) {
+  const t = useTranslations("profile");
   const [isSaving, setIsSaving] = useState(false);
+
+  const nutritionSchema = useMemo(
+    () =>
+      z.object({
+        sex: z.enum(["man", "woman"]),
+        height: z
+          .number()
+          .min(100, t("nutrition.validation.heightMin"))
+          .max(250, t("nutrition.validation.heightMax")),
+        weight: z.string().min(2, t("nutrition.validation.weightRequired")),
+        activity_level: z
+          .string()
+          .min(1, t("nutrition.validation.activityRequired")),
+        goal: z.string().min(1, t("nutrition.validation.goalRequired")),
+        meal_per_day: z.number().min(1).max(6),
+        cooking_time_pref: z
+          .string()
+          .min(1, t("nutrition.validation.cookingTimeRequired")),
+        diet_preferences: z
+          .string()
+          .min(1, t("nutrition.validation.dietRequired")),
+        budget_preference: z
+          .string()
+          .min(1, t("nutrition.validation.budgetRequired")),
+        likes: z.string().optional(),
+        dislikes: z.string().optional(),
+        allergies: z.string().optional(),
+      }),
+    [t]
+  );
 
   const {
     register,
@@ -126,10 +156,10 @@ export default function NutritionPreferencesSection({
       const result = await response.json();
       onUpdate(result.nutrition);
       reset(data);
-      toast.success("Nutričné preferencie boli úspešne aktualizované");
+      toast.success(t("nutrition.toast.updated"));
     } catch (error) {
       console.error("Error updating nutrition:", error);
-      toast.error("Nepodarilo sa aktualizovať preferencie");
+      toast.error(t("nutrition.toast.updateError"));
     } finally {
       setIsSaving(false);
     }
@@ -167,10 +197,10 @@ export default function NutritionPreferencesSection({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Nutričné preferencie
+              {t("nutrition.title")}
             </h2>
             <p className="text-sm text-gray-500">
-              Nastavte svoje stravovacie potreby a preferencie
+              {t("nutrition.description")}
             </p>
           </div>
 
@@ -178,22 +208,22 @@ export default function NutritionPreferencesSection({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               <Scale className="w-5 h-5 text-eatrivo-purple" />
-              Fyzické parametre
+              {t("nutrition.sections.physical")}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Sex */}
               <div className="space-y-2">
-                <Label htmlFor="sex">Pohlavie</Label>
+                <Label htmlFor="sex">{t("nutrition.fields.sex.label")}</Label>
                 <Select
                   value={sex}
                   onValueChange={(value) => setValue("sex", value as "man" | "woman", { shouldDirty: true })}
                 >
                   <SelectTrigger className={errors.sex ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Vyberte pohlavie" />
+                    <SelectValue placeholder={t("nutrition.fields.sex.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="man">Muž</SelectItem>
-                    <SelectItem value="woman">Žena</SelectItem>
+                    <SelectItem value="man">{t("nutrition.fields.sex.options.man")}</SelectItem>
+                    <SelectItem value="woman">{t("nutrition.fields.sex.options.woman")}</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.sex && <p className="text-sm text-red-500">{errors.sex.message}</p>}
@@ -201,12 +231,12 @@ export default function NutritionPreferencesSection({
 
               {/* Height */}
               <div className="space-y-2">
-                <Label htmlFor="height">Výška (cm)</Label>
+                <Label htmlFor="height">{t("nutrition.fields.height.label")}</Label>
                 <Input
                   id="height"
                   type="number"
                   {...register("height", { valueAsNumber: true })}
-                  placeholder="175"
+                  placeholder={t("nutrition.fields.height.placeholder")}
                   className={errors.height ? "border-red-500" : ""}
                 />
                 {errors.height && <p className="text-sm text-red-500">{errors.height.message}</p>}
@@ -214,11 +244,11 @@ export default function NutritionPreferencesSection({
 
               {/* Weight */}
               <div className="space-y-2">
-                <Label htmlFor="weight">Hmotnosť (kg)</Label>
+                <Label htmlFor="weight">{t("nutrition.fields.weight.label")}</Label>
                 <Input
                   id="weight"
                   {...register("weight")}
-                  placeholder="70"
+                  placeholder={t("nutrition.fields.weight.placeholder")}
                   className={errors.weight ? "border-red-500" : ""}
                 />
                 {errors.weight && <p className="text-sm text-red-500">{errors.weight.message}</p>}
@@ -226,7 +256,7 @@ export default function NutritionPreferencesSection({
 
               {/* Meals per day */}
               <div className="space-y-2">
-                <Label htmlFor="meal_per_day">Počet jedál denne</Label>
+                <Label htmlFor="meal_per_day">{t("nutrition.fields.mealsPerDay.label")}</Label>
                 <Input
                   id="meal_per_day"
                   type="number"
@@ -244,26 +274,26 @@ export default function NutritionPreferencesSection({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               <Activity className="w-5 h-5 text-eatrivo-purple" />
-              Aktivita a ciele
+              {t("nutrition.sections.activityGoals")}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Activity Level */}
               <div className="space-y-2">
-                <Label htmlFor="activity_level">Úroveň aktivity</Label>
+                <Label htmlFor="activity_level">{t("nutrition.fields.activity.label")}</Label>
                 <Select
                   key={`activity-${watch("activity_level")}`}
                   value={watch("activity_level")}
                   onValueChange={(value) => setValue("activity_level", value, { shouldDirty: true })}
                 >
                   <SelectTrigger className={errors.activity_level ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Vyberte aktivitu" />
+                    <SelectValue placeholder={t("nutrition.fields.activity.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sedentary">Sedavý životný štýl</SelectItem>
-                    <SelectItem value="lightly_active">Mierne aktívny</SelectItem>
-                    <SelectItem value="moderately_active">Stredne aktívny</SelectItem>
-                    <SelectItem value="very_active">Veľmi aktívny</SelectItem>
-                    <SelectItem value="athlete">Extrémne aktívny (atléti)</SelectItem>
+                    <SelectItem value="sedentary">{t("nutrition.fields.activity.options.sedentary")}</SelectItem>
+                    <SelectItem value="lightly_active">{t("nutrition.fields.activity.options.lightly_active")}</SelectItem>
+                    <SelectItem value="moderately_active">{t("nutrition.fields.activity.options.moderately_active")}</SelectItem>
+                    <SelectItem value="very_active">{t("nutrition.fields.activity.options.very_active")}</SelectItem>
+                    <SelectItem value="athlete">{t("nutrition.fields.activity.options.athlete")}</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.activity_level && <p className="text-sm text-red-500">{errors.activity_level.message}</p>}
@@ -271,19 +301,19 @@ export default function NutritionPreferencesSection({
 
               {/* Goal */}
               <div className="space-y-2">
-                <Label htmlFor="goal">Váš cieľ</Label>
+                <Label htmlFor="goal">{t("nutrition.fields.goal.label")}</Label>
                 <Select
                   key={`goal-${watch("goal")}`}
                   value={watch("goal")}
                   onValueChange={(value) => setValue("goal", value, { shouldDirty: true })}
                 >
                   <SelectTrigger className={errors.goal ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Vyberte cieľ" />
+                    <SelectValue placeholder={t("nutrition.fields.goal.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="lose_weight">Schudnúť</SelectItem>
-                    <SelectItem value="maintain_weight">Udržať hmotnosť</SelectItem>
-                    <SelectItem value="gain_muscle">Nabrať svaly</SelectItem>
+                    <SelectItem value="lose_weight">{t("nutrition.fields.goal.options.lose_weight")}</SelectItem>
+                    <SelectItem value="maintain_weight">{t("nutrition.fields.goal.options.maintain_weight")}</SelectItem>
+                    <SelectItem value="gain_muscle">{t("nutrition.fields.goal.options.gain_muscle")}</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.goal && <p className="text-sm text-red-500">{errors.goal.message}</p>}
@@ -295,28 +325,28 @@ export default function NutritionPreferencesSection({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               <UtensilsCrossed className="w-5 h-5 text-eatrivo-purple" />
-              Stravovacie preferencie
+              {t("nutrition.sections.diet")}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Diet Preferences */}
               <div className="space-y-2">
-                <Label htmlFor="diet_preferences">Typ stravovania</Label>
+                <Label htmlFor="diet_preferences">{t("nutrition.fields.diet.label")}</Label>
                 <Select
                   key={`diet-${watch("diet_preferences")}`}
                   value={watch("diet_preferences")}
                   onValueChange={(value) => setValue("diet_preferences", value, { shouldDirty: true })}
                 >
                   <SelectTrigger className={errors.diet_preferences ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Vyberte typ" />
+                    <SelectValue placeholder={t("nutrition.fields.diet.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Všetko</SelectItem>
-                    <SelectItem value="lactosefree">Bez laktózy</SelectItem>
-                    <SelectItem value="vegetarian">Vegetarián</SelectItem>
-                    <SelectItem value="vegan">Vegán</SelectItem>
-                    <SelectItem value="pescatarian">Pesketarián</SelectItem>
-                    <SelectItem value="ketogenic">Ketogénna diéta</SelectItem>
-                    <SelectItem value="paleolithic">Paleo</SelectItem>
+                    <SelectItem value="none">{t("nutrition.fields.diet.options.none")}</SelectItem>
+                    <SelectItem value="lactosefree">{t("nutrition.fields.diet.options.lactosefree")}</SelectItem>
+                    <SelectItem value="vegetarian">{t("nutrition.fields.diet.options.vegetarian")}</SelectItem>
+                    <SelectItem value="vegan">{t("nutrition.fields.diet.options.vegan")}</SelectItem>
+                    <SelectItem value="pescatarian">{t("nutrition.fields.diet.options.pescatarian")}</SelectItem>
+                    <SelectItem value="ketogenic">{t("nutrition.fields.diet.options.ketogenic")}</SelectItem>
+                    <SelectItem value="paleolithic">{t("nutrition.fields.diet.options.paleolithic")}</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.diet_preferences && <p className="text-sm text-red-500">{errors.diet_preferences.message}</p>}
@@ -326,7 +356,7 @@ export default function NutritionPreferencesSection({
               <div className="space-y-2">
                 <Label htmlFor="cooking_time_pref" className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  Čas na prípravu
+                  {t("nutrition.fields.cookingTime.label")}
                 </Label>
                 <Select
                   key={`time-${watch("cooking_time_pref")}`}
@@ -334,12 +364,12 @@ export default function NutritionPreferencesSection({
                   onValueChange={(value) => setValue("cooking_time_pref", value, { shouldDirty: true })}
                 >
                   <SelectTrigger className={errors.cooking_time_pref ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Vyberte čas" />
+                    <SelectValue placeholder={t("nutrition.fields.cookingTime.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="quick">Rýchle (do 15 min)</SelectItem>
-                    <SelectItem value="normal">Stredné (15-30 min)</SelectItem>
-                    <SelectItem value="slow">Dlhšie (30+ min)</SelectItem>
+                    <SelectItem value="quick">{t("nutrition.fields.cookingTime.options.quick")}</SelectItem>
+                    <SelectItem value="normal">{t("nutrition.fields.cookingTime.options.normal")}</SelectItem>
+                    <SelectItem value="slow">{t("nutrition.fields.cookingTime.options.slow")}</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.cooking_time_pref && <p className="text-sm text-red-500">{errors.cooking_time_pref.message}</p>}
@@ -349,7 +379,7 @@ export default function NutritionPreferencesSection({
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="budget_preference" className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4" />
-                  Rozpočet
+                  {t("nutrition.fields.budget.label")}
                 </Label>
                 <Select
                   key={`budget-${watch("budget_preference")}`}
@@ -357,12 +387,12 @@ export default function NutritionPreferencesSection({
                   onValueChange={(value) => setValue("budget_preference", value, { shouldDirty: true })}
                 >
                   <SelectTrigger className={errors.budget_preference ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Vyberte rozpočet" />
+                    <SelectValue placeholder={t("nutrition.fields.budget.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Nízky (šetrné jedlá)</SelectItem>
-                    <SelectItem value="medium">Stredný (vyvážené)</SelectItem>
-                    <SelectItem value="high">Vysoký (prémiové suroviny)</SelectItem>
+                    <SelectItem value="low">{t("nutrition.fields.budget.options.low")}</SelectItem>
+                    <SelectItem value="medium">{t("nutrition.fields.budget.options.medium")}</SelectItem>
+                    <SelectItem value="high">{t("nutrition.fields.budget.options.high")}</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.budget_preference && <p className="text-sm text-red-500">{errors.budget_preference.message}</p>}
@@ -374,27 +404,27 @@ export default function NutritionPreferencesSection({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               <Heart className="w-5 h-5 text-eatrivo-purple" />
-              Chute a obmedzenia
+              {t("nutrition.sections.preferences")}
             </h3>
             <div className="space-y-4">
               {/* Likes */}
               <div className="space-y-2">
-                <Label htmlFor="likes">Obľúbené jedlá (oddelené čiarkou)</Label>
+                <Label htmlFor="likes">{t("nutrition.fields.likes.label")}</Label>
                 <Textarea
                   id="likes"
                   {...register("likes")}
-                  placeholder="napr. kurča, brokolica, ryža, paradajky..."
+                  placeholder={t("nutrition.fields.likes.placeholder")}
                   rows={3}
                 />
               </div>
 
               {/* Dislikes */}
               <div className="space-y-2">
-                <Label htmlFor="dislikes">Neobľúbené jedlá (oddelené čiarkou)</Label>
+                <Label htmlFor="dislikes">{t("nutrition.fields.dislikes.label")}</Label>
                 <Textarea
                   id="dislikes"
                   {...register("dislikes")}
-                  placeholder="napr. ryby, kapusta, huby..."
+                  placeholder={t("nutrition.fields.dislikes.placeholder")}
                   rows={3}
                 />
               </div>
@@ -403,17 +433,17 @@ export default function NutritionPreferencesSection({
               <div className="space-y-2">
                 <Label htmlFor="allergies" className="flex items-center gap-2 text-red-600">
                   <AlertCircle className="w-4 h-4" />
-                  Alergie a intolerancie
+                  {t("nutrition.fields.allergies.label")}
                 </Label>
                 <Textarea
                   id="allergies"
                   {...register("allergies")}
-                  placeholder="napr. laktóza, orechy, glutén..."
+                  placeholder={t("nutrition.fields.allergies.placeholder")}
                   rows={3}
                   className="border-red-200 focus:border-red-400"
                 />
                 <p className="text-xs text-gray-500">
-                  Tieto položky budú vylúčené zo všetkých vašich jedálnych plánov
+                  {t("nutrition.fields.allergies.helper")}
                 </p>
               </div>
             </div>
@@ -428,12 +458,12 @@ export default function NutritionPreferencesSection({
             {isSaving ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Ukladám...
+                {t("nutrition.actions.saving")}
               </>
             ) : (
               <>
                 <Save className="w-4 h-4 mr-2" />
-                Uložiť zmeny
+                {t("nutrition.actions.save")}
               </>
             )}
           </Button>

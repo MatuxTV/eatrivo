@@ -29,6 +29,7 @@ interface UserProfile {
   likedFoods: string;
   dislikedFoods: string;
   allergies: string;
+  language:"sk"|"en";
 }
 
 interface ShoppingData {
@@ -68,9 +69,38 @@ interface ShoppingListUserInfo {
   likes?: string;
   dislikes?: string;
   allergies?: string;
+  language?:string;
 }
 
 export class EatrivoAIService {
+  private static getErrorDetails(error: unknown): Record<string, unknown> {
+    if (error instanceof Error) {
+      const anyError = error as unknown as {
+        cause?: unknown;
+        attemptNumber?: unknown;
+        retriesLeft?: unknown;
+      };
+
+      const cause = anyError.cause;
+      const causeDetails =
+        cause instanceof Error
+          ? { name: cause.name, message: cause.message }
+          : typeof cause === "object" && cause !== null
+            ? cause
+            : cause;
+
+      return {
+        name: error.name,
+        message: error.message,
+        attemptNumber: anyError.attemptNumber,
+        retriesLeft: anyError.retriesLeft,
+        cause: causeDetails,
+      };
+    }
+
+    return { error };
+  }
+
   private static extractJSON(content: string): string {
     // Pokus 1: Odstráň markdown wrapper
     let cleaned = content
@@ -102,6 +132,13 @@ export class EatrivoAIService {
     shoppingListData: ShoppingData
   ) {
     try {
+      if (!process.env.GOOGLE_AI_API_KEY) {
+        apiLogger.error("GOOGLE_AI_API_KEY is not set", undefined, {
+          context: "LangChain",
+        });
+        throw new Error("GOOGLE_AI_API_KEY is not set");
+      }
+
       const userAge =
         new Date().getFullYear() -
         new Date(userProfile.dateofBirth).getFullYear();
@@ -127,6 +164,8 @@ export class EatrivoAIService {
           : "obezita";
 
       const prompt = `Si expert AI nutricionista. Vytvor personalizovaný 7-dňový jedálny plán (Pondelok–Nedeľa) VÝHRADNE z poskytnutého nákupného zoznamu.
+JAZYK:
+Vysledok bude v jazyku = ${userProfile.language}
 
 📋 PROFIL:
 ${userProfile.sex === "man" ? "Muž" : "Žena"}, ${userAge}r, ${
@@ -166,6 +205,7 @@ ${shoppingListData.markdown}
 3. Čas: quick≤15min, normal 15-30min, slow 30-45min
 4. ${userProfile.mealsPerDay} jedál/deň, 2-8 ingrediencií/jedlo, slovenské názvy
 5. Bielkoviny: ${dailyProtein}g/deň (${proteinMultiplier}g/kg)
+6. NAJDOLEZITEJSIE : vystupny prompt bude v jazyku ${userProfile.language} (en = English || sk = Slovakia)
 
 🎯 MEAL_TYPE (${userProfile.mealsPerDay}/deň):
 ${
@@ -236,6 +276,12 @@ ${
     } catch (error) {
       apiLogger.error("Error generating meal plan", error, {
         context: "LangChain",
+        metadata: {
+          model: "gemini-2.5-flash",
+          hasApiKey: Boolean(process.env.GOOGLE_AI_API_KEY),
+          promptChars: typeof shoppingListData?.markdown === "string" ? shoppingListData.markdown.length : undefined,
+          errorDetails: this.getErrorDetails(error),
+        },
       });
       throw new Error("Failed to generate AI meal plan");
     }
@@ -243,6 +289,13 @@ ${
 
   static async generateShoppingList(userInfo: ShoppingListUserInfo) {
     try {
+      if (!process.env.GOOGLE_AI_API_KEY) {
+        apiLogger.error("GOOGLE_AI_API_KEY is not set", undefined, {
+          context: "LangChain",
+        });
+        throw new Error("GOOGLE_AI_API_KEY is not set");
+      }
+
       const userAge =
         new Date().getFullYear() - new Date(userInfo.dateOfBirth).getFullYear();
 
@@ -394,6 +447,7 @@ ${dailyCalories * 7} kcal | ${dailyProtein * 7}g proteín | ${
       } jedál
 
 🌡️ ROČNÉ OBDOBIE: ${season.toUpperCase()}
+Skus sezónne ovocie a zeleninu (${season}) pre čerstvosť a cenu.Zohladni najblizsi sviatok aby klient zazil pravu atmosferu toho sviatku(napr.Vianoce a pridame punc ci vianocne pecivo)
 
 💡 KONTEXT VÝŠKY A VÁHY:
 • Výška ${userInfo.height}cm významne ovplyvňuje BMR (+6.25 kcal za každý cm)
@@ -412,6 +466,7 @@ ${dailyCalories * 7} kcal | ${dailyProtein * 7}g proteín | ${
 1. Presné množstvá na 7 dní
 2. Rešpektuj diétu, alergie, obľúbené/neobľúbené
 3. Tabuľky s emojis, slovenské názvy, min. 3-4 položky/kategória
+4. NAJDOLEZITEJSIE : vystupny prompt bude v jazyku ${userInfo.language} (en = English || sk = Slovakia)
 
 💰 BUDGET (7-dňový nákup):
 **LOW (~30€)**: Vajcia, kuracie stehná/prsia, tuniak konzerva, ryža, ovos, cestoviny, mrazená zelenina, banány, sezónne ovocie, slnečnicový olej

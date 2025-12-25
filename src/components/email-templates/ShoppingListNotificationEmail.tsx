@@ -11,27 +11,25 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-
-interface ShoppingListNotificationEmailProps {
-  clientName: string;
-  shoppingListName: string;
-  shoppingListDate: string;
-  dashboardUrl?: string;
-}
+import type { ShoppingListNotificationEmailProps } from "@/types/email.types";
 
 export function ShoppingListNotificationEmail({
   clientName,
   shoppingListName,
   shoppingListDate,
   dashboardUrl = "https://eatrivo.sk/dashboard",
+  translations,
 }: ShoppingListNotificationEmailProps) {
   const firstName = clientName.split(" ")[0];
   const logoRow = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo/LOGO_ROW.png`;
 
+  const t = translations?.shoppingList;
+  const common = translations?.common;
+
   return (
     <Html>
       <Head />
-      <Preview>Nový nákupný zoznam od Eatrivo</Preview>
+      <Preview>{t?.preview || "Nový nákupný zoznam od Eatrivo"}</Preview>
       <Body style={styles.body}>
         <Container style={styles.container}>
           {/* Header with Logo */}
@@ -44,23 +42,21 @@ export function ShoppingListNotificationEmail({
               style={styles.logo}
             />
             <Heading style={styles.heading}>
-              Nový Nákupný Zoznam! 🛒
+              {t?.heading || "Nový Nákupný Zoznam! 🛒"}
             </Heading>
             <Text style={styles.subtitle}>
-              Váš nákupný zoznam je pripravený
+              {t?.subtitle || "Váš nákupný zoznam je pripravený"}
             </Text>
           </Section>
 
           {/* Content */}
           <Section style={styles.contentSection}>
             <Text style={styles.greeting}>
-              Ahoj {firstName}! 👋
+              {(t?.greeting || "Ahoj {firstName}! 👋").replace("{firstName}", firstName)}
             </Text>
 
             <Text style={styles.paragraph}>
-              Náš výživový poradca práve vytvoril nový nákupný zoznam šitý na mieru
-              vašim potrebám. Tento týždeň sa môžete tešiť na chutné a zdravé
-              jedlá, ktoré vám pomôžu dosiahnuť vaše ciele.
+              {t?.paragraph || "Náš výživový poradca práve vytvoril nový nákupný zoznam šitý na mieru vašim potrebám. Tento týždeň sa môžete tešiť na chutné a zdravé jedlá, ktoré vám pomôžu dosiahnuť vaše ciele."}
             </Text>
           </Section>
 
@@ -68,14 +64,14 @@ export function ShoppingListNotificationEmail({
           <Section style={styles.infoCard}>
             <table style={{ width: "100%", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #e9d5ff" }}>
               <tr>
-                <td style={styles.infoLabel}>Názov:</td>
+                <td style={styles.infoLabel}>{t?.labels.name || "Názov:"}</td>
                 <td style={styles.infoValue}>{shoppingListName}</td>
               </tr>
             </table>
 
             <table style={{ width: "100%", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #e9d5ff" }}>
               <tr>
-                <td style={styles.infoLabel}>Dátum od:</td>
+                <td style={styles.infoLabel}>{t?.labels.dateFrom || "Dátum od:"}</td>
                 <td style={styles.infoValue}>{shoppingListDate}</td>
               </tr>
             </table>
@@ -84,12 +80,10 @@ export function ShoppingListNotificationEmail({
           {/* Tip Section */}
           <Section style={styles.tipSection}>
             <Text style={styles.tipTitle}>
-              💡 Tip pre efektívny nákup
+              {t?.tip.title || "💡 Tip pre efektívny nákup"}
             </Text>
             <Text style={styles.tipText}>
-              Nákupný zoznam je organizovaný podľa kategórií, aby ste mohli
-              nakupovať rýchlejšie a efektívnejšie. Nezabudnite si ho stiahnuť
-              alebo vytlačiť pred odchodom do obchodu!
+              {t?.tip.text || "Nákupný zoznam je organizovaný podľa kategórií, aby ste mohli nakupovať rýchlejšie a efektívnejšie. Nezabudnite si ho stiahnuť alebo vytlačiť pred odchodom do obchodu!"}
             </Text>
           </Section>
 
@@ -99,14 +93,13 @@ export function ShoppingListNotificationEmail({
               href={dashboardUrl}
               style={styles.button}
             >
-              Zobraziť Nákupný Zoznam
+              {t?.cta || "Zobraziť Nákupný Zoznam"}
             </Button>
           </Section>
 
           <Section>
             <Text style={styles.helpText}>
-              Váš nákupný zoznam nájdete v sekcii{" "}
-              <strong>Dashboard</strong> vo vašom Eatrivo účte.
+              <span dangerouslySetInnerHTML={{ __html: (t?.help || "Váš nákupný zoznam nájdete v sekcii <strong>Dashboard</strong> vo vašom Eatrivo účte.").replace("<strong>Dashboard</strong>", "<strong>" + (common?.links.dashboard || "Dashboard") + "</strong>") }} />
             </Text>
           </Section>
 
@@ -114,10 +107,10 @@ export function ShoppingListNotificationEmail({
           <Section style={styles.footer}>
             <Text style={styles.footerBrand}>Eatrivo</Text>
             <Text style={styles.footerTagline}>
-              Váš partner pre zdravý životný štýl
+              {common?.footerTagline || "Váš partner pre zdravý životný štýl"}
             </Text>
             <Text style={styles.footerDisclaimer}>
-              Tento email ste dostali, pretože bol pre vás vytvorený nový nákupný zoznam.
+              {common?.footerDisclaimerShopping || "Tento email ste dostali, pretože bol pre vás vytvorený nový nákupný zoznam."}
             </Text>
           </Section>
         </Container>

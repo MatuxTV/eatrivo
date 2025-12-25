@@ -23,6 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = user.id;
         session.user.membership = user.membership;
         session.user.lastSeenWelcomeVersion = user.lastSeenWelcomeVersion;
+        session.user.locale = (user as { locale?: string }).locale;
       }
       return session;
     },

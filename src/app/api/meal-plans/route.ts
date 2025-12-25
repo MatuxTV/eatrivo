@@ -271,6 +271,7 @@ export async function POST(_request: NextRequest) {
         likedFoods: userInfo.likes || "",
         dislikedFoods: userInfo.dislikes || "",
         allergies: userInfo.allergies || "",
+        language: userInfo.language || "sk",
       };
 
       // logger.debug('Calling AI service to generate meal plan');

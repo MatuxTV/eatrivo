@@ -3,10 +3,20 @@
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-import { getCurrentDaySlovak } from "@/lib/functions";
+import { getCurrentDay, getDayIndex } from "@/lib/functions";
 import { APP_CONFIG } from "@/app/config/app";
 import { logger } from "@/lib/logger";
 import { ReceiptText } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { isLocale, replaceLocaleInPathname } from "@/i18n/routing";
 
 // Components
 import WelcomeDialog from "../components/WelcomeDialog";
@@ -66,21 +76,29 @@ interface UserHealthData {
 }
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
+  const locale = useLocale();
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
-  const [userHealthData, setUserHealthData] = useState<UserHealthData | null>(null);
+  const [userHealthData, setUserHealthData] = useState<UserHealthData | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState({
     shoppingLists: false,
     mealPlan: true, // Always start loading
   });
   const [mealPlanData, setMealPlanData] = useState<DayMealPlan[]>([]);
   const [isMounted, setIsMounted] = useState(false);
-  const currentDay = useMemo(() => getCurrentDaySlovak(), []);
+  const [currentDay, setCurrentDay] = useState<string | null>(null);
 
   // Prevent hydration mismatch
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    setCurrentDay(getCurrentDay(locale));
+  }, [locale]);
 
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
 
@@ -114,7 +132,7 @@ export default function DashboardPage() {
   // FETCH SHOPPING LISTS
   useEffect(() => {
     if (!isMounted || !session?.user) return;
-    
+
     const fetchShoppingLists = async () => {
       try {
         setIsLoading((prev) => ({ ...prev, shoppingLists: true }));
@@ -127,25 +145,25 @@ export default function DashboardPage() {
           context: "DashboardPage",
           metadata: { userId: session?.user?.id },
         });
-        toast.error("Nepodarilo sa načítať nákupné zoznamy");
+        toast.error(t("toasts.shoppingListsLoadError"));
         setShoppingLists([]);
       } finally {
         setIsLoading((prev) => ({ ...prev, shoppingLists: false }));
       }
     };
     fetchShoppingLists();
-  }, [isMounted, session]);
+  }, [isMounted, session, t]);
 
   // FETCH USER HEALTH DATA
   useEffect(() => {
     if (!isMounted || !session?.user) return;
-    
+
     const fetchUserHealthData = async () => {
       try {
         const response = await fetch("/api/user/profile");
         if (!response.ok) throw new Error("Failed to fetch profile");
         const data = await response.json();
-        
+
         if (data.nutrition) {
           setUserHealthData({
             weight: parseFloat(data.nutrition.weight) || 70,
@@ -175,7 +193,7 @@ export default function DashboardPage() {
       try {
         const statusResponse = await fetch("/api/meal-plans/status");
         if (!statusResponse.ok) return false;
-        
+
         const statusData = await statusResponse.json();
         return statusData.isGenerating === true;
       } catch (error) {
@@ -199,17 +217,17 @@ export default function DashboardPage() {
         // Handle 202 - generation in progress, start polling
         if (response.status === 202 && data.isGenerating) {
           logger.info("Meal plan generation in progress, starting polling");
-          
+
           // Start polling every 3 seconds
           if (!statusCheckInterval) {
             statusCheckInterval = setInterval(async () => {
               const stillGenerating = await checkGenerationStatus();
               logger.debug("Poll check", { metadata: { stillGenerating } });
-              
+
               if (!stillGenerating && isComponentMounted) {
                 logger.info("Generation completed, fetching meal plan");
                 if (statusCheckInterval) clearInterval(statusCheckInterval);
-                toast.success("Jedálny plán je pripravený!", { duration: 3000 });
+                toast.success(t("toasts.mealPlanReady"), { duration: 3000 });
                 fetchMealPlan(); // Re-fetch to get the result
               }
             }, 3000);
@@ -227,18 +245,22 @@ export default function DashboardPage() {
         const hasData = data.insights?.week && data.insights.week.length > 0;
         setMealPlanData(hasData ? data.insights.week : []);
         setIsLoading((prev) => ({ ...prev, mealPlan: false }));
-        
-        // Only show success toast if we have data and it's freshly generated (not cached/DB)
-        if (hasData && !data.cached && !data.fromDatabase && data.fallbackUsed !== 'no-data') {
-          toast.success("Jedálny plán je pripravený!");
-        }
 
+        // Only show success toast if we have data and it's freshly generated (not cached/DB)
+        if (
+          hasData &&
+          !data.cached &&
+          !data.fromDatabase &&
+          data.fallbackUsed !== "no-data"
+        ) {
+          toast.success(t("toasts.mealPlanReady"));
+        }
       } catch (error) {
         logger.error("Error loading meal plan", error, {
           context: "DashboardPage",
           metadata: { userId: session?.user?.id },
         });
-        toast.error("Nepodarilo sa načítať jedálny plán");
+        toast.error(t("toasts.mealPlanLoadError"));
         setIsLoading((prev) => ({ ...prev, mealPlan: false }));
       }
     };
@@ -252,19 +274,23 @@ export default function DashboardPage() {
         clearInterval(statusCheckInterval);
       }
     };
-  }, [isMounted, session]);
+  }, [isMounted, session, t]);
 
   const todaysMeals = useMemo(() => {
+    if (!isMounted) return [];
     if (!mealPlanData || mealPlanData.length === 0) return [];
-    const todayPlan = mealPlanData.find((day) => day.day === currentDay);
+    
+    const todayIndex = new Date().getDay();
+    const todayPlan = mealPlanData.find((day) => getDayIndex(day.day) === todayIndex);
+    
     if (!todayPlan || !todayPlan.meals) return [];
 
     return todayPlan.meals.map((meal: MealData, index: number) => ({
-      id: `${currentDay}-${index}`,
+      id: `${todayIndex}-${index}`,
       title: meal.name,
-      description: `${meal.difficulty} • ${meal.prepTime} minút`,
+      description: `${meal.difficulty} • ${meal.prepTime} ${t("time.minutesShort")}`,
       type: meal.meal_type || "snack",
-      cookTime: `${meal.prepTime} min`,
+      cookTime: `${meal.prepTime} ${t("time.minutesShort")}`,
       difficulty: meal.difficulty,
       calories: meal.calories,
       protein: meal.protein,
@@ -272,11 +298,15 @@ export default function DashboardPage() {
       fat: meal.fat,
       ingredients: meal.ingredients || [],
     }));
-  }, [mealPlanData, currentDay]);
+  }, [mealPlanData, isMounted, t]);
 
   const todaysNutrition = useMemo(() => {
+    if (!isMounted) return null;
     if (!mealPlanData || mealPlanData.length === 0) return null;
-    const todayPlan = mealPlanData.find((day) => day.day === currentDay);
+    
+    const todayIndex = new Date().getDay();
+    const todayPlan = mealPlanData.find((day) => getDayIndex(day.day) === todayIndex);
+    
     return todayPlan
       ? {
           calories: todayPlan.totalDailyCalories,
@@ -285,7 +315,7 @@ export default function DashboardPage() {
           fats: todayPlan.totalDailyFats,
         }
       : null;
-  }, [mealPlanData, currentDay]);
+  }, [mealPlanData, isMounted]);
 
   return (
     <div className="min-h-screen bg-gray-50/50 flex">
@@ -311,19 +341,48 @@ export default function DashboardPage() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                Vitajte späť, {session?.user?.name?.split(" ")[0]}! 👋
+                {t("greeting.title", {
+                  name: session?.user?.name?.split(" ")[0] || "",
+                })}
               </h1>
               <p className="text-gray-500 mt-1">
-                Tu je váš prehľad na dnes,{" "}
-                <span className="font-medium text-eatrivo-purple capitalize">
-                  {currentDay}
+                {t("greeting.subtitle")}{" "}
+                <span className="font-medium text-eatrivo-purple">
+                  {currentDay ? currentDay : ""}
                 </span>
                 .
               </p>
             </div>
-            <div className="bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 text-xs font-medium text-gray-600 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              Verzia {APP_CONFIG.WELCOME_DIALOG_VERSION}
+            <div className="flex items-center gap-4">
+              <div className="bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 text-xs font-medium text-gray-600 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                {t("version", { version: APP_CONFIG.WELCOME_DIALOG_VERSION })}
+              </div>
+              <Select
+                value={locale}
+                onValueChange={(value) => {
+                  if (!isLocale(value)) return;
+                  const nextPathname = replaceLocaleInPathname(pathname, value);
+                  const queryString = searchParams.toString();
+                  const hash =
+                    typeof window !== "undefined" ? window.location.hash : "";
+                  router.push(
+                    `${nextPathname}${queryString ? `?${queryString}` : ""}${hash}`
+                  );
+                }}
+              >
+                <SelectTrigger
+                  size="sm"
+                  aria-label={t("navbar.language")}
+                  className="h-9 w-[4.5rem] rounded-full border-transparent bg-transparent px-2 shadow-none hover:bg-gray-100 focus:ring-eatrivo-purple/15"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sk">SK</SelectItem>
+                  <SelectItem value="en">EN</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -335,7 +394,7 @@ export default function DashboardPage() {
                   <ReceiptText className="w-5 h-5 text-blue-600" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  Váš denný plán
+                  {t("dailyPlan.title")}
                 </h2>
               </div>
 

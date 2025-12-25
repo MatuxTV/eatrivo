@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -24,9 +24,11 @@ import { Input } from "@/components/ui/input";
 import {
   userProfileOnboardingSchema,
   type UserProfileOnboarding,
+  type UserProfileOnboardingFormValues,
 } from "@/lib/schemas/user";
 import { motion } from "framer-motion";
 import { User, Calendar, ArrowRight } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 interface ProfileSetupProps {
   onComplete: (data: UserProfileOnboarding) => void;
@@ -37,23 +39,34 @@ export default function ProfileSetup({
   onComplete,
   initialData,
 }: ProfileSetupProps) {
+  const t = useTranslations("onboarding");
+  const locale = useLocale();
+  const language: UserProfileOnboarding["language"] = locale === "en" ? "en" : "sk";
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<UserProfileOnboarding>({
+  const form = useForm<UserProfileOnboardingFormValues>({
     resolver: zodResolver(userProfileOnboardingSchema),
     defaultValues: {
       fullName: initialData?.fullName || "",
-      dateOfBirth: initialData?.dateOfBirth || undefined,
+      dateOfBirth: initialData?.dateOfBirth || "",
+      language: language,
     },
   });
 
-  
+  useEffect(() => {
+    form.setValue("language", language, { shouldValidate: true });
+  }, [form, language]);
 
-  const onSubmit = async (data: UserProfileOnboarding) => {
+  const onSubmit = async (data: UserProfileOnboardingFormValues) => {
     setIsSubmitting(true);
     try {
       // Complete onboarding
-      onComplete({ ...data });
+      const parsed: UserProfileOnboarding = userProfileOnboardingSchema.parse({
+        ...data,
+        language,
+      });
+      onComplete(parsed);
       await new Promise((resolve) => setTimeout(resolve, 500));
     } catch (error) {
       logger.error("Error submitting profile", error, {
@@ -77,15 +90,16 @@ export default function ProfileSetup({
             <User className="w-8 h-8" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Osobné údaje
+            {t("profile.title")}
           </CardTitle>
           <CardDescription className="text-base text-gray-500 max-w-md mx-auto">
-            Povedzte nám niečo o sebe, aby sme mohli prispôsobiť vašu skúsenosť.
+            {t("profile.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <input type="hidden" {...form.register("language")} value={language} readOnly />
               <FormField
                 control={form.control}
                 name="fullName"
@@ -93,12 +107,12 @@ export default function ProfileSetup({
                   <FormItem>
                     <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <User className="w-4 h-4 text-eatrivo-purple" />
-                      Celé meno
+                      {t("profile.fullName")}
                     </FormLabel>
                     <FormControl>
                       <Input
                         className="bg-white border-gray-200 focus:border-eatrivo-purple focus:ring-eatrivo-purple/20 h-12 rounded-xl"
-                        placeholder="Janko Hraško"
+                        placeholder={t("profile.fullNamePlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -114,7 +128,7 @@ export default function ProfileSetup({
                   <FormItem>
                     <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-eatrivo-purple" />
-                      Dátum narodenia
+                      {t("profile.dateOfBirth")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -122,7 +136,7 @@ export default function ProfileSetup({
                         type="date"
                         value={field.value || ""}
                         onChange={(e) => {
-                          field.onChange(e.target.value || undefined);
+                          field.onChange(e.target.value);
                         }}
                         max={new Date().toISOString().split("T")[0]}
                       />
@@ -138,10 +152,10 @@ export default function ProfileSetup({
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  "Ukladá sa..."
+                  t("profile.saving")
                 ) : (
                   <span className="flex items-center">
-                    Pokračovať <ArrowRight className="w-4 h-4 ml-2" />
+                    {t("profile.continue")} <ArrowRight className="w-4 h-4 ml-2" />
                   </span>
                 )}
               </Button>

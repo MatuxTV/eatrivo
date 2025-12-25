@@ -4,14 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard , User } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function MobileNavigation() {
   const pathname = usePathname();
+  const locale = useLocale();
+  const t = useTranslations("dashboard");
+
+  const dashboardHref = `/${locale}/dashboard`;
+  const profileHref = `/${locale}/profile`;
 
   const navItems = [
-    { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+    { href: dashboardHref, label: t("nav.dashboard"), icon: LayoutDashboard },
     // { href: "/meal-plans", label: "Plány", icon: UtensilsCrossed },
-    { href: "/profile", label: "Profil", icon: User },
+    { href: profileHref, label: t("nav.profile"), icon: User },
   ];
 
   return (

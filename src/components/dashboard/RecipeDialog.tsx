@@ -17,6 +17,7 @@ import {
   Beef,
 } from "lucide-react";
 import { getMealTypeColor, roundNumber } from "@/lib/functions";
+import { useTranslations } from "next-intl";
 
 interface Ingredient {
   name: string;
@@ -55,6 +56,8 @@ export default function RecipeDialog({
   ingredients,
   icon,
 }: RecipeDialogProps) {
+  const t = useTranslations("dashboard");
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white p-0 gap-0 border-none shadow-2xl rounded-3xl">
@@ -118,7 +121,7 @@ export default function RecipeDialog({
           {/* Nutrition Grid */}
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
-              Nutričné hodnoty
+              {t("recipe.nutritionValues")}
               <div className="h-px flex-1 bg-gray-100"></div>
             </h3>
 
@@ -131,7 +134,7 @@ export default function RecipeDialog({
                   {roundNumber(calories)}
                 </span>
                 <span className="text-xs font-medium text-gray-500 uppercase">
-                  Kcal
+                  {t("nutritionShort.calories")}
                 </span>
               </div>
 
@@ -143,7 +146,7 @@ export default function RecipeDialog({
                   {roundNumber(protein)}g
                 </span>
                 <span className="text-xs font-medium text-gray-500 uppercase">
-                  Proteíny
+                  {t("nutrition.protein")}
                 </span>
               </div>
 
@@ -155,7 +158,7 @@ export default function RecipeDialog({
                   {roundNumber(carbs)}g
                 </span>
                 <span className="text-xs font-medium text-gray-500 uppercase">
-                  Sacharidy
+                  {t("nutrition.carbs")}
                 </span>
               </div>
 
@@ -167,7 +170,7 @@ export default function RecipeDialog({
                   {roundNumber(fat)}g
                 </span>
                 <span className="text-xs font-medium text-gray-500 uppercase">
-                  Tuky
+                  {t("nutrition.fats")}
                 </span>
               </div>
             </div>
@@ -176,7 +179,7 @@ export default function RecipeDialog({
           {/* Ingredients Section */}
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
-              Ingrediencie
+              {t("recipe.ingredients")}
               <div className="h-px flex-1 bg-gray-100"></div>
             </h3>
 
@@ -210,7 +213,7 @@ export default function RecipeDialog({
               <div className="text-center py-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                 <ChefHat className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                 <p className="text-gray-500 font-medium">
-                  Zoznam ingrediencií nie je k dispozícii
+                  {t("recipe.noIngredients")}
                 </p>
               </div>
             )}

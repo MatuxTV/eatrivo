@@ -10,6 +10,7 @@ export const budgetEnum = pgEnum("budget",["low","medium","high"]);
 export const membershipEnum = pgEnum("membership", ["basic", "premium", "trainer"]);
 export const shoppingListStatusEnum = pgEnum("shopping_list_status", ["active", "completed", "cancelled"]);
 export const goalEnum = pgEnum("goal", ["lose_weight", "maintain_weight", "gain_muscle"]);
+export const languageEnum = pgEnum("language",["sk","en"]);
 
 export const foodItems = pgTable("food_items", {
 	id: integer("id").primaryKey().notNull(),
@@ -30,7 +31,6 @@ export const users = pgTable("users", {
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   membership: membershipEnum("membership").default("premium").notNull(),
   image: text("image"),
-
   //Stamp for NewUpdate window tracking
   lastSeenWelcomeVersion: text("last_seen_welcome_version"),
   lastSeenWelcomeAt: timestamp("last_seen_welcome_at", { withTimezone: true }),
@@ -54,6 +54,7 @@ export const userInfoTable = pgTable("user_info", {
   id: uuid("id").primaryKey().defaultRandom(),
   userProfileId: uuid("userProfileId").notNull().references(() => userProfiles.id, { onDelete: "cascade" }),
   sex: sexEnum("sex").notNull(),
+  language: languageEnum("language").default("sk").notNull(),
   dateOfBirth: timestamp("dateOfBirth"),
   height: integer("height").notNull(),
   weight: numeric("weight", { precision: 5, scale: 2 }).notNull(),

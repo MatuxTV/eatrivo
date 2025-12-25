@@ -10,6 +10,7 @@ export const userProfileOnboardingSchema = z.object({
       const age = getAgeFromDate(date);
       return age >= 13
     }, "Musíte mať aspoň 13 rokov"),
+  language: z.enum(["sk", "en"]).default("sk"),
 });
 
 // User food preferences schema (second step)
@@ -58,6 +59,7 @@ export const updateFoodPreferencesSchema = userFoodPreferencesSchema.partial();
 
 // Type exports for your app
 export type UserProfileOnboarding = z.infer<typeof userProfileOnboardingSchema>;
+export type UserProfileOnboardingFormValues = z.input<typeof userProfileOnboardingSchema>;
 export type UserFoodPreferences = z.infer<typeof userFoodPreferencesSchema>;
 export type CompleteOnboarding = z.infer<typeof completeOnboardingSchema>;
 export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;

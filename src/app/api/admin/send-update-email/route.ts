@@ -6,6 +6,8 @@ import { eq, isNotNull } from "drizzle-orm";
 import { resend, DEFAULT_FROM_EMAIL } from "@/components/email-templates";
 import { UpdateNotificationEmail } from "@/components/email-templates/UpdateNotificationEmail";
 import { logger } from "@/lib/logger";
+import { getMessages } from "next-intl/server";
+import type { EmailTranslations } from "@/types/email.types";
 
 interface UpdateItem {
   title: string;
@@ -42,6 +44,10 @@ export async function POST(request: Request) {
       );
     }
 
+    // Fetch translations (default to SK)
+    const messages = await getMessages({ locale: "sk" });
+    const translations = (messages.emails as unknown) as EmailTranslations;
+
     // If testEmail is provided, send only to that email
     if (testEmail) {
       const { error } = await resend.emails.send({
@@ -54,6 +60,7 @@ export async function POST(request: Request) {
           updateTitle,
           updateDescription,
           updates,
+          translations,
         }),
       });
 
@@ -100,6 +107,7 @@ export async function POST(request: Request) {
               updateTitle,
               updateDescription,
               updates,
+              translations,
             }),
           });
 
