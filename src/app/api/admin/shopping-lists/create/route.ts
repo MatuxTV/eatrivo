@@ -27,11 +27,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const normalizedLanguage = userInfo.language === "en" ? "en" : "sk";
+
     apiLogger.info('Generating shopping list with AI (no DB save)', {
       metadata: {
         goal: userInfo.goal,
         diet: userInfo.diet_preferences,
-        budget: userInfo.budget_preference
+        budget: userInfo.budget_preference,
+        language: normalizedLanguage
       }
     });
 
@@ -50,6 +53,7 @@ export async function POST(req: NextRequest) {
       likes: userInfo.likes,
       dislikes: userInfo.dislikes,
       allergies: userInfo.allergies,
+      language: normalizedLanguage,
     });
 
     apiLogger.info('AI shopping list generated successfully (no DB save)');

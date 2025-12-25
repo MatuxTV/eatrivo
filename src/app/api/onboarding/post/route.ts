@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
     const [userFoodInfoRecord] = await db.insert(userInfoTable).values({
       userProfileId: userProfile.id,
       sex: foodPreferences.sex,
+      language: profile.language,
       dateOfBirth: new Date(profile.dateOfBirth),
       height: foodPreferences.height,
       weight: foodPreferences.weight.toString(),

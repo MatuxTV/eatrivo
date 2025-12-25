@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,13 +12,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
-const personalInfoSchema = z.object({
-  fullName: z.string().min(2, "Meno musí mať aspoň 2 znaky"),
-  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Neplatný formát dátumu"),
-});
-
-type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
+type PersonalInfoFormData = {
+  fullName: string;
+  dateOfBirth: string;
+};
 
 interface PersonalInfoSectionProps {
   profileData: {
@@ -36,7 +35,21 @@ export default function PersonalInfoSection({
   isLoading,
   onUpdate,
 }: PersonalInfoSectionProps) {
+  const t = useTranslations("profile");
   const [isSaving, setIsSaving] = useState(false);
+
+  const personalInfoSchema = useMemo(
+    () =>
+      z.object({
+        fullName: z
+          .string()
+          .min(2, t("personal.validation.fullNameMin")),
+        dateOfBirth: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, t("personal.validation.dateFormat")),
+      }),
+    [t]
+  );
 
   const {
     register,
@@ -74,10 +87,10 @@ export default function PersonalInfoSection({
       const result = await response.json();
       onUpdate(result.profile);
       reset(data); // Reset form to mark as not dirty
-      toast.success("Profil bol úspešne aktualizovaný");
+      toast.success(t("personal.toast.updated"));
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error("Nepodarilo sa aktualizovať profil");
+      toast.error(t("personal.toast.updateError"));
     } finally {
       setIsSaving(false);
     }
@@ -113,10 +126,10 @@ export default function PersonalInfoSection({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Osobné informácie
+              {t("personal.title")}
             </h2>
             <p className="text-sm text-gray-500">
-              Upravte svoje základné údaje
+              {t("personal.description")}
             </p>
           </div>
 
@@ -124,12 +137,12 @@ export default function PersonalInfoSection({
           <div className="space-y-2">
             <Label htmlFor="fullName" className="flex items-center gap-2 text-sm font-medium">
               <User className="w-4 h-4 text-eatrivo-purple" />
-              Celé meno
+              {t("personal.fields.fullName.label")}
             </Label>
             <Input
               id="fullName"
               {...register("fullName")}
-              placeholder="Vaše meno a priezvisko"
+              placeholder={t("personal.fields.fullName.placeholder")}
               defaultValue={profileData?.fullName || ""}
               className={errors.fullName ? "border-red-500" : ""}
             />
@@ -142,7 +155,7 @@ export default function PersonalInfoSection({
           <div className="space-y-2">
             <Label htmlFor="dateOfBirth" className="flex items-center gap-2 text-sm font-medium">
               <Calendar className="w-4 h-4 text-eatrivo-purple" />
-              Dátum narodenia
+              {t("personal.fields.dateOfBirth.label")}
             </Label>
             <Input
               id="dateOfBirth"
@@ -170,7 +183,7 @@ export default function PersonalInfoSection({
               className="bg-gray-50 cursor-not-allowed"
             />
             <p className="text-xs text-gray-500">
-              Email sa nedá zmeniť, je prepojený s vašim účtom
+              {t("personal.fields.email.helper")}
             </p>
           </div>
 
@@ -178,8 +191,8 @@ export default function PersonalInfoSection({
           <div className="p-4 bg-gradient-to-br from-eatrivo-purple/5 to-eatrivo-pink/5 rounded-xl border border-eatrivo-purple/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-700">Členstvo</p>
-                <p className="text-xs text-gray-500 mt-0.5">Váš súčasný plán</p>
+                <p className="text-sm font-medium text-gray-700">{t("personal.membership.label")}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{t("personal.membership.helper")}</p>
               </div>
               <div className="px-4 py-2 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink text-white font-bold text-sm rounded-lg">
                 {profileData?.membership || "FREE"}
@@ -196,12 +209,12 @@ export default function PersonalInfoSection({
             {isSaving ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Ukladám...
+                {t("personal.actions.saving")}
               </>
             ) : (
               <>
                 <Save className="w-4 h-4 mr-2" />
-                Uložiť zmeny
+                {t("personal.actions.save")}
               </>
             )}
           </Button>

@@ -1,0 +1,645 @@
+{
+  "common": {
+    "appName": "Eatrivo",
+    "startFree": "Start free"
+  },
+  "landing": {
+    "metaTitle": "Eatrivo - AI Assistant for Healthy Eating",
+    "metaDescription": "Create a personalized meal plan with AI. Upload a shopping list and get tailored recipes.",
+    "navbar": {
+      "howItWorks": "How it works",
+      "features": "Features",
+      "signIn": "Sign in",
+      "startFree": "Start free",
+      "language": "Language"
+    },
+    "hero": {
+      "badge": "Your personal AI assistant",
+      "titleLine1": "A meal plan made",
+      "titleAccent": "in seconds",
+      "description": "Set your goals and preferences. EatRivo generates a practical meal plan, recipes, and a shopping list that fits you.",
+      "sampleMealLabel": "Lunch",
+      "sampleMealTitle": "Grilled salmon",
+      "sampleCaloriesLabel": "Calories",
+      "sampleGoal": "On track"
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "Three simple steps to eat better.",
+      "steps": {
+        "registration": {
+          "title": "Sign up",
+          "description": "Create an account and set your goals, preferences, and dietary restrictions."
+        },
+        "plan": {
+          "title": "Generate a plan",
+          "description": "Let AI build a meal plan and recipes tailored to you."
+        },
+        "done": {
+          "title": "Done",
+          "description": "Get a clear shopping list and start cooking with less stress."
+        }
+      }
+    },
+    "features": {
+      "title": "Features that save time",
+      "subtitle": "Everything you need for practical meal planning.",
+      "items": {
+        "personalization": {
+          "title": "Personalization",
+          "description": "Meal plans adapted to your goals, preferences, and restrictions."
+        },
+        "speed": {
+          "title": "Speed",
+          "description": "Plans and recipes ready in seconds."
+        },
+        "savings": {
+          "title": "Savings",
+          "description": "A smarter shopping list reduces waste and saves money."
+        },
+        "nutrition": {
+          "title": "Nutrition",
+          "description": "Stay on top of calories and macros without the hassle."
+        }
+      }
+    },
+    "cta": {
+      "title": "Create your meal plan today",
+      "description": "Start for free and see how simple healthy eating can be.",
+      "disclaimer": "No commitment. Cancel anytime."
+    },
+    "footer": {
+      "about": "Your personal AI assistant for healthier, more efficient eating. Save time and money.",
+      "product": "Product",
+      "pricing": "Pricing",
+      "company": "Company",
+      "aboutUs": "About",
+      "blog": "Blog",
+      "contact": "Contact",
+      "legal": "Legal",
+      "terms": "Terms of service",
+      "privacy": "Privacy policy",
+      "cookies": "Cookies",
+      "rights": "All rights reserved."
+    }
+  },
+  "auth": {
+    "signIn": {
+      "metaTitle": "Sign in",
+      "tagline": "Sign in to continue",
+      "cardTitle": "Welcome",
+      "cardDescription": "Sign in to access your meal plans and preferences.",
+      "googleButton": "Continue with Google",
+      "agreement": {
+        "prefix": "By continuing, you agree to our",
+        "terms": "Terms",
+        "and": "and",
+        "privacy": "Privacy Policy"
+      },
+      "whyTitle": "Why sign in?",
+      "whyBullets": {
+        "personalized": "Personalized meal plans",
+        "planning": "Smart shopping lists",
+        "nutrition": "Nutrition tracking"
+      }
+    },
+    "signOut": {
+      "metaTitle": "Sign out",
+      "title": "Sign out",
+      "description": "Are you sure you want to sign out?",
+      "confirm": "Sign out",
+      "cancel": "Cancel"
+    }
+  },
+  "onboarding": {
+    "metadata": {
+      "title": "Set up your profile",
+      "description": "Create your profile and set your preferences for meal planning."
+    },
+    "title": "Onboarding",
+    "step": "Step",
+    "of": "of",
+    "steps": {
+      "profile": "Profile",
+      "preferences": "Food preferences"
+    },
+    "errors": {
+      "saveFailed": "We couldn't save your settings. Please try again."
+    },
+    "profile": {
+      "title": "Personal details",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "e.g. Alex Johnson",
+      "age": "Age",
+      "agePlaceholder": "e.g. 28",
+      "save": "Continue",
+      "saving": "Saving…"
+    },
+    "food": {
+      "title": "Food preferences",
+      "description": "Help us personalize meal recommendations for you.",
+      "sections": {
+        "basic": "Basics",
+        "physical": "Body metrics",
+        "lifestyle": "Lifestyle",
+        "preferences": "Food preferences",
+        "details": "Details"
+      },
+      "sex": "Sex",
+      "sexPlaceholder": "Select sex",
+      "sexOptions": {
+        "man": "Man",
+        "woman": "Woman"
+      },
+      "height": "Height (cm)",
+      "heightPlaceholder": "170",
+      "weight": "Weight (kg)",
+      "weightPlaceholder": "70",
+      "activityLevel": "Activity level",
+      "activityPlaceholder": "Select activity level",
+      "activityOptions": {
+        "sedentary": "Sedentary (desk job)",
+        "lightlyActive": "Lightly active (1–2x/week)",
+        "moderatelyActive": "Moderately active (3–5x/week)",
+        "veryActive": "Very active (6–7x/week)",
+        "athlete": "Athlete (multiple times/day)"
+      },
+      "goal": "Goal",
+      "goalPlaceholder": "Select a goal",
+      "goalOptions": {
+        "loseWeight": "Lose weight",
+        "maintainWeight": "Maintain weight",
+        "gainMuscle": "Gain muscle"
+      },
+      "mealsPerDay": "Meals per day",
+      "mealsPerDayPlaceholder": "3",
+      "cookingTime": "Cooking time",
+      "cookingTimePlaceholder": "Select a preference",
+      "cookingTimeOptions": {
+        "quick": "Quick (up to 15 min)",
+        "normal": "Normal (15–45 min)",
+        "slow": "Slow (45+ min)"
+      },
+      "diet": "Diet",
+      "dietPlaceholder": "Select diet type",
+      "dietOptions": {
+        "none": "No restriction",
+        "lactoseFree": "Lactose-free",
+        "vegetarian": "Vegetarian",
+        "vegan": "Vegan",
+        "pescatarian": "Pescatarian",
+        "ketogenic": "Ketogenic",
+        "paleo": "Paleo"
+      },
+      "budget": "Budget",
+      "budgetPlaceholder": "Select budget",
+      "budgetOptions": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "likes": "Foods you like",
+      "likesPlaceholder": "Write foods you enjoy…",
+      "dislikes": "Foods you dislike",
+      "dislikesPlaceholder": "Write foods you don't enjoy…",
+      "allergies": "Allergies and intolerances",
+      "allergiesPlaceholder": "List allergies or intolerances…",
+      "back": "Back",
+      "finishing": "Finishing…",
+      "finish": "Finish setup"
+    }
+  },
+  "dashboard": {
+    "metadata": {
+      "title": "Dashboard",
+      "description": "Your daily overview, meal plan, and shopping lists."
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "profile": "Profile",
+      "signOut": "Sign out"
+    },
+    "navbar": {
+      "language": "Language"
+    },
+    "userAlt": "User",
+    "membershipSuffix": "member",
+    "greeting": {
+      "title": "Welcome back, {name}! 👋",
+      "subtitle": "Here's your overview for today,"
+    },
+    "version": "Version {version}",
+    "days": {
+      "Sunday": "Sunday",
+      "Monday": "Monday",
+      "Tuesday": "Tuesday",
+      "Wednesday": "Wednesday",
+      "Thursday": "Thursday",
+      "Friday": "Friday",
+      "Saturday": "Saturday"
+    },
+    "dailyPlan": {
+      "title": "Your daily plan"
+    },
+    "time": {
+      "minutesShort": "min"
+    },
+    "toasts": {
+      "mealPlanReady": "Meal plan is ready!",
+      "mealPlanLoadError": "Couldn't load meal plan",
+      "shoppingListsLoadError": "Couldn't load shopping lists"
+    },
+    "nutrition": {
+      "calories": "Calories",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fats": "Fats"
+    },
+    "nutritionShort": {
+      "calories": "Kcal",
+      "protein": "Prot",
+      "carbs": "Carbs",
+      "fats": "Fat"
+    },
+    "recipe": {
+      "nutritionValues": "Nutrition Values",
+      "ingredients": "Ingredients",
+      "noIngredients": "Ingredients list not available"
+    },
+    "mealPlan": {
+      "loading": {
+        "title": "Generating your meal plan",
+        "description": "AI is creating personalized recipes from your shopping list…",
+        "eta": "This can take 1–3 minutes"
+      },
+      "empty": {
+        "title": "No meals for today",
+        "description": "Your coach hasn't prepared a meal plan for this day yet."
+      }
+    },
+    "shoppingLists": {
+      "title": "Shopping lists",
+      "count": {
+        "one": "list",
+        "few": "lists",
+        "many": "lists"
+      },
+      "empty": {
+        "title": "No shopping lists",
+        "description": "You don't have any generated shopping lists yet. Your coach or AI will prepare a plan soon."
+      }
+    },
+    "welcome": {
+      "version": "Version {version}",
+      "title": {
+        "update": "What's new in Eatrivo! 🎉",
+        "welcome": "Welcome, {name}! 👋"
+      },
+      "description": {
+        "updateDefault": "See what's new in this version.",
+        "welcome": "We're glad you're here on your journey to a healthier lifestyle."
+      },
+      "sections": {
+        "whatsNew": "What's new",
+        "coreFeatures": "Core features"
+      },
+      "defaultFeatures": {
+        "dailyPlan": {
+          "title": "Daily plan",
+          "description": "Personalized meals for each day"
+        },
+        "shoppingLists": {
+          "title": "Shopping lists",
+          "description": "Automatically generated shopping lists"
+        },
+        "goals": {
+          "title": "Goals",
+          "description": "Track your progress"
+        }
+      },
+      "action": {
+        "tryWhatsNew": "Try what's new",
+        "getStarted": "Get started"
+      }
+    },
+    "health": {
+      "title": "Health score",
+      "footer": "BMI 60% + Activity 40% = Score",
+      "activityLabel": "Activity",
+      "activity": {
+        "sedentary": "Sedentary",
+        "lightly_active": "Lightly active",
+        "moderately_active": "Moderately active",
+        "very_active": "Very active",
+        "athlete": "Athlete",
+        "unknown": "Unknown"
+      },
+      "bmi": {
+        "severeUnderweight": "Severely underweight",
+        "moderateUnderweight": "Moderately underweight",
+        "underweight": "Underweight",
+        "normal": "Normal weight",
+        "overweight": "Overweight",
+        "obesity1": "Obesity I",
+        "obesity2": "Obesity II",
+        "obesity3": "Obesity III"
+      },
+      "score": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "average": "Average",
+        "poor": "Poor",
+        "critical": "Critical"
+      }
+    }
+  },
+  "profile": {
+    "metadata": {
+      "title": "Profile",
+      "description": "Manage your profile and nutrition preferences."
+    },
+    "toast": {
+      "loadError": "Couldn't load profile"
+    },
+    "tabs": {
+      "personal": "Personal information",
+      "nutrition": "Nutrition preferences"
+    },
+    "navigation": {
+      "backToDashboard": "Back to dashboard"
+    },
+    "header": {
+      "title": "My profile",
+      "description": "Manage your personal details and preferences"
+    },
+    "personal": {
+      "title": "Personal information",
+      "description": "Edit your basic details",
+      "fields": {
+        "fullName": {
+          "label": "Full name",
+          "placeholder": "Your full name"
+        },
+        "dateOfBirth": {
+          "label": "Date of birth"
+        },
+        "email": {
+          "helper": "Email can't be changed because it's linked to your account"
+        }
+      },
+      "membership": {
+        "label": "Membership",
+        "helper": "Your current plan"
+      },
+      "validation": {
+        "fullNameMin": "Name must be at least 2 characters",
+        "dateFormat": "Invalid date format"
+      },
+      "toast": {
+        "updated": "Profile updated",
+        "updateError": "Couldn't update profile"
+      },
+      "actions": {
+        "saving": "Saving…",
+        "save": "Save changes"
+      }
+    },
+    "nutrition": {
+      "title": "Nutrition preferences",
+      "description": "Set your dietary needs and preferences",
+      "sections": {
+        "physical": "Body metrics",
+        "activityGoals": "Activity and goals",
+        "diet": "Diet preferences",
+        "preferences": "Preferences and restrictions"
+      },
+      "fields": {
+        "sex": {
+          "label": "Sex",
+          "placeholder": "Select sex",
+          "options": {
+            "man": "Man",
+            "woman": "Woman"
+          }
+        },
+        "height": {
+          "label": "Height (cm)",
+          "placeholder": "175"
+        },
+        "weight": {
+          "label": "Weight (kg)",
+          "placeholder": "70"
+        },
+        "mealsPerDay": {
+          "label": "Meals per day"
+        },
+        "activity": {
+          "label": "Activity level",
+          "placeholder": "Select activity",
+          "options": {
+            "sedentary": "Sedentary lifestyle",
+            "lightly_active": "Lightly active",
+            "moderately_active": "Moderately active",
+            "very_active": "Very active",
+            "athlete": "Extremely active (athletes)"
+          }
+        },
+        "goal": {
+          "label": "Your goal",
+          "placeholder": "Select a goal",
+          "options": {
+            "lose_weight": "Lose weight",
+            "maintain_weight": "Maintain weight",
+            "gain_muscle": "Gain muscle"
+          }
+        },
+        "diet": {
+          "label": "Diet type",
+          "placeholder": "Select type",
+          "options": {
+            "none": "Everything",
+            "lactosefree": "Lactose-free",
+            "vegetarian": "Vegetarian",
+            "vegan": "Vegan",
+            "pescatarian": "Pescatarian",
+            "ketogenic": "Ketogenic diet",
+            "paleolithic": "Paleo"
+          }
+        },
+        "cookingTime": {
+          "label": "Cooking time",
+          "placeholder": "Select time",
+          "options": {
+            "quick": "Quick (up to 15 min)",
+            "normal": "Medium (15–30 min)",
+            "slow": "Longer (30+ min)"
+          }
+        },
+        "budget": {
+          "label": "Budget",
+          "placeholder": "Select budget",
+          "options": {
+            "low": "Low (budget-friendly)",
+            "medium": "Medium (balanced)",
+            "high": "High (premium ingredients)"
+          }
+        },
+        "likes": {
+          "label": "Foods you like (comma-separated)",
+          "placeholder": "e.g. chicken, broccoli, rice, tomatoes…"
+        },
+        "dislikes": {
+          "label": "Foods you dislike (comma-separated)",
+          "placeholder": "e.g. fish, cabbage, mushrooms…"
+        },
+        "allergies": {
+          "label": "Allergies and intolerances",
+          "placeholder": "e.g. lactose, nuts, gluten…",
+          "helper": "These items will be excluded from all your meal plans"
+        }
+      },
+      "validation": {
+        "heightMin": "Height must be at least 100 cm",
+        "heightMax": "Height must be at most 250 cm",
+        "weightRequired": "Enter your weight",
+        "activityRequired": "Select an activity level",
+        "goalRequired": "Select a goal",
+        "cookingTimeRequired": "Select a preferred time",
+        "dietRequired": "Select a diet type",
+        "budgetRequired": "Select a budget"
+      },
+      "toast": {
+        "updated": "Nutrition preferences updated",
+        "updateError": "Couldn't update preferences"
+      },
+      "actions": {
+        "saving": "Saving…",
+        "save": "Save changes"
+      }
+    }
+  },
+  "emails": {
+    "common": {
+      "footerTagline": "Your partner for a healthy lifestyle",
+      "footerDisclaimer": "This email was sent because you registered on Eatrivo.",
+      "footerDisclaimerShopping": "You received this email because a new shopping list was created for you.",
+      "footerDisclaimerFeedback": "This email was sent automatically from the Eatrivo Feedback system.",
+      "copyright": "© {year} Eatrivo · All rights reserved",
+      "links": {
+        "web": "Web",
+        "dashboard": "Dashboard",
+        "support": "Support"
+      }
+    },
+    "welcome": {
+      "preview": "Welcome to Eatrivo! We are glad you joined us.",
+      "heading": "Welcome to Eatrivo! 🎉",
+      "subtitle": "We are glad you joined us on the journey to a healthier lifestyle",
+      "greeting": "Hi {firstName}! 👋",
+      "paragraph": "Thank you for choosing to start your journey with Eatrivo. We are here to help you achieve your health and nutrition goals with personalized meal plans and smart planning.",
+      "features": {
+        "dailyPlan": { "title": "Daily Plan", "description": "Customized meals containing foods from your generated shopping list" },
+        "shoppingLists": { "title": "Shopping Lists", "description": "Personalized and designed for all your needs for easier shopping" },
+        "aiAssistant": { "title": "AI Assistant", "description": "Smart recommendations and meal plan customization" }
+      },
+      "cta": "Start using Eatrivo",
+      "help": "If you have any questions or need help, do not hesitate to contact us. We are here for you!"
+    },
+    "shoppingList": {
+      "preview": "New shopping list from Eatrivo",
+      "heading": "New Shopping List! 🛒",
+      "subtitle": "Your shopping list is ready",
+      "greeting": "Hi {firstName}! 👋",
+      "paragraph": "Our nutrition advisor has just created a new shopping list tailored to your needs. This week you can look forward to delicious and healthy meals that will help you achieve your goals.",
+      "labels": {
+        "name": "Name:",
+        "dateFrom": "Date from:"
+      },
+      "tip": {
+        "title": "💡 Tip for efficient shopping",
+        "text": "The shopping list is organized by categories so you can shop faster and more efficiently. Don't forget to download or print it before leaving for the store!"
+      },
+      "cta": "View Shopping List",
+      "help": "You can find your shopping list in the <strong>Dashboard</strong> section of your Eatrivo account."
+    },
+    "admin": {
+      "preview": "Eatrivo - Email sent: {emailTypeLabel}",
+      "heading": "Email System Notification",
+      "subtitle": "Automatic notification from Eatrivo system",
+      "success": "Email was successfully sent",
+      "labels": {
+        "type": "Email type:",
+        "recipient": "Recipient:",
+        "name": "Name:",
+        "details": "Details:",
+        "sentAt": "Sent at:"
+      },
+      "footer": "This is an automatic notification from the Eatrivo email system.",
+      "types": {
+        "welcome": "Welcome Email",
+        "shoppingList": "Shopping List Notification"
+      }
+    },
+    "feedback": {
+      "preview": "New feedback from {userName}: {title}",
+      "heading": "New Feedback - Eatrivo",
+      "greeting": "Hi Admin,",
+      "text": "You have new feedback from a user.",
+      "labels": {
+        "type": "Type:",
+        "user": "User:",
+        "email": "Email:",
+        "title": "Title:",
+        "description": "Description:",
+        "id": "Feedback ID:"
+      },
+      "types": {
+        "bug": "Bug Report",
+        "feature": "Feature Request",
+        "improvement": "Improvement"
+      }
+    },
+    "update": {
+      "preview": "{updateTitle} - Eatrivo {version}",
+      "heroLabel": "!NEW UPDATE!",
+      "greeting": "Hi {recipientName},",
+      "intro": "We have new improvements for you. Check out what we've prepared.",
+      "cta": "OPEN DASHBOARD",
+      "footer": "Thank you for being part of Eatrivo."
+    }
+  },
+  "feedback": {
+    "buttonLabel": "Send feedback",
+    "title": "Send us feedback",
+    "description": "Help us improve Eatrivo. Report a bug, suggest new features or share your ideas.",
+    "typeLabel": "Feedback type",
+    "typePlaceholder": "Select type...",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "E.g. Button not working on mobile",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Describe the problem or your idea in detail...",
+    "chars": "chars",
+    "cancel": "Cancel",
+    "submit": "Send feedback",
+    "sending": "Sending...",
+    "success": "Thank you for your feedback!",
+    "errors": {
+      "fillAllFields": "Please fill in all fields",
+      "submitFailed": "Failed to submit feedback"
+    },
+    "types": {
+      "bug": {
+        "label": "Bug / Error",
+        "description": "Something is not working correctly"
+      },
+      "feature": {
+        "label": "Feature request",
+        "description": "New idea or feature"
+      },
+      "improvement": {
+        "label": "Improvement",
+        "description": "Improvement of existing feature"
+      }
+    }
+  }
+}

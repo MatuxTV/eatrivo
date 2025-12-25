@@ -4,6 +4,7 @@ import { ShoppingBag } from "lucide-react";
 import ShoppingListCard from "@/components/dashboard/ShoppingListCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 interface ShoppingList {
   id: string;
@@ -25,6 +26,8 @@ export default function ShoppingListsOverview({
   lists,
   isLoading,
 }: ShoppingListsOverviewProps) {
+  const t = useTranslations("dashboard");
+
   return (
     <div className="space-y-6">
       {/* Section Header */}
@@ -33,16 +36,16 @@ export default function ShoppingListsOverview({
           <div className="p-2 bg-eatrivo-purple/10 rounded-xl text-eatrivo-purple">
             <ShoppingBag className="w-5 h-5" />
           </div>
-          Nákupné zoznamy
+          {t("shoppingLists.title")}
         </h2>
         {!isLoading && lists.length > 0 && (
           <span className="text-xs font-bold px-3 py-1 bg-white border border-gray-200 text-gray-600 rounded-full shadow-sm">
             {lists.length}{" "}
             {lists.length === 1
-              ? "zoznam"
+              ? t("shoppingLists.count.one")
               : lists.length >= 2 && lists.length <= 4
-              ? "zoznamy"
-              : "zoznamov"}
+              ? t("shoppingLists.count.few")
+              : t("shoppingLists.count.many")}
           </span>
         )}
       </div>
@@ -80,11 +83,10 @@ export default function ShoppingListsOverview({
               <ShoppingBag className="w-10 h-10 text-gray-300" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">
-              Žiadne nákupné zoznamy
+              {t("shoppingLists.empty.title")}
             </h3>
             <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
-              Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Váš tréner
-              alebo AI vám čoskoro pripraví plán na mieru.
+              {t("shoppingLists.empty.description")}
             </p>
           </CardContent>
         </Card>

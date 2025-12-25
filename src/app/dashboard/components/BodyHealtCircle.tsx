@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { Activity, Scale, Heart, TrendingUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface BodyHealthCircleProps {
   weight: number; // kg
@@ -18,24 +19,25 @@ const activityScores: Record<string, number> = {
   athlete: 1.0,
 };
 
-const activityLabels: Record<string, string> = {
-  sedentary: "Sedavý",
-  lightly_active: "Mierne aktívny",
-  moderately_active: "Stredne aktívny",
-  very_active: "Veľmi aktívny",
-  athlete: "Atléta",
-};
-
 // BMI categories and their health scores
-function getBMICategory(bmi: number): { label: string; score: number; color: string } {
-  if (bmi < 16) return { label: "Závažná podváha", score: 0.3, color: "#ef4444" };
-  if (bmi < 17) return { label: "Mierna podváha", score: 0.5, color: "#f97316" };
-  if (bmi < 18.5) return { label: "Podváha", score: 0.7, color: "#eab308" };
-  if (bmi < 25) return { label: "Normálna váha", score: 1.0, color: "#22c55e" };
-  if (bmi < 30) return { label: "Nadváha", score: 0.7, color: "#eab308" };
-  if (bmi < 35) return { label: "Obezita I", score: 0.5, color: "#f97316" };
-  if (bmi < 40) return { label: "Obezita II", score: 0.35, color: "#ef4444" };
-  return { label: "Obezita III", score: 0.2, color: "#dc2626" };
+function getBMICategory(
+  bmi: number
+): { labelKey: string; score: number; color: string } {
+  if (bmi < 16)
+    return { labelKey: "health.bmi.severeUnderweight", score: 0.3, color: "#ef4444" };
+  if (bmi < 17)
+    return { labelKey: "health.bmi.moderateUnderweight", score: 0.5, color: "#f97316" };
+  if (bmi < 18.5)
+    return { labelKey: "health.bmi.underweight", score: 0.7, color: "#eab308" };
+  if (bmi < 25)
+    return { labelKey: "health.bmi.normal", score: 1.0, color: "#22c55e" };
+  if (bmi < 30)
+    return { labelKey: "health.bmi.overweight", score: 0.7, color: "#eab308" };
+  if (bmi < 35)
+    return { labelKey: "health.bmi.obesity1", score: 0.5, color: "#f97316" };
+  if (bmi < 40)
+    return { labelKey: "health.bmi.obesity2", score: 0.35, color: "#ef4444" };
+  return { labelKey: "health.bmi.obesity3", score: 0.2, color: "#dc2626" };
 }
 
 function getHealthScoreColor(score: number): string {
@@ -46,15 +48,17 @@ function getHealthScoreColor(score: number): string {
   return "#ef4444"; // red
 }
 
-function getHealthScoreLabel(score: number): string {
-  if (score >= 80) return "Výborné";
-  if (score >= 60) return "Dobré";
-  if (score >= 40) return "Priemerné";
-  if (score >= 20) return "Slabé";
-  return "Kritické";
+function getHealthScoreLabelKey(score: number): string {
+  if (score >= 80) return "health.score.excellent";
+  if (score >= 60) return "health.score.good";
+  if (score >= 40) return "health.score.average";
+  if (score >= 20) return "health.score.poor";
+  return "health.score.critical";
 }
 
 export default function BodyHealthCircle({ weight, height, activityLevel }: BodyHealthCircleProps) {
+  const t = useTranslations("dashboard");
+
   const healthData = useMemo(() => {
     // Calculate BMI
     const heightInMeters = height / 100;
@@ -72,10 +76,10 @@ export default function BodyHealthCircle({ weight, height, activityLevel }: Body
       bmi: Math.round(bmi * 10) / 10,
       bmiCategory,
       activityScore: Math.round(activityScore * 100),
-      activityLabel: activityLabels[activityLevel] || "Neznáma",
+      activityLabelKey: `health.activity.${activityLevel}`,
       healthScore,
       healthColor: getHealthScoreColor(healthScore),
-      healthLabel: getHealthScoreLabel(healthScore),
+      healthLabelKey: getHealthScoreLabelKey(healthScore),
     };
   }, [weight, height, activityLevel]);
 
@@ -93,7 +97,7 @@ export default function BodyHealthCircle({ weight, height, activityLevel }: Body
         <div className="p-2 bg-gradient-to-br from-eatrivo-purple/10 to-eatrivo-pink/10 rounded-lg">
           <Heart className="w-5 h-5 text-eatrivo-purple" />
         </div>
-        <h3 className="font-bold text-gray-900">Zdravotné skóre</h3>
+        <h3 className="font-bold text-gray-900">{t("health.title")}</h3>
       </div>
 
       <div className="flex flex-col items-center">
@@ -137,7 +141,7 @@ export default function BodyHealthCircle({ weight, height, activityLevel }: Body
               {healthData.healthScore}
             </span>
             <span className="text-sm font-medium text-gray-500">
-              {healthData.healthLabel}
+              {t(healthData.healthLabelKey)}
             </span>
           </div>
         </div>
@@ -157,7 +161,7 @@ export default function BodyHealthCircle({ weight, height, activityLevel }: Body
               {healthData.bmi}
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              {healthData.bmiCategory.label}
+              {t(healthData.bmiCategory.labelKey)}
             </div>
           </div>
 
@@ -165,13 +169,15 @@ export default function BodyHealthCircle({ weight, height, activityLevel }: Body
           <div className="bg-gray-50 rounded-xl p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Activity className="w-4 h-4 text-gray-400" />
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Aktivita</span>
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{t("health.activityLabel")}</span>
             </div>
             <div className="text-2xl font-bold text-eatrivo-purple">
               {healthData.activityScore}%
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              {healthData.activityLabel}
+              {t.has(healthData.activityLabelKey)
+                ? t(healthData.activityLabelKey)
+                : t("health.activity.unknown")}
             </div>
           </div>
         </div>
@@ -179,7 +185,7 @@ export default function BodyHealthCircle({ weight, height, activityLevel }: Body
         {/* Info footer */}
         <div className="flex items-center gap-2 mt-4 text-xs text-gray-400">
           <TrendingUp className="w-3 h-3" />
-          <span>BMI 60% + Aktivita 40% = Skóre</span>
+          <span>{t("health.footer")}</span>
         </div>
       </div>
     </div>

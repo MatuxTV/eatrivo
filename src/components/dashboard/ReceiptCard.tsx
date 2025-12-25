@@ -8,6 +8,7 @@ import RecipeDialog from "./RecipeDialog";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import type { Ingredient } from "@/types/meal-plan";
+import { useTranslations } from "next-intl";
 
 interface ReceiptCardProps {
   icon?: React.ReactNode;
@@ -37,6 +38,7 @@ export default function ReceiptCard({
   ingredients,
 }: ReceiptCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const t = useTranslations("dashboard");
 
   return (
     <>
@@ -94,7 +96,7 @@ export default function ReceiptCard({
             <div className="grid grid-cols-4 gap-2 py-3 border-t border-gray-50 mt-auto">
               <div className="text-center">
                 <div className="text-[10px] text-gray-400 uppercase font-semibold">
-                  Kcal
+                  {t("nutritionShort.calories")}
                 </div>
                 <div className="text-sm font-bold text-gray-700">
                   {roundNumber(calories)}
@@ -102,7 +104,7 @@ export default function ReceiptCard({
               </div>
               <div className="text-center border-l border-gray-100">
                 <div className="text-[10px] text-gray-400 uppercase font-semibold">
-                  Biel
+                  {t("nutritionShort.protein")}
                 </div>
                 <div className="text-sm font-bold text-eatrivo-green">
                   {roundNumber(protein)}g
@@ -110,7 +112,7 @@ export default function ReceiptCard({
               </div>
               <div className="text-center border-l border-gray-100">
                 <div className="text-[10px] text-gray-400 uppercase font-semibold">
-                  Sach
+                  {t("nutritionShort.carbs")}
                 </div>
                 <div className="text-sm font-bold text-eatrivo-orange">
                   {roundNumber(carbs)}g
@@ -118,7 +120,7 @@ export default function ReceiptCard({
               </div>
               <div className="text-center border-l border-gray-100">
                 <div className="text-[10px] text-gray-400 uppercase font-semibold">
-                  Tuky
+                  {t("nutritionShort.fats")}
                 </div>
                 <div className="text-sm font-bold text-eatrivo-pink">
                   {roundNumber(fat)}g

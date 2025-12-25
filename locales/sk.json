@@ -1,0 +1,645 @@
+{
+  "common": {
+    "appName": "Eatrivo",
+    "startFree": "Začať zdarma"
+  },
+  "landing": {
+    "metaTitle": "EatRivo - AI Asistent pre Zdravé Stravovanie",
+    "metaDescription": "Vytvorte si personalizovaný jedálny plán pomocou AI. Nahrajte nákupný lístok a získajte recepty na mieru.",
+    "navbar": {
+      "howItWorks": "Ako to funguje",
+      "features": "Funkcie",
+      "signIn": "Prihlásiť sa",
+      "startFree": "Začať zdarma",
+      "language": "Jazyk"
+    },
+    "hero": {
+      "badge": "Váš osobný AI asistent",
+      "titleLine1": "Jedálniček na mieru",
+      "titleAccent": "za pár sekúnd",
+      "description": "Zadajte svoje ciele a preferencie. EatRivo vytvorí jedálniček, recepty aj nákupný zoznam, ktoré dávajú zmysel.",
+      "sampleMealLabel": "Obed",
+      "sampleMealTitle": "Grilovaný losos",
+      "sampleCaloriesLabel": "Kalórie",
+      "sampleGoal": "Na ceste k cieľu"
+    },
+    "howItWorks": {
+      "title": "Ako to funguje",
+      "subtitle": "Tri jednoduché kroky k lepšiemu stravovaniu.",
+      "steps": {
+        "registration": {
+          "title": "Registrácia",
+          "description": "Vytvorte si účet a nastavte si ciele, preferencie a obmedzenia."
+        },
+        "plan": {
+          "title": "Vytvorte plán",
+          "description": "Nechajte AI pripraviť jedálniček a recepty presne podľa vás."
+        },
+        "done": {
+          "title": "Hotovo",
+          "description": "Získajte prehľadný nákupný zoznam a začnite variť bez stresu."
+        }
+      }
+    },
+    "features": {
+      "title": "Funkcie, ktoré šetria čas",
+      "subtitle": "Všetko, čo potrebujete pre praktické plánovanie jedla.",
+      "items": {
+        "personalization": {
+          "title": "Personalizácia",
+          "description": "Jedálniček prispôsobený cieľom, preferenciám a obmedzeniam."
+        },
+        "speed": {
+          "title": "Rýchlosť",
+          "description": "Plán aj recepty máte pripravené za pár sekúnd."
+        },
+        "savings": {
+          "title": "Úspora",
+          "description": "Nákupný zoznam znižuje plytvanie a šetrí peniaze."
+        },
+        "nutrition": {
+          "title": "Výživa",
+          "description": "Lepší prehľad o kalóriách a makrách bez komplikácií."
+        }
+      }
+    },
+    "cta": {
+      "title": "Pripravte si jedálniček ešte dnes",
+      "description": "Začnite zdarma a zistite, aké jednoduché môže byť zdravé stravovanie.",
+      "disclaimer": "Bez záväzkov. Zrušiť môžete kedykoľvek."
+    },
+    "footer": {
+      "about": "Váš osobný AI asistent pre zdravé a efektívne stravovanie. Šetríme váš čas aj peniaze.",
+      "product": "Produkt",
+      "pricing": "Cenník",
+      "company": "Spoločnosť",
+      "aboutUs": "O nás",
+      "blog": "Blog",
+      "contact": "Kontakt",
+      "legal": "Právne",
+      "terms": "Podmienky používania",
+      "privacy": "Ochrana súkromia",
+      "cookies": "Cookies",
+      "rights": "Všetky práva vyhradené."
+    }
+  },
+  "auth": {
+    "signIn": {
+      "metaTitle": "Prihlásenie",
+      "tagline": "Prihláste sa a pokračujte",
+      "cardTitle": "Vitajte",
+      "cardDescription": "Prihláste sa pre prístup k jedálnym plánom a preferenciám.",
+      "googleButton": "Pokračovať cez Google",
+      "agreement": {
+        "prefix": "Pokračovaním súhlasíte s",
+        "terms": "Podmienkami",
+        "and": "a",
+        "privacy": "Ochranou súkromia"
+      },
+      "whyTitle": "Prečo sa prihlásiť?",
+      "whyBullets": {
+        "personalized": "Personalizovaný jedálniček",
+        "planning": "Jednoduchšie plánovanie nákupov",
+        "nutrition": "Prehľad o výžive"
+      }
+    },
+    "signOut": {
+      "metaTitle": "Odhlásenie",
+      "title": "Odhlásiť sa",
+      "description": "Naozaj sa chcete odhlásiť?",
+      "confirm": "Odhlásiť sa",
+      "cancel": "Zrušiť"
+    }
+  },
+  "onboarding": {
+    "metadata": {
+      "title": "Nastavte si profil",
+      "description": "Vytvorte si profil a nastavte preferencie pre plánovanie jedla."
+    },
+    "title": "Nastavenie",
+    "step": "Krok",
+    "of": "z",
+    "steps": {
+      "profile": "Profil",
+      "preferences": "Preferencie"
+    },
+    "errors": {
+      "saveFailed": "Nepodarilo sa uložiť nastavenia. Skúste to prosím znova."
+    },
+    "profile": {
+      "title": "Osobné údaje",
+      "fullName": "Celé meno",
+      "fullNamePlaceholder": "napr. Ján Novák",
+      "age": "Vek",
+      "agePlaceholder": "napr. 28",
+      "save": "Pokračovať",
+      "saving": "Ukladá sa…"
+    },
+    "food": {
+      "title": "Jedálne preferencie",
+      "description": "Pomôžte nám vytvoriť pre vás personalizované jedálne odporúčania.",
+      "sections": {
+        "basic": "Základné údaje",
+        "physical": "Telesné parametre",
+        "lifestyle": "Životný štýl",
+        "preferences": "Preferencie jedla",
+        "details": "Detaily"
+      },
+      "sex": "Pohlavie",
+      "sexPlaceholder": "Vyberte pohlavie",
+      "sexOptions": {
+        "man": "Muž",
+        "woman": "Žena"
+      },
+      "height": "Výška (cm)",
+      "heightPlaceholder": "170",
+      "weight": "Hmotnosť (kg)",
+      "weightPlaceholder": "70",
+      "activityLevel": "Úroveň aktivity",
+      "activityPlaceholder": "Vyberte úroveň aktivity",
+      "activityOptions": {
+        "sedentary": "Sedavý (kancelárska práca)",
+        "lightlyActive": "Mierne aktívny (1–2x týždenne)",
+        "moderatelyActive": "Stredne aktívny (3–5x týždenne)",
+        "veryActive": "Veľmi aktívny (6–7x týždenne)",
+        "athlete": "Športovec (viac krát denne)"
+      },
+      "goal": "Cieľ",
+      "goalPlaceholder": "Vyberte cieľ",
+      "goalOptions": {
+        "loseWeight": "Schudnúť",
+        "maintainWeight": "Udržať váhu",
+        "gainMuscle": "Získať svalovú hmotu"
+      },
+      "mealsPerDay": "Jedál denne",
+      "mealsPerDayPlaceholder": "3",
+      "cookingTime": "Čas na varenie",
+      "cookingTimePlaceholder": "Vyberte preferenciu",
+      "cookingTimeOptions": {
+        "quick": "Rýchlo (do 15 min)",
+        "normal": "Normálne (15–45 min)",
+        "slow": "Pomaly (45+ min)"
+      },
+      "diet": "Stravovanie",
+      "dietPlaceholder": "Vyberte typ stravovania",
+      "dietOptions": {
+        "none": "Žiadne obmedzenie",
+        "lactoseFree": "Bez laktózy",
+        "vegetarian": "Vegetariánske",
+        "vegan": "Vegánske",
+        "pescatarian": "Pescatariánske",
+        "ketogenic": "Ketogénne",
+        "paleo": "Paleo"
+      },
+      "budget": "Rozpočet",
+      "budgetPlaceholder": "Vyberte rozpočet",
+      "budgetOptions": {
+        "low": "Nízky",
+        "medium": "Stredný",
+        "high": "Vysoký"
+      },
+      "likes": "Obľúbené jedlá/potraviny",
+      "likesPlaceholder": "Napíšte jedlá, ktoré máte radi…",
+      "dislikes": "Neobľúbené jedlá/potraviny",
+      "dislikesPlaceholder": "Napíšte jedlá, ktoré nemáte radi…",
+      "allergies": "Alergie a intolerancie",
+      "allergiesPlaceholder": "Napíšte vaše alergie alebo intolerancie…",
+      "back": "Späť",
+      "finishing": "Dokončuje sa…",
+      "finish": "Dokončiť nastavenie"
+    }
+  },
+  "dashboard": {
+    "metadata": {
+      "title": "Dashboard",
+      "description": "Váš denný prehľad, jedálny plán a nákupné zoznamy."
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "profile": "Profil",
+      "signOut": "Odhlásiť sa"
+    },
+    "navbar": {
+      "language": "Jazyk"
+    },
+    "userAlt": "Používateľ",
+    "membershipSuffix": "člen",
+    "greeting": {
+      "title": "Vitajte späť, {name}! 👋",
+      "subtitle": "Tu je váš prehľad na dnes,"
+    },
+    "version": "Verzia {version}",
+    "days": {
+      "Nedeľa": "Nedeľa",
+      "Pondelok": "Pondelok",
+      "Utorok": "Utorok",
+      "Streda": "Streda",
+      "Štvrtok": "Štvrtok",
+      "Piatok": "Piatok",
+      "Sobota": "Sobota"
+    },
+    "dailyPlan": {
+      "title": "Váš denný plán"
+    },
+    "time": {
+      "minutesShort": "min"
+    },
+    "toasts": {
+      "mealPlanReady": "Jedálny plán je pripravený!",
+      "mealPlanLoadError": "Nepodarilo sa načítať jedálny plán",
+      "shoppingListsLoadError": "Nepodarilo sa načítať nákupné zoznamy"
+    },
+    "nutrition": {
+      "calories": "Kalórie",
+      "protein": "Proteín",
+      "carbs": "Sacharidy",
+      "fats": "Tuky"
+    },
+    "nutritionShort": {
+      "calories": "Kcal",
+      "protein": "Biel",
+      "carbs": "Sach",
+      "fats": "Tuky"
+    },
+    "recipe": {
+      "nutritionValues": "Nutričné hodnoty",
+      "ingredients": "Ingrediencie",
+      "noIngredients": "Zoznam ingrediencií nie je k dispozícii"
+    },
+    "mealPlan": {
+      "loading": {
+        "title": "Generujeme váš jedálny plán",
+        "description": "AI vytvára personalizované recepty z vášho nákupného zoznamu...",
+        "eta": "Toto môže trvať 1-3 minúty"
+      },
+      "empty": {
+        "title": "Žiadne jedlá na dnes",
+        "description": "Váš tréner pre vás zatiaľ nepripravil jedálny plán na tento deň."
+      }
+    },
+    "shoppingLists": {
+      "title": "Nákupné zoznamy",
+      "count": {
+        "one": "zoznam",
+        "few": "zoznamy",
+        "many": "zoznamov"
+      },
+      "empty": {
+        "title": "Žiadne nákupné zoznamy",
+        "description": "Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Váš tréner alebo AI vám čoskoro pripraví plán na mieru."
+      }
+    },
+    "welcome": {
+      "version": "Verzia {version}",
+      "title": {
+        "update": "Nové v Eatrivo! 🎉",
+        "welcome": "Vitajte, {name}! 👋"
+      },
+      "description": {
+        "updateDefault": "Pozrite sa, čo sme pre vás pripravili v novej verzii.",
+        "welcome": "Sme radi, že ste sa k nám pridali na ceste za zdravším životným štýlom."
+      },
+      "sections": {
+        "whatsNew": "Čo je nové",
+        "coreFeatures": "Hlavné funkcie"
+      },
+      "defaultFeatures": {
+        "dailyPlan": {
+          "title": "Denný plán",
+          "description": "Personalizované jedlá na každý deň"
+        },
+        "shoppingLists": {
+          "title": "Nákupné zoznamy",
+          "description": "Automatické nákupné zoznamy"
+        },
+        "goals": {
+          "title": "Ciele",
+          "description": "Sledovanie vášho pokroku"
+        }
+      },
+      "action": {
+        "tryWhatsNew": "Vyskúšať novinky",
+        "getStarted": "Začať používať"
+      }
+    },
+    "health": {
+      "title": "Zdravotné skóre",
+      "footer": "BMI 60% + Aktivita 40% = Skóre",
+      "activityLabel": "Aktivita",
+      "activity": {
+        "sedentary": "Sedavý",
+        "lightly_active": "Mierne aktívny",
+        "moderately_active": "Stredne aktívny",
+        "very_active": "Veľmi aktívny",
+        "athlete": "Atléta",
+        "unknown": "Neznáma"
+      },
+      "bmi": {
+        "severeUnderweight": "Závažná podváha",
+        "moderateUnderweight": "Mierna podváha",
+        "underweight": "Podváha",
+        "normal": "Normálna váha",
+        "overweight": "Nadváha",
+        "obesity1": "Obezita I",
+        "obesity2": "Obezita II",
+        "obesity3": "Obezita III"
+      },
+      "score": {
+        "excellent": "Výborné",
+        "good": "Dobré",
+        "average": "Priemerné",
+        "poor": "Slabé",
+        "critical": "Kritické"
+      }
+    }
+  },
+  "profile": {
+    "metadata": {
+      "title": "Profil",
+      "description": "Spravujte svoj profil a nutričné preferencie"
+    },
+    "toast": {
+      "loadError": "Nepodarilo sa načítať profil"
+    },
+    "tabs": {
+      "personal": "Osobné údaje",
+      "nutrition": "Nutričné preferencie"
+    },
+    "navigation": {
+      "backToDashboard": "Späť na dashboard"
+    },
+    "header": {
+      "title": "Môj profil",
+      "description": "Spravujte svoje osobné údaje a preferencie"
+    },
+    "personal": {
+      "title": "Osobné informácie",
+      "description": "Upravte svoje základné údaje",
+      "fields": {
+        "fullName": {
+          "label": "Celé meno",
+          "placeholder": "Vaše meno a priezvisko"
+        },
+        "dateOfBirth": {
+          "label": "Dátum narodenia"
+        },
+        "email": {
+          "helper": "Email sa nedá zmeniť, je prepojený s vašim účtom"
+        }
+      },
+      "membership": {
+        "label": "Členstvo",
+        "helper": "Váš súčasný plán"
+      },
+      "validation": {
+        "fullNameMin": "Meno musí mať aspoň 2 znaky",
+        "dateFormat": "Neplatný formát dátumu"
+      },
+      "toast": {
+        "updated": "Profil bol úspešne aktualizovaný",
+        "updateError": "Nepodarilo sa aktualizovať profil"
+      },
+      "actions": {
+        "saving": "Ukladám...",
+        "save": "Uložiť zmeny"
+      }
+    },
+    "nutrition": {
+      "title": "Nutričné preferencie",
+      "description": "Nastavte svoje stravovacie potreby a preferencie",
+      "sections": {
+        "physical": "Fyzické parametre",
+        "activityGoals": "Aktivita a ciele",
+        "diet": "Stravovacie preferencie",
+        "preferences": "Chute a obmedzenia"
+      },
+      "fields": {
+        "sex": {
+          "label": "Pohlavie",
+          "placeholder": "Vyberte pohlavie",
+          "options": {
+            "man": "Muž",
+            "woman": "Žena"
+          }
+        },
+        "height": {
+          "label": "Výška (cm)",
+          "placeholder": "175"
+        },
+        "weight": {
+          "label": "Hmotnosť (kg)",
+          "placeholder": "70"
+        },
+        "mealsPerDay": {
+          "label": "Počet jedál denne"
+        },
+        "activity": {
+          "label": "Úroveň aktivity",
+          "placeholder": "Vyberte aktivitu",
+          "options": {
+            "sedentary": "Sedavý životný štýl",
+            "lightly_active": "Mierne aktívny",
+            "moderately_active": "Stredne aktívny",
+            "very_active": "Veľmi aktívny",
+            "athlete": "Extrémne aktívny (atléti)"
+          }
+        },
+        "goal": {
+          "label": "Váš cieľ",
+          "placeholder": "Vyberte cieľ",
+          "options": {
+            "lose_weight": "Schudnúť",
+            "maintain_weight": "Udržať hmotnosť",
+            "gain_muscle": "Nabrať svaly"
+          }
+        },
+        "diet": {
+          "label": "Typ stravovania",
+          "placeholder": "Vyberte typ",
+          "options": {
+            "none": "Všetko",
+            "lactosefree": "Bez laktózy",
+            "vegetarian": "Vegetarián",
+            "vegan": "Vegán",
+            "pescatarian": "Pesketarián",
+            "ketogenic": "Ketogénna diéta",
+            "paleolithic": "Paleo"
+          }
+        },
+        "cookingTime": {
+          "label": "Čas na prípravu",
+          "placeholder": "Vyberte čas",
+          "options": {
+            "quick": "Rýchle (do 15 min)",
+            "normal": "Stredné (15-30 min)",
+            "slow": "Dlhšie (30+ min)"
+          }
+        },
+        "budget": {
+          "label": "Rozpočet",
+          "placeholder": "Vyberte rozpočet",
+          "options": {
+            "low": "Nízky (šetrné jedlá)",
+            "medium": "Stredný (vyvážené)",
+            "high": "Vysoký (prémiové suroviny)"
+          }
+        },
+        "likes": {
+          "label": "Obľúbené jedlá (oddelené čiarkou)",
+          "placeholder": "napr. kurča, brokolica, ryža, paradajky..."
+        },
+        "dislikes": {
+          "label": "Neobľúbené jedlá (oddelené čiarkou)",
+          "placeholder": "napr. ryby, kapusta, huby..."
+        },
+        "allergies": {
+          "label": "Alergie a intolerancie",
+          "placeholder": "napr. laktóza, orechy, glutén...",
+          "helper": "Tieto položky budú vylúčené zo všetkých vašich jedálnych plánov"
+        }
+      },
+      "validation": {
+        "heightMin": "Výška musí byť aspoň 100 cm",
+        "heightMax": "Výška musí byť max 250 cm",
+        "weightRequired": "Zadajte hmotnosť",
+        "activityRequired": "Vyberte úroveň aktivity",
+        "goalRequired": "Vyberte cieľ",
+        "cookingTimeRequired": "Vyberte preferovaný čas",
+        "dietRequired": "Vyberte typ stravovania",
+        "budgetRequired": "Vyberte rozpočet"
+      },
+      "toast": {
+        "updated": "Nutričné preferencie boli úspešne aktualizované",
+        "updateError": "Nepodarilo sa aktualizovať preferencie"
+      },
+      "actions": {
+        "saving": "Ukladám...",
+        "save": "Uložiť zmeny"
+      }
+    }
+  },
+  "emails": {
+    "common": {
+      "footerTagline": "Váš partner pre zdravý životný štýl",
+      "footerDisclaimer": "Tento email bol odoslaný, pretože ste sa zaregistrovali na Eatrivo.",
+      "footerDisclaimerShopping": "Tento email ste dostali, pretože bol pre vás vytvorený nový nákupný zoznam.",
+      "footerDisclaimerFeedback": "Tento email bol odoslany automaticky z Eatrivo Feedback systemu.",
+      "copyright": "© {year} Eatrivo · Všetky práva vyhradené",
+      "links": {
+        "web": "Web",
+        "dashboard": "Dashboard",
+        "support": "Podpora"
+      }
+    },
+    "welcome": {
+      "preview": "Vitajte v Eatrivo! Sme radi, že ste sa k nám pridali.",
+      "heading": "Vitajte v Eatrivo! 🎉",
+      "subtitle": "Sme radi, že ste sa k nám pridali na ceste za zdravším životným štýlom",
+      "greeting": "Ahoj {firstName}! 👋",
+      "paragraph": "Ďakujeme, že ste sa rozhodli začať svoju cestu s Eatrivo. Sme tu, aby sme vám pomohli dosiahnuť vaše zdravotné a výživové ciele s personalizovanými jedálničkami a inteligentným plánovaním.",
+      "features": {
+        "dailyPlan": { "title": "Denný plán", "description": "Prispôsobené jedlá obsahujúce potraviny z vytvoreného nákupného zoznamu" },
+        "shoppingLists": { "title": "Nákupné zoznamy", "description": "Personalizovane a určené všetkým vaším potrebám pre jednoduchšie nakupovanie" },
+        "aiAssistant": { "title": "AI asistent", "description": "Inteligentné odporúčania a prispôsobenie jedálničkov" }
+      },
+      "cta": "Začať používať Eatrivo",
+      "help": "Ak máte akékoľvek otázky alebo potrebujete pomoc, neváhajte nás kontaktovať. Sme tu pre vás!"
+    },
+    "shoppingList": {
+      "preview": "Nový nákupný zoznam od Eatrivo",
+      "heading": "Nový Nákupný Zoznam! 🛒",
+      "subtitle": "Váš nákupný zoznam je pripravený",
+      "greeting": "Ahoj {firstName}! 👋",
+      "paragraph": "Náš výživový poradca práve vytvoril nový nákupný zoznam šitý na mieru vašim potrebám. Tento týždeň sa môžete tešiť na chutné a zdravé jedlá, ktoré vám pomôžu dosiahnuť vaše ciele.",
+      "labels": {
+        "name": "Názov:",
+        "dateFrom": "Dátum od:"
+      },
+      "tip": {
+        "title": "💡 Tip pre efektívny nákup",
+        "text": "Nákupný zoznam je organizovaný podľa kategórií, aby ste mohli nakupovať rýchlejšie a efektívnejšie. Nezabudnite si ho stiahnuť alebo vytlačiť pred odchodom do obchodu!"
+      },
+      "cta": "Zobraziť Nákupný Zoznam",
+      "help": "Váš nákupný zoznam nájdete v sekcii <strong>Dashboard</strong> vo vašom Eatrivo účte."
+    },
+    "admin": {
+      "preview": "Eatrivo - Email odoslaný: {emailTypeLabel}",
+      "heading": "Email System Notification",
+      "subtitle": "Automaticka notifikacia z Eatrivo systemu",
+      "success": "Email bol úspešne odoslaný",
+      "labels": {
+        "type": "Typ emailu:",
+        "recipient": "Príjemca:",
+        "name": "Meno:",
+        "details": "Detaily:",
+        "sentAt": "Čas odoslania:"
+      },
+      "footer": "Toto je automaticka notifikacia z Eatrivo email systemu.",
+      "types": {
+        "welcome": "Welcome Email",
+        "shoppingList": "Shopping List Notification"
+      }
+    },
+    "feedback": {
+      "preview": "Novy feedback od {userName}: {title}",
+      "heading": "Novy Feedback - Eatrivo",
+      "greeting": "Ahoj Admin,",
+      "text": "Mas novy feedback od pouzivatela.",
+      "labels": {
+        "type": "Typ:",
+        "user": "Pouzivatel:",
+        "email": "Email:",
+        "title": "Nazov:",
+        "description": "Popis:",
+        "id": "Feedback ID:"
+      },
+      "types": {
+        "bug": "Bug Report",
+        "feature": "Napad na vylepsenie",
+        "improvement": "Zlepsenie"
+      }
+    },
+    "update": {
+      "preview": "{updateTitle} - Eatrivo {version}",
+      "heroLabel": "!NOVÁ AKTUALIZÁCIA!",
+      "greeting": "Ahoj {recipientName},",
+      "intro": "Máme pre teba nové vylepšenia. Pozri sa, čo sme pripravili.",
+      "cta": "OTVORIŤ DASHBOARD",
+      "footer": "Ďakujeme, že si súčasťou Eatrivo."
+    }
+  },
+  "feedback": {
+    "buttonLabel": "Odoslať feedback",
+    "title": "Pošlite nám feedback",
+    "description": "Pomôžte nám vylepšiť Eatrivo. Nahláste bug, navrhnite nové funkcie alebo zdieľajte svoje nápady.",
+    "typeLabel": "Typ feedbacku",
+    "typePlaceholder": "Vyberte typ...",
+    "subjectLabel": "Názov",
+    "subjectPlaceholder": "Napr. Tlačidlo nefunguje na mobile",
+    "descriptionLabel": "Popis",
+    "descriptionPlaceholder": "Popíšte problém alebo váš nápad čo najpodrobnejšie...",
+    "chars": "znakov",
+    "cancel": "Zrušiť",
+    "submit": "Odoslať feedback",
+    "sending": "Odosiela sa...",
+    "success": "Ďakujeme za váš feedback!",
+    "errors": {
+      "fillAllFields": "Prosím vyplňte všetky polia",
+      "submitFailed": "Nepodarilo sa odoslať feedback"
+    },
+    "types": {
+      "bug": {
+        "label": "Bug / Chyba",
+        "description": "Niečo nefunguje správne"
+      },
+      "feature": {
+        "label": "Nápad na vylepšenie",
+        "description": "Nový nápad alebo funkcia"
+      },
+      "improvement": {
+        "label": "Zlepšenie",
+        "description": "Vylepšenie existujúcej funkcie"
+      }
+    }
+  }
+}

@@ -1,6 +1,98 @@
+export interface EmailTranslations {
+  common: {
+    footerTagline: string;
+    footerDisclaimer: string;
+    footerDisclaimerShopping?: string;
+    footerDisclaimerFeedback?: string;
+    copyright: string;
+    links: {
+      web: string;
+      dashboard: string;
+      support: string;
+    };
+  };
+  welcome?: {
+    preview: string;
+    heading: string;
+    subtitle: string;
+    greeting: string;
+    paragraph: string;
+    features: {
+      dailyPlan: { title: string; description: string };
+      shoppingLists: { title: string; description: string };
+      aiAssistant: { title: string; description: string };
+    };
+    cta: string;
+    help: string;
+  };
+  shoppingList?: {
+    preview: string;
+    heading: string;
+    subtitle: string;
+    greeting: string;
+    paragraph: string;
+    labels: {
+      name: string;
+      dateFrom: string;
+    };
+    tip: {
+      title: string;
+      text: string;
+    };
+    cta: string;
+    help: string;
+  };
+  admin?: {
+    preview: string;
+    heading: string;
+    subtitle: string;
+    success: string;
+    labels: {
+      type: string;
+      recipient: string;
+      name: string;
+      details: string;
+      sentAt: string;
+    };
+    footer: string;
+    types: {
+      welcome: string;
+      shoppingList: string;
+    };
+  };
+  feedback?: {
+    preview: string;
+    heading: string;
+    greeting: string;
+    text: string;
+    labels: {
+      type: string;
+      user: string;
+      email: string;
+      title: string;
+      description: string;
+      id: string;
+    };
+    types: {
+      bug: string;
+      feature: string;
+      improvement: string;
+    };
+  };
+  update?: {
+    preview: string;
+    heroLabel: string;
+    greeting: string;
+    intro: string;
+    cta: string;
+    footer: string;
+  };
+}
+
 export interface WelcomeEmailProps {
   userName: string;
   userEmail: string;
+  translations?: EmailTranslations;
 }
 
 export interface ShoppingListNotificationEmailProps {
@@ -9,6 +101,7 @@ export interface ShoppingListNotificationEmailProps {
   shoppingListName: string;
   shoppingListDate: string;
   dashboardUrl?: string;
+  translations?: EmailTranslations;
 }
 
 export interface AdminNotificationEmailProps {
@@ -16,6 +109,7 @@ export interface AdminNotificationEmailProps {
   recipientEmail: string;
   recipientName: string;
   additionalInfo?: string;
+  translations?: EmailTranslations;
 }
 
 export interface FeedbackNotificationEmailProps {
@@ -25,6 +119,21 @@ export interface FeedbackNotificationEmailProps {
   title: string;
   description: string;
   feedbackId: string;
+  translations?: EmailTranslations;
+}
+
+export interface UpdateNotificationEmailProps {
+  recipientName: string;
+  version: string;
+  updateTitle: string;
+  updateDescription: string;
+  updates: Array<{
+    title: string;
+    description: string;
+    type: "feature" | "improvement" | "fix";
+  }>;
+  dashboardUrl?: string;
+  translations?: EmailTranslations;
 }
 
 export interface EmailResponse {

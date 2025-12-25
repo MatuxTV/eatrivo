@@ -2,35 +2,35 @@
 
 import { motion } from "framer-motion";
 import { UserPlus, FileText, Sparkles } from "lucide-react";
-
-const steps = [
-  {
-    id: 1,
-    title: "Registrácia",
-    description:
-      "Vytvorte si účet a vyplňte svoj profil s preferenciami a cieľmi.",
-    icon: UserPlus,
-    color: "bg-blue-500",
-  },
-  {
-    id: 2,
-    title: "Priradenie Plánu",
-    description:
-      "Váš osobný coach vám pripraví nákupný zoznam a jedálny plán na mieru.",
-    icon: FileText,
-    color: "bg-eatrivo-purple",
-  },
-  {
-    id: 3,
-    title: "Hotovo!",
-    description:
-      "Sledujte svoj plán v aplikácii a užívajte si zdravé stravovanie bez starostí.",
-    icon: Sparkles,
-    color: "bg-green-500",
-  },
-];
+import { useTranslations } from "next-intl";
 
 export function HowItWorks() {
+  const t = useTranslations("landing");
+
+  const steps = [
+    {
+      id: 1,
+      title: t("howItWorks.steps.registration.title"),
+      description: t("howItWorks.steps.registration.description"),
+      icon: UserPlus,
+      color: "bg-blue-500",
+    },
+    {
+      id: 2,
+      title: t("howItWorks.steps.plan.title"),
+      description: t("howItWorks.steps.plan.description"),
+      icon: FileText,
+      color: "bg-eatrivo-purple",
+    },
+    {
+      id: 3,
+      title: t("howItWorks.steps.done.title"),
+      description: t("howItWorks.steps.done.description"),
+      icon: Sparkles,
+      color: "bg-green-500",
+    },
+  ];
+
   return (
     <section className="py-24 bg-gray-50 overflow-hidden">
       <div className="container px-4 md:px-6 mx-auto">
@@ -41,10 +41,10 @@ export function HowItWorks() {
             viewport={{ once: true }}
             className="text-3xl md:text-4xl font-bold tracking-tighter text-gray-900 mb-4"
           >
-            Ako to funguje?
+            {t("howItWorks.title")}
           </motion.h2>
           <p className="text-lg text-gray-600">
-            Cesta k vášmu zdravšiemu ja je jednoduchšia, než si myslíte.
+            {t("howItWorks.subtitle")}
           </p>
         </div>
 

@@ -5,12 +5,18 @@ import ProfileSetup from "./ProfileSetup";
 import FoodPreferences from "./FoodPreferences";
 import type { UserProfileOnboarding, UserFoodPreferences } from "../../../lib/schemas/user";
 import { logger } from "@/lib/logger";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
 
 interface OnboardingClientProps {
   userEmail?: string;
 }
 
 export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
+  const t = useTranslations("onboarding");
+  const locale = useLocale();
+  const router = useRouter();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [profileData, setProfileData] = useState<UserProfileOnboarding | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,7 +73,7 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
         }
 
         // Redirect to dashboard
-        window.location.href = "/dashboard";
+        router.push(`/${locale}/dashboard`);
       } else {
         throw new Error("Failed to save onboarding data");
       }
@@ -75,7 +81,7 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
       logger.error("Error saving onboarding", error, {
         context: "OnBoardingPage"
       });
-      alert("Chyba pri ukladaní údajov. Skúste to znovu.");
+      alert(t("errors.saveFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -93,10 +99,10 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-2xl mx-auto px-3 md:px-4 py-4 md:py-6">
           <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
-            Nastavenie profilu
+            {t("title")}
           </h1>
           <p className="text-sm md:text-base text-gray-600 mt-1">
-            Krok {currentStep} z 2
+            {t("stepCounter", { current: currentStep, total: 2 })}
           </p>
         </div>
       </header>
@@ -117,7 +123,7 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
                   1
                 </div>
                 <span className="ml-1 md:ml-2 text-xs md:text-sm font-medium text-gray-900">
-                  Osobné údaje
+                  {t("steps.profile")}
                 </span>
               </div>
             </div>
@@ -138,7 +144,7 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
                   2
                 </div>
                 <span className="ml-1 md:ml-2 text-xs md:text-sm font-medium text-gray-900">
-                  Jedálne preferencie
+                  {t("steps.food")}
                 </span>
               </div>
             </div>

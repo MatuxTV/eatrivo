@@ -5,6 +5,7 @@ declare module "next-auth" {
     id: string;
     membership?: "basic" | "premium" | "trainer";
     lastSeenWelcomeVersion?: string;
+    locale?: string;
   }
 
   interface Session {
@@ -12,6 +13,7 @@ declare module "next-auth" {
       id: string;
       membership?: "basic" | "premium" | "trainer";
       lastSeenWelcomeVersion?: string;
+      locale?: string;
     } & DefaultSession["user"];
   }
 }

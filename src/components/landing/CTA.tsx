@@ -4,8 +4,16 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
+import { useTranslations } from "next-intl"
+import { usePathname } from "next/navigation"
+import { getLocaleFromPathname } from "@/i18n/routing"
 
 export function CTA() {
+  const t = useTranslations("landing")
+  const tCommon = useTranslations("common")
+  const pathname = usePathname()
+  const locale = getLocaleFromPathname(pathname)
+
   return (
     <section className="py-24 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -24,7 +32,7 @@ export function CTA() {
               viewport={{ once: true }}
               className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight"
             >
-              Pripravení zmeniť svoje stravovanie?
+              {t("cta.title")}
             </motion.h2>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
@@ -33,8 +41,7 @@ export function CTA() {
               transition={{ delay: 0.1 }}
               className="text-lg sm:text-xl text-gray-300 mb-10 leading-relaxed"
             >
-              Pridajte sa k tisíckam spokojných užívateľov a nechajte AI, aby sa postarala o váš jedálniček.
-              Prvý týždeň je úplne zadarmo.
+              {t("cta.description")}
             </motion.p>
             
             <motion.div
@@ -43,16 +50,16 @@ export function CTA() {
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
             >
-              <Link href="/signin">
+              <Link href={`/${locale}/signin`}>
                 <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 rounded-full px-10 h-16 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1">
-                  Začať zadarmo
+                  {tCommon("startFree")}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
             </motion.div>
             
             <p className="mt-6 text-sm text-gray-400 opacity-80">
-              Bez nutnosti kreditnej karty. Zrušenie kedykoľvek.
+              {t("cta.disclaimer")}
             </p>
           </div>
         </div>

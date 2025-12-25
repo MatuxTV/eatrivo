@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 interface WelcomeDialogProps {
   open: boolean;
@@ -33,6 +34,7 @@ export default function WelcomeDialog({
   changelog,
 }: WelcomeDialogProps) {
   const { data: session } = useSession();
+  const t = useTranslations("dashboard");
 
   const handleClose = () => {
     onOpenChange(false);
@@ -77,18 +79,19 @@ export default function WelcomeDialog({
                 variant="secondary"
                 className="mb-3 bg-eatrivo-purple/10 text-eatrivo-purple hover:bg-eatrivo-purple/20 border-none"
               >
-                Verzia {version}
+                {t("welcome.version", { version })}
               </Badge>
               <DialogTitle className="text-2xl font-bold text-gray-900 mb-2">
                 {isUpdate
-                  ? `Nové v Eatrivo! 🎉`
-                  : `Vitajte, ${session?.user?.name?.split(" ")[0]}! 👋`}
+                  ? t("welcome.title.update")
+                  : t("welcome.title.welcome", {
+                      name: session?.user?.name?.split(" ")[0] || "",
+                    })}
               </DialogTitle>
               <p className="text-gray-500 text-sm max-w-xs mx-auto">
                 {isUpdate
-                  ? changelog?.title ||
-                    "Pozrite sa, čo sme pre vás pripravili v novej verzii."
-                  : "Sme radi, že ste sa k nám pridali na ceste za zdravším životným štýlom."}
+                  ? changelog?.title || t("welcome.description.updateDefault")
+                  : t("welcome.description.welcome")}
               </p>
             </motion.div>
           </div>
@@ -99,7 +102,9 @@ export default function WelcomeDialog({
               // Changelog Features
               <div className="space-y-4">
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 text-center">
-                  {isUpdate ? "Čo je nové" : "Hlavné funkcie"}
+                  {isUpdate
+                    ? t("welcome.sections.whatsNew")
+                    : t("welcome.sections.coreFeatures")}
                 </h3>
                 <div className="grid gap-3">
                   {changelog.features.map((feature, index) => (
@@ -134,10 +139,10 @@ export default function WelcomeDialog({
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 text-sm">
-                      Denný plán
+                      {t("welcome.defaultFeatures.dailyPlan.title")}
                     </h4>
                     <p className="text-xs text-gray-500">
-                      Personalizované jedlá na každý deň
+                      {t("welcome.defaultFeatures.dailyPlan.description")}
                     </p>
                   </div>
                 </motion.div>
@@ -153,10 +158,10 @@ export default function WelcomeDialog({
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 text-sm">
-                      Shopping listy
+                      {t("welcome.defaultFeatures.shoppingLists.title")}
                     </h4>
                     <p className="text-xs text-gray-500">
-                      Automatické nákupné zoznamy
+                      {t("welcome.defaultFeatures.shoppingLists.description")}
                     </p>
                   </div>
                 </motion.div>
@@ -173,7 +178,7 @@ export default function WelcomeDialog({
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="font-semibold text-gray-900 text-sm">
-                        Ciele
+                        {t("welcome.defaultFeatures.goals.title")}
                       </h4>
                       <Badge
                         variant="outline"
@@ -183,7 +188,7 @@ export default function WelcomeDialog({
                       </Badge>
                     </div>
                     <p className="text-xs text-gray-500">
-                      Sledovanie vášho pokroku
+                      {t("welcome.defaultFeatures.goals.description")}
                     </p>
                   </div>
                 </motion.div>
@@ -201,7 +206,9 @@ export default function WelcomeDialog({
                 onClick={handleClose}
                 className="w-full bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-xl h-12 font-semibold shadow-lg shadow-eatrivo-purple/20 hover:shadow-eatrivo-purple/40 transition-all duration-300"
               >
-                {isUpdate ? "Vyskúšať novinky" : "Začať používať"}
+                {isUpdate
+                  ? t("welcome.action.tryWhatsNew")
+                  : t("welcome.action.getStarted")}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </motion.div>

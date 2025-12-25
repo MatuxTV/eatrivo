@@ -314,6 +314,7 @@ export default function AdminDashboard() {
             likes: userInfo.likes,
             dislikes: userInfo.dislikes,
             allergies: userInfo.allergies,
+            language:userInfo.language
           },
         }),
       });

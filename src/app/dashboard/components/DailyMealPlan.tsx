@@ -4,6 +4,7 @@ import { ChefHat } from "lucide-react";
 import ReceiptCard from "@/components/dashboard/ReceiptCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Ingredient } from "@/types/meal-plan";
+import { useTranslations } from "next-intl";
 
 interface Meal {
   id: string;
@@ -28,6 +29,8 @@ export default function DailyMealPlan({
   meals,
   isLoading,
 }: DailyMealPlanProps) {
+  const t = useTranslations("dashboard");
+
   if (isLoading) {
     return (
       <div className="relative min-h-[400px]">
@@ -54,9 +57,9 @@ export default function DailyMealPlan({
                 />
               </div>
               <div className="text-center space-y-1">
-                <p className="text-sm font-semibold text-gray-900">Generujeme váš jedálny plán</p>
-                <p className="text-xs text-gray-500">AI vytvára personalizované recepty z vášho nákupného zoznamu...</p>
-                <p className="text-xs text-eatrivo-purple font-medium mt-2">Toto môže trvať 1-3 minúty</p>
+                <p className="text-sm font-semibold text-gray-900">{t("mealPlan.loading.title")}</p>
+                <p className="text-xs text-gray-500">{t("mealPlan.loading.description")}</p>
+                <p className="text-xs text-eatrivo-purple font-medium mt-2">{t("mealPlan.loading.eta")}</p>
               </div>
             </div>
 
@@ -120,11 +123,9 @@ export default function DailyMealPlan({
         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
           <ChefHat className="w-8 h-8 text-gray-300" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">
-          Žiadne jedlá na dnes
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900">{t("mealPlan.empty.title")}</h3>
         <p className="text-sm text-gray-500 max-w-xs text-center mt-1">
-          Váš tréner pre vás zatiaľ nepripravil jedálny plán na tento deň.
+          {t("mealPlan.empty.description")}
         </p>
       </div>
     );

@@ -45,6 +45,7 @@ import {
   Scale,
   Ruler,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface FoodPreferencesProps {
   onComplete: (data: UserFoodPreferences) => void;
@@ -57,6 +58,8 @@ export default function FoodPreferences({
   onPrevious,
   isLoading,
 }: FoodPreferencesProps) {
+  const t = useTranslations("onboarding");
+
   const form = useForm<UserFoodPreferences>({
     resolver: zodResolver(userFoodPreferencesSchema),
     mode: "onBlur",
@@ -102,10 +105,10 @@ export default function FoodPreferences({
             <Utensils className="w-8 h-8" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Jedálne preferencie
+            {t("food.title")}
           </CardTitle>
           <CardDescription className="text-base text-gray-500 max-w-md mx-auto">
-            Pomôžte nám vytvoriť pre vás personalizované jedálne odporúčania.
+            {t("food.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-8">
@@ -114,7 +117,7 @@ export default function FoodPreferences({
               {/* Basic Info Section */}
               <div className="space-y-4">
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-2">
-                  Základné údaje
+                  {t("food.sections.basic")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -123,7 +126,7 @@ export default function FoodPreferences({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className={labelClasses}>
-                          Pohlavie *
+                          {t("food.sex")} <span aria-hidden="true">*</span>
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -131,12 +134,12 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder="Vyberte pohlavie" />
+                              <SelectValue placeholder={t("food.sexPlaceholder")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="man">Muž</SelectItem>
-                            <SelectItem value="woman">Žena</SelectItem>
+                            <SelectItem value="man">{t("food.sexOptions.man")}</SelectItem>
+                            <SelectItem value="woman">{t("food.sexOptions.woman")}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -149,7 +152,7 @@ export default function FoodPreferences({
               {/* Physical Info Section */}
               <div className="space-y-4">
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-2">
-                  Telesné parametre
+                  {t("food.sections.physical")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -159,13 +162,13 @@ export default function FoodPreferences({
                       <FormItem>
                         <FormLabel className={labelClasses}>
                           <Ruler className="w-4 h-4 text-eatrivo-purple" />
-                          Výška (cm) *
+                          {t("food.height")} <span aria-hidden="true">*</span>
                         </FormLabel>
                         <FormControl>
                           <Input
                             className={inputClasses}
                             type="number"
-                            placeholder="170"
+                            placeholder={t("food.heightPlaceholder")}
                             {...field}
                             onChange={(e) =>
                               field.onChange(parseInt(e.target.value) || 0)
@@ -184,14 +187,14 @@ export default function FoodPreferences({
                       <FormItem>
                         <FormLabel className={labelClasses}>
                           <Scale className="w-4 h-4 text-eatrivo-purple" />
-                          Hmotnosť (kg) *
+                          {t("food.weight")} <span aria-hidden="true">*</span>
                         </FormLabel>
                         <FormControl>
                           <Input
                             className={inputClasses}
                             type="number"
                             step="0.1"
-                            placeholder="70"
+                            placeholder={t("food.weightPlaceholder")}
                             {...field}
                             onChange={(e) =>
                               field.onChange(parseFloat(e.target.value) || 0)
@@ -208,7 +211,7 @@ export default function FoodPreferences({
               {/* Lifestyle Section */}
               <div className="space-y-4">
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-2">
-                  Životný štýl
+                  {t("food.sections.lifestyle")}
                 </h3>
                 <div className="space-y-6">
                   <FormField
@@ -218,7 +221,7 @@ export default function FoodPreferences({
                       <FormItem>
                         <FormLabel className={labelClasses}>
                           <Activity className="w-4 h-4 text-eatrivo-orange" />
-                          Úroveň aktivity *
+                          {t("food.activityLevel")} <span aria-hidden="true">*</span>
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -226,24 +229,24 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder="Vyberte úroveň aktivity" />
+                              <SelectValue placeholder={t("food.activityPlaceholder")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="sedentary">
-                              Sedavý (kancelárska práca)
+                              {t("food.activityOptions.sedentary")}
                             </SelectItem>
                             <SelectItem value="lightly_active">
-                              Mierne aktívny (1-2x týždenne)
+                              {t("food.activityOptions.lightlyActive")}
                             </SelectItem>
                             <SelectItem value="moderately_active">
-                              Stredne aktívny (3-5x týždenne)
+                              {t("food.activityOptions.moderatelyActive")}
                             </SelectItem>
                             <SelectItem value="very_active">
-                              Veľmi aktívny (6-7x týždenne)
+                              {t("food.activityOptions.veryActive")}
                             </SelectItem>
                             <SelectItem value="athlete">
-                              Športovec (Viac krát denne)
+                              {t("food.activityOptions.athlete")}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -259,7 +262,7 @@ export default function FoodPreferences({
                       <FormItem>
                         <FormLabel className={labelClasses}>
                           <Target className="w-4 h-4 text-eatrivo-red" />
-                          Cieľ *
+                          {t("food.goal")} <span aria-hidden="true">*</span>
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -267,18 +270,18 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder="Vyberte cieľ" />
+                              <SelectValue placeholder={t("food.goalPlaceholder")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="lose_weight">
-                              Schudnúť
+                              {t("food.goalOptions.loseWeight")}
                             </SelectItem>
                             <SelectItem value="maintain_weight">
-                              Udržať váhu
+                              {t("food.goalOptions.maintainWeight")}
                             </SelectItem>
                             <SelectItem value="gain_muscle">
-                              Získať svalovú hmotu
+                              {t("food.goalOptions.gainMuscle")}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -292,7 +295,7 @@ export default function FoodPreferences({
               {/* Preferences Section */}
               <div className="space-y-4">
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-2">
-                  Preferencie jedla
+                  {t("food.sections.preferences")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -302,13 +305,13 @@ export default function FoodPreferences({
                       <FormItem>
                         <FormLabel className={labelClasses}>
                           <Utensils className="w-4 h-4 text-eatrivo-blue" />
-                          Jedál denne
+                          {t("food.mealsPerDay")}
                         </FormLabel>
                         <FormControl>
                           <Input
                             className={inputClasses}
                             type="number"
-                            placeholder="3"
+                            placeholder={t("food.mealsPerDayPlaceholder")}
                             {...field}
                             onChange={(e) =>
                               field.onChange(parseInt(e.target.value) || 3)
@@ -327,7 +330,7 @@ export default function FoodPreferences({
                       <FormItem>
                         <FormLabel className={labelClasses}>
                           <Clock className="w-4 h-4 text-eatrivo-blue" />
-                          Čas na varenie
+                          {t("food.cookingTime")}
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -335,18 +338,18 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder="Vyberte preferenciu" />
+                              <SelectValue placeholder={t("food.cookingTimePlaceholder")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="quick">
-                              Rýchlo (do 15 min)
+                              {t("food.cookingTimeOptions.quick")}
                             </SelectItem>
                             <SelectItem value="normal">
-                              Normálne (15-45 min)
+                              {t("food.cookingTimeOptions.normal")}
                             </SelectItem>
                             <SelectItem value="slow">
-                              Pomaly (45+ min)
+                              {t("food.cookingTimeOptions.slow")}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -363,7 +366,7 @@ export default function FoodPreferences({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className={labelClasses}>
-                          Stravovanie
+                          {t("food.diet")}
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -371,25 +374,25 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder="Vyberte typ stravovania" />
+                              <SelectValue placeholder={t("food.dietPlaceholder")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="none">
-                              Žiadne obmedzenie
+                              {t("food.dietOptions.none")}
                             </SelectItem>
                             <SelectItem value="lactosefree">
-                              Bez laktózy
+                              {t("food.dietOptions.lactoseFree")}
                             </SelectItem>
                             <SelectItem value="vegetarian">
-                              Vegetariánske
+                              {t("food.dietOptions.vegetarian")}
                             </SelectItem>
-                            <SelectItem value="vegan">Vegánske</SelectItem>
+                            <SelectItem value="vegan">{t("food.dietOptions.vegan")}</SelectItem>
                             <SelectItem value="pescatarian">
-                              Pescatariánske
+                              {t("food.dietOptions.pescatarian")}
                             </SelectItem>
-                            <SelectItem value="ketogenic">Ketogénne</SelectItem>
-                            <SelectItem value="paleolithic">Paleo</SelectItem>
+                            <SelectItem value="ketogenic">{t("food.dietOptions.ketogenic")}</SelectItem>
+                            <SelectItem value="paleolithic">{t("food.dietOptions.paleo")}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -404,7 +407,7 @@ export default function FoodPreferences({
                       <FormItem>
                         <FormLabel className={labelClasses}>
                           <Wallet className="w-4 h-4 text-eatrivo-yellow" />
-                          Rozpočet
+                          {t("food.budget")}
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -412,13 +415,13 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder="Vyberte rozpočet" />
+                              <SelectValue placeholder={t("food.budgetPlaceholder")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="low">Nízky</SelectItem>
-                            <SelectItem value="medium">Stredný</SelectItem>
-                            <SelectItem value="high">Vysoký</SelectItem>
+                            <SelectItem value="low">{t("food.budgetOptions.low")}</SelectItem>
+                            <SelectItem value="medium">{t("food.budgetOptions.medium")}</SelectItem>
+                            <SelectItem value="high">{t("food.budgetOptions.high")}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -431,7 +434,7 @@ export default function FoodPreferences({
               {/* Details Section */}
               <div className="space-y-4">
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-2">
-                  Detaily
+                  {t("food.sections.details")}
                 </h3>
                 <FormField
                   control={form.control}
@@ -440,12 +443,12 @@ export default function FoodPreferences({
                     <FormItem>
                       <FormLabel className={labelClasses}>
                         <Heart className="w-4 h-4 text-eatrivo-pink" />
-                        Obľúbené jedlá
+                        {t("food.likes")}
                       </FormLabel>
                       <FormControl>
                         <Textarea
                           className={textareaClasses}
-                          placeholder="Napíšte jedlá, ktoré máte radi..."
+                          placeholder={t("food.likesPlaceholder")}
                           {...field}
                         />
                       </FormControl>
@@ -460,12 +463,12 @@ export default function FoodPreferences({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className={labelClasses}>
-                        Neobľúbené jedlá
+                        {t("food.dislikes")}
                       </FormLabel>
                       <FormControl>
                         <Textarea
                           className={textareaClasses}
-                          placeholder="Napíšte jedlá, ktoré nemáte radi..."
+                          placeholder={t("food.dislikesPlaceholder")}
                           {...field}
                         />
                       </FormControl>
@@ -481,12 +484,12 @@ export default function FoodPreferences({
                     <FormItem>
                       <FormLabel className={labelClasses}>
                         <AlertCircle className="w-4 h-4 text-eatrivo-red" />
-                        Alergie a intolerancie
+                        {t("food.allergies")}
                       </FormLabel>
                       <FormControl>
                         <Textarea
                           className={textareaClasses}
-                          placeholder="Napíšte vaše alergie alebo intolerancie..."
+                          placeholder={t("food.allergiesPlaceholder")}
                           {...field}
                         />
                       </FormControl>
@@ -504,14 +507,14 @@ export default function FoodPreferences({
                   disabled={isLoading}
                   className="w-full bg-white sm:w-auto h-12 px-6 border-2 border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold rounded-xl"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" /> Späť
+                  <ArrowLeft className="w-4 h-4 mr-2" /> {t("food.back")}
                 </Button>
                 <Button
                   type="submit"
                   disabled={isLoading}
                   className="w-full sm:w-auto h-12 px-8 bg-eatrivo-green hover:bg-eatrivo-green/90 text-white font-semibold rounded-xl shadow-lg shadow-eatrivo-green/20 hover:shadow-eatrivo-green/40 transition-all duration-300"
                 >
-                  {isLoading ? "Dokončuje sa..." : "Dokončiť nastavenie"}
+                  {isLoading ? t("food.finishing") : t("food.finish")}
                   {!isLoading && <ArrowRight className="w-4 h-4 ml-2" />}
                 </Button>
               </div>

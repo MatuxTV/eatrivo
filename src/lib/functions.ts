@@ -1,6 +1,7 @@
-//Fuction to get current day in Slovak
-  export function getCurrentDaySlovak(): string {
-    const daysMap: { [key: number]: string } = {
+//Function to get current day in Slovak or English
+export function getCurrentDay(locale: string = 'sk'): string {
+  const daysMap: { [key: string]: { [key: number]: string } } = {
+    sk: {
       0: "Nedeľa",
       1: "Pondelok",
       2: "Utorok",
@@ -8,11 +9,35 @@
       4: "Štvrtok",
       5: "Piatok",
       6: "Sobota",
-    };
-
-    const today = new Date().getDay();
-    return daysMap[today];
+    },
+    en: {
+      0: "Sunday",
+      1: "Monday",
+      2: "Tuesday",
+      3: "Wednesday",
+      4: "Thursday",
+      5: "Friday",
+      6: "Saturday",
+    },
   };
+
+  const today = new Date().getDay();
+  return daysMap[locale]?.[today] || daysMap['en'][today];
+};
+
+export function getDayIndex(dayName: string): number {
+  const normalized = dayName.toLowerCase().trim();
+  const map: { [key: string]: number } = {
+    "nedeľa": 0, "sunday": 0,
+    "pondelok": 1, "monday": 1,
+    "utorok": 2, "tuesday": 2,
+    "streda": 3, "wednesday": 3,
+    "štvrtok": 4, "thursday": 4,
+    "piatok": 5, "friday": 5,
+    "sobota": 6, "saturday": 6
+  };
+  return map[normalized] ?? -1;
+}
 
 
 //Function to get membership status class
@@ -46,6 +71,17 @@ export function getMealTypeColor(mealType: string): string {
         return "bg-eatrivo-orange";
       case "večera":
         return "bg-eatrivo-red";
+        case "breakfast":
+        return "bg-eatrivo-green";
+      case "brunch":
+        return "bg-eatrivo-blue";
+      case "lunch":
+        return "bg-eatrivo-yellow";
+      case "snack":
+        return "bg-eatrivo-orange";
+      case "dinner":
+        return "bg-eatrivo-red";
+
       default:
         return "bg-gray-500";
     }

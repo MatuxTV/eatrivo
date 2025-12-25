@@ -8,13 +8,20 @@ import { User, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
 import { useSession } from "next-auth/react";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function DashboardSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const locale = useLocale();
+  const t = useTranslations("dashboard");
+
+  const dashboardHref = `/${locale}/dashboard`;
+  const profileHref = `/${locale}/profile`;
+  const signOutHref = `/${locale}/signout`;
 
   const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: dashboardHref, label: t("nav.dashboard"), icon: LayoutDashboard },
     // { href: "/meal-plans", label: "Jedálne plány", icon: UtensilsCrossed },
     // { href: "/profile", label: "Profil", icon: User },
     // { href: "/settings", label: "Nastavenia", icon: Settings },
@@ -34,7 +41,7 @@ export default function DashboardSidebar() {
               {session?.user?.image ? (
                 <Image
                   src={session.user.image}
-                  alt={session?.user?.name || "User"}
+                  alt={session?.user?.name || t("userAlt")}
                   width={48}
                   height={48}
                   className="rounded-full ring-2 ring-eatrivo-purple/20"
@@ -55,7 +62,7 @@ export default function DashboardSidebar() {
                   session?.user?.membership
                 )}`}
               >
-                {session?.user?.membership || "basic"} člen
+                {session?.user?.membership || "basic"} {t("membershipSuffix")}
               </p>
             </div>
           </div>
@@ -66,9 +73,9 @@ export default function DashboardSidebar() {
               className="flex-1 border-2 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700"
               asChild
             >
-              <Link href="/profile">
+              <Link href={profileHref}>
                 <User className="w-3 h-3 mr-1.5" />
-                Profil
+                {t("nav.profile")}
               </Link>
             </Button>
             <Button
@@ -76,8 +83,9 @@ export default function DashboardSidebar() {
               className="h-8 px-2  bg-eatrivo-light text-red-600 hover:text-red-700 hover:bg-red-50"
               asChild
             >
-              <Link href="/signout">
+              <Link href={signOutHref} aria-label={t("nav.signOut")}>
                 <LogOut className="w-4 h-4" />
+                <span className="sr-only">{t("nav.signOut")}</span>
               </Link>
             </Button>
           </div>

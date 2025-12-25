@@ -1,17 +1,16 @@
 export const APP_CONFIG = {
   // Current welcome dialog version
-  WELCOME_DIALOG_VERSION: "0.4.0",
+  WELCOME_DIALOG_VERSION: "0.5.0",
   
   // Changelog for each version
   WELCOME_DIALOG_CHANGELOG: {
-    "0.4.0": {
+    "0.5.0": {
       title: "Vitajte v Eatrivo! V tejto verzii:",
       features: [
         "Optimalizácia výkonu a rýchlosti aplikácie",
-        "NOVÁ FUNKCIA - Body health circle teraz zohľadňuje úroveň aktivity používateľa pre presnejšie hodnotenie zdravia",
-        "NOVÁ FUNKCIA - Vylepšený Weight Tracker s možnosťou pridávať poznámky k jednotlivým záznamom váhy",
+        "Pridanie anglickeho jazyka",
       ],
-      releaseDate: "2025-12-9",
+      releaseDate: "2025-12-25",
     },
   } as const,
 } as const;

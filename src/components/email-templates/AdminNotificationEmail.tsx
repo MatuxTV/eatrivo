@@ -9,58 +9,57 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-
-interface AdminNotificationEmailProps {
-  emailType: "welcome" | "shopping-list";
-  recipientEmail: string;
-  recipientName: string;
-  additionalInfo?: string;
-}
+import type { AdminNotificationEmailProps } from "@/types/email.types";
 
 export function AdminNotificationEmail({
   emailType,
   recipientEmail,
   recipientName,
   additionalInfo,
+  translations,
 }: AdminNotificationEmailProps) {
-  const emailTypeLabel = emailType === "welcome" ? "Welcome Email" : "Shopping List Notification";
+  const t = translations?.admin;
+  
+  const emailTypeLabel = emailType === "welcome" 
+    ? (t?.types.welcome || "Welcome Email") 
+    : (t?.types.shoppingList || "Shopping List Notification");
   const emoji = emailType === "welcome" ? "" : "";
 
   return (
     <Html>
       <Head />
-      <Preview>Eatrivo - Email odoslaný: {emailTypeLabel}</Preview>
+      <Preview>{(t?.preview || "Eatrivo - Email odoslaný: {emailTypeLabel}").replace("{emailTypeLabel}", emailTypeLabel)}</Preview>
       <Body style={styles.body}>
         <Container style={styles.container}>
           <Section style={styles.headerSection}>
             <Heading style={styles.heading}>
-              Email System Notification {emoji}
+              {t?.heading || "Email System Notification"} {emoji}
             </Heading>
             <Text style={styles.subtitle}>
-              Automaticka notifikacia z Eatrivo systemu
+              {t?.subtitle || "Automaticka notifikacia z Eatrivo systemu"}
             </Text>
           </Section>
 
           <Section style={styles.contentSection}>
-            <Text style={styles.infoTitle}>Email bol úspešne odoslaný</Text>
+            <Text style={styles.infoTitle}>{t?.success || "Email bol úspešne odoslaný"}</Text>
             
             <table style={styles.infoTable}>
               <tr>
-                <td style={styles.infoLabel}>Typ emailu:</td>
+                <td style={styles.infoLabel}>{t?.labels.type || "Typ emailu:"}</td>
                 <td style={styles.infoValue}>{emailTypeLabel}</td>
               </tr>
             </table>
 
             <table style={styles.infoTable}>
               <tr>
-                <td style={styles.infoLabel}>Príjemca:</td>
+                <td style={styles.infoLabel}>{t?.labels.recipient || "Príjemca:"}</td>
                 <td style={styles.infoValue}>{recipientEmail}</td>
               </tr>
             </table>
 
             <table style={styles.infoTable}>
               <tr>
-                <td style={styles.infoLabel}>Meno:</td>
+                <td style={styles.infoLabel}>{t?.labels.name || "Meno:"}</td>
                 <td style={styles.infoValue}>{recipientName}</td>
               </tr>
             </table>
@@ -68,7 +67,7 @@ export function AdminNotificationEmail({
             {additionalInfo && (
               <table style={styles.infoTable}>
                 <tr>
-                  <td style={styles.infoLabel}>Detaily:</td>
+                  <td style={styles.infoLabel}>{t?.labels.details || "Detaily:"}</td>
                   <td style={styles.infoValue}>{additionalInfo}</td>
                 </tr>
               </table>
@@ -76,7 +75,7 @@ export function AdminNotificationEmail({
 
             <table style={styles.infoTable}>
               <tr>
-                <td style={styles.infoLabel}>Čas odoslania:</td>
+                <td style={styles.infoLabel}>{t?.labels.sentAt || "Čas odoslania:"}</td>
                 <td style={styles.infoValue}>{new Date().toLocaleString("sk-SK")}</td>
               </tr>
             </table>
@@ -84,7 +83,7 @@ export function AdminNotificationEmail({
 
           <Section style={styles.footer}>
             <Text style={styles.footerText}>
-              Toto je automaticka notifikacia z Eatrivo email systemu.
+              {t?.footer || "Toto je automaticka notifikacia z Eatrivo email systemu."}
             </Text>
           </Section>
         </Container>

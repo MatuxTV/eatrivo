@@ -2,6 +2,7 @@
 
 import { roundNumber } from "@/lib/functions";
 import { Flame, Beef, Wheat, Droplet } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface NutritionData {
   calories: number;
@@ -15,9 +16,11 @@ interface DailyNutritionSummaryProps {
 }
 
 export default function DailyNutritionSummary({ data }: DailyNutritionSummaryProps) {
+  const t = useTranslations("dashboard");
+
   const items = [
     {
-      label: "Kalórie",
+      label: t("nutrition.calories"),
       value: data?.calories,
       unit: "kcal",
       color: "text-eatrivo-purple",
@@ -26,7 +29,7 @@ export default function DailyNutritionSummary({ data }: DailyNutritionSummaryPro
       icon: Flame,
     },
     {
-      label: "Proteín",
+      label: t("nutrition.protein"),
       value: data?.protein,
       unit: "g",
       color: "text-eatrivo-green",
@@ -35,7 +38,7 @@ export default function DailyNutritionSummary({ data }: DailyNutritionSummaryPro
       icon: Beef,
     },
     {
-      label: "Sacharidy",
+      label: t("nutrition.carbs"),
       value: data?.carbs,
       unit: "g",
       color: "text-eatrivo-orange",
@@ -44,7 +47,7 @@ export default function DailyNutritionSummary({ data }: DailyNutritionSummaryPro
       icon: Wheat,
     },
     {
-      label: "Tuky",
+      label: t("nutrition.fats"),
       value: data?.fats,
       unit: "g",
       color: "text-eatrivo-pink",

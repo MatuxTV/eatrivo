@@ -12,6 +12,7 @@ import {
   Hr,
   Img,
 } from "@react-email/components";
+import type { EmailTranslations } from "@/types/email.types";
 
 interface UpdateItem {
   title: string;
@@ -26,6 +27,7 @@ interface UpdateNotificationEmailProps {
   updateDescription: string;
   updates: UpdateItem[];
   dashboardUrl?: string;
+  translations?: EmailTranslations;
 }
 
 export function UpdateNotificationEmail({
@@ -35,7 +37,10 @@ export function UpdateNotificationEmail({
   updateDescription,
   updates,
   dashboardUrl = "https://eatrivo.sk/dashboard",
+  translations,
 }: UpdateNotificationEmailProps) {
+  const t = translations?.update;
+
   const getTypeIcon = (type: UpdateItem["type"]) => {
     switch (type) {
       case "feature":
@@ -54,7 +59,7 @@ export function UpdateNotificationEmail({
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         `}</style>
       </Head>
-      <Preview>{updateTitle} - Eatrivo {version}</Preview>
+      <Preview>{(t?.preview || "{updateTitle} - Eatrivo {version}").replace("{updateTitle}", updateTitle).replace("{version}", version)}</Preview>
       <Body style={styles.body}>
         <Container style={styles.container}>
           {/* Minimal Header */}
@@ -79,7 +84,7 @@ export function UpdateNotificationEmail({
 
           {/* Hero Section */}
           <Section style={styles.heroSection}>
-            <Text style={styles.heroLabel}>!NOVÁ AKTUALIZÁCIA!</Text>
+            <Text style={styles.heroLabel}>{t?.heroLabel || "!NOVÁ AKTUALIZÁCIA!"}</Text>
             <Heading style={styles.heroHeading}>
               {updateTitle}
             </Heading>
@@ -91,10 +96,10 @@ export function UpdateNotificationEmail({
           {/* Greeting */}
           <Section style={styles.greetingSection}>
             <Text style={styles.greeting}>
-              Ahoj {recipientName},
+              {(t?.greeting || "Ahoj {recipientName},").replace("{recipientName}", recipientName)}
             </Text>
             <Text style={styles.introText}>
-              Máme pre teba nové vylepšenia. Pozri sa, čo sme pripravili.
+              {t?.intro || "Máme pre teba nové vylepšenia. Pozri sa, čo sme pripravili."}
             </Text>
           </Section>
 
@@ -130,7 +135,7 @@ export function UpdateNotificationEmail({
           {/* CTA Section */}
           <Section style={styles.ctaSection}>
             <Button style={styles.ctaButton} href={dashboardUrl}>
-              OTVORIŤ DASHBOARD
+              {t?.cta || "OTVORIŤ DASHBOARD"}
             </Button>
           </Section>
 
@@ -146,7 +151,7 @@ export function UpdateNotificationEmail({
               style={{ display: "block", margin: "0 auto 16px auto" }}
             />
             <Text style={styles.footerText}>
-              Ďakujeme, že si súčasťou Eatrivo.
+              {t?.footer || "Ďakujeme, že si súčasťou Eatrivo."}
             </Text>
             <table width="100%" cellPadding="0" cellSpacing="0" style={{ marginTop: "20px", borderCollapse: "collapse" as const }}>
               <tr>

@@ -11,20 +11,20 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import type { WelcomeEmailProps } from "@/types/email.types";
 
-interface WelcomeEmailProps {
-  userName: string;
-}
-
-export function WelcomeEmail({ userName }: WelcomeEmailProps) {
+export function WelcomeEmail({ userName, translations }: WelcomeEmailProps) {
   const firstName = userName.split(" ")[0];
   const logoCircle = `${process.env.NEXT_PUBLIC_APP_URL}/logo/LOGO_CIRCLE.png`;
   const logoRow = `${process.env.NEXT_PUBLIC_APP_URL}/logo/LOGO_ROW.png`;
 
+  const t = translations?.welcome;
+  const common = translations?.common;
+
   return (
     <Html>
       <Head />
-      <Preview>Vitajte v Eatrivo! Sme radi, že ste sa k nám pridali.</Preview>
+      <Preview>{t?.preview || "Vitajte v Eatrivo! Sme radi, že ste sa k nám pridali."}</Preview>
       <Body style={styles.body}>
         <Container style={styles.container}>
           {/* Header with Logo */}
@@ -37,24 +37,21 @@ export function WelcomeEmail({ userName }: WelcomeEmailProps) {
               style={styles.logoHeader}
             />
             <Heading style={styles.heading}>
-              Vitajte v Eatrivo! 🎉
+              {t?.heading || "Vitajte v Eatrivo! 🎉"}
             </Heading>
             <Text style={styles.subtitle}>
-              Sme radi, že ste sa k nám pridali na ceste za zdravším životným
-              štýlom
+              {t?.subtitle || "Sme radi, že ste sa k nám pridali na ceste za zdravším životným štýlom"}
             </Text>
           </Section>
 
           {/* Content */}
           <Section style={styles.contentSection}>
             <Text style={styles.greeting}>
-              Ahoj {firstName}! 👋
+              {(t?.greeting || "Ahoj {firstName}! 👋").replace("{firstName}", firstName)}
             </Text>
 
             <Text style={styles.paragraph}>
-              Ďakujeme, že ste sa rozhodli začať svoju cestu s Eatrivo. Sme tu,
-              aby sme vám pomohli dosiahnuť vaše zdravotné a výživové ciele s
-              personalizovanými jedálničkami a inteligentným plánovaním.
+              {t?.paragraph || "Ďakujeme, že ste sa rozhodli začať svoju cestu s Eatrivo. Sme tu, aby sme vám pomohli dosiahnuť vaše zdravotné a výživové ciele s personalizovanými jedálničkami a inteligentným plánovaním."}
             </Text>
           </Section>
 
@@ -67,9 +64,9 @@ export function WelcomeEmail({ userName }: WelcomeEmailProps) {
                   <div style={styles.checkmark}>✓</div>
                 </td>
                 <td style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Denný plán</Text>
+                  <Text style={styles.featureTitle}>{t?.features.dailyPlan.title || "Denný plán"}</Text>
                   <Text style={styles.featureDescription}>
-                    Prispôsobené jedlá obsahujúce potraviny z vytvoreného nákupného zoznamu
+                    {t?.features.dailyPlan.description || "Prispôsobené jedlá obsahujúce potraviny z vytvoreného nákupného zoznamu"}
                   </Text>
                 </td>
               </tr>
@@ -82,9 +79,9 @@ export function WelcomeEmail({ userName }: WelcomeEmailProps) {
                   <div style={styles.checkmark}>✓</div>
                 </td>
                 <td style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Nákupné zoznamy</Text>
+                  <Text style={styles.featureTitle}>{t?.features.shoppingLists.title || "Nákupné zoznamy"}</Text>
                   <Text style={styles.featureDescription}>
-                    Personalizovane a určené všetkým vaším potrebám pre jednoduchšie nakupovanie
+                    {t?.features.shoppingLists.description || "Personalizovane a určené všetkým vaším potrebám pre jednoduchšie nakupovanie"}
                   </Text>
                 </td>
               </tr>
@@ -97,9 +94,9 @@ export function WelcomeEmail({ userName }: WelcomeEmailProps) {
                   <div style={styles.checkmark}>✓</div>
                 </td>
                 <td style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>AI asistent</Text>
+                  <Text style={styles.featureTitle}>{t?.features.aiAssistant.title || "AI asistent"}</Text>
                   <Text style={styles.featureDescription}>
-                    Inteligentné odporúčania a prispôsobenie jedálničkov
+                    {t?.features.aiAssistant.description || "Inteligentné odporúčania a prispôsobenie jedálničkov"}
                   </Text>
                 </td>
               </tr>
@@ -112,14 +109,13 @@ export function WelcomeEmail({ userName }: WelcomeEmailProps) {
               href="https://eatrivo.sk/dashboard"
               style={styles.button}
             >
-              Začať používať Eatrivo
+              {t?.cta || "Začať používať Eatrivo"}
             </Button>
           </Section>
 
           <Section>
             <Text style={styles.helpText}>
-              Ak máte akékoľvek otázky alebo potrebujete pomoc, neváhajte nás
-              kontaktovať. Sme tu pre vás!
+              {t?.help || "Ak máte akékoľvek otázky alebo potrebujete pomoc, neváhajte nás kontaktovať. Sme tu pre vás!"}
             </Text>
           </Section>
 
@@ -133,10 +129,10 @@ export function WelcomeEmail({ userName }: WelcomeEmailProps) {
               style={styles.logoFooter}
             />
             <Text style={styles.footerTagline}>
-              Váš partner pre zdravý životný štýl
+              {common?.footerTagline || "Váš partner pre zdravý životný štýl"}
             </Text>
             <Text style={styles.footerDisclaimer}>
-              Tento email bol odoslaný, pretože ste sa zaregistrovali na Eatrivo.
+              {common?.footerDisclaimer || "Tento email bol odoslaný, pretože ste sa zaregistrovali na Eatrivo."}
             </Text>
           </Section>
         </Container>

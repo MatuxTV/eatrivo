@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import PersonalInfoSection from "./PersonalInfoSection";
 import NutritionPreferencesSection from "./NutritionPreferencesSection";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 
 interface UserProfileData {
   fullName: string;
@@ -34,6 +35,8 @@ interface UserNutritionData {
 
 export default function ProfilePageClient() {
   const { data: session } = useSession();
+  const locale = useLocale();
+  const t = useTranslations("profile");
   const [activeTab, setActiveTab] = useState<"personal" | "nutrition">("personal");
   const [isLoading, setIsLoading] = useState(true);
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
@@ -52,18 +55,18 @@ export default function ProfilePageClient() {
         setNutritionData(data.nutrition);
       } catch (error) {
         console.error("Error fetching profile:", error);
-        toast.error("Nepodarilo sa načítať profil");
+        toast.error(t("toast.loadError"));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProfileData();
-  }, []);
+  }, [t]);
 
   const tabs = [
-    { id: "personal", label: "Osobné údaje", icon: User },
-    { id: "nutrition", label: "Nutričné preferencie", icon: Settings },
+    { id: "personal", label: t("tabs.personal"), icon: User },
+    { id: "nutrition", label: t("tabs.nutrition"), icon: Settings },
   ] as const;
 
   return (
@@ -73,19 +76,20 @@ export default function ProfilePageClient() {
         <div className="max-w-5xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/dashboard">
+              <Link href={`/${locale}/dashboard`}>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="rounded-xl hover:bg-gray-100"
+                  aria-label={t("navigation.backToDashboard")}
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Môj profil</h1>
+                <h1 className="text-xl font-bold text-gray-900">{t("header.title")}</h1>
                 <p className="text-xs text-gray-500">
-                  Spravujte svoje osobné údaje a preferencie
+                  {t("header.description")}
                 </p>
               </div>
             </div>
