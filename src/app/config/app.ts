@@ -1,10 +1,10 @@
 export const APP_CONFIG = {
   // Current welcome dialog version
-  WELCOME_DIALOG_VERSION: "0.5.1",
+  WELCOME_DIALOG_VERSION: "0.5.2",
   
   // Changelog for each version
   WELCOME_DIALOG_CHANGELOG: {
-    "0.5.1": {
+    "0.5.2": {
       title: "Vitajte v Eatrivo! V tejto verzii:",
       features: [
         "Optimalizácia výkonu a rýchlosti aplikácie",

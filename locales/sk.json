@@ -289,6 +289,48 @@
         "description": "Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Váš tréner alebo AI vám čoskoro pripraví plán na mieru."
       }
     },
+    "shoppingList": {
+      "status": {
+        "active": "Aktívny",
+        "completed": "Dokončený",
+        "cancelled": "Zrušený",
+        "unknown": "Neznámy"
+      },
+      "pdfDocument": "PDF Dokument",
+      "view": "Zobraziť",
+      "download": "Stiahnuť",
+      "errors": {
+        "download": "Nepodarilo sa stiahnuť nákupný zoznam",
+        "view": "Nepodarilo sa otvoriť nákupný zoznam"
+      }
+    },
+    "weightTracker": {
+      "title": "Váha",
+      "add": "Pridať",
+      "addTitle": "Zaznamenať váhu",
+      "addDescription": "Pridajte svoju aktuálnu váhu pre sledovanie progresu",
+      "weightLabel": "Váha (kg)",
+      "weightPlaceholder": "napr. 75.5",
+      "noteLabel": "Poznámka (voliteľné)",
+      "notePlaceholder": "napr. ráno, po tréningu...",
+      "cancel": "Zrušiť",
+      "save": "Uložiť",
+      "saving": "Ukladám...",
+      "sinceLast": "od posledného merania",
+      "chartTitle": "PRIEBEH VÁHY",
+      "average": "priemer",
+      "recentHistory": "POSLEDNÉ ZÁZNAMY",
+      "noData": "Zatiaľ žiadne záznamy",
+      "addFirst": "Pridajte svoju prvú váhu",
+      "errors": {
+        "fetch": "Nepodarilo sa načítať históriu váhy",
+        "invalid": "Zadajte platnú váhu (20-500 kg)",
+        "add": "Nepodarilo sa pridať váhu"
+      },
+      "success": {
+        "added": "Váha bola úspešne zaznamenaná"
+      }
+    },
     "welcome": {
       "version": "Verzia {version}",
       "title": {

@@ -8,6 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { motion } from "framer-motion";
+import { useTranslations, useLocale } from "next-intl";
 
 // ak máš util na classNames, použi ho (ináč vynechaj a spoj reťazce ručne)
 const cn = (...a: (string | false | null | undefined)[]) =>
@@ -22,26 +23,6 @@ interface ShoppingListCardProps {
   status: "active" | "completed" | "cancelled";
 }
 
-const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString("sk-SK", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-
-const getStatusConfig = (status: ShoppingListCardProps["status"]) => {
-  switch (status) {
-    case "active":
-      return { color: "text-green-700", bg: "bg-green-50", border: "border-green-100", label: "Aktívny" };
-    case "completed":
-      return { color: "text-blue-700", bg: "bg-blue-50", border: "border-blue-100", label: "Dokončený" };
-    case "cancelled":
-      return { color: "text-red-700", bg: "bg-red-50", border: "border-red-100", label: "Zrušený" };
-    default:
-      return { color: "text-gray-700", bg: "bg-gray-50", border: "border-gray-100", label: "Neznámy" };
-  }
-};
-
 export default function ShoppingListCard({
   id,
   title,
@@ -50,8 +31,31 @@ export default function ShoppingListCard({
   weekEndDate,
   status,
 }: ShoppingListCardProps) {
+  const t = useTranslations("dashboard.shoppingList");
+  const locale = useLocale();
   const [isViewing, setIsViewing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+  const getStatusConfig = (status: ShoppingListCardProps["status"]) => {
+    switch (status) {
+      case "active":
+        return { color: "text-green-700", bg: "bg-green-50", border: "border-green-100", label: t("status.active") };
+      case "completed":
+        return { color: "text-blue-700", bg: "bg-blue-50", border: "border-blue-100", label: t("status.completed") };
+      case "cancelled":
+        return { color: "text-red-700", bg: "bg-red-50", border: "border-red-100", label: t("status.cancelled") };
+      default:
+        return { color: "text-gray-700", bg: "bg-gray-50", border: "border-gray-100", label: t("status.unknown") };
+    }
+  };
+
   const statusConfig = getStatusConfig(status);
 
   const handleDownload = async () => {
@@ -65,7 +69,7 @@ export default function ShoppingListCard({
         context: "ShoppingListCard",
         metadata: { shoppingListId: id }
       });
-      toast.error("Nepodarilo sa stiahnuť nákupný zoznam");
+      toast.error(t("errors.download"));
     } finally {
       setTimeout(() => setIsDownloading(false), 500);
     }
@@ -82,7 +86,7 @@ export default function ShoppingListCard({
         context: "ShoppingListCard",
         metadata: { shoppingListId: id }
       });
-      toast.error("Nepodarilo sa otvoriť nákupný zoznam");
+      toast.error(t("errors.view"));
     } finally {
       setIsViewing(false);
     }
@@ -134,7 +138,7 @@ export default function ShoppingListCard({
             </div>
             <div className="flex items-center text-xs text-gray-500 font-medium">
               <FileText className="w-3.5 h-3.5 mr-2 text-gray-400" />
-              PDF Dokument
+              {t("pdfDocument")}
             </div>
           </div>
 
@@ -147,7 +151,7 @@ export default function ShoppingListCard({
               className="w-full bg-eatrivo-white-secondary border-2 border-gray-200 hover:bg-gray-50 text-gray-700 hover:text-eatrivo-purple hover:border-eatrivo-purple/30 transition-all"
             >
               <Eye className="w-4 h-4 mr-2" />
-              Zobraziť
+              {t("view")}
             </Button>
             <Button
               size="sm"
@@ -156,7 +160,7 @@ export default function ShoppingListCard({
               className="w-full bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white shadow-sm hover:shadow transition-all"
             >
               <Download className="w-4 h-4 mr-2" />
-              Stiahnuť
+              {t("download")}
             </Button>
           </div>
         </div>
