@@ -7,11 +7,19 @@ import { eq } from 'drizzle-orm';
 import webpush from 'web-push';
 
 // Set up web-push with VAPID keys
-const VAPID_PUBLIC_KEY = 'BIJKe58tvcY8dYNVegyV1PApzs7UAHiMyDTTp3s-8C-LLSwlodPm_NN-ns-3I6kGFIad6CnAiM0J8sLdoXsVcp0';
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'VG6ztqAJBLQ6hmeweDGzALEiVNfT8PPDLe2-PyYFbN4';
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BIJKe58tvcY8dYNVegyV1PApzs7UAHiMyDTTp3s-8C-LLSwlodPm_NN-ns-3I6kGFIad6CnAiM0J8sLdoXsVcp0';
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
+
+if (!VAPID_PRIVATE_KEY) {
+  throw new Error('VAPID_PRIVATE_KEY environment variable is required');
+}
+
+if (!process.env.ADMIN_EMAIL) {
+  throw new Error('ADMIN_EMAIL environment variable is required');
+}
 
 webpush.setVapidDetails(
-  `mailto:${process.env.ADMIN_EMAIL || 'admin@eatrivo.sk'}`,
+  `mailto:${process.env.ADMIN_EMAIL}`,
   VAPID_PUBLIC_KEY,
   VAPID_PRIVATE_KEY
 );
@@ -28,11 +36,11 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
 
-    // Only admins can send push notifications
-    if (!session?.user?.email) {
+    // Only admins/trainers can send push notifications
+    if (!session?.user?.membership || !['trainer', 'admin'].includes(session.user.membership.toLowerCase())) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Unauthorized - Admin access required' },
+        { status: 403 }
       );
     }
 
