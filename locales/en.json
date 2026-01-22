@@ -294,7 +294,8 @@
         "title": "No active shopping lists",
         "description": "You currently don't have any active shopping list. Show all lists to view completed or cancelled ones."
       }
-    },    "shoppingList": {
+    },
+    "shoppingList": {
       "status": {
         "active": "Active",
         "completed": "Completed",
@@ -308,7 +309,8 @@
         "download": "Failed to download shopping list",
         "view": "Failed to open shopping list"
       }
-    },    "weightTracker": {
+    },
+    "weightTracker": {
       "title": "Weight",
       "add": "Add",
       "addTitle": "Record Weight",
@@ -397,6 +399,10 @@
         "poor": "Poor",
         "critical": "Critical"
       }
+    },
+    "notifications": {
+      "title": "Push Notifications",
+      "description": "Enable notifications to stay updated on new shopping lists and meal plans."
     }
   },
   "profile": {
@@ -584,9 +590,18 @@
       "greeting": "Hi {firstName}! 👋",
       "paragraph": "Thank you for choosing to start your journey with Eatrivo. We are here to help you achieve your health and nutrition goals with personalized meal plans and smart planning.",
       "features": {
-        "dailyPlan": { "title": "Daily Plan", "description": "Customized meals containing foods from your generated shopping list" },
-        "shoppingLists": { "title": "Shopping Lists", "description": "Personalized and designed for all your needs for easier shopping" },
-        "aiAssistant": { "title": "AI Assistant", "description": "Smart recommendations and meal plan customization" }
+        "dailyPlan": {
+          "title": "Daily Plan",
+          "description": "Customized meals containing foods from your generated shopping list"
+        },
+        "shoppingLists": {
+          "title": "Shopping Lists",
+          "description": "Personalized and designed for all your needs for easier shopping"
+        },
+        "aiAssistant": {
+          "title": "AI Assistant",
+          "description": "Smart recommendations and meal plan customization"
+        }
       },
       "cta": "Start using Eatrivo",
       "help": "If you have any questions or need help, do not hesitate to contact us. We are here for you!"
@@ -705,8 +720,6 @@
       "preferenceError": "Failed to save preference"
     },
     "notifications": {
-      "title": "Push Notifications",
-      "description": "Enable notifications to stay updated on new shopping lists and meal plans.",
       "enable": "Enable notifications",
       "disable": "Disable notifications",
       "loginRequired": "You must be logged in",

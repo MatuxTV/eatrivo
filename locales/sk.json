@@ -399,6 +399,10 @@
         "poor": "Slabé",
         "critical": "Kritické"
       }
+    },
+    "notifications": {
+      "title": "Push notifikácie",
+      "description": "Povoľte notifikácie, aby ste zostali informovaní o nových nákupných zoznamoch a jedálnych plánoch."
     }
   },
   "profile": {
