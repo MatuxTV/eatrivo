@@ -231,6 +231,32 @@ export default function AdminDashboard() {
           console.error("Failed to send shopping list notification:", emailError);
           // Don't block the success flow if email fails
         }
+
+        // Send push notification
+        try {
+          await fetch("/api/push/send", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: selectedUser.id,
+              payload: {
+                title: "🛒 Nový nákupný zoznam",
+                body: `${formData.title} - ${new Date(formData.weekStartDate).toLocaleDateString("sk-SK")}`,
+                icon: "/logo/favicon_io/android-chrome-192x192.png",
+                badge: "/logo/favicon_io/android-chrome-192x192.png",
+                data: {
+                  url: "/dashboard",
+                  type: "shopping-list",
+                },
+              },
+            }),
+          });
+        } catch (pushError) {
+          console.error("Failed to send push notification:", pushError);
+          // Don't block the success flow if push fails
+        }
       }
 
       // Reset only markdown content, keep other fields

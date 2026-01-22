@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "hide_install_prompt" boolean DEFAULT false NOT NULL;
