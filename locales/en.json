@@ -239,7 +239,8 @@
       "Saturday": "Saturday"
     },
     "dailyPlan": {
-      "title": "Your daily plan"
+      "title": "Your daily plan",
+      "today": "today"
     },
     "time": {
       "minutesShort": "min"
@@ -707,6 +708,10 @@
     "installPrompt": {
       "title": "Install Eatrivo",
       "description": "Get a better experience with our app directly on your device",
+      "selectPlatform": "Select your operating system:",
+      "back": "Back",
+      "gotIt": "Got it",
+      "followInstructions": "Follow the steps above",
       "features": {
         "offline": "Offline access",
         "faster": "Faster loading",
@@ -717,7 +722,22 @@
       "neverShow": "Don't show this offer again",
       "thankYou": "Thank you for installing Eatrivo!",
       "preferenceSaved": "Preference saved",
-      "preferenceError": "Failed to save preference"
+      "preferenceError": "Failed to save preference",
+      "ios": {
+        "title": "iOS Installation",
+        "description": "Add Eatrivo to your home screen",
+        "step1": "Tap the Share button at the bottom of Safari",
+        "step2": "Scroll down and select 'Add to Home Screen'",
+        "step3": "Confirm by tapping 'Add'"
+      },
+      "android": {
+        "title": "Android Installation",
+        "description": "Add Eatrivo to your home screen",
+        "clickBelow": "Click the button below for automatic installation",
+        "step1": "Open browser menu (⋮)",
+        "step2": "Select 'Add to Home screen' or 'Install app'",
+        "step3": "Confirm installation"
+      }
     },
     "notifications": {
       "enable": "Enable notifications",

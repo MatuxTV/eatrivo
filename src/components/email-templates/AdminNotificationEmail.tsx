@@ -4,7 +4,7 @@ import {
   Container,
   Head,
   Heading,
-  Html,
+  Html as EmailHtml,
   Preview,
   Section,
   Text,
@@ -26,7 +26,7 @@ export function AdminNotificationEmail({
   const emoji = emailType === "welcome" ? "" : "";
 
   return (
-    <Html>
+    <EmailHtml>
       <Head />
       <Preview>{(t?.preview || "Eatrivo - Email odoslaný: {emailTypeLabel}").replace("{emailTypeLabel}", emailTypeLabel)}</Preview>
       <Body style={styles.body}>
@@ -88,7 +88,7 @@ export function AdminNotificationEmail({
           </Section>
         </Container>
       </Body>
-    </Html>
+    </EmailHtml>
   );
 }
 

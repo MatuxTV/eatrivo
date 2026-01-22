@@ -1,23 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { LayoutDashboard , User } from "lucide-react";
 import { motion } from "framer-motion";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 export default function MobileNavigation() {
   const pathname = usePathname();
-  const locale = useLocale();
   const t = useTranslations("dashboard");
 
-  const dashboardHref = `/${locale}/dashboard`;
-  const profileHref = `/${locale}/profile`;
-
   const navItems = [
-    { href: dashboardHref, label: t("nav.dashboard"), icon: LayoutDashboard },
-    // { href: "/meal-plans", label: "Plány", icon: UtensilsCrossed },
-    { href: profileHref, label: t("nav.profile"), icon: User },
+    { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+    { href: "/profile", label: t("nav.profile"), icon: User },
   ];
 
   return (

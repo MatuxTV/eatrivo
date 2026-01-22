@@ -5,7 +5,7 @@ import {
   Container,
   Head,
   Heading,
-  Html,
+  Html as EmailHtml,
   Img,
   Preview,
   Section,
@@ -27,7 +27,7 @@ export function ShoppingListNotificationEmail({
   const common = translations?.common;
 
   return (
-    <Html>
+    <EmailHtml>
       <Head />
       <Preview>{t?.preview || "Nový nákupný zoznam od Eatrivo"}</Preview>
       <Body style={styles.body}>
@@ -115,7 +115,7 @@ export function ShoppingListNotificationEmail({
           </Section>
         </Container>
       </Body>
-    </Html>
+    </EmailHtml>
   );
 }
 

@@ -27,12 +27,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Update user preference in database
-    await db
+    const result = await db
       .update(users)
       .set({
         hideInstallPrompt: hideInstallPrompt,
       })
-      .where(eq(users.id, session.user.id));
+      .where(eq(users.id, session.user.id))
+      .returning();
+
+    if (!result || result.length === 0) {
+      return NextResponse.json(
+        { error: 'Failed to update user preference' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       { success: true, message: 'Preference saved successfully' },
@@ -41,7 +49,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error saving PWA preference:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

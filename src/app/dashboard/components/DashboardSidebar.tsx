@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
@@ -8,23 +8,19 @@ import { User, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
 import { useSession } from "next-auth/react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 export default function DashboardSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const locale = useLocale();
   const t = useTranslations("dashboard");
 
-  const dashboardHref = `/${locale}/dashboard`;
-  const profileHref = `/${locale}/profile`;
-  const signOutHref = `/${locale}/signout`;
+  const dashboardHref = "/dashboard";
+  const profileHref = "/profile";
+  const signOutHref = "/signout";
 
   const navItems = [
     { href: dashboardHref, label: t("nav.dashboard"), icon: LayoutDashboard },
-    // { href: "/meal-plans", label: "Jedálne plány", icon: UtensilsCrossed },
-    // { href: "/profile", label: "Profil", icon: User },
-    // { href: "/settings", label: "Nastavenia", icon: Settings },
   ];
 
   return (

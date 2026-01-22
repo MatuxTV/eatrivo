@@ -8,8 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import PersonalInfoSection from "./PersonalInfoSection";
 import NutritionPreferencesSection from "./NutritionPreferencesSection";
-import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 interface UserProfileData {
   fullName: string;
@@ -35,7 +35,6 @@ interface UserNutritionData {
 
 export default function ProfilePageClient() {
   const { data: session } = useSession();
-  const locale = useLocale();
   const t = useTranslations("profile");
   const [activeTab, setActiveTab] = useState<"personal" | "nutrition">("personal");
   const [isLoading, setIsLoading] = useState(true);
@@ -76,7 +75,7 @@ export default function ProfilePageClient() {
         <div className="max-w-5xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href={`/${locale}/dashboard`}>
+              <Link href="/dashboard">
                 <Button
                   variant="ghost"
                   size="icon"
