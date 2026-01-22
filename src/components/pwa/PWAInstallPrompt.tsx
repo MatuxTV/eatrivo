@@ -126,7 +126,7 @@ export function PWAInstallPrompt() {
       
       {/* Popup container */}
       <div className="fixed inset-x-0 bottom-0 z-[101] animate-in slide-in-from-bottom duration-500">
-        <div className="bg-gradient-to-br from-eatrivo-purple via-eatrivo-purple to-eatrivo-pink text-white rounded-t-3xl shadow-2xl max-w-2xl mx-auto">
+        <div className=" bg-eatrivo-purple bg-opacity-90 text-white rounded-t-3xl shadow-2xl max-w-2xl mx-auto">
           {/* Close button */}
           <button
             onClick={handleDismiss}
