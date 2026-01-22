@@ -284,9 +284,15 @@
         "few": "lists",
         "many": "lists"
       },
+      "showAll": "Show all",
+      "showActiveOnly": "Show active only",
       "empty": {
         "title": "No shopping lists",
         "description": "You don't have any generated shopping lists yet. Your coach or AI will prepare a plan soon."
+      },
+      "noActive": {
+        "title": "No active shopping lists",
+        "description": "You currently don't have any active shopping list. Show all lists to view completed or cancelled ones."
       }
     },    "shoppingList": {
       "status": {
@@ -680,6 +686,37 @@
         "label": "Improvement",
         "description": "Improvement of existing feature"
       }
+    }
+  },
+  "pwa": {
+    "installPrompt": {
+      "title": "Install Eatrivo",
+      "description": "Get a better experience with our app directly on your device",
+      "features": {
+        "offline": "Offline access",
+        "faster": "Faster loading",
+        "notifications": "Push notifications"
+      },
+      "installNow": "Install now",
+      "maybeLater": "Maybe later",
+      "neverShow": "Don't show this offer again",
+      "thankYou": "Thank you for installing Eatrivo!",
+      "preferenceSaved": "Preference saved",
+      "preferenceError": "Failed to save preference"
+    },
+    "notifications": {
+      "title": "Push Notifications",
+      "description": "Enable notifications to stay updated on new shopping lists and meal plans.",
+      "enable": "Enable notifications",
+      "disable": "Disable notifications",
+      "loginRequired": "You must be logged in",
+      "enabled": "Notifications enabled! You will be notified when a new shopping list is available.",
+      "disabled": "Notifications disabled",
+      "enableError": "Failed to enable notifications. Check your browser settings.",
+      "toggleError": "Error changing notification settings"
+    },
+    "offline": {
+      "showingData": "Showing offline data"
     }
   }
 }

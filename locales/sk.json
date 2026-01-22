@@ -284,9 +284,15 @@
         "few": "zoznamy",
         "many": "zoznamov"
       },
+      "showAll": "Zobraziť všetky",
+      "showActiveOnly": "Zobraziť iba aktívny",
       "empty": {
         "title": "Žiadne nákupné zoznamy",
         "description": "Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Váš tréner alebo AI vám čoskoro pripraví plán na mieru."
+      },
+      "noActive": {
+        "title": "Žiadne aktívne nákupné zoznamy",
+        "description": "Momentálne nemáte žiadny aktívny nákupný zoznam. Zobrazte všetky zoznamy pre dokončené alebo zrušené."
       }
     },
     "shoppingList": {
@@ -682,6 +688,37 @@
         "label": "Zlepšenie",
         "description": "Vylepšenie existujúcej funkcie"
       }
+    }
+  },
+  "pwa": {
+    "installPrompt": {
+      "title": "Nainštalujte si Eatrivo",
+      "description": "Získajte lepší zážitok s našou aplikáciou priamo vo vašom zariadení",
+      "features": {
+        "offline": "Offline prístup",
+        "faster": "Rýchlejšie načítanie",
+        "notifications": "Push notifikácie"
+      },
+      "installNow": "Inštalovať teraz",
+      "maybeLater": "Možno neskôr",
+      "neverShow": "Už viac nezobrazovať túto ponuku",
+      "thankYou": "Ďakujeme za inštaláciu Eatrivo!",
+      "preferenceSaved": "Preferencia bola uložená",
+      "preferenceError": "Nepodarilo sa uložiť preferenciu"
+    },
+    "notifications": {
+      "title" : "Push Notifikácie",
+      "description": "Zostaňte informovaní o nových nákupných zoznamoch a aktualizáciách",
+      "enable": "Zapnúť notifikácie",
+      "disable": "Vypnúť notifikácie",
+      "loginRequired": "Musíte byť prihlásený",
+      "enabled": "Notifikácie boli zapnuté! Dostanete upozornenie pri novom nákupnom zozname.",
+      "disabled": "Notifikácie boli vypnuté",
+      "enableError": "Nepodarilo sa aktivovať notifikácie. Skontrolujte nastavenia prehliadača.",
+      "toggleError": "Chyba pri zmene nastavení notifikácií"
+    },
+    "offline": {
+      "showingData": "Zobrazujú sa offline dáta"
     }
   }
 }

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { getLocale, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import { Quicksand } from "next/font/google";
@@ -14,6 +14,10 @@ const quicksand = Quicksand({
   weight: ["300", "400", "500", "600", "700"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#8B5CF6",
+};
+
 export const metadata: Metadata = {
   title: {
     template: "%s | Eatrivo",
@@ -24,6 +28,12 @@ export const metadata: Metadata = {
   authors: [{ name: "Eatrivo Team" }],
   creator: "Eatrivo",
   publisher: "Eatrivo",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Eatrivo",
+  },
   openGraph: {
     type: "website",
     locale: "sk_SK",

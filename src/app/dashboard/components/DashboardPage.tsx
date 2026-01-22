@@ -28,6 +28,11 @@ import DailyMealPlan from "./DailyMealPlan";
 import ShoppingListsOverview from "./ShoppingListsOverview";
 import BodyHealthCircle from "./BodyHealtCircle";
 import WeightTracker from "./WeightTracker";
+import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
+import { PushNotificationToggle } from "@/components/pwa/PushNotificationToggle";
+
+// PWA utilities
+import { saveLatestShoppingList, getLatestShoppingList } from "@/lib/pwa/offlineStorage";
 
 // Type definitions
 interface Ingredient {
@@ -64,7 +69,6 @@ interface ShoppingList {
   weekStartDate: string;
   weekEndDate: string;
   status: "active" | "completed" | "cancelled";
-  cloudinaryPublicId: string;
   createdAt: string;
 }
 
@@ -139,14 +143,45 @@ export default function DashboardPage() {
         const response = await fetch("/api/shopping-lists");
         if (!response.ok) throw new Error("Failed to fetch shopping lists");
         const data = await response.json();
-        setShoppingLists(data.shoppingLists || []);
+        const lists = data.shoppingLists || [];
+        setShoppingLists(lists);
+
+        // Save latest shopping list for offline access
+        if (lists.length > 0) {
+          try {
+            await saveLatestShoppingList(lists[0]);
+          } catch (offlineError) {
+            console.error("Failed to save shopping list offline:", offlineError);
+          }
+        }
       } catch (error) {
         logger.error("Error fetching shopping lists", error, {
           context: "DashboardPage",
           metadata: { userId: session?.user?.id },
         });
-        toast.error(t("toasts.shoppingListsLoadError"));
-        setShoppingLists([]);
+        
+        // Try to load from offline storage
+        try {
+          const offlineList = await getLatestShoppingList();
+          if (offlineList) {
+            const formattedList: ShoppingList = {
+              ...offlineList,
+              description: offlineList.description || undefined,
+              weekStartDate: offlineList.weekStartDate.toString(),
+              weekEndDate: offlineList.weekEndDate.toString(),
+              createdAt: offlineList.createdAt.toString(),
+              status: offlineList.status as "active" | "completed" | "cancelled",
+            };
+            setShoppingLists([formattedList]);
+            toast.info(t("pwa.offline.showingData"));
+          } else {
+            toast.error(t("toasts.shoppingListsLoadError"));
+            setShoppingLists([]);
+          }
+        } catch {
+          toast.error(t("toasts.shoppingListsLoadError"));
+          setShoppingLists([]);
+        }
       } finally {
         setIsLoading((prev) => ({ ...prev, shoppingLists: false }));
       }
@@ -449,6 +484,17 @@ export default function DashboardPage() {
                   }
                 }}
               />
+              
+              {/* Push Notification Toggle */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  {t("notifications.title")}
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  {t("notifications.description")}
+                </p>
+                <PushNotificationToggle />
+              </div>
             </div>
           </div>
         </div>
@@ -456,6 +502,9 @@ export default function DashboardPage() {
 
       {/* Mobile Bottom Navigation */}
       <MobileNavigation />
+      
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
     </div>
   );
 }

@@ -34,6 +34,8 @@ export const users = pgTable("users", {
   //Stamp for NewUpdate window tracking
   lastSeenWelcomeVersion: text("last_seen_welcome_version"),
   lastSeenWelcomeAt: timestamp("last_seen_welcome_at", { withTimezone: true }),
+  // PWA install prompt preference
+  hideInstallPrompt: boolean("hide_install_prompt").default(false).notNull(),
 });
 
 // Your app's main user profile table
@@ -178,4 +180,14 @@ export const weightHistory = pgTable("weight_history", {
   recordedAt: timestamp("recorded_at", { withTimezone: true }).defaultNow().notNull(),
   note: text("note"), // Optional note (e.g., "after workout", "morning weight")
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+})
+
+// Push subscriptions table for PWA notifications
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  subscription: jsonb("subscription").notNull(), // PushSubscription object
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 })
