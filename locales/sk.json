@@ -239,7 +239,8 @@
       "Sobota": "Sobota"
     },
     "dailyPlan": {
-      "title": "Váš denný plán"
+      "title": "Váš denný plán",
+      "today": "dnes"
     },
     "time": {
       "minutesShort": "min"
@@ -698,6 +699,10 @@
     "installPrompt": {
       "title": "Nainštalujte si Eatrivo",
       "description": "Získajte lepší zážitok s našou aplikáciou priamo vo vašom zariadení",
+      "selectPlatform": "Vyberte váš operačný systém:",
+      "back": "Späť",
+      "gotIt": "Rozumiem",
+      "followInstructions": "Postupujte podľa krokov vyššie",
       "features": {
         "offline": "Offline prístup",
         "faster": "Rýchlejšie načítanie",
@@ -708,7 +713,22 @@
       "neverShow": "Už viac nezobrazovať túto ponuku",
       "thankYou": "Ďakujeme za inštaláciu Eatrivo!",
       "preferenceSaved": "Preferencia bola uložená",
-      "preferenceError": "Nepodarilo sa uložiť preferenciu"
+      "preferenceError": "Nepodarilo sa uložiť preferenciu",
+      "ios": {
+        "title": "Inštalácia pre iOS",
+        "description": "Pridajte Eatrivo na vašu domovskú obrazovku",
+        "step1": "Kliknite na tlačidlo Zdieľať v spodnej časti Safari",
+        "step2": "Prejdite nadol a vyberte 'Pridať na plochu'",
+        "step3": "Potvrďte kliknutím na 'Pridať'"
+      },
+      "android": {
+        "title": "Inštalácia pre Android",
+        "description": "Pridajte Eatrivo na vašu domovskú obrazovku",
+        "clickBelow": "Kliknite na tlačidlo nižšie pre automatickú inštaláciu",
+        "step1": "Otvorte menu prehliadača (⋮)",
+        "step2": "Vyberte 'Pridať na plochu' alebo 'Nainštalovať aplikáciu'",
+        "step3": "Potvrďte inštaláciu"
+      }
     },
     "notifications": {
       "title" : "Push Notifikácie",

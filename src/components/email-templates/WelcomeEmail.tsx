@@ -5,7 +5,7 @@ import {
   Container,
   Head,
   Heading,
-  Html,
+  Html as EmailHtml,
   Img,
   Preview,
   Section,
@@ -22,7 +22,7 @@ export function WelcomeEmail({ userName, translations }: WelcomeEmailProps) {
   const common = translations?.common;
 
   return (
-    <Html>
+    <EmailHtml>
       <Head />
       <Preview>{t?.preview || "Vitajte v Eatrivo! Sme radi, že ste sa k nám pridali."}</Preview>
       <Body style={styles.body}>
@@ -137,7 +137,7 @@ export function WelcomeEmail({ userName, translations }: WelcomeEmailProps) {
           </Section>
         </Container>
       </Body>
-    </Html>
+    </EmailHtml>
   );
 }
 

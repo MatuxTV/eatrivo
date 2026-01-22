@@ -3,7 +3,7 @@
   Container,
   Head,
   Heading,
-  Html,
+  Html as EmailHtml,
   Preview,
   Section,
   Text,
@@ -44,7 +44,7 @@ const FeedbackNotificationEmail = ({
   };
 
   return (
-    <Html>
+    <EmailHtml>
       <Head />
       <Preview>{(t?.preview || "Novy feedback od {userName}: {title}").replace("{userName}", userName).replace("{title}", title)}</Preview>
       <Body style={{backgroundColor: "#f6f9fc", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"}}>
@@ -90,7 +90,7 @@ const FeedbackNotificationEmail = ({
           </Section>
         </Container>
       </Body>
-    </Html>
+    </EmailHtml>
   );
 };
 

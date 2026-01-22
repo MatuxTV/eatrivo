@@ -4,7 +4,7 @@ import {
   Container,
   Head,
   Heading,
-  Html,
+  Html as EmailHtml,
   Preview,
   Section,
   Text,
@@ -53,7 +53,7 @@ export function UpdateNotificationEmail({
   };
 
   return (
-    <Html>
+    <EmailHtml>
       <Head>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -172,7 +172,7 @@ export function UpdateNotificationEmail({
           </Section>
         </Container>
       </Body>
-    </Html>
+    </EmailHtml>
   );
 }
 

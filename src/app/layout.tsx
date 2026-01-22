@@ -16,6 +16,10 @@ const quicksand = Quicksand({
 
 export const viewport: Viewport = {
   themeColor: "#8B5CF6",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export const metadata: Metadata = {
@@ -31,8 +35,17 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Eatrivo",
+  },
+  icons: {
+    apple: [
+      { url: "/logo/favicon_io/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    icon: [
+      { url: "/logo/favicon_io/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/logo/favicon_io/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
   },
   openGraph: {
     type: "website",

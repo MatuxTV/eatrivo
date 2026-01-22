@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { getCurrentDay, getDayIndex } from "@/lib/functions";
 import { APP_CONFIG } from "@/app/config/app";
 import { logger } from "@/lib/logger";
-import { ReceiptText } from "lucide-react";
+import { ReceiptText, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -97,11 +97,13 @@ export default function DashboardPage() {
   const [mealPlanData, setMealPlanData] = useState<DayMealPlan[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [currentDay, setCurrentDay] = useState<string | null>(null);
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(new Date().getDay());
 
   // Prevent hydration mismatch
   useEffect(() => {
     setIsMounted(true);
     setCurrentDay(getCurrentDay(locale));
+    setSelectedDayIndex(new Date().getDay());
   }, [locale]);
 
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
@@ -315,13 +317,12 @@ export default function DashboardPage() {
     if (!isMounted) return [];
     if (!mealPlanData || mealPlanData.length === 0) return [];
     
-    const todayIndex = new Date().getDay();
-    const todayPlan = mealPlanData.find((day) => getDayIndex(day.day) === todayIndex);
+    const todayPlan = mealPlanData.find((day) => getDayIndex(day.day) === selectedDayIndex);
     
     if (!todayPlan || !todayPlan.meals) return [];
 
     return todayPlan.meals.map((meal: MealData, index: number) => ({
-      id: `${todayIndex}-${index}`,
+      id: `${selectedDayIndex}-${index}`,
       title: meal.name,
       description: `${meal.difficulty} • ${meal.prepTime} ${t("time.minutesShort")}`,
       type: meal.meal_type || "snack",
@@ -333,14 +334,13 @@ export default function DashboardPage() {
       fat: meal.fat,
       ingredients: meal.ingredients || [],
     }));
-  }, [mealPlanData, isMounted, t]);
+  }, [mealPlanData, isMounted, selectedDayIndex, t]);
 
   const todaysNutrition = useMemo(() => {
     if (!isMounted) return null;
     if (!mealPlanData || mealPlanData.length === 0) return null;
     
-    const todayIndex = new Date().getDay();
-    const todayPlan = mealPlanData.find((day) => getDayIndex(day.day) === todayIndex);
+    const todayPlan = mealPlanData.find((day) => getDayIndex(day.day) === selectedDayIndex);
     
     return todayPlan
       ? {
@@ -350,7 +350,7 @@ export default function DashboardPage() {
           fats: todayPlan.totalDailyFats,
         }
       : null;
-  }, [mealPlanData, isMounted]);
+  }, [mealPlanData, isMounted, selectedDayIndex]);
 
   return (
     <div className="min-h-screen bg-gray-50/50 flex">
@@ -385,7 +385,6 @@ export default function DashboardPage() {
                 <span className="font-medium text-eatrivo-purple">
                   {currentDay ? currentDay : ""}
                 </span>
-                .
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -424,13 +423,39 @@ export default function DashboardPage() {
           {/* Daily Plan Section */}
           <section className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <div className="p-2 bg-blue-50 rounded-lg">
                   <ReceiptText className="w-5 h-5 text-blue-600" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">
                   {t("dailyPlan.title")}
                 </h2>
+                
+                {/* Day Navigation */}
+                {isMounted && mealPlanData.length > 0 && (
+                  <div className="flex items-center gap-2 bg-white rounded-full px-2 py-1 shadow-sm border border-gray-100">
+                    <button
+                      onClick={() => setSelectedDayIndex((prev) => (prev === 0 ? 6 : prev - 1))}
+                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                      aria-label="Previous day"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-gray-600" />
+                    </button>
+                    <span className="text-sm font-medium text-gray-700 min-w-[80px] text-center">
+                      {selectedDayIndex === new Date().getDay() 
+                        ? <span className="text-eatrivo-purple capitalize">{t("dailyPlan.today")}</span>
+                        : mealPlanData.find(day => getDayIndex(day.day) === selectedDayIndex)?.day || currentDay
+                      }
+                    </span>
+                    <button
+                      onClick={() => setSelectedDayIndex((prev) => (prev === 6 ? 0 : prev + 1))}
+                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                      aria-label="Next day"
+                    >
+                      <ChevronRight className="w-4 h-4 text-gray-600" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Nutrition Summary */}

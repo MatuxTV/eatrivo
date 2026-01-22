@@ -2,8 +2,20 @@ import { permissions, hasAccess } from "@/app/config/permission";
 import { auth } from "./auth";
 import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { defaultLocale, isLocale, locales } from "./src/i18n/routing";
+
+// Extend NextRequest type for Vercel Edge geo property
+interface NextRequestWithGeo extends NextRequest {
+  geo?: {
+    city?: string;
+    country?: string;
+    region?: string;
+    latitude?: string;
+    longitude?: string;
+  };
+}
 
 const intlMiddleware = createIntlMiddleware({
   locales: [...locales],
@@ -25,17 +37,35 @@ function stripLocaleFromPathname(pathname: string) {
 }
 
 function negotiateLocale(req: Parameters<Parameters<typeof auth>[0]>[0]) {
+  // 1. Priority: User's saved locale from database
   const userLocale = req.auth?.user?.locale;
   if (isLocale(userLocale)) return userLocale;
 
+  // 2. Check geolocation (Vercel Edge - Slovakia or Czech Republic → SK, otherwise EN)
+  const country = (req as unknown as NextRequestWithGeo).geo?.country;
+  if (country) {
+    if (country === "SK" || country === "CZ") {
+      return "sk";
+    }
+    // Any other country → English
+    return "en";
+  }
+
+  // 3. Fallback to browser Accept-Language header (for local dev or non-Vercel)
   const acceptLanguage = req.headers.get("accept-language");
   if (acceptLanguage) {
     const primary = acceptLanguage.split(",")[0]?.trim()?.toLowerCase();
-    const primaryTag = primary?.split("-")[0];
-    if (isLocale(primaryTag)) return primaryTag;
+    const primaryTag = primary?.split("-")[0]; // "sk-SK" → "sk"
+    if (primaryTag === "sk" || primaryTag === "cs") {
+      return "sk";
+    }
+    if (isLocale(primaryTag)) {
+      return primaryTag;
+    }
   }
 
-  return defaultLocale;
+  // 4. Final fallback to Slovak
+  return "sk";
 }
 
 export default auth((req) => {
