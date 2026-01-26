@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Download, X, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Type definition for beforeinstallprompt event
 interface BeforeInstallPromptEvent extends Event {
@@ -41,14 +42,45 @@ export function PWAInstallPrompt() {
       return session.user.hideInstallPrompt;
     };
 
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+    const isAndroid = /android/.test(userAgent);
+
+    // If not mobile (desktop browser), do not show
+    if (!isIOS && !isAndroid) {
+      return;
+    }
+
+    // Set platform automatically
+    if (isIOS) setSelectedPlatform('ios');
+    if (isAndroid) setSelectedPlatform('android');
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    // Handle iOS specific show logic (since it doesn't fire beforeinstallprompt)
+    if (isIOS) {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      if (!isStandalone) {
+        checkUserPreference().then((shouldHide) => {
+          if (!shouldHide) {
+            // Add a small delay for iOS to not be too intrusive on load
+            timeoutId = setTimeout(() => setShowPrompt(true), 2000);
+          }
+        });
+      }
+    }
+
     const handler = async (e: Event) => {
       e.preventDefault();
       setInstallPrompt(e as BeforeInstallPromptEvent);
       
-      // Check if user has hidden this prompt permanently
-      const shouldHide = await checkUserPreference();
-      if (!shouldHide) {
-        setShowPrompt(true);
+      // Only handle event driven prompt for Android (or if we decide to support desktop later)
+      if (isAndroid) {
+        // Check if user has hidden this prompt permanently
+        const shouldHide = await checkUserPreference();
+        if (!shouldHide) {
+          setShowPrompt(true);
+        }
       }
     };
 
@@ -59,7 +91,10 @@ export function PWAInstallPrompt() {
       setShowPrompt(false);
     }
 
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [session]);
 
   const handleInstall = async () => {
@@ -150,10 +185,18 @@ export function PWAInstallPrompt() {
           </button>
 
           {/* Content */}
-          <div className="p-6 sm:p-8 pb-safe">
-            {!selectedPlatform ? (
-              // Platform Selection View
-              <>
+          <div className="p-6 sm:p-8 pb-safe overflow-hidden">
+            <AnimatePresence mode="wait" initial={false}>
+              {!selectedPlatform ? (
+                <motion.div
+                  key="platform-selection"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {/* Platform Selection View */}
+                  <>
                 {/* Icon */}
                 <div className="flex justify-center mb-6">
                   <div className="relative">
@@ -221,9 +264,17 @@ export function PWAInstallPrompt() {
                   </label>
                 </div>
               </>
+              </motion.div>
             ) : (
-              // Instructions View
-              <>
+              <motion.div
+                key="instructions"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                {/* Instructions View */}
+                <>
                 {/* Back button */}
                 <button
                   onClick={handleBack}
@@ -360,7 +411,9 @@ export function PWAInstallPrompt() {
                   </>
                 )}
               </>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

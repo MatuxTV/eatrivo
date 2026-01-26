@@ -52,7 +52,7 @@ export default function UserInfoCard({ userInfo, isLoading }: UserInfoCardProps)
             <div className="flex items-center gap-1.5">
               <User className="w-3 h-3 text-gray-400" />
               <span className="text-xs text-gray-600">
-                {userInfo.sex === "male" ? "Muž" : "Žena"}
+                {userInfo.sex === "man" ? "Muž" : "Žena"}
               </span>
             </div>
           )}

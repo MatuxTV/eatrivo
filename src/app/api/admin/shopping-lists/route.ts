@@ -2,10 +2,23 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { auth } from "../../../../../auth";
 import { db } from '@/index';
-import { shoppingLists, userProfiles } from '@/db/schema';
+import { shoppingLists, userProfiles, pushSubscriptions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { CacheService } from '@/lib/redis';
 import { apiLogger } from '@/lib/logger';
+import webpush from 'web-push';
+
+// Set up web-push with VAPID keys
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BIJKe58tvcY8dYNVegyV1PApzs7UAHiMyDTTp3s-8C-LLSwlodPm_NN-ns-3I6kGFIad6CnAiM0J8sLdoXsVcp0';
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
+
+if (VAPID_PRIVATE_KEY && process.env.ADMIN_EMAIL) {
+  webpush.setVapidDetails(
+    `mailto:${process.env.ADMIN_EMAIL}`,
+    VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY
+  );
+}
 
 // POST endpoint - Save shopping list to database (with markdown content)
 export async function POST(request: NextRequest) {
@@ -81,6 +94,42 @@ export async function POST(request: NextRequest) {
       ];
 
       await Promise.allSettled(cacheInvalidations);
+
+      // Send Push Notification
+      try {
+        if (VAPID_PRIVATE_KEY) {
+          const subscriptions = await db
+            .select()
+            .from(pushSubscriptions)
+            .where(eq(pushSubscriptions.userId, userProfile.userId));
+
+          if (subscriptions.length > 0) {
+            const payload = JSON.stringify({
+              title: 'New Shopping List!',
+              body: `A new shopping list "${title}" has been created for you.`,
+              url: '/dashboard/shopping-lists',
+              icon: '/logo/icon-192x192.png'
+            });
+
+            await Promise.allSettled(
+              subscriptions.map(sub => 
+                webpush.sendNotification(
+                  sub.subscription as webpush.PushSubscription, 
+                  payload
+                ).catch(err => {
+                  if (err.statusCode === 410) {
+                    // Delete expired subscription
+                    return db.delete(pushSubscriptions).where(eq(pushSubscriptions.id, sub.id));
+                  }
+                  apiLogger.error('Error sending push notification', err);
+                })
+              )
+            );
+          }
+        }
+      } catch (pushError) {
+        apiLogger.error('Failed to send push notifications', pushError);
+      }
     }
 
     apiLogger.info('Shopping list saved successfully', {

@@ -84,9 +84,16 @@ export default function UsersTab({
                         {user.membership === "premium" && (
                           <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
                         )}
-                        <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold rounded-full capitalize">
+                        {user.membership === "premium" && (
+                          <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs bg-yellow-200 text-eatrivo-black-secondary font-semibold rounded-full capitalize">
                           {user.membership || "free"}
                         </span>
+                        )}
+                        {user.membership === "trainer" && (
+                          <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs bg-eatrivo-green font-semibold rounded-full capitalize">
+                          {user.membership || "free"}
+                        </span>
+                        )}
                       </div>
                     </div>
 
@@ -134,8 +141,7 @@ export default function UsersTab({
                       </Button>
                       <Button
                         size="sm"
-                        variant="outline"
-                        className="h-7 sm:h-8 text-[10px] sm:text-xs px-2 sm:px-3"
+                        className="h-7 bg-eatrivo-white-primary text-eatrivo-purple border-2 sm:h-8 text-[10px] sm:text-xs px-2 sm:px-3"
                         onClick={() => {
                           navigator.clipboard.writeText(user.email);
                           toast.success("Email skopírovaný");
