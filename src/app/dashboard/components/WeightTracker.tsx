@@ -305,7 +305,7 @@ export default function WeightTracker({ initialWeight, goal, onWeightUpdate }: W
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
             {t("chartTitle")}
           </p>
-          <div className="h-40 -mx-2">
+          <div className="h-40 w-full -mx-2">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={chartData}

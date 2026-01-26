@@ -38,6 +38,9 @@ import type {
 import StatsCard from "../shared/StatsCard";
 import UserInfoCard from "../shared/UserInfoCard";
 
+// Import editor styles
+import 'react-markdown-editor-lite/lib/index.css';
+
 // Dynamic import for MdEditor to avoid SSR issues
 const MdEditor = dynamic(() => import("react-markdown-editor-lite"), {
   ssr: false,
@@ -332,10 +335,10 @@ export default function ShoppingListTab({
                     )}
                   </Button>
                 </div>
-                <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-eatrivo-purple/20 focus-within:border-eatrivo-purple transition-all">
+                <div className="border text-eatrivo-black-primary border-gray-200 rounded-xl overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-eatrivo-purple/20 focus-within:border-eatrivo-purple transition-all">
                   <MdEditor
                     value={formData.markdownContent}
-                    style={{ height: "350px" }}
+                    style={{ height: "500px" }}
                     renderHTML={(text) => mdParser.render(text)}
                     onChange={onMarkdownChange}
                     placeholder="# Nákupný zoznam...&#10;&#10;Alebo kliknite na 'Generovať AI' pre automatické vytvorenie."
