@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         })
         .where(eq(pushSubscriptions.id, existingSubscription[0].id));
       
-      apiLogger.info('Updated existing push subscription', { userId: session.user.id });
+      apiLogger.info('Updated existing push subscription', { metadata: { userId: session.user.id } });
     } else {
       // Insert new subscription
       await db.insert(pushSubscriptions).values({
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         userAgent: userAgent,
       });
       
-      apiLogger.info('Created new push subscription', { userId: session.user.id });
+      apiLogger.info('Created new push subscription', { metadata: { userId: session.user.id } });
     }
 
     return NextResponse.json(
