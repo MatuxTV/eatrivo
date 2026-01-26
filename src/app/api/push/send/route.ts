@@ -10,19 +10,13 @@ import webpush from 'web-push';
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BIJKe58tvcY8dYNVegyV1PApzs7UAHiMyDTTp3s-8C-LLSwlodPm_NN-ns-3I6kGFIad6CnAiM0J8sLdoXsVcp0';
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 
-if (!VAPID_PRIVATE_KEY) {
-  throw new Error('VAPID_PRIVATE_KEY environment variable is required');
+if (VAPID_PRIVATE_KEY && process.env.ADMIN_EMAIL) {
+  webpush.setVapidDetails(
+    `mailto:${process.env.ADMIN_EMAIL}`,
+    VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY
+  );
 }
-
-if (!process.env.ADMIN_EMAIL) {
-  throw new Error('ADMIN_EMAIL environment variable is required');
-}
-
-webpush.setVapidDetails(
-  `mailto:${process.env.ADMIN_EMAIL}`,
-  VAPID_PUBLIC_KEY,
-  VAPID_PRIVATE_KEY
-);
 
 interface PushPayload {
   title: string;
@@ -34,6 +28,11 @@ interface PushPayload {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!VAPID_PRIVATE_KEY || !process.env.ADMIN_EMAIL) {
+       console.error("Missing VAPID keys or Admin Email");
+       return NextResponse.json({ error: 'Server configuration missing' }, { status: 500 });
+    }
+
     const session = await auth();
 
     // Only admins/trainers can send push notifications
