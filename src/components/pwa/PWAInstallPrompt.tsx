@@ -19,7 +19,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function PWAInstallPrompt() {
-  const { data: session } = useSession();
+  const { data: session, status, update } = useSession();
   const t = useTranslations('pwa.installPrompt');
   const [mounted, setMounted] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -34,12 +34,29 @@ export function PWAInstallPrompt() {
   }, []);
 
   useEffect(() => {
+    // Wait for session to load
+    if (status === 'loading') return;
+
     // Check if user preference exists in DB
     const checkUserPreference = async () => {
-      if (!session?.user?.hideInstallPrompt) {
-        return false;
+      // First try session
+      if (session?.user?.hideInstallPrompt) {
+        return true;
       }
-      return session.user.hideInstallPrompt;
+      
+      // Fallback to fresh fetch if session might be stale or undefined
+      if (session?.user?.id) {
+        try {
+          const res = await fetch('/api/user/pwa-preference');
+          if (res.ok) {
+            const data = await res.json();
+            return !!data.hideInstallPrompt;
+          }
+        } catch (err) {
+          console.error('Failed to fetch preference', err);
+        }
+      }
+      return false;
     };
 
     const userAgent = window.navigator.userAgent.toLowerCase();
@@ -75,13 +92,13 @@ export function PWAInstallPrompt() {
       setInstallPrompt(e as BeforeInstallPromptEvent);
       
       // Only handle event driven prompt for Android (or if we decide to support desktop later)
-      if (isAndroid) {
+      // if (isAndroid) {
         // Check if user has hidden this prompt permanently
         const shouldHide = await checkUserPreference();
         if (!shouldHide) {
           setShowPrompt(true);
         }
-      }
+      // }
     };
 
     window.addEventListener('beforeinstallprompt', handler);
@@ -95,7 +112,7 @@ export function PWAInstallPrompt() {
       window.removeEventListener('beforeinstallprompt', handler);
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [session]);
+  }, [session, status]);
 
   const handleInstall = async () => {
     // For Android with native prompt
@@ -143,12 +160,14 @@ export function PWAInstallPrompt() {
         throw new Error('Failed to save preference');
       }
 
-      setShowPrompt(false);
-      setSelectedPlatform(null);
-      
+      // Update session to reflect the change immediately
       if (neverShowAgain) {
+        await update();
         toast.success(t('preferenceSaved'));
       }
+
+      setShowPrompt(false);
+      setSelectedPlatform(null);
     } catch (error) {
       console.error('Error saving preference:', error);
       toast.error(t('preferenceError'));
