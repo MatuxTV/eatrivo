@@ -22,6 +22,7 @@ import UsersTab from "./tabs/UsersTab";
 import ProfilesTab from "./tabs/ProfilesTab";
 import EmailsTab from "./tabs/EmailsTab";
 import ShoppingListTab from "./tabs/ShoppingListTab";
+import AnalyticsTab from "./tabs/AnalyticsTab";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabId>("upload");
@@ -677,6 +678,19 @@ export default function AdminDashboard() {
                 userInfo={userInfo}
                 isLoadingUserInfo={isLoadingUserInfo}
               />
+            </motion.div>
+          )}
+
+          {activeTab === "analytics" && (
+            <motion.div
+              key="analytics"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4 sm:space-y-6"
+            >
+              <AnalyticsTab />
             </motion.div>
           )}
         </AnimatePresence>

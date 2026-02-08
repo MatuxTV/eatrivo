@@ -9,37 +9,168 @@
     "navbar": {
       "howItWorks": "How it works",
       "features": "Features",
+      "pricing": "Pricing",
       "signIn": "Sign in",
       "startFree": "Start free",
       "language": "Language"
     },
     "hero": {
-      "badge": "Your personal AI assistant",
-      "titleLine1": "A meal plan made",
-      "titleAccent": "in seconds",
-      "description": "Set your goals and preferences. EatRivo generates a practical meal plan, recipes, and a shopping list that fits you.",
-      "sampleMealLabel": "Lunch",
+      "badge": "AI + Nutrition specialist",
+      "titleLine1": "Healthier eating",
+      "titleAccent": "without complications",
+      "description": "No long consultations. No calorie counting. Just a meal plan and shopping list tailored to you — in seconds.",
+      "cta": "Start free",
+      "trustText": "Sign up with Google • No password needed",
+      "sampleMealLabel": "Today's lunch",
       "sampleMealTitle": "Grilled salmon",
-      "sampleCaloriesLabel": "Calories",
-      "sampleGoal": "On track"
+      "sampleCalories": "450 kcal",
+      "sampleProtein": "35g protein",
+      "sampleShoppingTitle": "Shopping list",
+      "valueProp1": "Personalized plans",
+      "valueProp2": "Shopping list on your phone"
+    },
+    "socialProof": {
+      "users": { "value": "500+", "label": "Happy users" },
+      "plans": { "value": "10,000+", "label": "Plans created" },
+      "rating": { "value": "4.8", "label": "App rating" },
+      "speed": { "value": "2 min", "label": "To create a plan" }
+    },
+    "goals": {
+      "title": "What is your goal?",
+      "subtitle": "Eatrivo adapts to your exact needs",
+      "loseWeight": {
+        "title": "Lose weight",
+        "description": "A personalized plan for healthy and sustainable weight loss"
+      },
+      "maintain": {
+        "title": "Maintain weight",
+        "description": "A balanced meal plan to maintain your ideal weight"
+      },
+      "gainMuscle": {
+        "title": "Build muscle",
+        "description": "A high-calorie plan focused on muscle growth"
+      },
+      "bottomText": "Eatrivo adapts to your exact goals"
     },
     "howItWorks": {
       "title": "How it works",
-      "subtitle": "Three simple steps to eat better.",
+      "subtitle": "Three simple steps to healthier eating",
       "steps": {
         "registration": {
-          "title": "Sign up",
-          "description": "Create an account and set your goals, preferences, and dietary restrictions."
+          "title": "Fill in your profile",
+          "subtitle": "2 min",
+          "description": "Age, weight, goal and your preferences. No lengthy forms."
         },
         "plan": {
-          "title": "Generate a plan",
-          "description": "Let AI build a meal plan and recipes tailored to you."
+          "title": "AI creates your plan",
+          "subtitle": "instant",
+          "description": "A personalized meal plan tailored just for you."
         },
         "done": {
-          "title": "Done",
-          "description": "Get a clear shopping list and start cooking with less stress."
+          "title": "Shop and cook",
+          "subtitle": "done",
+          "description": "Shopping list on your phone. Just buy and eat."
         }
       }
+    },
+    "appShowcase": {
+      "title": "Everything you need in one place",
+      "subtitle": "Features that save you time and simplify your life",
+      "mealPlans": {
+        "title": "Personalized meal plans",
+        "description": "AI creates a meal plan tailored to your goals, preferences and restrictions.",
+        "bullet1": "Adapted to your macros and calorie goals",
+        "bullet2": "Recipes for every day of the week",
+        "bullet3": "Adjustable to your taste"
+      },
+      "shoppingLists": {
+        "title": "Shopping lists on your phone",
+        "description": "No more forgetting. Everything at your fingertips in a clear list.",
+        "bullet1": "Automatically generated from your meal plan",
+        "bullet2": "Organized by categories",
+        "bullet3": "Download as PDF or use in the app"
+      },
+      "aiExpert": {
+        "title": "AI + Nutrition specialist",
+        "description": "The precision of technology with quality guaranteed by a human.",
+        "bullet1": "AI generates, expert verifies",
+        "bullet2": "Considers allergies and intolerances",
+        "bullet3": "Continuously learning and improving"
+      }
+    },
+    "testimonials": {
+      "title": "What our users say",
+      "subtitle": "Real stories from real people",
+      "items": {
+        "martin": {
+          "name": "Martin K.",
+          "detail": "32 years, Bratislava",
+          "quote": "I finally don't have to think about what to cook every day. The meal plans are perfectly tailored and the shopping list is brilliant."
+        },
+        "katarina": {
+          "name": "Katarina S.",
+          "detail": "28 years, Kosice",
+          "quote": "As a vegetarian, I struggled to find balanced recipes. Eatrivo saved me hours every week and I eat more variety than ever before."
+        },
+        "peter": {
+          "name": "Peter M.",
+          "detail": "45 years, Zilina",
+          "quote": "I wanted to lose weight but didn't know where to start. In 2 months with Eatrivo I achieved more than in a year on my own."
+        }
+      }
+    },
+    "painSolution": {
+      "title": "Sound familiar?",
+      "subtitle": "We solve these problems for you",
+      "items": {
+        "cooking": {
+          "problem": "I don't know what to cook every day",
+          "solution": "Ready-made recipes for the whole week"
+        },
+        "calories": {
+          "problem": "I don't have time to count calories",
+          "solution": "Automatic nutrition calculation"
+        },
+        "expensive": {
+          "problem": "Trainers and nutritionists are expensive",
+          "solution": "Starting from 0€ per month"
+        },
+        "shopping": {
+          "problem": "I don't know what to buy at the store",
+          "solution": "Shopping list always at hand"
+        }
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": {
+        "free": {
+          "question": "Is Eatrivo free?",
+          "answer": "Yes! The basic version is completely free. You can use it for inspiration and a simple overview. For personalized plans and shopping lists, Premium is available from 9.99€/month."
+        },
+        "time": {
+          "question": "How long does it take to get a meal plan?",
+          "answer": "Filling in your profile takes about 2 minutes. After that, AI instantly generates your personalized plan."
+        },
+        "cancel": {
+          "question": "Can I cancel my subscription anytime?",
+          "answer": "Of course. No commitments, no hidden fees. You can cancel with one click via the Stripe portal."
+        },
+        "vegan": {
+          "question": "Does it work for vegetarians and vegans?",
+          "answer": "Yes! When setting up your profile, you choose your dietary preferences and AI takes them into account in every plan."
+        },
+        "allergies": {
+          "question": "What if I have allergies or intolerances?",
+          "answer": "In your profile, you set all allergies and foods you want to avoid. Plans automatically exclude them."
+        }
+      }
+    },
+    "downloadCta": {
+      "badge": "Start in minutes",
+      "title": "Healthier eating starts now",
+      "subtitle": "No commitments. No hidden fees. Cancel anytime.",
+      "trustText": "Sign up with Google • No password needed"
     },
     "features": {
       "title": "Features that save time",
@@ -79,7 +210,7 @@
       "legal": "Legal",
       "terms": "Terms of service",
       "privacy": "Privacy policy",
-      "cookies": "Cookies",
+      "medicalDisclaimer": "Medical disclaimer",
       "rights": "All rights reserved."
     }
   },
@@ -117,10 +248,12 @@
       "description": "Create your profile and set your preferences for meal planning."
     },
     "title": "Onboarding",
+    "stepCounter": "Step {current} of {total}",
     "step": "Step",
     "of": "of",
     "steps": {
       "profile": "Profile",
+      "food": "",
       "preferences": "Food preferences"
     },
     "errors": {
@@ -128,12 +261,15 @@
     },
     "profile": {
       "title": "Personal details",
+      "description": "Enter your personal information for better meal planning",
       "fullName": "Full name",
       "fullNamePlaceholder": "e.g. Alex Johnson",
       "age": "Age",
       "agePlaceholder": "e.g. 28",
       "save": "Continue",
-      "saving": "Saving…"
+      "saving": "Saving…",
+      "dateOfBirth": "Date of birth",
+      "continue": "Continue"
     },
     "food": {
       "title": "Food preferences",
@@ -751,5 +887,114 @@
     "offline": {
       "showingData": "Showing offline data"
     }
+  },
+  "pricing": {
+    "metadata": {
+      "title": "Pricing",
+      "description": "Choose the plan that fits your needs"
+    },
+    "title": "Choose Your Plan",
+    "subtitle": "Start for free and upgrade when you're ready",
+    "perMonth": "/month",
+    "features": "Features",
+    "currentPlan": "Current Plan",
+    "upgrade": "Upgrade",
+    "getStarted": "Get Started",
+    "popular": "Most Popular",
+    "signInToUpgrade": "Sign in to upgrade",
+    "manageSubscription": "Manage Subscription",
+    "managingSubscription": "Opening portal...",
+    "tiers": {
+      "basic": {
+        "name": "Basic",
+        "description": "Get started with essential features",
+        "features": ["Basic meal planning", "Limited recipes", "Shopping list"]
+      },
+      "premium": {
+        "name": "Premium",
+        "description": "Everything you need for healthy eating",
+        "features": [
+          "Unlimited AI meal plans",
+          "Personalized nutrition tracking",
+          "Advanced shopping lists",
+          "Priority support"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "Advanced features for serious health goals",
+        "features": [
+          "Everything in Premium",
+          "Custom diet coaching",
+          "Advanced analytics",
+          "Family meal planning",
+          "Recipe import & export"
+        ]
+      },
+      "trainer": {
+        "name": "Trainer",
+        "description": "For certified nutrition professionals"
+      }
+    },
+    "discountCode": {
+      "label": "Discount code",
+      "placeholder": "Enter code",
+      "apply": "Apply"
+    }
+  },
+  "billing": {
+    "title": "Billing",
+    "back": "Back",
+    "currentPlan": "Current Plan",
+    "managePlan": "Manage Subscription",
+    "upgradePlan": "Upgrade Your Plan",
+    "upgradeToProTitle": "Upgrade to Pro",
+    "status": {
+      "active": "Active",
+      "canceled": "Canceled",
+      "pastDue": "Past Due",
+      "gifted": "Gifted"
+    },
+    "renewsOn": "Renews on",
+    "expiresOn": "Expires on",
+    "cancelAtPeriodEnd": "Cancels at period end",
+    "giftNote": "Gift Note",
+    "noSubscription": "No active subscription",
+    "freeAccount": "You're using the free plan",
+    "successMessage": "Subscription activated successfully! 🎉",
+    "errorMessages": {
+      "portalFailed": "Failed to open billing portal",
+      "checkoutFailed": "Failed to start checkout",
+      "generic": "Something went wrong"
+    }
+  },
+  "legal": {
+    "back": "Back",
+    "privacyPolicy": {
+      "title": "Privacy Policy",
+      "description": "How we collect and use your data"
+    },
+    "termsOfService": {
+      "title": "Terms of Service",
+      "description": "Rules for using EatRivo"
+    },
+    "medicalDisclaimer": {
+      "title": "Medical Disclaimer",
+      "description": "Important health information"
+    },
+    "footer": {
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "medicalDisclaimer": "Medical Disclaimer"
+    }
+  },
+  "upgrade": {
+    "title": "Get Premium Access",
+    "description": "Unlock all features and get unlimited AI meal plans.",
+    "feature1": "Unlimited AI meal plans",
+    "feature2": "Personalized nutrition tracking",
+    "feature3": "Advanced shopping lists",
+    "upgradeButton": "Upgrade to Premium",
+    "maybeLater": "Maybe later"
   }
 }

@@ -15,6 +15,13 @@
       "when": 1769072272929,
       "tag": "0001_robust_saracen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770285846933,
+      "tag": "0002_add_analytics_events",
+      "breakpoints": true
     }
   ]
 }

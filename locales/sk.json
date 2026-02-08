@@ -9,37 +9,168 @@
     "navbar": {
       "howItWorks": "Ako to funguje",
       "features": "Funkcie",
+      "pricing": "Cenník",
       "signIn": "Prihlásiť sa",
       "startFree": "Začať zdarma",
       "language": "Jazyk"
     },
     "hero": {
-      "badge": "Váš osobný AI asistent",
-      "titleLine1": "Jedálniček na mieru",
-      "titleAccent": "za pár sekúnd",
-      "description": "Zadajte svoje ciele a preferencie. EatRivo vytvorí jedálniček, recepty aj nákupný zoznam, ktoré dávajú zmysel.",
-      "sampleMealLabel": "Obed",
+      "badge": "AI + Nutričný špecialista",
+      "titleLine1": "Zdravšie stravovanie",
+      "titleAccent": "bez komplikácií",
+      "description": "Žiadne dlhé konzultácie. Žiadne počítanie kalórií. Len jedálny plán a nákupný zoznam na mieru — za pár sekúnd.",
+      "cta": "Začať zdarma",
+      "trustText": "Registrácia cez Google • Žiadne heslo potrebné",
+      "sampleMealLabel": "Dnešný obed",
       "sampleMealTitle": "Grilovaný losos",
-      "sampleCaloriesLabel": "Kalórie",
-      "sampleGoal": "Na ceste k cieľu"
+      "sampleCalories": "450 kcal",
+      "sampleProtein": "35g proteín",
+      "sampleShoppingTitle": "Nákupný zoznam",
+      "valueProp1": "Personalizované plány",
+      "valueProp2": "Nákupný zoznam v mobile"
+    },
+    "socialProof": {
+      "users": { "value": "500+", "label": "Spokojných používateľov" },
+      "plans": { "value": "10 000+", "label": "Vytvorených plánov" },
+      "rating": { "value": "4.8", "label": "Hodnotenie aplikácie" },
+      "speed": { "value": "2 min", "label": "Na vytvorenie plánu" }
+    },
+    "goals": {
+      "title": "Aký je tvoj cieľ?",
+      "subtitle": "Eatrivo sa prispôsobí presne tvojim potrebám",
+      "loseWeight": {
+        "title": "Schudnúť",
+        "description": "Personalizovaný plán pre zdravé a udržateľné chudnutie"
+      },
+      "maintain": {
+        "title": "Udržať váhu",
+        "description": "Vyvážený jedálniček pre udržanie tvojej ideálnej váhy"
+      },
+      "gainMuscle": {
+        "title": "Nabrať svaly",
+        "description": "Vysokokalorický plán zameraný na rast svalovej hmoty"
+      },
+      "bottomText": "Eatrivo sa prispôsobí presne tvojim cieľom"
     },
     "howItWorks": {
       "title": "Ako to funguje",
-      "subtitle": "Tri jednoduché kroky k lepšiemu stravovaniu.",
+      "subtitle": "Tri jednoduché kroky k zdravšiemu stravovaniu",
       "steps": {
         "registration": {
-          "title": "Registrácia",
-          "description": "Vytvorte si účet a nastavte si ciele, preferencie a obmedzenia."
+          "title": "Vyplň profil",
+          "subtitle": "2 min",
+          "description": "Vek, váha, cieľ a tvoje preferencie. Žiadne zdĺhavé formuláre."
         },
         "plan": {
-          "title": "Vytvorte plán",
-          "description": "Nechajte AI pripraviť jedálniček a recepty presne podľa vás."
+          "title": "AI vytvorí plán",
+          "subtitle": "okamžite",
+          "description": "Personalizovaný jedálny plán na mieru práve pre teba."
         },
         "done": {
-          "title": "Hotovo",
-          "description": "Získajte prehľadný nákupný zoznam a začnite variť bez stresu."
+          "title": "Nakúp a var",
+          "subtitle": "hotovo",
+          "description": "Nákupný zoznam máš v mobile. Len nakúp a jedz."
         }
       }
+    },
+    "appShowcase": {
+      "title": "Všetko čo potrebuješ na jednom mieste",
+      "subtitle": "Funkcie, ktoré ti šetria čas a zjednodušujú život",
+      "mealPlans": {
+        "title": "Personalizované jedálne plány",
+        "description": "AI vytvorí jedálniček presne podľa tvojich cieľov, preferencií a obmedzení.",
+        "bullet1": "Prispôsobené tvojim makrám a kalorickým cieľom",
+        "bullet2": "Recepty na každý deň týždňa",
+        "bullet3": "Možnosť upraviť podľa chuti"
+      },
+      "shoppingLists": {
+        "title": "Nákupné zoznamy v mobile",
+        "description": "Žiadne zabúdanie. Máš všetko po ruke v prehľadnom zozname.",
+        "bullet1": "Automaticky vygenerovaný z jedálneho plánu",
+        "bullet2": "Organizovaný podľa kategórií",
+        "bullet3": "Stiahni ako PDF alebo použi v appke"
+      },
+      "aiExpert": {
+        "title": "AI + Nutričný špecialista",
+        "description": "Presnosť technológie s garanciou kvality od človeka.",
+        "bullet1": "AI generuje, expert overuje",
+        "bullet2": "Zohľadňuje alergie a intolerancie",
+        "bullet3": "Neustále sa učíme a zlepšujeme"
+      }
+    },
+    "testimonials": {
+      "title": "Čo hovoria naši používatelia",
+      "subtitle": "Skutočné príbehy skutočných ľudí",
+      "items": {
+        "martin": {
+          "name": "Martin K.",
+          "detail": "32 rokov, Bratislava",
+          "quote": "Konečne nemusím každý deň premýšľať čo na večeru. Jedálne plány sú presne na mieru a nákupný zoznam je geniálna vec."
+        },
+        "katarina": {
+          "name": "Katarína S.",
+          "detail": "28 rokov, Košice",
+          "quote": "Ako vegetariánka som mala problém nájsť vyvážené recepty. EatRivo mi ušetrilo hodiny týždenne a jem pestrejšie než kedykoľvek predtým."
+        },
+        "peter": {
+          "name": "Peter M.",
+          "detail": "45 rokov, Žilina",
+          "quote": "Chcel som schudnúť ale nevedel som kde začať. Za 2 mesiace s EatRivo som dosiahol viac než za rok sám."
+        }
+      }
+    },
+    "painSolution": {
+      "title": "Poznáš to?",
+      "subtitle": "Tieto problémy riešime za teba",
+      "items": {
+        "cooking": {
+          "problem": "Neviem čo variť každý deň",
+          "solution": "Hotové recepty na celý týždeň"
+        },
+        "calories": {
+          "problem": "Nemám čas počítať kalórie",
+          "solution": "Automatický výpočet nutričných hodnôt"
+        },
+        "expensive": {
+          "problem": "Tréneri a nutričníci sú drahí",
+          "solution": "Od 0€ mesačne"
+        },
+        "shopping": {
+          "problem": "Neviem čo nakúpiť do potravín",
+          "solution": "Nákupný zoznam vždy po ruke"
+        }
+      }
+    },
+    "faq": {
+      "title": "Časté otázky",
+      "items": {
+        "free": {
+          "question": "Je Eatrivo zadarmo?",
+          "answer": "Áno! Základná verzia je úplne zadarmo. Môžeš ju používať na inšpiráciu a jednoduchý prehľad. Pre personalizované plány a nákupné zoznamy je tu Premium od 9,99€/mesiac."
+        },
+        "time": {
+          "question": "Ako dlho trvá získať jedálny plán?",
+          "answer": "Vyplnenie profilu trvá približne 2 minúty. Po tom AI okamžite vygeneruje tvoj personalizovaný plán."
+        },
+        "cancel": {
+          "question": "Môžem zrušiť predplatné kedykoľvek?",
+          "answer": "Samozrejme. Žiadne záväzky, žiadne skryté poplatky. Zrušiť môžeš jedným klikom cez Stripe portál."
+        },
+        "vegan": {
+          "question": "Funguje to aj pre vegetariánov a vegánov?",
+          "answer": "Áno! Pri nastavení profilu si vyberieš svoje stravovacie preferencie a AI ich zohľadní v každom pláne."
+        },
+        "allergies": {
+          "question": "Čo ak mám alergie alebo intolerancie?",
+          "answer": "V profile si nastavíš všetky alergie a potraviny, ktorým sa chceš vyhnúť. Plány ich automaticky vylúčia."
+        }
+      }
+    },
+    "downloadCta": {
+      "badge": "Začni za pár minút",
+      "title": "Zdravšie stravovanie začína teraz",
+      "subtitle": "Žiadne záväzky. Žiadne skryté poplatky. Zrušiť môžeš kedykoľvek.",
+      "trustText": "Registrácia cez Google • Žiadne heslo potrebné"
     },
     "features": {
       "title": "Funkcie, ktoré šetria čas",
@@ -79,7 +210,7 @@
       "legal": "Právne",
       "terms": "Podmienky používania",
       "privacy": "Ochrana súkromia",
-      "cookies": "Cookies",
+      "medicalDisclaimer": "Zdravotné vylúčenie",
       "rights": "Všetky práva vyhradené."
     }
   },
@@ -117,10 +248,12 @@
       "description": "Vytvorte si profil a nastavte preferencie pre plánovanie jedla."
     },
     "title": "Nastavenie",
+    "stepCounter": "Krok {current} z {total}",
     "step": "Krok",
     "of": "z",
     "steps": {
       "profile": "Profil",
+      "food": "",
       "preferences": "Preferencie"
     },
     "errors": {
@@ -128,12 +261,15 @@
     },
     "profile": {
       "title": "Osobné údaje",
+      "description": "Zadajte vaše osobné údaje pre lepšie plánovanie jedla",
       "fullName": "Celé meno",
       "fullNamePlaceholder": "napr. Ján Novák",
       "age": "Vek",
       "agePlaceholder": "napr. 28",
       "save": "Pokračovať",
-      "saving": "Ukladá sa…"
+      "saving": "Ukladá sa…",
+      "dateOfBirth": "Dátum narodenia",
+      "continue": "Pokračovať"
     },
     "food": {
       "title": "Jedálne preferencie",
@@ -591,9 +727,18 @@
       "greeting": "Ahoj {firstName}! 👋",
       "paragraph": "Ďakujeme, že ste sa rozhodli začať svoju cestu s Eatrivo. Sme tu, aby sme vám pomohli dosiahnuť vaše zdravotné a výživové ciele s personalizovanými jedálničkami a inteligentným plánovaním.",
       "features": {
-        "dailyPlan": { "title": "Denný plán", "description": "Prispôsobené jedlá obsahujúce potraviny z vytvoreného nákupného zoznamu" },
-        "shoppingLists": { "title": "Nákupné zoznamy", "description": "Personalizovane a určené všetkým vaším potrebám pre jednoduchšie nakupovanie" },
-        "aiAssistant": { "title": "AI asistent", "description": "Inteligentné odporúčania a prispôsobenie jedálničkov" }
+        "dailyPlan": {
+          "title": "Denný plán",
+          "description": "Prispôsobené jedlá obsahujúce potraviny z vytvoreného nákupného zoznamu"
+        },
+        "shoppingLists": {
+          "title": "Nákupné zoznamy",
+          "description": "Personalizovane a určené všetkým vaším potrebám pre jednoduchšie nakupovanie"
+        },
+        "aiAssistant": {
+          "title": "AI asistent",
+          "description": "Inteligentné odporúčania a prispôsobenie jedálničkov"
+        }
       },
       "cta": "Začať používať Eatrivo",
       "help": "Ak máte akékoľvek otázky alebo potrebujete pomoc, neváhajte nás kontaktovať. Sme tu pre vás!"
@@ -731,7 +876,7 @@
       }
     },
     "notifications": {
-      "title" : "Push Notifikácie",
+      "title": "Push Notifikácie",
       "description": "Zostaňte informovaní o nových nákupných zoznamoch a aktualizáciách",
       "enable": "Zapnúť notifikácie",
       "disable": "Vypnúť notifikácie",
@@ -744,5 +889,118 @@
     "offline": {
       "showingData": "Zobrazujú sa offline dáta"
     }
+  },
+  "pricing": {
+    "metadata": {
+      "title": "Cenník",
+      "description": "Vyberte si plán, ktorý vám vyhovuje"
+    },
+    "title": "Vyberte si plán",
+    "subtitle": "Začnite zdarma a upgradujte keď budete pripravení",
+    "perMonth": "/mesiac",
+    "features": "Funkcie",
+    "currentPlan": "Aktuálny plán",
+    "upgrade": "Upgradovať",
+    "getStarted": "Začať",
+    "popular": "Najobľúbenejší",
+    "signInToUpgrade": "Prihláste sa pre upgrade",
+    "manageSubscription": "Spravovať predplatné",
+    "managingSubscription": "Otváram portál...",
+    "tiers": {
+      "basic": {
+        "name": "Basic",
+        "description": "Začnite so základnými funkciami",
+        "features": [
+          "Základné plánovanie jedál",
+          "Obmedzené recepty",
+          "Nákupný zoznam"
+        ]
+      },
+      "premium": {
+        "name": "Premium",
+        "description": "Všetko čo potrebujete pre zdravé stravovanie",
+        "features": [
+          "Neobmedzené AI jedálne plány",
+          "Personalizované sledovanie výživy",
+          "Pokročilé nákupné zoznamy",
+          "Prioritná podpora"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "Pokročilé funkcie pre vážne zdravotné ciele",
+        "features": [
+          "Všetko z Premium",
+          "Vlastný diétny koučing",
+          "Pokročilá analytika",
+          "Rodinné plánovanie jedál",
+          "Import a export receptov"
+        ]
+      },
+      "trainer": {
+        "name": "Tréner",
+        "description": "Pre certifikovaných odborníkov na výživu"
+      }
+    },
+    "discountCode": {
+      "label": "Zľavový kód",
+      "placeholder": "Zadajte kód",
+      "apply": "Použiť"
+    }
+  },
+  "billing": {
+    "title": "Fakturácia",
+    "back": "Späť",
+    "currentPlan": "Aktuálny plán",
+    "managePlan": "Spravovať predplatné",
+    "upgradePlan": "Upgradovať plán",
+    "upgradeToProTitle": "Upgradovať na Pro",
+    "status": {
+      "active": "Aktívne",
+      "canceled": "Zrušené",
+      "pastDue": "Po splatnosti",
+      "gifted": "Darované"
+    },
+    "renewsOn": "Obnovuje sa",
+    "expiresOn": "Končí",
+    "cancelAtPeriodEnd": "Ruší sa na konci obdobia",
+    "giftNote": "Poznámka k daru",
+    "noSubscription": "Žiadne aktívne predplatné",
+    "freeAccount": "Používate bezplatný plán",
+    "successMessage": "Predplatné bolo úspešne aktivované! 🎉",
+    "errorMessages": {
+      "portalFailed": "Nepodarilo sa otvoriť fakturačný portál",
+      "checkoutFailed": "Nepodarilo sa spustiť platbu",
+      "generic": "Niečo sa pokazilo"
+    }
+  },
+  "legal": {
+    "back": "Späť",
+    "privacyPolicy": {
+      "title": "Zásady ochrany osobných údajov",
+      "description": "Ako zbierame a používame vaše údaje"
+    },
+    "termsOfService": {
+      "title": "Všeobecné obchodné podmienky",
+      "description": "Pravidlá používania EatRivo"
+    },
+    "medicalDisclaimer": {
+      "title": "Zdravotné vylúčenie zodpovednosti",
+      "description": "Dôležité zdravotné informácie"
+    },
+    "footer": {
+      "privacyPolicy": "Ochrana súkromia",
+      "termsOfService": "Obchodné podmienky",
+      "medicalDisclaimer": "Zdravotné vylúčenie"
+    }
+  },
+  "upgrade": {
+    "title": "Získaj Premium prístup",
+    "description": "Odomkni všetky funkcie a získaj neobmedzené AI jedálničky.",
+    "feature1": "Neobmedzené AI jedálničky",
+    "feature2": "Personalizované nutričné sledovanie",
+    "feature3": "Pokročilé nákupné zoznamy",
+    "upgradeButton": "Prejsť na Premium",
+    "maybeLater": "Možno neskôr"
   }
 }

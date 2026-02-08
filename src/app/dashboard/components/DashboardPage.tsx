@@ -30,9 +30,13 @@ import BodyHealthCircle from "./BodyHealtCircle";
 import WeightTracker from "./WeightTracker";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
 import { PushNotificationToggle } from "@/components/pwa/PushNotificationToggle";
+import { UpgradePopup } from "@/components/billing/UpgradePopup";
 
 // PWA utilities
-import { saveLatestShoppingList, getLatestShoppingList } from "@/lib/pwa/offlineStorage";
+import {
+  saveLatestShoppingList,
+  getLatestShoppingList,
+} from "@/lib/pwa/offlineStorage";
 
 // Type definitions
 interface Ingredient {
@@ -88,7 +92,7 @@ export default function DashboardPage() {
   const { data: session } = useSession();
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
   const [userHealthData, setUserHealthData] = useState<UserHealthData | null>(
-    null
+    null,
   );
   const [isLoading, setIsLoading] = useState({
     shoppingLists: false,
@@ -97,7 +101,9 @@ export default function DashboardPage() {
   const [mealPlanData, setMealPlanData] = useState<DayMealPlan[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [currentDay, setCurrentDay] = useState<string | null>(null);
-  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(new Date().getDay());
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(
+    new Date().getDay(),
+  );
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -107,6 +113,7 @@ export default function DashboardPage() {
   }, [locale]);
 
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
 
   // Check welcome dialog visibility after session loads (prevents hydration mismatch)
   useEffect(() => {
@@ -133,6 +140,17 @@ export default function DashboardPage() {
         metadata: { userId: session?.user?.id },
       });
     }
+
+    // Show upgrade popup for basic users after welcome dialog closes
+    if (session?.user?.membership === "basic") {
+      // Check localStorage if user already dismissed upgrade popup
+      const dismissedUpgrade = localStorage.getItem(
+        "eatrivo_upgrade_dismissed",
+      );
+      if (!dismissedUpgrade) {
+        setTimeout(() => setShowUpgradePopup(true), 500);
+      }
+    }
   };
 
   // FETCH SHOPPING LISTS
@@ -153,7 +171,10 @@ export default function DashboardPage() {
           try {
             await saveLatestShoppingList(lists[0]);
           } catch (offlineError) {
-            console.error("Failed to save shopping list offline:", offlineError);
+            console.error(
+              "Failed to save shopping list offline:",
+              offlineError,
+            );
           }
         }
       } catch (error) {
@@ -161,7 +182,7 @@ export default function DashboardPage() {
           context: "DashboardPage",
           metadata: { userId: session?.user?.id },
         });
-        
+
         // Try to load from offline storage
         try {
           const offlineList = await getLatestShoppingList();
@@ -172,7 +193,10 @@ export default function DashboardPage() {
               weekStartDate: offlineList.weekStartDate.toString(),
               weekEndDate: offlineList.weekEndDate.toString(),
               createdAt: offlineList.createdAt.toString(),
-              status: offlineList.status as "active" | "completed" | "cancelled",
+              status: offlineList.status as
+                | "active"
+                | "completed"
+                | "cancelled",
             };
             setShoppingLists([formattedList]);
             toast.info(t("pwa.offline.showingData"));
@@ -316,9 +340,11 @@ export default function DashboardPage() {
   const todaysMeals = useMemo(() => {
     if (!isMounted) return [];
     if (!mealPlanData || mealPlanData.length === 0) return [];
-    
-    const todayPlan = mealPlanData.find((day) => getDayIndex(day.day) === selectedDayIndex);
-    
+
+    const todayPlan = mealPlanData.find(
+      (day) => getDayIndex(day.day) === selectedDayIndex,
+    );
+
     if (!todayPlan || !todayPlan.meals) return [];
 
     return todayPlan.meals.map((meal: MealData, index: number) => ({
@@ -339,9 +365,11 @@ export default function DashboardPage() {
   const todaysNutrition = useMemo(() => {
     if (!isMounted) return null;
     if (!mealPlanData || mealPlanData.length === 0) return null;
-    
-    const todayPlan = mealPlanData.find((day) => getDayIndex(day.day) === selectedDayIndex);
-    
+
+    const todayPlan = mealPlanData.find(
+      (day) => getDayIndex(day.day) === selectedDayIndex,
+    );
+
     return todayPlan
       ? {
           calories: todayPlan.totalDailyCalories,
@@ -361,6 +389,15 @@ export default function DashboardPage() {
         changelog={
           APP_CONFIG.WELCOME_DIALOG_CHANGELOG[APP_CONFIG.WELCOME_DIALOG_VERSION]
         }
+      />
+
+      {/* Upgrade Popup for basic users */}
+      <UpgradePopup
+        isOpen={showUpgradePopup}
+        onClose={() => {
+          setShowUpgradePopup(false);
+          localStorage.setItem("eatrivo_upgrade_dismissed", "true");
+        }}
       />
 
       {/* Desktop Sidebar */}
@@ -401,7 +438,7 @@ export default function DashboardPage() {
                   const hash =
                     typeof window !== "undefined" ? window.location.hash : "";
                   router.push(
-                    `${nextPathname}${queryString ? `?${queryString}` : ""}${hash}`
+                    `${nextPathname}${queryString ? `?${queryString}` : ""}${hash}`,
                   );
                 }}
               >
@@ -430,25 +467,38 @@ export default function DashboardPage() {
                 <h2 className="text-xl font-bold text-gray-900">
                   {t("dailyPlan.title")}
                 </h2>
-                
+
                 {/* Day Navigation */}
                 {isMounted && mealPlanData.length > 0 && (
                   <div className="flex items-center gap-2 bg-white rounded-full px-2 py-1 shadow-sm border border-gray-100">
                     <button
-                      onClick={() => setSelectedDayIndex((prev) => (prev === 0 ? 6 : prev - 1))}
+                      onClick={() =>
+                        setSelectedDayIndex((prev) =>
+                          prev === 0 ? 6 : prev - 1,
+                        )
+                      }
                       className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                       aria-label="Previous day"
                     >
                       <ChevronLeft className="w-4 h-4 text-gray-600" />
                     </button>
                     <span className="text-sm font-medium text-gray-700 min-w-[80px] text-center">
-                      {selectedDayIndex === new Date().getDay() 
-                        ? <span className="text-eatrivo-purple capitalize">{t("dailyPlan.today")}</span>
-                        : mealPlanData.find(day => getDayIndex(day.day) === selectedDayIndex)?.day || currentDay
-                      }
+                      {selectedDayIndex === new Date().getDay() ? (
+                        <span className="text-eatrivo-purple capitalize">
+                          {t("dailyPlan.today")}
+                        </span>
+                      ) : (
+                        mealPlanData.find(
+                          (day) => getDayIndex(day.day) === selectedDayIndex,
+                        )?.day || currentDay
+                      )}
                     </span>
                     <button
-                      onClick={() => setSelectedDayIndex((prev) => (prev === 6 ? 0 : prev + 1))}
+                      onClick={() =>
+                        setSelectedDayIndex((prev) =>
+                          prev === 6 ? 0 : prev + 1,
+                        )
+                      }
                       className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                       aria-label="Next day"
                     >
@@ -509,7 +559,7 @@ export default function DashboardPage() {
                   }
                 }}
               />
-              
+
               {/* Push Notification Toggle */}
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -527,7 +577,7 @@ export default function DashboardPage() {
 
       {/* Mobile Bottom Navigation */}
       <MobileNavigation />
-      
+
       {/* PWA Install Prompt */}
       <PWAInstallPrompt />
     </div>

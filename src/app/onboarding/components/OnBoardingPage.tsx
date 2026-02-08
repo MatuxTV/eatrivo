@@ -144,7 +144,7 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
                   2
                 </div>
                 <span className="ml-1 md:ml-2 text-xs md:text-sm font-medium text-gray-900">
-                  {t("steps.food")}
+                  {t("steps.preferences")}
                 </span>
               </div>
             </div>

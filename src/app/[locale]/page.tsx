@@ -2,10 +2,14 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { Navbar } from "@/components/landing/Navbar";
-import { Hero } from "@/components/landing/Hero";
-import { HowItWorks } from "@/components/landing/HowItWorks";
-import { Features } from "@/components/landing/Features";
-import { CTA } from "@/components/landing/CTA";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { GoalsSection } from "@/components/landing/GoalsSection";
+import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
+import { AppShowcase } from "@/components/landing/AppShowcase";
+import { Testimonials } from "@/components/landing/Testimonials";
+import { PainSolution } from "@/components/landing/PainSolution";
+import { FAQ } from "@/components/landing/FAQ";
+import { DownloadCTA } from "@/components/landing/DownloadCTA";
 import { Footer } from "@/components/landing/Footer";
 import { isLocale, type Locale } from "@/i18n/routing";
 
@@ -29,10 +33,14 @@ export default function Home() {
     <div className="min-h-screen bg-white selection:bg-eatrivo-purple selection:text-white">
       <Navbar />
       <main>
-        <Hero />
-        <HowItWorks />
-        <Features />
-        <CTA />
+        <HeroSection />
+        <GoalsSection />
+        <HowItWorksSection />
+        <AppShowcase />
+        <Testimonials />
+        <PainSolution />
+        <FAQ />
+        <DownloadCTA />
       </main>
       <Footer />
     </div>

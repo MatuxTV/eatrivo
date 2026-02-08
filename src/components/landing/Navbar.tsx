@@ -1,43 +1,53 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { useState, useEffect } from "react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import { Menu, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
-import { useTranslations } from "next-intl"
-import { getLocaleFromPathname, isLocale, replaceLocaleInPathname } from "@/i18n/routing"
+import Link from "next/link";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import {
+  getLocaleFromPathname,
+  isLocale,
+  replaceLocaleInPathname,
+} from "@/i18n/routing";
 
 export function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const t = useTranslations("landing")
+  const t = useTranslations("landing");
 
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const locale = getLocaleFromPathname(pathname)
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const locale = getLocaleFromPathname(pathname);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <header
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled
-          ? "bg-white/80 backdrop-blur-md border-b border-gray-200 py-3"
-          : "bg-transparent py-5"
+          ? "bg-white/90 backdrop-blur-xl border-b border-gray-200 py-3"
+          : "bg-transparent py-5",
       )}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center justify-between">
@@ -53,18 +63,25 @@ export function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="#how-it-works" className="text-sm font-medium text-gray-600 hover:text-eatrivo-purple transition-colors">
+          <Link
+            href="#how-it-works"
+            className="text-sm font-medium text-gray-600 hover:text-eatrivo-purple transition-colors"
+          >
             {t("navbar.howItWorks")}
           </Link>
-          <Link href="#features" className="text-sm font-medium text-gray-600 hover:text-eatrivo-purple transition-colors">
+          <Link
+            href="#features"
+            className="text-sm font-medium text-gray-600 hover:text-eatrivo-purple transition-colors"
+          >
             {t("navbar.features")}
           </Link>
-
-          <Link href={`/${locale}/signin`}>
-            <Button  className="font-medium bg-eatrivo-light border-2  border-eatrivo-purple text-eatrivo-purple hover:bg-eatrivo-purple hover:text-white rounded-full px-6">
-              {t("navbar.signIn")}
-            </Button>
+          <Link
+            href="#goals"
+            className="text-sm font-medium text-gray-600 hover:text-eatrivo-purple transition-colors"
+          >
+            {t("navbar.pricing")}
           </Link>
+
           <Link href={`/${locale}/signin`}>
             <Button className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-6">
               {t("navbar.startFree")}
@@ -73,11 +90,14 @@ export function Navbar() {
           <Select
             value={locale}
             onValueChange={(value) => {
-              if (!isLocale(value)) return
-              const nextPathname = replaceLocaleInPathname(pathname, value)
-              const queryString = searchParams.toString()
-              const hash = typeof window !== "undefined" ? window.location.hash : ""
-              router.push(`${nextPathname}${queryString ? `?${queryString}` : ""}${hash}`)
+              if (!isLocale(value)) return;
+              const nextPathname = replaceLocaleInPathname(pathname, value);
+              const queryString = searchParams.toString();
+              const hash =
+                typeof window !== "undefined" ? window.location.hash : "";
+              router.push(
+                `${nextPathname}${queryString ? `?${queryString}` : ""}${hash}`,
+              );
             }}
           >
             <SelectTrigger
@@ -113,27 +133,32 @@ export function Navbar() {
             className="md:hidden bg-white border-b border-gray-200 overflow-hidden"
           >
             <div className="px-4 py-6 space-y-4 flex flex-col">
-              <Link 
-                href="#how-it-works" 
+              <Link
+                href="#how-it-works"
                 className="text-base font-medium text-gray-900 py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {t("navbar.howItWorks")}
               </Link>
-              <Link 
-                href="#features" 
+              <Link
+                href="#features"
                 className="text-base font-medium text-gray-900 py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {t("navbar.features")}
               </Link>
+              <Link
+                href="#goals"
+                className="text-base font-medium text-gray-900 py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {t("navbar.pricing")}
+              </Link>
               <div className="pt-4 flex flex-col gap-3">
-                <Link href={`/${locale}/signin`} onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full justify-center rounded-full">
-                    {t("navbar.signIn")}
-                  </Button>
-                </Link>
-                <Link href={`/${locale}/signin`} onClick={() => setIsMobileMenuOpen(false)}>
+                <Link
+                  href={`/${locale}/signin`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
                   <Button className="w-full justify-center bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full">
                     {t("navbar.startFree")}
                   </Button>
@@ -143,12 +168,20 @@ export function Navbar() {
                   <Select
                     value={locale}
                     onValueChange={(value) => {
-                      if (!isLocale(value)) return
-                      const nextPathname = replaceLocaleInPathname(pathname, value)
-                      const queryString = searchParams.toString()
-                      const hash = typeof window !== "undefined" ? window.location.hash : ""
-                      router.push(`${nextPathname}${queryString ? `?${queryString}` : ""}${hash}`)
-                      setIsMobileMenuOpen(false)
+                      if (!isLocale(value)) return;
+                      const nextPathname = replaceLocaleInPathname(
+                        pathname,
+                        value,
+                      );
+                      const queryString = searchParams.toString();
+                      const hash =
+                        typeof window !== "undefined"
+                          ? window.location.hash
+                          : "";
+                      router.push(
+                        `${nextPathname}${queryString ? `?${queryString}` : ""}${hash}`,
+                      );
+                      setIsMobileMenuOpen(false);
                     }}
                   >
                     <SelectTrigger
@@ -170,5 +203,5 @@ export function Navbar() {
         )}
       </AnimatePresence>
     </header>
-  )
+  );
 }

@@ -18,7 +18,7 @@
   --color-eatrivo-light: #f8fafc;
   --color-eatrivo-black-primary: #333333;
   --color-eatrivo-black-secondary: #6b7280;
-  --color-eatrivo-white-primary: #ffffff;
+  --color-eatrivo-white-primary: #fafafa;
   --color-eatrivo-white-secondary: #f3f4f6;
 
   /* Semantic Colors */
@@ -128,7 +128,9 @@
 
   body {
     @apply bg-white text-gray-900 antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 
   h1,
