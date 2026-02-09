@@ -1,7 +1,14 @@
 ﻿"use client";
 
 import { useState, useId } from "react";
-import { MessageSquarePlus, X, Bug, Lightbulb, Zap, Loader2 } from "lucide-react";
+import {
+  MessageSquarePlus,
+  X,
+  Bug,
+  Lightbulb,
+  Zap,
+  Loader2,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -72,9 +79,7 @@ export default function FeedbackButton() {
     } catch (error) {
       console.error("Error submitting feedback:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : t("errors.submitFailed")
+        error instanceof Error ? error.message : t("errors.submitFailed"),
       );
     } finally {
       setIsSubmitting(false);
@@ -107,7 +112,7 @@ export default function FeedbackButton() {
       {/* Floating Button - Fixed Bottom Right */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 group flex items-center justify-center w-14 h-14 bg-white rounded-full shadow-lg border border-gray-100 hover:border-eatrivo-purple/20 hover:shadow-xl transition-all duration-300 hover:scale-105"
+        className="fixed bottom-6 right-6 z-50 group flex items-center justify-center w-14 h-14 bg-white rounded-full shadow-lg border border-gray-100 hover:border-eatrivo-purple/20 hover:shadow-xl transition-[box-shadow,border-color,transform] duration-300 hover:scale-105 touch-action-manipulation"
         aria-label={t("buttonLabel")}
       >
         <MessageSquarePlus className="w-6 h-6 text-gray-500 group-hover:text-eatrivo-purple transition-colors" />

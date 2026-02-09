@@ -13,7 +13,7 @@ export function Footer() {
   const locale = getLocaleFromPathname(pathname);
 
   return (
-    <footer className="bg-gray-900 text-white pt-16 pb-8">
+    <footer className="bg-gray-900 text-white pt-16 pb-[max(2rem,env(safe-area-inset-bottom))]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-1">

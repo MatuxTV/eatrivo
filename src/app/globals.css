@@ -127,7 +127,7 @@
   }
 
   body {
-    @apply bg-white text-gray-900 antialiased;
+    @apply bg-eatrivo-white-primary text-gray-900 antialiased;
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
@@ -163,5 +163,22 @@
 
   .card {
     @apply bg-white border border-gray-200 rounded-lg shadow-sm transition-shadow hover:shadow-md;
+  }
+
+  /* Touch optimization - prevents 300ms tap delay */
+  .touch-action-manipulation {
+    touch-action: manipulation;
+  }
+}
+
+/* Reduced motion preferences - accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

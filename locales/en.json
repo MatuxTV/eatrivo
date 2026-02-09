@@ -17,7 +17,7 @@
     "hero": {
       "badge": "AI + Nutrition specialist",
       "titleLine1": "Healthier eating",
-      "titleAccent": "without complications",
+      "titleAccent": "in your phone",
       "description": "No long consultations. No calorie counting. Just a meal plan and shopping list tailored to you — in seconds.",
       "cta": "Start free",
       "trustText": "Sign up with Google • No password needed",
@@ -40,15 +40,33 @@
       "subtitle": "Eatrivo adapts to your exact needs",
       "loseWeight": {
         "title": "Lose weight",
-        "description": "A personalized plan for healthy and sustainable weight loss"
+        "description": "A personalized plan for healthy and sustainable weight loss",
+        "detailTitle": "Your Path to Healthy Weight Loss",
+        "detailDescription": "Our AI creates personalized meal plans with a balanced calorie deficit, ensuring you lose weight in a healthy and sustainable way. Every recipe is designed to keep you satisfied while helping you reach your goals.",
+        "feature1Title": "Smart Calorie Management",
+        "feature1Description": "Automatically calculated calorie deficit based on your metabolism and activity level",
+        "feature2Title": "Satisfying Meals",
+        "feature2Description": "High-protein recipes that keep you full and prevent muscle loss during weight loss"
       },
       "maintain": {
         "title": "Maintain weight",
-        "description": "A balanced meal plan to maintain your ideal weight"
+        "description": "A balanced meal plan to maintain your ideal weight",
+        "detailTitle": "Maintain Your Perfect Balance",
+        "detailDescription": "Keep your weight stable with balanced meal plans designed to provide exactly the calories and nutrients your body needs. Perfect for those who've reached their goal weight and want to maintain it effortlessly.",
+        "feature1Title": "Balanced Nutrition",
+        "feature1Description": "Precise calorie and macro tracking to maintain your current weight without counting",
+        "feature2Title": "Flexible Meal Options",
+        "feature2Description": "Varied recipes that fit your lifestyle while keeping you at your ideal weight"
       },
       "gainMuscle": {
         "title": "Build muscle",
-        "description": "A high-calorie plan focused on muscle growth"
+        "description": "A high-calorie plan focused on muscle growth",
+        "detailTitle": "Build Muscle the Right Way",
+        "detailDescription": "Fuel your muscle growth with high-protein, calorie-rich meal plans designed for athletes and fitness enthusiasts. Our AI ensures you get the right nutrients at the right time to maximize your gains.",
+        "feature1Title": "High Protein Focus",
+        "feature1Description": "Optimized protein intake throughout the day to support muscle recovery and growth",
+        "feature2Title": "Strategic Calorie Surplus",
+        "feature2Description": "Carefully calculated extra calories to build muscle while minimizing fat gain"
       },
       "bottomText": "Eatrivo adapts to your exact goals"
     },
@@ -894,7 +912,7 @@
       "description": "Choose the plan that fits your needs"
     },
     "title": "Choose Your Plan",
-    "subtitle": "Start for free and upgrade when you're ready",
+    "subtitle": "AI + Nutrition Expert. Simplifying healthy eating without the complexity.",
     "perMonth": "/month",
     "features": "Features",
     "currentPlan": "Current Plan",
@@ -906,18 +924,24 @@
     "managingSubscription": "Opening portal...",
     "tiers": {
       "basic": {
-        "name": "Basic",
-        "description": "Get started with essential features",
-        "features": ["Basic meal planning", "Limited recipes", "Shopping list"]
+        "name": "Free",
+        "description": "Inspiration - Recipe ideas to get started",
+        "features": [
+          "Recipe templates based on your profile",
+          "Basic meal ideas",
+          "Age & activity-matched suggestions",
+          "Simple shopping lists"
+        ]
       },
       "premium": {
         "name": "Premium",
-        "description": "Everything you need for healthy eating",
+        "description": "Goal Achievement - Personalized plans that work",
         "features": [
-          "Unlimited AI meal plans",
-          "Personalized nutrition tracking",
-          "Advanced shopping lists",
-          "Priority support"
+          "AI-generated personalized meal plans",
+          "Expert-verified shopping lists",
+          "Weekly challenges & motivation",
+          "Direct access to nutrition advisor",
+          "Hybrid AI + Expert quality"
         ]
       },
       "pro": {
@@ -987,6 +1011,19 @@
       "termsOfService": "Terms of Service",
       "medicalDisclaimer": "Medical Disclaimer"
     }
+  },
+  "offline": {
+    "title": "You are offline",
+    "description": "It seems you don't have an internet connection. Some features may be limited.",
+    "whatYouCanDo": "What you can do offline:",
+    "features": {
+      "viewShoppingList": "View your latest shopping list",
+      "viewCachedData": "Access saved data from previous visit",
+      "noNewPlans": "Generate new meal plans or shopping lists"
+    },
+    "tryAgain": "Try Again",
+    "goToDashboard": "Go to Dashboard",
+    "autoRefresh": "The page will automatically update once connection is restored"
   },
   "upgrade": {
     "title": "Get Premium Access",

@@ -393,7 +393,7 @@ export async function POST(_request: NextRequest) {
         await db.insert(aiInsights).values({
           userProfileId: userProfile.id,
           insightType: "meal_plan",
-          title: `Meal Plan - ${new Date().toLocaleDateString("sk")}`,
+          title: `Meal Plan - ${new Intl.DateTimeFormat("sk").format(new Date())}`,
           content: mealPlan,
           metadata: {
             shoppingListId: latestShoppingList.id,

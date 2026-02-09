@@ -1,4 +1,4 @@
-import type { NextRequest} from "next/server";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { db } from "@/index";
 import { shoppingLists } from "@/db/schema";
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -31,24 +31,21 @@ export async function GET(
     if (!item) {
       return NextResponse.json(
         { error: "Shopping list not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Convert markdown to HTML
     const htmlContent = md.render(item.markdownContent);
 
-    // Create formatted dates
-    const weekStart = new Date(item.weekStartDate).toLocaleDateString("sk-SK", {
+    // Create formatted dates using Intl.DateTimeFormat
+    const dateFormatter = new Intl.DateTimeFormat("sk-SK", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     });
-    const weekEnd = new Date(item.weekEndDate).toLocaleDateString("sk-SK", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    const weekStart = dateFormatter.format(new Date(item.weekStartDate));
+    const weekEnd = dateFormatter.format(new Date(item.weekEndDate));
 
     // Create a nice HTML page
     const html = `
@@ -227,7 +224,7 @@ export async function GET(
     </div>
     
     <div class="footer">
-      Vytvorené pomocou Eatrivo • ${new Date().toLocaleDateString("sk-SK")}
+      Vytvorené pomocou Eatrivo • ${new Intl.DateTimeFormat("sk-SK").format(new Date())}
     </div>
   </div>
   
@@ -341,7 +338,7 @@ export async function GET(
     console.error("[API] Error rendering markdown:", err);
     return NextResponse.json(
       { error: "Failed to render markdown" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

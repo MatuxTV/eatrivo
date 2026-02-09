@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, CreditCard, Gift, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { formatDate } from "@/lib/formatters";
 
 interface SubscriptionStatusProps {
   membership: "basic" | "premium" | "pro" | "trainer";
@@ -25,6 +26,7 @@ export function SubscriptionStatus({
   const [loading, setLoading] = useState(false);
   const t = useTranslations("billing");
   const tPricing = useTranslations("pricing");
+  const locale = useLocale();
 
   const handleManage = async () => {
     setLoading(true);
@@ -83,16 +85,14 @@ export function SubscriptionStatus({
                     {cancelAtPeriodEnd ? t("expiresOn") : t("renewsOn")}
                   </span>
                 </div>
-                <span>{new Date(currentPeriodEnd).toLocaleDateString()}</span>
+                <span>{formatDate(currentPeriodEnd, locale)}</span>
               </div>
             )}
 
             {cancelAtPeriodEnd && (
               <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-600">
                 {t("cancelAtPeriodEnd")}{" "}
-                {currentPeriodEnd
-                  ? new Date(currentPeriodEnd).toLocaleDateString()
-                  : ""}
+                {currentPeriodEnd ? formatDate(currentPeriodEnd, locale) : ""}
               </p>
             )}
           </>

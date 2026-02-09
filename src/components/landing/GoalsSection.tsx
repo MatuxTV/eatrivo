@@ -37,7 +37,7 @@ function GoalCard({ goal, title, description, isSelected, onSelect }: GoalCardPr
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 20 }}
       onClick={onSelect}
-      className={`relative bg-white rounded-3xl p-8 text-center group cursor-pointer transition-all duration-300 text-left w-full ${
+      className={`relative bg-white rounded-3xl p-8 text-center group cursor-pointer transition-all duration-300 w-full ${
         isSelected
           ? "border-2 border-eatrivo-purple shadow-lg shadow-eatrivo-purple/10 ring-4 ring-eatrivo-purple/5"
           : "border border-gray-100 shadow-sm hover:shadow-xl hover:border-eatrivo-purple/20"
@@ -130,15 +130,75 @@ export function GoalsSection({ className = "" }: SectionProps) {
           ))}
         </motion.div>
 
-        <motion.p
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={titleFadeIn}
-          className="text-lg text-eatrivo-gray mt-12 text-center"
-        >
-          {t("bottomText")}
-        </motion.p>
+        {selectedGoal && (
+          <motion.div
+            key={selectedGoal}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className={`mt-12 max-w-4xl mx-auto rounded-3xl p-8 md:p-10 ${
+              selectedGoal === "loseWeight"
+                ? "bg-green-50/80 border-2 border-green-100"
+                : selectedGoal === "maintain"
+                ? "bg-blue-50/80 border-2 border-blue-100"
+                : "bg-orange-50/80 border-2 border-orange-100"
+            }`}
+          >
+            <div className="space-y-6">
+              <h3
+                className={`text-2xl md:text-3xl font-bold ${
+                  selectedGoal === "loseWeight"
+                    ? "text-green-700"
+                    : selectedGoal === "maintain"
+                    ? "text-blue-700"
+                    : "text-orange-700"
+                }`}
+              >
+                {t(`${selectedGoal}.detailTitle`)}
+              </h3>
+              <p className="text-base md:text-lg text-eatrivo-gray leading-relaxed">
+                {t(`${selectedGoal}.detailDescription`)}
+              </p>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div
+                  className={`p-4 rounded-xl ${
+                    selectedGoal === "loseWeight"
+                      ? "bg-green-100/50"
+                      : selectedGoal === "maintain"
+                      ? "bg-blue-100/50"
+                      : "bg-orange-100/50"
+                  }`}
+                >
+                  <h4 className="font-semibold text-eatrivo-black-primary mb-2">
+                    {t(`${selectedGoal}.feature1Title`)}
+                  </h4>
+                  <p className="text-sm text-eatrivo-gray">
+                    {t(`${selectedGoal}.feature1Description`)}
+                  </p>
+                </div>
+                <div
+                  className={`p-4 rounded-xl ${
+                    selectedGoal === "loseWeight"
+                      ? "bg-green-100/50"
+                      : selectedGoal === "maintain"
+                      ? "bg-blue-100/50"
+                      : "bg-orange-100/50"
+                  }`}
+                >
+                  <h4 className="font-semibold text-eatrivo-black-primary mb-2">
+                    {t(`${selectedGoal}.feature2Title`)}
+                  </h4>
+                  <p className="text-sm text-eatrivo-gray">
+                    {t(`${selectedGoal}.feature2Description`)}
+                  </p>
+                </div>
+              </div>
+              <p className="text-base text-eatrivo-gray text-center pt-4 border-t border-gray-200/50">
+                {t("bottomText")}
+              </p>
+            </div>
+          </motion.div>
+        )}
       </div>
     </section>
   );

@@ -44,9 +44,9 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isScrolled
-          ? "bg-white/90 backdrop-blur-xl border-b border-gray-200 py-3"
+        "fixed top-0 left-0 right-0 z-50 transition-[background-color,padding,border-color] duration-300",
+        isScrolled || isMobileMenuOpen
+          ? "bg-white border-b border-gray-200 py-3"
           : "bg-transparent py-5",
       )}
     >
@@ -84,7 +84,7 @@ export function Navbar() {
 
           <Link href={`/${locale}/signin`}>
             <Button className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-6">
-              {t("navbar.startFree")}
+              {t("navbar.signIn")}
             </Button>
           </Link>
           <Select

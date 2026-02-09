@@ -1,7 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ClipboardList, Sparkles, ShoppingBasket, ArrowRight } from "lucide-react";
+import {
+  ClipboardList,
+  Sparkles,
+  ShoppingBasket,
+  ArrowRight,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   useFadeInUp,
@@ -26,7 +31,15 @@ interface StepCardProps {
   isLast: boolean;
 }
 
-function StepCard({ number, title, subtitle, description, icon: Icon, index, isLast }: StepCardProps) {
+function StepCard({
+  number,
+  title,
+  subtitle,
+  description,
+  icon: Icon,
+  index,
+  isLast,
+}: StepCardProps) {
   const fadeInUp = useFadeInUp();
   const scaleIn = useScaleIn(index * 0.15);
 
@@ -49,7 +62,7 @@ function StepCard({ number, title, subtitle, description, icon: Icon, index, isL
       <motion.div
         whileHover={{ y: -6 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-        className="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-lg hover:border-eatrivo-purple/15 transition-all duration-300 h-full"
+        className="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-lg hover:border-eatrivo-purple/15 transition-[box-shadow,border-color] duration-300 h-full"
       >
         <div className="flex items-center gap-4 mb-5">
           <motion.div
@@ -79,9 +92,7 @@ function StepCard({ number, title, subtitle, description, icon: Icon, index, isL
           </span>
         </div>
 
-        <p className="text-eatrivo-gray leading-relaxed">
-          {description}
-        </p>
+        <p className="text-eatrivo-gray leading-relaxed">{description}</p>
       </motion.div>
     </motion.article>
   );

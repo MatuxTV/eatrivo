@@ -17,7 +17,7 @@
     "hero": {
       "badge": "AI + Nutričný špecialista",
       "titleLine1": "Zdravšie stravovanie",
-      "titleAccent": "bez komplikácií",
+      "titleAccent": "vo vašom telefóne",
       "description": "Žiadne dlhé konzultácie. Žiadne počítanie kalórií. Len jedálny plán a nákupný zoznam na mieru — za pár sekúnd.",
       "cta": "Začať zdarma",
       "trustText": "Registrácia cez Google • Žiadne heslo potrebné",
@@ -40,15 +40,33 @@
       "subtitle": "Eatrivo sa prispôsobí presne tvojim potrebám",
       "loseWeight": {
         "title": "Schudnúť",
-        "description": "Personalizovaný plán pre zdravé a udržateľné chudnutie"
+        "description": "Personalizovaný plán pre zdravé a udržateľné chudnutie",
+        "detailTitle": "Tvoja Cesta k Zdravému Chudnutiu",
+        "detailDescription": "Naša AI vytvorí personalizované jedálne plány s vyváženým kalorickým deficitom, ktoré ti zabezpečia zdravé a udržateľné chudnutie. Každý recept je navrhnutý tak, aby ťa udržal sýtym a pomohol ti dosiahnuť tvoje ciele.",
+        "feature1Title": "Inteligentné Riadenie Kalórií",
+        "feature1Description": "Automatický výpočet kalorického deficitu na základe tvojho metabolizmu a úrovne aktivity",
+        "feature2Title": "Sýtiace Jedlá",
+        "feature2Description": "Recepty s vysokým obsahom bielkovín, ktoré ťa udržia sýtym a zabránia strate svalovej hmoty počas chudnutia"
       },
       "maintain": {
         "title": "Udržať váhu",
-        "description": "Vyvážený jedálniček pre udržanie tvojej ideálnej váhy"
+        "description": "Vyvážený jedálniček pre udržanie tvojej ideálnej váhy",
+        "detailTitle": "Udržuj Svoju Ideálnu Rovnováhu",
+        "detailDescription": "Udržuj si stabilnú váhu s vyváženými jedálnymi plánmi navrhnutými tak, aby poskytovali presne tie kalórie a živiny, ktoré tvoje telo potrebuje. Ideálne pre tých, ktorí dosiahli svoju cieľovú váhu a chcú ju udržať bez námahy.",
+        "feature1Title": "Vyvážená Výživa",
+        "feature1Description": "Presné sledovanie kalórií a makroživín pre udržanie tvojej aktuálnej váhy bez počítania",
+        "feature2Title": "Flexibilné Možnosti Jedál",
+        "feature2Description": "Rozmanité recepty, ktoré sa hodia k tvojmu životnému štýlu a pritom ťa udržia na ideálnej váhe"
       },
       "gainMuscle": {
         "title": "Nabrať svaly",
-        "description": "Vysokokalorický plán zameraný na rast svalovej hmoty"
+        "description": "Vysokokalorický plán zameraný na rast svalovej hmoty",
+        "detailTitle": "Buduj Svaly Správnym Spôsobom",
+        "detailDescription": "Podpor rast svalov s jedálnymi plánmi s vysokým obsahom bielkovín a kalórií navrhnutými pre športovcov a fitness nadšencov. Naša AI zabezpečí, že dostaneš správne živiny v správny čas pre maximálne zisky.",
+        "feature1Title": "Zameranie na Vysoký Obsah Bielkovín",
+        "feature1Description": "Optimalizovaný príjem bielkovín počas celého dňa na podporu regenerácie a rastu svalov",
+        "feature2Title": "Strategický Kalorický Prebytok",
+        "feature2Description": "Starostlivo vypočítané extra kalórie na budovanie svalov pri minimalizácii prírastku tuku"
       },
       "bottomText": "Eatrivo sa prispôsobí presne tvojim cieľom"
     },
@@ -896,7 +914,7 @@
       "description": "Vyberte si plán, ktorý vám vyhovuje"
     },
     "title": "Vyberte si plán",
-    "subtitle": "Začnite zdarma a upgradujte keď budete pripravení",
+    "subtitle": "AI + Nutričný expert. Zjednodušujeme zdravé stravovanie bez komplikácií.",
     "perMonth": "/mesiac",
     "features": "Funkcie",
     "currentPlan": "Aktuálny plán",
@@ -908,22 +926,24 @@
     "managingSubscription": "Otváram portál...",
     "tiers": {
       "basic": {
-        "name": "Basic",
-        "description": "Začnite so základnými funkciami",
+        "name": "Zdarma",
+        "description": "Inšpirácia - Nápady na recepty pre začiatok",
         "features": [
-          "Základné plánovanie jedál",
-          "Obmedzené recepty",
-          "Nákupný zoznam"
+          "Šablóny receptov podľa vášho profilu",
+          "Základné nápady na jedlá",
+          "Návrhy podľa veku a aktivity",
+          "Jednoduché nákupné zoznamy"
         ]
       },
       "premium": {
         "name": "Premium",
-        "description": "Všetko čo potrebujete pre zdravé stravovanie",
+        "description": "Plnenie cieľov - Personalizované plány, ktoré fungujú",
         "features": [
-          "Neobmedzené AI jedálne plány",
-          "Personalizované sledovanie výživy",
-          "Pokročilé nákupné zoznamy",
-          "Prioritná podpora"
+          "AI personalizované jedálne plány",
+          "Expertom overené nákupné zoznamy",
+          "Týždenné výzvy a motivácia",
+          "Priamy prístup k nutričnému poradcovi",
+          "Hybridná AI + Expert kvalita"
         ]
       },
       "pro": {
@@ -993,6 +1013,19 @@
       "termsOfService": "Obchodné podmienky",
       "medicalDisclaimer": "Zdravotné vylúčenie"
     }
+  },
+  "offline": {
+    "title": "Ste offline",
+    "description": "Zdá sa, že nemáte pripojenie k internetu. Niektoré funkcie môžu byť obmedzené.",
+    "whatYouCanDo": "Čo môžete robiť offline:",
+    "features": {
+      "viewShoppingList": "Prezerať si váš najnovší nákupný zoznam",
+      "viewCachedData": "Zobraziť uložené dáta z predchádzajúcej návštevy",
+      "noNewPlans": "Generovať nové meal plány alebo nákupné zoznamy"
+    },
+    "tryAgain": "Skúsiť znova",
+    "goToDashboard": "Prejsť na Dashboard",
+    "autoRefresh": "Po obnovení pripojenia sa stránka automaticky aktualizuje"
   },
   "upgrade": {
     "title": "Získaj Premium prístup",

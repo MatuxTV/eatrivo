@@ -381,7 +381,7 @@ export default function DashboardPage() {
   }, [mealPlanData, isMounted, selectedDayIndex]);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 flex">
+    <div className="min-h-screen bg-eatrivo-white-primary flex">
       <WelcomeDialog
         open={showWelcomeDialog}
         onOpenChange={handleCloseDialog}

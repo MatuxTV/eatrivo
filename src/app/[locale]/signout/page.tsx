@@ -26,7 +26,7 @@ export default async function SignOutPage({ params }: PageProps) {
   const t = await getTranslations({ locale, namespace: "auth" });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 text-primary-text">
+    <div className="min-h-screen flex items-center justify-center bg-eatrivo-white-primary px-4 text-primary-text">
       <div className="w-full max-w-md">
         <Card className=" bg-eatrivo-white-primary text-eatrivo-black-primary/90">
           <CardHeader className="text-center">

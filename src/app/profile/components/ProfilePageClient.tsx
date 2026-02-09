@@ -69,7 +69,7 @@ export default function ProfilePageClient() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-eatrivo-white-primary">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
         <div className="max-w-5xl mx-auto px-6 py-4">

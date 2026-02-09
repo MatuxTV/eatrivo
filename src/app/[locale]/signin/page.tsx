@@ -1,5 +1,6 @@
 import { auth, signIn } from "../../../../auth";
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
@@ -41,13 +42,20 @@ export default async function SignInPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-eatrivo-white-primary px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {tCommon("appName")}
-          </h1>
-          <p className="text-gray-600 mt-2">{t("signIn.tagline")}</p>
+          <Link href={`/${locale}`} className="inline-block">
+            <div className="relative h-12 w-48 mx-auto">
+              <Image
+                src="/logo/LOGO_ROW.png"
+                alt="EatRivo Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          </Link>
         </div>
 
         <Card className=" bg-eatrivo-white-primary">

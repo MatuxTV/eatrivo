@@ -152,6 +152,7 @@ export default function PersonalInfoSection({
               {...register("fullName")}
               placeholder={t("personal.fields.fullName.placeholder")}
               defaultValue={profileData?.fullName || ""}
+              autoComplete="name"
               className={errors.fullName ? "border-red-500" : ""}
             />
             {errors.fullName && (
@@ -173,6 +174,7 @@ export default function PersonalInfoSection({
               type="date"
               {...register("dateOfBirth")}
               defaultValue={profileData?.dateOfBirth || ""}
+              autoComplete="bday"
               className={errors.dateOfBirth ? "border-red-500" : ""}
             />
             {errors.dateOfBirth && (
@@ -196,6 +198,7 @@ export default function PersonalInfoSection({
               type="email"
               value={profileData?.email || ""}
               disabled
+              autoComplete="email"
               className="bg-gray-50 cursor-not-allowed"
             />
             <p className="text-xs text-gray-500">

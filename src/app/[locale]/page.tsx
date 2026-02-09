@@ -12,6 +12,7 @@ import { FAQ } from "@/components/landing/FAQ";
 import { DownloadCTA } from "@/components/landing/DownloadCTA";
 import { Footer } from "@/components/landing/Footer";
 import { isLocale, type Locale } from "@/i18n/routing";
+import { Pricing } from "@/components/landing/Pricing";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -30,14 +31,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white selection:bg-eatrivo-purple selection:text-white">
+    <div className="min-h-screen bg-eatrivo-white-primary selection:bg-eatrivo-purple selection:text-white">
       <Navbar />
       <main>
         <HeroSection />
         <GoalsSection />
         <HowItWorksSection />
         <AppShowcase />
-        <Testimonials />
+        <Pricing />
         <PainSolution />
         <FAQ />
         <DownloadCTA />

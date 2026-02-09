@@ -64,7 +64,7 @@ export function DownloadCTA({ className = "" }: SectionProps) {
             <Link href={`/${locale}/signin`}>
               <Button
                 size="lg"
-                className="bg-white text-eatrivo-purple hover:bg-white/95 rounded-full px-10 h-14 sm:h-16 text-base sm:text-lg font-semibold shadow-xl hover:shadow-2xl transition-all focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-eatrivo-purple"
+                className="bg-white text-eatrivo-purple hover:bg-white/95 rounded-full px-10 h-14 sm:h-16 text-base sm:text-lg font-semibold shadow-xl hover:shadow-2xl transition-shadow focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-eatrivo-purple"
               >
                 {tCommon("startFree")}
                 <ArrowRight className="ml-2 w-5 h-5" aria-hidden="true" />

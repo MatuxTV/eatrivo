@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChefHat, ShoppingCart, Cpu, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -10,7 +11,7 @@ import { colorClassMap } from "@/types/landing";
 const features: readonly AppShowcaseFeature[] = [
   { id: "mealPlans", icon: ChefHat, color: "purple" },
   { id: "shoppingLists", icon: ShoppingCart, color: "pink" },
-  { id: "aiExpert", icon: Cpu, color: "blue" },
+  // { id: "aiExpert", icon: Cpu, color: "blue" },
 ] as const;
 
 interface FeatureBlockProps {
@@ -29,27 +30,29 @@ function PhoneMockup({ feature }: { feature: AppShowcaseFeature }) {
         {/* Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-4 bg-gray-900 rounded-b-xl z-10" />
 
-        {/* Screen - add your screenshots here */}
+        {/* Screen */}
         <div className="relative bg-white rounded-[2.25rem] overflow-hidden">
           <div className="aspect-[9/19.5] relative bg-gradient-to-b from-gray-50 to-gray-100">
-            {/* TODO: Replace with actual app screenshots */}
-            {/* Examples:
-              - mealPlans: <Image src="/screenshots/meal-plans.png" alt="Meal Plans" fill className="object-cover" />
-              - shoppingLists: <Image src="/screenshots/shopping-lists.png" alt="Shopping Lists" fill className="object-cover" />
-              - aiExpert: <Image src="/screenshots/ai-expert.png" alt="AI Expert" fill className="object-cover" />
-            */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center px-6">
-                <div className={`w-12 h-12 mx-auto mb-3 rounded-2xl ${colors.bg} flex items-center justify-center`}>
-                  <feature.icon className={`w-6 h-6 ${colors.text}`} />
-                </div>
-                <p className="text-gray-400 text-xs">
-                  Screenshot placeholder
-                  <br />
-                  <span className="text-[10px]">{feature.id}.png</span>
-                </p>
-              </div>
-            </div>
+            {feature.id === "mealPlans" && (
+              <Image
+                src="/images/screenshots/dashboard.PNG"
+                alt="Meal Plans Dashboard"
+                fill
+                className="object-cover object-top"
+                sizes="240px"
+                priority
+              />
+            )}
+            {feature.id === "shoppingLists" && (
+              <Image
+                src="/images/screenshots/shopping-list.PNG"
+                alt="Shopping Lists"
+                fill
+                className="object-cover object-top"
+                sizes="240px"
+                priority
+              />
+            )}
           </div>
         </div>
       </div>
