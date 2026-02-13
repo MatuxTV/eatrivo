@@ -7,6 +7,7 @@ import { sendFeedbackNotification } from "@/lib/emailService";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import { unauthorizedError } from "@/lib/safeError";
 import { NextResponse } from "next/server";
+import { getUserLanguage } from "@/lib/user-utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -64,6 +65,9 @@ export async function POST(request: NextRequest) {
       where: eq(userProfiles.userId, session.user.id as string),
     });
 
+    // Get user's language preference
+    const userLocale = await getUserLanguage(session.user.email);
+
     // Insert feedback into database
     const [newFeedback] = await db
       .insert(feedback)
@@ -86,7 +90,7 @@ export async function POST(request: NextRequest) {
       title,
       description,
       feedbackId: newFeedback.id,
-    }).catch((error) => {
+    }, userLocale).catch((error) => {
       console.error("Failed to send feedback notification email:", error);
     });
 

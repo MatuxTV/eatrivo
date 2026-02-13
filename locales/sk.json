@@ -4,7 +4,7 @@
     "startFree": "Začať zdarma"
   },
   "landing": {
-    "metaTitle": "EatRivo - AI Asistent pre Zdravé Stravovanie",
+    "metaTitle": "Eatrivo - Asistent pre Zdravé Stravovanie",
     "metaDescription": "Vytvorte si personalizovaný jedálny plán pomocou AI. Nahrajte nákupný lístok a získajte recepty na mieru.",
     "navbar": {
       "howItWorks": "Ako to funguje",
@@ -18,16 +18,19 @@
       "badge": "AI + Nutričný špecialista",
       "titleLine1": "Zdravšie stravovanie",
       "titleAccent": "vo vašom telefóne",
-      "description": "Žiadne dlhé konzultácie. Žiadne počítanie kalórií. Len jedálny plán a nákupný zoznam na mieru — za pár sekúnd.",
-      "cta": "Začať zdarma",
-      "trustText": "Registrácia cez Google • Žiadne heslo potrebné",
+      "description": "Prestaň hádať čo jesť. Získaj personalizovaný jedálny plán a nákupný zoznam — navrhnutý pre tvoje ciele, nie pre niekoho iného.",
+      "cta": "Začať zdarma — trvá 2 min",
+      "trustText": "Registrácia cez Google • Bez kreditnej karty, bez hesla",
       "sampleMealLabel": "Dnešný obed",
       "sampleMealTitle": "Grilovaný losos",
       "sampleCalories": "450 kcal",
       "sampleProtein": "35g proteín",
       "sampleShoppingTitle": "Nákupný zoznam",
-      "valueProp1": "Personalizované plány",
-      "valueProp2": "Nákupný zoznam v mobile"
+      "valueProp1": "Personalizované pre tvoje ciele",
+      "valueProp2": "Nákupný zoznam vždy po ruke",
+      "socialProofUsers": "500+ ľudí je na zdravšej strave",
+      "socialProofPlans": "10 000+ vygenerovaných plánov",
+      "socialProofRating": "Hodnotenie 4.8"
     },
     "socialProof": {
       "users": { "value": "500+", "label": "Spokojných používateľov" },
@@ -72,22 +75,26 @@
     },
     "howItWorks": {
       "title": "Ako to funguje",
-      "subtitle": "Tri jednoduché kroky k zdravšiemu stravovaniu",
+      "subtitle": "Od nuly k plnému týždennému plánu za menej ako 5 minút",
+      "totalTime": "Menej ako 5 minút celkovo",
       "steps": {
         "registration": {
-          "title": "Vyplň profil",
+          "title": "Povedz nám o sebe",
           "subtitle": "2 min",
-          "description": "Vek, váha, cieľ a tvoje preferencie. Žiadne zdĺhavé formuláre."
+          "badge": "2 min",
+          "description": "Vek, váha, cieľ a tvoje preferencie. Rýchlo, jednoducho a rozhodne to stojí za to."
         },
         "plan": {
-          "title": "AI vytvorí plán",
+          "title": "Rivo vytvorí tvoj plán",
           "subtitle": "okamžite",
-          "description": "Personalizovaný jedálny plán na mieru práve pre teba."
+          "badge": "Okamžite",
+          "description": "Personalizovaný týždenný jedálny plán — navrhnutý pre tvoje telo, tvoje ciele, tvoj vkus."
         },
         "done": {
-          "title": "Nakúp a var",
+          "title": "Nakúp, var, cíť sa skvele",
           "subtitle": "hotovo",
-          "description": "Nákupný zoznam máš v mobile. Len nakúp a jedz."
+          "badge": "Hotovo",
+          "description": "Nákupný zoznam máš v mobile. Len ho vezmi so sebou — a si o krok vpred."
         }
       }
     },
@@ -116,6 +123,33 @@
         "bullet3": "Neustále sa učíme a zlepšujeme"
       }
     },
+    "meetRivo": {
+      "badge": "Zoznámte sa s našou AI asistentkou",
+      "title": "Poznaj Riva",
+      "subtitle": "Tvoj osobný šéfkuchár, ktorý Ti rozumie",
+      "description": "Rivo je to tvoj kamarát do výživy, ktorý sa učí tvoju chuť, rešpektuje tvoje ciele a vytvára jedálne plány, ktoré naozaj fungujú pre tvoj život. Žiadne všeobecné rady, žiadne nudné jedlá. Len jedlo, ktoré budeš chcieť jesť.",
+      "mascotAlt": "Rivo — tvoj asistent pre plánovanie jedla",
+      "speech1": "Ahoj! Naplánujme tvoje jedlá",
+      "speech2": "Viem čo ti chutí",
+      "speech3": "Tvoje ciele sú pre mňa prioritou",
+      "speech4": "Som pripravený vytvoriť pre teba personalizovaný plán",
+      "statValue": "1000+",
+      "statLabel": "jedál naplánovaných tento týždeň",
+      "features": {
+        "mealPlans": {
+          "title": "Jedálne plány na mieru",
+          "description": "Automaticky generované plány zohľadňujú tvoj denný režim, ciele a chuťové preferencie."
+        },
+        "shoppingLists": {
+          "title": "Inteligentné nákupné zoznamy",
+          "description": "Automaticky generované zoznamy, ktoré šetria čas a vyberú len to čo naozaj potrebuješ."
+        },
+        "personalized": {
+          "title": "Naozaj personalizované",
+          "description": "Všetko je prispôsobené tvojim cieľom, nutričným potrebám a preferenciám. Žiadne kompromisy, len to, čo je pre teba najlepšie."
+        }
+      }
+    },
     "testimonials": {
       "title": "Čo hovoria naši používatelia",
       "subtitle": "Skutočné príbehy skutočných ľudí",
@@ -139,7 +173,9 @@
     },
     "painSolution": {
       "title": "Poznáš to?",
-      "subtitle": "Tieto problémy riešime za teba",
+      "subtitle": "Problém nie si ty — je to starý spôsob. Tu je riešenie.",
+      "beforeLabel": "Pred Eatrivo",
+      "afterLabel": "S Eatrivom",
       "items": {
         "cooking": {
           "problem": "Neviem čo variť každý deň",
@@ -164,7 +200,7 @@
       "items": {
         "free": {
           "question": "Je Eatrivo zadarmo?",
-          "answer": "Áno! Základná verzia je úplne zadarmo. Môžeš ju používať na inšpiráciu a jednoduchý prehľad. Pre personalizované plány a nákupné zoznamy je tu Premium od 9,99€/mesiac."
+          "answer": "Áno! Základná verzia je úplne zadarmo. Môžeš ju používať na inšpiráciu a jednoduchý prehľad. Pre personalizované plány a nákupné zoznamy je tu Premium od 4,99€/mesiac."
         },
         "time": {
           "question": "Ako dlho trvá získať jedálny plán?",
@@ -185,10 +221,10 @@
       }
     },
     "downloadCta": {
-      "badge": "Začni za pár minút",
-      "title": "Zdravšie stravovanie začína teraz",
-      "subtitle": "Žiadne záväzky. Žiadne skryté poplatky. Zrušiť môžeš kedykoľvek.",
-      "trustText": "Registrácia cez Google • Žiadne heslo potrebné"
+      "badge": "Prvý plán je zadarmo",
+      "title": "Verzia teba, ktorá stravuje zdravo, začína tu",
+      "subtitle": "Žiadne záväzky. Žiadne skryté poplatky. Zrušiť môžeš kedykoľvek. Len lepšie jedlo.",
+      "trustText": "Registrácia cez Google za pár sekúnd • Bez kreditnej karty"
     },
     "features": {
       "title": "Funkcie, ktoré šetria čas",
@@ -913,20 +949,22 @@
       "title": "Cenník",
       "description": "Vyberte si plán, ktorý vám vyhovuje"
     },
-    "title": "Vyberte si plán",
-    "subtitle": "AI + Nutričný expert. Zjednodušujeme zdravé stravovanie bez komplikácií.",
+    "title": "Investuj do seba",
+    "subtitle": "Menej ako káva týždenne za plán, ktorý naozaj funguje.",
     "perMonth": "/mesiac",
     "features": "Funkcie",
     "currentPlan": "Aktuálny plán",
-    "upgrade": "Upgradovať",
-    "getStarted": "Začať",
-    "popular": "Najobľúbenejší",
-    "signInToUpgrade": "Prihláste sa pre upgrade",
+    "upgrade": "Získať Premium",
+    "getStarted": "Začať zadarmo",
+    "popular": "Najlepšia hodnota",
+    "signInToUpgrade": "Prihláste sa a odomknite plán",
+    "valueAnchor": "Menej ako káva týždenne",
+    "guarantee": "30-dňová garancia spokojnosti",
     "manageSubscription": "Spravovať predplatné",
     "managingSubscription": "Otváram portál...",
     "tiers": {
       "basic": {
-        "name": "Zdarma",
+        "name": "Basic",
         "description": "Inšpirácia - Nápady na recepty pre začiatok",
         "features": [
           "Šablóny receptov podľa vášho profilu",
@@ -939,27 +977,11 @@
         "name": "Premium",
         "description": "Plnenie cieľov - Personalizované plány, ktoré fungujú",
         "features": [
-          "AI personalizované jedálne plány",
-          "Expertom overené nákupné zoznamy",
-          "Týždenné výzvy a motivácia",
-          "Priamy prístup k nutričnému poradcovi",
-          "Hybridná AI + Expert kvalita"
+          "Personalizované nákupné zoznamy vytvorené Rivom priamo pre vás",
+          "Jedálničky vytvorené z jedál overených našimi odborníkmi a prispôsobené vašim preferenciám",
+          "Týždenné výzvy",
+          "Pokročilé sledovanie pokroku"
         ]
-      },
-      "pro": {
-        "name": "Pro",
-        "description": "Pokročilé funkcie pre vážne zdravotné ciele",
-        "features": [
-          "Všetko z Premium",
-          "Vlastný diétny koučing",
-          "Pokročilá analytika",
-          "Rodinné plánovanie jedál",
-          "Import a export receptov"
-        ]
-      },
-      "trainer": {
-        "name": "Tréner",
-        "description": "Pre certifikovaných odborníkov na výživu"
       }
     },
     "discountCode": {

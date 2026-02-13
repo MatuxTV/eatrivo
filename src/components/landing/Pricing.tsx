@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles, ShieldCheck, Coffee } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { getLocaleFromPathname } from "@/i18n/routing";
@@ -11,14 +11,14 @@ import type { SectionProps } from "@/types/landing";
 import { Button } from "@/components/ui/button";
 
 interface PricingTier {
-  tier: "basic" | "premium"; // | "pro";
+  tier: "basic" | "premium";
   price: string | number;
   isPopular?: boolean;
 }
 
 const pricingTiers: readonly PricingTier[] = [
-  { tier: "basic", price: "Free" },
-  { tier: "premium", price: 5, isPopular: true },
+  { tier: "basic", price: 0 },
+  { tier: "premium", price: 4.99, isPopular: true },
 ] as const;
 
 interface PricingCardProps {
@@ -46,16 +46,12 @@ function PricingCard({
   const tierConfig = {
     basic: {
       gradient: "from-slate-500 to-slate-600",
-      buttonVariant: "outline" as const,
+      buttonVariant: "default" as const,
     },
     premium: {
       gradient: "from-emerald-500 to-teal-600",
       buttonVariant: "default" as const,
-    }
-    // pro: {
-    //   gradient: "from-violet-500 to-purple-600",
-    //   buttonVariant: "default" as const,
-    // },
+    },
   };
 
   const config = tierConfig[tier.tier];
@@ -67,13 +63,18 @@ function PricingCard({
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className={`relative flex flex-col rounded-2xl border bg-white p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-300 ${
         isPopular
-          ? "border-eatrivo-purple ring-2 ring-eatrivo-purple/20 scale-105"
+          // Fix: `scale-105` causes the card to overflow the grid container on
+          // single-column mobile layouts. On mobile we use `mt-4` to give extra
+          // breathing room around the "Popular" badge instead of scaling the
+          // card. The scale is only restored from `md:` where both cards sit
+          // side-by-side and there is space for the overflow.
+          ? "border-eatrivo-purple ring-2 ring-eatrivo-purple/20 mt-4 md:scale-105"
           : "border-gray-200"
       }`}
     >
       {isPopular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="flex items-center gap-1 rounded-full bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink px-4 py-1 text-xs font-semibold text-white">
+          <span className="flex items-center gap-1 rounded-full bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink px-4 py-1 text-xs font-semibold text-white whitespace-nowrap">
             <Sparkles className="w-3 h-3" aria-hidden="true" />
             {t("popular")}
           </span>
@@ -89,7 +90,7 @@ function PricingCard({
         <p className="mt-2 text-sm text-eatrivo-gray">{description}</p>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-2">
         <div className="flex items-baseline gap-1">
           {typeof price === "number" ? (
             <>
@@ -104,9 +105,23 @@ function PricingCard({
             </span>
           )}
         </div>
+        {isPopular && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center gap-1.5 mt-2"
+          >
+            <Coffee className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
+            <span className="text-xs text-amber-600 font-medium">
+              {t("valueAnchor")}
+            </span>
+          </motion.div>
+        )}
       </div>
 
-      <ul className="mb-8 flex-1 space-y-3">
+      <ul className="mb-8 mt-6 flex-1 space-y-3">
         {features.map((feature, index) => (
           <li key={index} className="flex items-start gap-3">
             <Check
@@ -120,20 +135,41 @@ function PricingCard({
         ))}
       </ul>
 
-      <Button
-        variant={config.buttonVariant}
-        size="lg"
-        className={`w-full ${
-          isPopular
-            ? "bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink hover:opacity-90"
-            : "bg-white border-gray-300"
-        }`}
-        asChild
-      >
-        <Link href={tier.tier === "basic" ? `/${locale}/signin` : `/${locale}/pricing`}>
-          {tier.tier === "basic" ? t("getStarted") : t("upgrade")}
-        </Link>
-      </Button>
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        <Button
+          variant={config.buttonVariant}
+          size="lg"
+          className={`w-full transition-all duration-200 ${
+            isPopular
+              ? "bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink hover:opacity-90 shadow-md shadow-eatrivo-purple/20"
+              : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+          }`}
+          asChild
+        >
+          <Link
+            href={
+              tier.tier === "basic"
+                ? `/${locale}/signin`
+                : `/${locale}/pricing`
+            }
+          >
+            {tier.tier === "basic" ? t("getStarted") : t("upgrade")}
+          </Link>
+        </Button>
+      </motion.div>
+
+      {isPopular && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.5 }}
+          className="flex items-center justify-center gap-1.5 mt-3"
+        >
+          <ShieldCheck className="w-3.5 h-3.5 text-eatrivo-green" aria-hidden="true" />
+          <span className="text-xs text-eatrivo-gray">{t("guarantee")}</span>
+        </motion.div>
+      )}
     </motion.article>
   );
 }
@@ -175,7 +211,11 @@ export function Pricing({ className = "" }: SectionProps) {
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={staggerContainer}
-          className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto"
+          // Fix: single-column on mobile to avoid cramped side-by-side cards on
+          // small phones. Two columns from md+ where there is enough space.
+          // Added `items-start` so the taller popular card (with mt-4 top offset)
+          // does not force the basic card to stretch vertically.
+          className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto items-start"
         >
           {pricingTiers.map((tier) => {
             const name = t(`tiers.${tier.tier}.name`);
@@ -204,14 +244,11 @@ export function Pricing({ className = "" }: SectionProps) {
           variants={titleFadeIn}
           className="mt-12 text-center space-y-3"
         >
-          <p className="text-sm text-eatrivo-gray">
-            {t("signInToUpgrade")}
-          </p>
-          <p className="text-xs text-eatrivo-gray italic max-w-2xl mx-auto">
-            💡 AI does the calculations. Experts guarantee the quality.
-          </p>
+          <p className="text-sm text-eatrivo-gray">{t("signInToUpgrade")}</p>
         </motion.div>
       </div>
     </section>
   );
 }
+
+export default Pricing;

@@ -21,7 +21,7 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
 export async function sendWelcomeEmail(
   userEmail: string,
   props: Omit<WelcomeEmailProps, "translations">,
-  locale: string = "sk"
+  locale: string = "en"
 ): Promise<EmailResponse> {
   try {
     const messages = await getMessages({ locale });
@@ -48,7 +48,7 @@ export async function sendWelcomeEmail(
       recipientEmail: userEmail,
       recipientName: props.userName,
       additionalInfo: "Nový používateľ sa zaregistroval",
-    }).catch(err => console.error("Failed to send admin notification:", err));
+    }, locale).catch(err => console.error("Failed to send admin notification:", err));
 
     return {
       success: true,
@@ -69,7 +69,7 @@ export async function sendWelcomeEmail(
 export async function sendShoppingListNotification(
   clientEmail: string,
   props: Omit<ShoppingListNotificationEmailProps, "translations">,
-  locale: string = "sk"
+  locale: string = "en"
 ): Promise<EmailResponse> {
   try {
     const messages = await getMessages({ locale });
@@ -114,7 +114,7 @@ export async function sendShoppingListNotification(
  */
 export async function sendAdminNotification(
   props: Omit<AdminNotificationEmailProps, "translations">,
-  locale: string = "sk"
+  locale: string = "en"
 ): Promise<EmailResponse> {
   try {
     const messages = await getMessages({ locale });
@@ -154,7 +154,7 @@ export async function sendAdminNotification(
  */
 export async function sendFeedbackNotification(
   props: Omit<FeedbackNotificationEmailProps, "translations">,
-  locale: string = "sk"
+  locale: string = "en"
 ): Promise<EmailResponse> {
   try {
     const messages = await getMessages({ locale });

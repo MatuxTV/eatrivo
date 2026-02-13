@@ -8,6 +8,7 @@ import { UpdateNotificationEmail } from "@/components/email-templates/UpdateNoti
 import { logger } from "@/lib/logger";
 import { getMessages } from "next-intl/server";
 import type { EmailTranslations } from "@/types/email.types";
+import { getUserLanguage } from "@/lib/user-utils";
 
 interface UpdateItem {
   title: string;
@@ -44,12 +45,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Fetch translations (default to SK)
-    const messages = await getMessages({ locale: "sk" });
-    const translations = (messages.emails as unknown) as EmailTranslations;
-
     // If testEmail is provided, send only to that email
     if (testEmail) {
+      // Get test user's language preference
+      const testUserLocale = await getUserLanguage(testEmail);
+      const messages = await getMessages({ locale: testUserLocale });
+      const translations = (messages.emails as unknown) as EmailTranslations;
+
       const { error } = await resend.emails.send({
         from: DEFAULT_FROM_EMAIL,
         to: testEmail,
@@ -96,7 +98,12 @@ export async function POST(request: Request) {
 
       // Send emails sequentially with delay to respect rate limits (2 req/sec)
       for (const user of usersWithProfiles) {
-        try {
+        tr// Get each user's language preference
+          const userLocale = await getUserLanguage(user.email);
+          const messages = await getMessages({ locale: userLocale });
+          const translations = (messages.emails as unknown) as EmailTranslations;
+
+          y {
           const { error } = await resend.emails.send({
             from: DEFAULT_FROM_EMAIL,
             to: user.email,

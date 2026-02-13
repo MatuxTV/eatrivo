@@ -5,7 +5,9 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
+import { SK as SkFlag } from "country-flag-icons/react/3x2";
+import { GB as GbFlag } from "country-flag-icons/react/3x2";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -76,17 +78,20 @@ export function Navbar() {
             {t("navbar.features")}
           </Link>
           <Link
-            href="#goals"
+            href="#pricing"
             className="text-sm font-medium text-gray-600 hover:text-eatrivo-purple transition-colors"
           >
             {t("navbar.pricing")}
           </Link>
 
+          {/* CTA Button */}
           <Link href={`/${locale}/signin`}>
-            <Button className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-6">
+            <Button className="bg-eatrivo-purple hover:scale-[1.1] active:scale-[0.98] text-white font-semibold rounded-full px-6 py-2.5 h-auto inline-flex items-center pointer-coarse:cursor-pointer gap-2 transition-all duration-200">
+              <Sparkles className="w-4 h-4" aria-hidden="true" />
               {t("navbar.signIn")}
             </Button>
           </Link>
+
           <Select
             value={locale}
             onValueChange={(value) => {
@@ -108,8 +113,18 @@ export function Navbar() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="sk">SK</SelectItem>
-              <SelectItem value="en">EN</SelectItem>
+              <SelectItem value="sk">
+                <div className="flex items-center gap-2">
+                  <SkFlag className="w-5 h-4" />
+                  <span>SK</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="en">
+                <div className="flex items-center gap-2">
+                  <GbFlag className="w-5 h-4" />
+                  <span>EN</span>
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </nav>
@@ -118,6 +133,7 @@ export function Navbar() {
         <button
           className="md:hidden p-2 text-gray-600"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         >
           {isMobileMenuOpen ? <X /> : <Menu />}
         </button>
@@ -159,7 +175,8 @@ export function Navbar() {
                   href={`/${locale}/signin`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Button className="w-full justify-center bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full">
+                  <Button className="w-full justify-center bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink hover:shadow-lg text-white font-semibold rounded-full py-3 h-auto gap-2">
+                    <Sparkles className="w-4 h-4" aria-hidden="true" />
                     {t("navbar.startFree")}
                   </Button>
                 </Link>

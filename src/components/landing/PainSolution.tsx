@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { X, Check, ArrowRight } from "lucide-react";
+import { X, Check, ArrowRight, ArrowDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useFadeInUp } from "@/hooks/useAnimations";
 import type { SectionProps } from "@/types/landing";
@@ -17,7 +17,9 @@ function PainCard({ text }: { text: string }) {
       >
         <X className="w-5 h-5 text-eatrivo-red" />
       </div>
-      <p className="text-eatrivo-black-primary font-medium text-sm sm:text-base">{text}</p>
+      <p className="text-eatrivo-black-primary font-medium text-sm sm:text-base">
+        {text}
+      </p>
     </div>
   );
 }
@@ -31,7 +33,9 @@ function SolutionCard({ text }: { text: string }) {
       >
         <Check className="w-5 h-5 text-eatrivo-green" />
       </div>
-      <p className="text-eatrivo-black-primary font-medium text-sm sm:text-base">{text}</p>
+      <p className="text-eatrivo-black-primary font-medium text-sm sm:text-base">
+        {text}
+      </p>
     </div>
   );
 }
@@ -55,14 +59,45 @@ function ComparisonRow({
       viewport={{ once: true }}
       whileHover={{ scale: 1.01 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="grid md:grid-cols-[1fr_auto_1fr] gap-3 md:gap-4 items-center group cursor-default"
+      className="group cursor-default"
       role="listitem"
     >
-      <PainCard text={problem} />
-      <div className="hidden md:flex items-center justify-center" aria-hidden="true">
-        <ArrowRight className="w-5 h-5 text-eatrivo-purple/40 group-hover:text-eatrivo-purple transition-colors" />
+      {/*
+        Mobile layout: vertical stack (pain → arrow → solution) so users can
+        clearly read the before/after relationship in a single-column flow.
+        Desktop layout: horizontal three-column grid with the horizontal arrow.
+
+        Fix: the original code hid the arrow entirely on mobile (`hidden md:flex`),
+        leaving no visual transition between the pain and solution cards. On mobile
+        we now render a small downward arrow between the two cards so the causal
+        flow is always communicated regardless of screen width.
+      */}
+      <div className="grid md:grid-cols-[1fr_auto_1fr] gap-3 md:gap-4 items-center">
+        <PainCard text={problem} />
+
+        {/* Desktop: horizontal arrow */}
+        <div
+          className="hidden md:flex items-center justify-center"
+          aria-hidden="true"
+        >
+          <motion.div
+            whileHover={{ x: 4 }}
+            transition={{ type: "spring", stiffness: 600, damping: 20 }}
+          >
+            <ArrowRight className="w-5 h-5 text-eatrivo-purple/40 group-hover:text-eatrivo-purple transition-colors duration-200" />
+          </motion.div>
+        </div>
+
+        {/* Mobile: downward arrow — visible only below md */}
+        <div
+          className="flex md:hidden items-center justify-center py-0.5"
+          aria-hidden="true"
+        >
+          <ArrowDown className="w-4 h-4 text-eatrivo-purple/40" />
+        </div>
+
+        <SolutionCard text={solution} />
       </div>
-      <SolutionCard text={solution} />
     </motion.div>
   );
 }
@@ -94,6 +129,30 @@ export function PainSolution({ className = "" }: SectionProps) {
             {t("subtitle")}
           </p>
         </motion.header>
+
+        {/* Before / After column headers — desktop only */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          className="hidden md:grid md:grid-cols-[1fr_auto_1fr] gap-4 max-w-4xl mx-auto mb-4 px-1"
+          aria-hidden="true"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-eatrivo-red/50" />
+            <span className="text-xs font-semibold text-eatrivo-red/70 uppercase tracking-widest">
+              {t("beforeLabel")}
+            </span>
+          </div>
+          <div className="w-5" />
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-eatrivo-green/60" />
+            <span className="text-xs font-semibold text-eatrivo-green/80 uppercase tracking-widest">
+              {t("afterLabel")}
+            </span>
+          </div>
+        </motion.div>
 
         <div
           className="max-w-4xl mx-auto space-y-3 md:space-y-4"

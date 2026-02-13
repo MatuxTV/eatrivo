@@ -5,6 +5,7 @@ import {
   sendWelcomeEmail,
   sendShoppingListNotification,
 } from "@/lib/emailService";
+import { getUserLanguage } from "@/lib/user-utils";
 
 /**
  * Email sending endpoint - PROTECTED
@@ -47,6 +48,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get recipient's language preference
+    const userLocale = await getUserLanguage(to);
+
     let result;
 
     switch (type) {
@@ -60,7 +64,7 @@ export async function POST(request: NextRequest) {
         result = await sendWelcomeEmail(to, {
           userName: props.userName,
           userEmail: to,
-        });
+        }, userLocale);
         break;
 
       case "shopping-list":
@@ -83,7 +87,7 @@ export async function POST(request: NextRequest) {
           shoppingListName: props.shoppingListName,
           shoppingListDate: props.shoppingListDate,
           dashboardUrl: props.dashboardUrl,
-        });
+        }, userLocale);
         break;
 
       default:

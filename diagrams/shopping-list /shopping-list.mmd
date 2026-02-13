@@ -1,0 +1,140 @@
+graph TD
+    %% --- ŠTÝLY ---
+    classDef user fill:#1F2937,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef math fill:#3B82F6,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef ai fill:#7B4FD6,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef logic fill:#EC4899,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef db fill:#10B981,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef error fill:#EF4444,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef stream fill:#F59E0B,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef progress fill:#8B5CF6,stroke:#fff,stroke-width:3px,color:#fff,stroke-dasharray: 5 5;
+
+    %% --- 0. INIT & STREAMING SETUP ---
+    START((Start)) --> INIT_STREAM[📡 Initialize SSE Stream]
+    class INIT_STREAM stream
+    
+    INIT_STREAM -- WebSocket/SSE Connection --> PROGRESS_TRACKER[📊 Progress Tracker]
+    class PROGRESS_TRACKER progress
+    
+    %% --- 1. VSTUPY & PROFIL ---
+    INIT_STREAM --> FETCH_USER[📥 Načítať User Profil]
+    class FETCH_USER user
+    
+    FETCH_USER -- Update: 10% --> PROGRESS_TRACKER
+    PROGRESS_TRACKER -- "📥 Načítavam váš profil..." --> FRONTEND_UI[🖥️ Frontend UI]
+    class FRONTEND_UI stream
+    
+    FETCH_USER -- Váha, Výška, Vek, Aktivita, Cieľ --> MACRO_CALC[🧮 Macro Calculator Node]
+    class MACRO_CALC math
+    
+    MACRO_CALC -- Update: 25% --> PROGRESS_TRACKER
+    PROGRESS_TRACKER -- "🧮 Počítam makrá pre váš cieľ..." --> FRONTEND_UI
+
+    %% --- 2. MATEMATIKA ---
+    MACRO_CALC -- Výpočet BMR & TDEE --> TARGETS[🎯 Weekly Targets]
+    class TARGETS math
+    
+    %% Poznámka: Targets = { calories: 14000, protein: 1050g }
+
+    
+    FETCH_HISTORY -- Update: 35% --> PROGRESS_TRACKER
+    PROGRESS_TRACKER -- "📂 Analyzujem predchádzajúce nákupy..." --> FRONTEND_UI
+
+    FETCH_HISTORY -- Last Shopping List --> INVENTORY_SCAN[🔍 Inventory Scanner Node]
+    class INVENTORY_SCAN logic
+    
+    INVENTORY_SCAN -- Update: 40% --> PROGRESS_TRACKER
+    PROGRESS_TRACKER -- "🔍 Skenujem vašu virtuálnu špajzu..." --> FRONTEND_UI
+
+    FETCH_HISTORY -- Last Shopping List --> INVENTORY_SCAN[🔍 Inventory Scanner Node]
+    class INVENTORY_SCAN logic
+
+    %% Logika Inventory Scannera
+    INVENTORY_SCAN -- Identifikácia trvanlivých potravín --> VIRTUAL_PANTRY[📦 Virtual Pantry]
+    class VIRTUAL_PANTRY db
+    
+    %% Poznámka: Virtual Pantry = { Ryža: 500g, Olej: 200ml, Soľ: OK }
+
+    PROMPT_BUILDER -- Update: 55% --> PROGRESS_TRACKER
+    PROGRESS_TRACKER -- "📝 Pripravujem kontext pre AI..." --> FRONTEND_UI
+    
+    %% Pridanie statických pravidiel
+    subgraph "Static Context"
+        STAPLES[Basic Staples: Soľ, Korenie...]
+        LANG[Jazyk: SK/EN]
+        ALLERGY[Alergie & Preferencie]
+    end
+    
+    STAPLES --> PROMPT_BUILDER
+    LANG --> PROMPT_BUILDER
+    ALLERGY --> PROMPT_BUILDER
+
+    %% --- 5. AI GENERATOR (CORE) ---
+    PROMPT_BUILDER -- "Doplň zásoby na cieľ 14000kcal" --> AI_GEN[🤖 AI Generator Node]
+    class AI_GEN ai
+    
+    AI_GEN -- Update: 70% --> PROGRESS_TRACKER
+    PROGRESS_TRACKER -- "🤖 AI vytvára nákupný zoznam..." --> FRONTEND_UIMPT_BUILDER
+    LANG --> PROMPT_BUILDER
+    ALLERGY --> PROMPT_BUILDER
+
+    %% --- 5. AI GENERATOR (CORE) ---
+    PROMPT_BUILDER -- "Doplň zásoby na cieľ 14000kcal" --> AI_GEN[🤖 AI Generator Node]
+    class AI_GEN ai
+    
+    %% Použitie Structured Output
+    AI_GEN -- Update: 80% --> PROGRESS_TRACKER
+    PROGRESS_TRACKER -- "➕ Spájam dáta zo špajze..." --> FRONTEND_UI
+    
+    MERGER --> MACRO_VALIDATOR{⚖️ Macro Validator}
+    class MACRO_VALIDATOR logic
+    
+    MACRO_VALIDATOR -- Update: 85% --> PROGRESS_TRACKER
+    PROGRESS_TRACKER -- "⚖️ Validujem makro-nutričné hodnoty..." --> FRONTEND_UI
+
+    %% Slučka Validácie
+    MACRO_VALIDATOR -- "❌ Málo jedla (<90% cieľa)" --> FEEDBACK_LOOP[🔄 Feedback: Pridaj X kalórií]
+    class FEEDBACK_LOOP error
+    
+    FEEDBACK_LOOP -- Update: 75% --> PROGRESS_TRACKER
+    PROGRESS_TRACKER -- "🔄 Optimalizujem množstvá..." --> FRONTEND_UI
+    
+    MERGER --> MACRO_VALIDATOR{⚖️ Macro Validator}
+    class MACRO_VALIDATOR logic
+
+    
+    FINAL_FORMAT -- Update: 95% --> PROGRESS_TRACKER
+    PROGRESS_TRACKER -- "✨ Finalizujem zoznam..." --> FRONTEND_UI
+
+    %% Rozdelenie výstupu
+    FINAL_FORMAT --> SHOPPING_LIST_DB[(Uložiť: Shopping List)]
+    class SHOPPING_LIST_DB db
+    
+    FINAL_FORMAT --> INVENTORY_CONTEXT_DB[(Uložiť: Inventory Context)]
+    class INVENTORY_CONTEXT_DB db
+    
+    SHOPPING_LIST_DB -- Update: 100% --> PROGRESS_TRACKER
+    PROGRESS_TRACKER -- "🎉 Hotovo! Zoznam pripravený" --> FRONTEND_UI
+    
+    %% Poznámka: Inventory Context sa použije neskôr na Meal Plan
+
+    SHOPPING_LIST_DB --> CLOSE_STREAM[🔌 Close SSE Stream]
+    class CLOSE_STREAM stream
+    
+    CLOSE_STREAM --> END((Koniec))
+    
+    %% --- STREAMING LEGEND ---
+    subgraph "Real-Time Communication"
+        PROGRESS_TRACKER
+        FRONTEND_UI
+    end
+    %% Rozdelenie výstupu
+    FINAL_FORMAT --> SHOPPING_LIST_DB[(Uložiť: Shopping List)]
+    class SHOPPING_LIST_DB db
+    
+    FINAL_FORMAT --> INVENTORY_CONTEXT_DB[(Uložiť: Inventory Context)]
+    class INVENTORY_CONTEXT_DB db
+    
+    %% Poznámka: Inventory Context sa použije neskôr na Meal Plan
+
+    SHOPPING_LIST_DB --> END((Koniec))

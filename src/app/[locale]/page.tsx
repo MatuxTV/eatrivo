@@ -3,10 +3,9 @@ import { getTranslations } from "next-intl/server";
 
 import { Navbar } from "@/components/landing/Navbar";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { GoalsSection } from "@/components/landing/GoalsSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
+import { MeetRivo } from "@/components/landing/MeetRivo";
 import { AppShowcase } from "@/components/landing/AppShowcase";
-import { Testimonials } from "@/components/landing/Testimonials";
 import { PainSolution } from "@/components/landing/PainSolution";
 import { FAQ } from "@/components/landing/FAQ";
 import { DownloadCTA } from "@/components/landing/DownloadCTA";
@@ -35,7 +34,7 @@ export default function Home() {
       <Navbar />
       <main>
         <HeroSection />
-        <GoalsSection />
+        <MeetRivo />
         <HowItWorksSection />
         <AppShowcase />
         <Pricing />
