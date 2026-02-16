@@ -3,9 +3,10 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { stripe, getMembershipFromPriceId } from "@/lib/stripe";
 import { db } from "@/index";
-import { users, subscriptions, invoices } from "@/db/schema";
+import { users, subscriptions, invoices, shoppingLists, userProfiles, mealPlans } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Analytics } from "@/lib/analytics";
+import { CacheService } from "@/lib/redis";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -103,6 +104,12 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       | number
       | undefined;
 
+    // Get user's profile before updating
+    const [userProfile] = await db
+      .select()
+      .from(userProfiles)
+      .where(eq(userProfiles.userId, userId));
+
     // Update user with Stripe customer ID and membership
     const updateResult = await db
       .update(users)
@@ -116,6 +123,36 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     if (updateResult.length === 0) {
       console.error("No user found with id:", userId);
       return;
+    }
+
+    // CLEAN UP TEMPLATE ASSIGNMENTS - User upgraded to premium
+    if (userProfile && (membership === "premium" || membership === "pro")) {
+      try {
+        // Delete all associated meal plans first (due to foreign key constraints)
+        await db
+          .delete(mealPlans)
+          .where(eq(mealPlans.userProfileId, userProfile.id));
+
+        // Delete all shopping lists (completely remove template assignments)
+        await db
+          .delete(shoppingLists)
+          .where(eq(shoppingLists.userProfileId, userProfile.id));
+
+        console.log(
+          `Deleted all template-based shopping lists and meal plans for upgraded user: ${userId}`
+        );
+
+        // Invalidate cache so user gets fresh empty state
+        const cacheKey = `shopping-lists:${userId}`;
+        try {
+          await CacheService.delete(cacheKey);
+        } catch (cacheError) {
+          console.warn("Failed to invalidate shopping list cache:", cacheError);
+        }
+      } catch (cleanupError) {
+        console.error("Error cleaning up template assignments:", cleanupError);
+        // Continue anyway - subscription creation is more important
+      }
     }
 
     // Calculate currentPeriodEnd date - use 30 days from now as fallback

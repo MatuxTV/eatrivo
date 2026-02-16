@@ -452,7 +452,12 @@
     "toasts": {
       "mealPlanReady": "Meal plan is ready!",
       "mealPlanLoadError": "Couldn't load meal plan",
-      "shoppingListsLoadError": "Couldn't load shopping lists"
+      "shoppingListsLoadError": "Couldn't load shopping lists",
+      "premiumOnly": "This feature is only available for premium members",
+      "generatingShoppingList": "Generating your personalized shopping list...",
+      "shoppingListAndMealPlanGenerated": "Shopping list and meal plan generated successfully! 🎉",
+      "shoppingListGenerated": "Shopping list generated successfully!",
+      "generateError": "Failed to generate shopping list. Please try again."
     },
     "nutrition": {
       "calories": "Calories",
@@ -484,6 +489,7 @@
     },
     "shoppingLists": {
       "title": "Shopping lists",
+      "generateNew": "Generate New",
       "count": {
         "one": "list",
         "few": "lists",
@@ -498,6 +504,11 @@
       "noActive": {
         "title": "No active shopping lists",
         "description": "You currently don't have any active shopping list. Show all lists to view completed or cancelled ones."
+      },
+      "premiumCTA": {
+        "title": "Upgrade to Premium",
+        "description": "Generate unlimited personalized shopping lists on-demand with AI",
+        "button": "View Plans"
       }
     },
     "shoppingList": {

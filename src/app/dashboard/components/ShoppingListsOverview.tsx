@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Sparkles } from "lucide-react";
 import ShoppingListCard from "@/components/dashboard/ShoppingListCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,14 +22,23 @@ interface ShoppingList {
 interface ShoppingListsOverviewProps {
   lists: ShoppingList[];
   isLoading: boolean;
+  membership?: string;
+  onGenerateNew?: () => void;
 }
 
 export default function ShoppingListsOverview({
   lists,
   isLoading,
+  membership = "basic",
+  onGenerateNew,
 }: ShoppingListsOverviewProps) {
   const t = useTranslations("dashboard");
   const [showAll, setShowAll] = useState(false);
+
+  // Check if user is premium (premium, pro, or trainer)
+  const isPremiumUser = ["premium", "pro", "trainer"].includes(
+    membership.toLowerCase()
+  );
 
   // Filter lists - show only active by default
   const displayedLists = useMemo(() => {
@@ -50,6 +59,19 @@ export default function ShoppingListsOverview({
           {t("shoppingLists.title")}
         </h2>
         <div className="flex items-center gap-3">
+          {/* Generate New Button (Premium only) */}
+          {isPremiumUser && onGenerateNew && (
+            <Button
+              onClick={onGenerateNew}
+              disabled={isLoading}
+              size="sm"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {t("shoppingLists.generateNew", { defaultValue: "Generate New" })}
+            </Button>
+          )}
+
           {!isLoading && displayedLists.length > 0 && (
             <span className="text-xs font-bold px-3 py-1 bg-white border border-gray-200 text-gray-600 rounded-full shadow-sm">
               {displayedLists.length}{" "}
@@ -66,8 +88,8 @@ export default function ShoppingListsOverview({
               size="sm"
               className="text-xs font-medium bg-eatrivo-purple "
             >
-              {showAll 
-                ? t("shoppingLists.showActiveOnly") 
+              {showAll
+                ? t("shoppingLists.showActiveOnly")
                 : t("shoppingLists.showAll")}
             </Button>
           )}
@@ -130,9 +152,37 @@ export default function ShoppingListsOverview({
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               {t("shoppingLists.empty.title")}
             </h3>
-            <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+            <p className="text-gray-500 max-w-md mx-auto leading-relaxed mb-4">
               {t("shoppingLists.empty.description")}
             </p>
+
+            {/* Premium CTA for basic users */}
+            {!isPremiumUser && (
+              <div className="mt-4 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200 max-w-md">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  <p className="text-sm font-semibold text-purple-900">
+                    {t("shoppingLists.premiumCTA.title", {
+                      defaultValue: "Upgrade to Premium"
+                    })}
+                  </p>
+                </div>
+                <p className="text-xs text-purple-700 mb-3">
+                  {t("shoppingLists.premiumCTA.description", {
+                    defaultValue: "Generate unlimited personalized shopping lists on-demand with AI"
+                  })}
+                </p>
+                <Button
+                  onClick={() => window.location.href = "/profile/billing"}
+                  size="sm"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs shadow-md"
+                >
+                  {t("shoppingLists.premiumCTA.button", {
+                    defaultValue: "View Plans"
+                  })}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

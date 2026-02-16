@@ -154,66 +154,131 @@ export default function DashboardPage() {
   };
 
   // FETCH SHOPPING LISTS
-  useEffect(() => {
-    if (!isMounted || !session?.user) return;
+  const fetchShoppingLists = async () => {
+    if (!session?.user) return;
 
-    const fetchShoppingLists = async () => {
-      try {
-        setIsLoading((prev) => ({ ...prev, shoppingLists: true }));
-        const response = await fetch("/api/shopping-lists");
-        if (!response.ok) throw new Error("Failed to fetch shopping lists");
-        const data = await response.json();
-        const lists = data.shoppingLists || [];
-        setShoppingLists(lists);
+    try {
+      setIsLoading((prev) => ({ ...prev, shoppingLists: true }));
+      const response = await fetch("/api/shopping-lists");
+      if (!response.ok) throw new Error("Failed to fetch shopping lists");
+      const data = await response.json();
+      const lists = data.shoppingLists || [];
+      setShoppingLists(lists);
 
-        // Save latest shopping list for offline access
-        if (lists.length > 0) {
-          try {
-            await saveLatestShoppingList(lists[0]);
-          } catch (offlineError) {
-            console.error(
-              "Failed to save shopping list offline:",
-              offlineError,
-            );
-          }
-        }
-      } catch (error) {
-        logger.error("Error fetching shopping lists", error, {
-          context: "DashboardPage",
-          metadata: { userId: session?.user?.id },
-        });
-
-        // Try to load from offline storage
+      // Save latest shopping list for offline access
+      if (lists.length > 0) {
         try {
-          const offlineList = await getLatestShoppingList();
-          if (offlineList) {
-            const formattedList: ShoppingList = {
-              ...offlineList,
-              description: offlineList.description || undefined,
-              weekStartDate: offlineList.weekStartDate.toString(),
-              weekEndDate: offlineList.weekEndDate.toString(),
-              createdAt: offlineList.createdAt.toString(),
-              status: offlineList.status as
-                | "active"
-                | "completed"
-                | "cancelled",
-            };
-            setShoppingLists([formattedList]);
-            toast.info(t("pwa.offline.showingData"));
-          } else {
-            toast.error(t("toasts.shoppingListsLoadError"));
-            setShoppingLists([]);
-          }
-        } catch {
+          await saveLatestShoppingList(lists[0]);
+        } catch (offlineError) {
+          console.error(
+            "Failed to save shopping list offline:",
+            offlineError,
+          );
+        }
+      }
+    } catch (error) {
+      logger.error("Error fetching shopping lists", error, {
+        context: "DashboardPage",
+        metadata: { userId: session?.user?.id },
+      });
+
+      // Try to load from offline storage
+      try {
+        const offlineList = await getLatestShoppingList();
+        if (offlineList) {
+          const formattedList: ShoppingList = {
+            ...offlineList,
+            description: offlineList.description || undefined,
+            weekStartDate: offlineList.weekStartDate.toString(),
+            weekEndDate: offlineList.weekEndDate.toString(),
+            createdAt: offlineList.createdAt.toString(),
+            status: offlineList.status as
+              | "active"
+              | "completed"
+              | "cancelled",
+          };
+          setShoppingLists([formattedList]);
+          toast.info(t("pwa.offline.showingData"));
+        } else {
           toast.error(t("toasts.shoppingListsLoadError"));
           setShoppingLists([]);
         }
-      } finally {
-        setIsLoading((prev) => ({ ...prev, shoppingLists: false }));
+      } catch {
+        toast.error(t("toasts.shoppingListsLoadError"));
+        setShoppingLists([]);
       }
-    };
+    } finally {
+      setIsLoading((prev) => ({ ...prev, shoppingLists: false }));
+    }
+  };
+
+  useEffect(() => {
+    if (!isMounted || !session?.user) return;
     fetchShoppingLists();
   }, [isMounted, session, t]);
+
+  // GENERATE NEW SHOPPING LIST (Premium users only)
+  const handleGenerateShoppingList = async () => {
+    if (!session?.user) return;
+
+    const membership = session.user.membership?.toLowerCase();
+    if (!["premium", "pro", "trainer"].includes(membership || "")) {
+      toast.error(t("toasts.premiumOnly", { defaultValue: "This feature is only available for premium members" }));
+      return;
+    }
+
+    try {
+      setIsLoading((prev) => ({ ...prev, shoppingLists: true }));
+      toast.loading(t("toasts.generatingShoppingList", { defaultValue: "Generating your personalized shopping list..." }), {
+        id: "generate-shopping-list"
+      });
+
+      const response = await fetch("/api/shopping-lists/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate shopping list");
+      }
+
+      const data = await response.json();
+
+      toast.dismiss("generate-shopping-list");
+
+      if (data.mealPlan) {
+        toast.success(t("toasts.shoppingListAndMealPlanGenerated", {
+          defaultValue: "Shopping list and meal plan generated successfully! 🎉"
+        }));
+      } else {
+        toast.success(t("toasts.shoppingListGenerated", {
+          defaultValue: "Shopping list generated successfully!"
+        }));
+      }
+
+      // Refresh shopping lists
+      await fetchShoppingLists();
+
+      // Refresh meal plan by reloading the page (meal plan fetches on mount)
+      if (data.mealPlan) {
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.dismiss("generate-shopping-list");
+      logger.error("Error generating shopping list", error, {
+        context: "DashboardPage",
+        metadata: { userId: session?.user?.id },
+      });
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("toasts.generateError", { defaultValue: "Failed to generate shopping list. Please try again." })
+      );
+    } finally {
+      setIsLoading((prev) => ({ ...prev, shoppingLists: false }));
+    }
+  };
 
   // FETCH USER HEALTH DATA
   useEffect(() => {
@@ -524,6 +589,8 @@ export default function DashboardPage() {
               <ShoppingListsOverview
                 lists={shoppingLists}
                 isLoading={isLoading.shoppingLists}
+                membership={session?.user?.membership || "basic"}
+                onGenerateNew={handleGenerateShoppingList}
               />
             </div>
 

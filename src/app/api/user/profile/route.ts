@@ -71,7 +71,7 @@ export async function GET() {
       profile: {
         fullName: userProfile.fullName,
         email: session.user.email,
-        dateOfBirth: userProfile.dateOfBirth ? userProfile.dateOfBirth.toISOString().split('T')[0] : "",
+        dateOfBirth: nutrition[0]?.dateOfBirth ? new Date(nutrition[0].dateOfBirth).toISOString().split('T')[0] : "",
         membership: user[0]?.membership || "basic",
       },
       nutrition: formattedNutrition,
@@ -126,6 +126,14 @@ export async function PUT(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Also update dateOfBirth in userInfoTable to keep data in sync
+    await db
+      .update(userInfoTable)
+      .set({
+        dateOfBirth: new Date(dateOfBirth),
+      })
+      .where(eq(userInfoTable.userProfileId, updated[0].id));
 
     // Fetch user for membership
     const user = await db

@@ -185,6 +185,72 @@ export const mealPlans = pgTable("meal_plans", {
     .notNull(),
 });
 
+// Shopping List Templates - for admin to create reusable templates
+export const shoppingListTemplates = pgTable("shopping_list_templates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  goal: goalEnum("goal").notNull(),
+  diet: dietEnum("diet").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  markdownContent: text("markdownContent").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdBy: uuid("created_by")
+    .notNull()
+    .references(() => users.id),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updated_at: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+// Meal Plan Templates - paired with shopping list templates
+export const mealPlanTemplates = pgTable("meal_plan_templates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  shoppingListTemplateId: uuid("shopping_list_template_id")
+    .notNull()
+    .references(() => shoppingListTemplates.id, { onDelete: "cascade" }),
+  goal: goalEnum("goal").notNull(),
+  diet: dietEnum("diet").notNull(),
+  meals: jsonb("meals").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdBy: uuid("created_by")
+    .notNull()
+    .references(() => users.id),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updated_at: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+// Template Assignments - track which templates were assigned to users
+export const templateAssignments = pgTable("template_assignments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userProfileId: uuid("user_profile_id")
+    .notNull()
+    .references(() => userProfiles.id, { onDelete: "cascade" }),
+  shoppingListTemplateId: uuid("shopping_list_template_id")
+    .notNull()
+    .references(() => shoppingListTemplates.id),
+  mealPlanTemplateId: uuid("meal_plan_template_id").references(
+    () => mealPlanTemplates.id,
+  ),
+  shoppingListId: uuid("shopping_list_id").references(() => shoppingLists.id, {
+    onDelete: "cascade",
+  }),
+  mealPlanId: uuid("meal_plan_id").references(() => mealPlans.id, {
+    onDelete: "cascade",
+  }),
+  goal: goalEnum("goal").notNull(),
+  diet: dietEnum("diet").notNull(),
+  assigned_at: timestamp("assigned_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 // NextAuth required tables
 export const accounts = pgTable(
   "account",

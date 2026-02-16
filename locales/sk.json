@@ -452,7 +452,12 @@
     "toasts": {
       "mealPlanReady": "Jedálny plán je pripravený!",
       "mealPlanLoadError": "Nepodarilo sa načítať jedálny plán",
-      "shoppingListsLoadError": "Nepodarilo sa načítať nákupné zoznamy"
+      "shoppingListsLoadError": "Nepodarilo sa načítať nákupné zoznamy",
+      "premiumOnly": "Táto funkcia je dostupná iba pre prémiových členov",
+      "generatingShoppingList": "Generujem váš personalizovaný nákupný zoznam...",
+      "shoppingListAndMealPlanGenerated": "Nákupný zoznam a jedálny lístok úspešne vygenerované! 🎉",
+      "shoppingListGenerated": "Nákupný zoznam úspešne vygenerovaný!",
+      "generateError": "Nepodarilo sa vygenerovať nákupný zoznam. Skúste to znova."
     },
     "nutrition": {
       "calories": "Kalórie",
@@ -484,6 +489,7 @@
     },
     "shoppingLists": {
       "title": "Nákupné zoznamy",
+      "generateNew": "Vygenerovať nový",
       "count": {
         "one": "zoznam",
         "few": "zoznamy",
@@ -498,6 +504,11 @@
       "noActive": {
         "title": "Žiadne aktívne nákupné zoznamy",
         "description": "Momentálne nemáte žiadny aktívny nákupný zoznam. Zobrazte všetky zoznamy pre dokončené alebo zrušené."
+      },
+      "premiumCTA": {
+        "title": "Upgradnite na Premium",
+        "description": "Generujte neobmedzené personalizované nákupné zoznamy na požiadanie s AI",
+        "button": "Zobraziť plány"
       }
     },
     "shoppingList": {

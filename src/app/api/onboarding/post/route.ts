@@ -115,6 +115,40 @@ export async function POST(request: NextRequest) {
       })),
     );
 
+    // Template assignment for basic users during onboarding
+    const userMembership = session.user.membership?.toLowerCase() || "basic";
+    if (userMembership === "basic") {
+      try {
+        const { assignTemplateToUser } = await import("@/lib/template-assignment");
+        const assignmentResult = await assignTemplateToUser(userProfile.id);
+
+        if (assignmentResult.shoppingList) {
+          apiLogger.info("Template assigned during onboarding", {
+            metadata: {
+              userId,
+              userProfileId: userProfile.id,
+              shoppingListId: assignmentResult.shoppingList.id,
+              mealPlanId: assignmentResult.mealPlan?.id,
+              templateUsed: assignmentResult.templateUsed,
+            },
+          });
+        } else {
+          apiLogger.warn("No template assigned during onboarding", {
+            metadata: {
+              userId,
+              userProfileId: userProfile.id,
+              fallbackReason: assignmentResult.fallbackReason,
+            },
+          });
+        }
+      } catch (templateError) {
+        apiLogger.error("Template assignment failed during onboarding", templateError, {
+          metadata: { userId, userProfileId: userProfile.id },
+        });
+        // Don't fail onboarding - user can still use the app
+      }
+    }
+
     return NextResponse.json({
       success: true,
       message: "Profile created successfully",
