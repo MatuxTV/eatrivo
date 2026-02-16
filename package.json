@@ -52,6 +52,7 @@
     "nodemailer": "^6.10.1",
     "pdf-parse": "^2.3.12",
     "pdfmake": "^0.2.20",
+    "radix-ui": "^1.4.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.62.0",

@@ -122,6 +122,8 @@ export const userInfoTable = pgTable("user_info", {
   goal: goalEnum("goal").notNull(),
   meal_per_day: integer("meal_per_day"),
   cooking_time_pref: timePrefEnum("time_pref"),
+  meal_prep: boolean("meal_prep").default(false),
+  meal_prep_days: integer("meal_prep_days"),
   diet_preferences: dietEnum("diet").default("none"),
   budget_preference: budgetEnum("budget").default("medium"),
   likes: text("likes"),

@@ -17,6 +17,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   userFoodPreferencesSchema,
   type UserFoodPreferences,
@@ -44,6 +46,7 @@ import {
   ArrowLeft,
   Scale,
   Ruler,
+  ChefHat,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -70,6 +73,8 @@ export default function FoodPreferences({
       activity_level: undefined,
       meal_per_day: 3,
       cooking_time_pref: undefined,
+      meal_prep: false,
+      meal_prep_days: undefined,
       goal: undefined,
       diet_preferences: "none",
       budget_preference: "medium",
@@ -357,6 +362,90 @@ export default function FoodPreferences({
                       </FormItem>
                     )}
                   />
+                </div>
+
+                {/* Meal Prep Section */}
+                <div className="space-y-4 pt-4 border-t border-gray-100">
+                  {/* Info Note */}
+                  <div className="flex gap-3 p-4 bg-eatrivo-green/5 border border-eatrivo-green/20 rounded-xl">
+                    <ChefHat className="w-5 h-5 text-eatrivo-green flex-shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-gray-800">{t("food.mealPrepNote.title")}</p>
+                      <p className="text-xs text-gray-600 leading-relaxed">{t("food.mealPrepNote.description")}</p>
+                    </div>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="meal_prep"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className={labelClasses}>
+                          <ChefHat className="w-4 h-4 text-eatrivo-orange" />
+                          {t("food.mealPrep")}
+                        </FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={(value) => field.onChange(value === "true")}
+                            value={field.value ? "true" : "false"}
+                            className="flex flex-col space-y-2"
+                          >
+                            <div className="flex items-center space-x-3 p-3 border-2 border-gray-200 rounded-xl hover:border-eatrivo-purple/50 transition-colors cursor-pointer">
+                              <RadioGroupItem value="true" id="mealPrep-yes" />
+                              <label htmlFor="mealPrep-yes" className="flex-1 cursor-pointer text-sm font-medium text-gray-700">
+                                {t("food.mealPrepYes")}
+                              </label>
+                            </div>
+                            <div className="flex items-center space-x-3 p-3 border-2 border-gray-200 rounded-xl hover:border-eatrivo-purple/50 transition-colors cursor-pointer">
+                              <RadioGroupItem value="false" id="mealPrep-no" />
+                              <label htmlFor="mealPrep-no" className="flex-1 cursor-pointer text-sm font-medium text-gray-700">
+                                {t("food.mealPrepNo")}
+                              </label>
+                            </div>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch("meal_prep") && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <FormField
+                        control={form.control}
+                        name="meal_prep_days"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className={labelClasses}>
+                              {t("food.mealPrepDays")}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                className={inputClasses}
+                                type="number"
+                                min="1"
+                                max="7"
+                                placeholder={t("food.mealPrepDaysPlaceholder")}
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(parseInt(e.target.value) || undefined)
+                                }
+                              />
+                            </FormControl>
+                            <FormDescription className="text-xs text-gray-500">
+                              {t("food.mealPrepDaysHelp")}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </motion.div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

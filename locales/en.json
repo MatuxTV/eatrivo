@@ -192,6 +192,10 @@
         "shopping": {
           "problem": "I don't know what to buy at the store",
           "solution": "Shopping list always at hand"
+        },
+        "mealPrep": {
+          "problem": "I don't have time to cook every day",
+          "solution": "Meal prep plans for days ahead"
         }
       }
     },
@@ -369,6 +373,16 @@
         "quick": "Quick (up to 15 min)",
         "normal": "Normal (15–45 min)",
         "slow": "Slow (45+ min)"
+      },
+      "mealPrep": "Do you want to prep meals in advance?",
+      "mealPrepYes": "Yes, I want to prep in advance",
+      "mealPrepNo": "No, I prefer cooking daily",
+      "mealPrepDays": "How many days ahead?",
+      "mealPrepDaysPlaceholder": "e.g., 3",
+      "mealPrepDaysHelp": "Choose how many days in advance you'd like to prepare meals",
+      "mealPrepNote": {
+        "title": "Why meal prep?",
+        "description": "Meal prepping saves time, reduces stress, and helps you stick to your nutrition goals. Prepare meals in advance and eat healthy all week without daily cooking."
       },
       "diet": "Diet",
       "dietPlaceholder": "Select diet type",

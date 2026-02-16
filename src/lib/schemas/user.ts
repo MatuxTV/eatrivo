@@ -27,6 +27,8 @@ export const userFoodPreferencesSchema = z.object({
   cooking_time_pref: z.enum(["quick", "normal", "slow"], {
     message: "Prosím vyberte svoju preferenciu času varenia"
   }).optional(),
+  meal_prep: z.boolean().default(false).optional(),
+  meal_prep_days: z.number().min(1, "Minimálne 1 deň").max(7, "Maximálne 7 dní").optional(),
   goal: z.enum(["lose_weight", "maintain_weight", "gain_muscle"]).default("maintain_weight").optional(),
   diet_preferences: z.enum(["none", "lactosefree", "vegetarian", "vegan", "pescatarian", "ketogenic", "paleolithic"]).default("none").optional(),
   budget_preference: z.enum(["low", "medium", "high"]).default("medium").optional(),

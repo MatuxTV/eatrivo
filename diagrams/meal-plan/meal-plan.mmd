@@ -1,0 +1,42 @@
+graph TD
+    %% INPUTS
+    START[Input: shoppingListId + regenerateScope]:::storage
+    
+    %% STEP 1: LOAD CONTEXT
+    START --> LOADER(1. Context Loader<br/>Load Shopping List + User Profile + Existing Plan):::logic
+    
+    %% STEP 2: VALIDATION
+    LOADER --> VALIDATOR{2. Compliance Validator<br/>Sufficient ingredients?<br/>Allergens clean?}:::logic
+    VALIDATOR -- "Fail" --> ERROR[Return Error]:::output
+    VALIDATOR -- "Pass" --> SCHEDULER
+    
+    %% STEP 3: SLOT ALLOCATION (Rule-Based)
+    SCHEDULER(3. Meal Scheduler<br/>Allocate meal slots by day<br/>Consider meal_prep preference):::logic
+    
+    %% STEP 4: CONDITIONAL PATH
+    SCHEDULER --> SCOPE_CHECK{Regenerate Scope?}:::logic
+    SCOPE_CHECK -- "Full Week" --> RECIPE_MATCHER
+    SCOPE_CHECK -- "Single Day/Meal" --> STATE_MERGE
+    
+    %% STATE MANAGER
+    STATE_MERGE(State Manager<br/>Merge with existing plan):::logic
+    STATE_MERGE --> RECIPE_MATCHER
+    
+    %% STEP 5: RECIPE MATCHING
+    RECIPE_MATCHER(4. Recipe Matcher<br/>Check Recipe DB first<br/>Flag slots needing AI):::ai
+    
+    %% STEP 6: AI GENERATION (Only for new recipes)
+    RECIPE_MATCHER --> CHEF(5. Creative Chef<br/>Generate NEW recipes only<br/>Output with yields):::ai
+    
+    %% STEP 7: LEFTOVER LOGIC
+    CHEF --> LEFTOVER(6. Leftover Manager<br/>Allocate leftover slots<br/>Respect meal_prep days):::logic
+    
+    %% STEP 8: MACRO CHECK
+    LEFTOVER --> MACRO{7. Macro Validator<br/>90-110% target?}:::logic
+    MACRO -- "Too Low" & retries<3 --> GAP(Gap Filler<br/>Add snacks/shakes):::ai
+    GAP --> MACRO
+    MACRO -- "OK" --> FORMATTER
+    
+    %% STEP 9: OUTPUT
+    FORMATTER(8. Formatter<br/>JSON + Cache + DB Save):::output
+    FORMATTER --> DONE[Meal Plan Ready]:::output

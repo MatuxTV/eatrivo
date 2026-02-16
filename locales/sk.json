@@ -192,6 +192,10 @@
         "shopping": {
           "problem": "Neviem čo nakúpiť do potravín",
           "solution": "Nákupný zoznam vždy po ruke"
+        },
+        "mealPrep": {
+          "problem": "Nemám čas variť každý deň",
+          "solution": "Meal prep plány na dni dopredu"
         }
       }
     },
@@ -369,6 +373,16 @@
         "quick": "Rýchlo (do 15 min)",
         "normal": "Normálne (15–45 min)",
         "slow": "Pomaly (45+ min)"
+      },
+      "mealPrep": "Chcete si pripraviť jedlá vopred?",
+      "mealPrepYes": "Áno, chcem si pripraviť vopred",
+      "mealPrepNo": "Nie, radšej varím denne",
+      "mealPrepDays": "Koľko dní vopred?",
+      "mealPrepDaysPlaceholder": "napr. 3",
+      "mealPrepDaysHelp": "Vyberte si, koľko dní vopred si chcete pripraviť jedlá",
+      "mealPrepNote": {
+        "title": "Prečo krabičkovanie?",
+        "description": "Príprava jedál vopred šetrí čas, znižuje stres a pomáha dodržiavať výživové ciele. Pripravte si jedlá vopred a jedzte zdravo celý týždeň bez denného varenia."
       },
       "diet": "Stravovanie",
       "dietPlaceholder": "Vyberte typ stravovania",

@@ -22,6 +22,13 @@
       "when": 1770285846933,
       "tag": "0002_add_analytics_events",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770981633729,
+      "tag": "0003_organic_hellion",
+      "breakpoints": true
     }
   ]
 }
