@@ -170,7 +170,7 @@ export default function PricingPage() {
           />
           <PricingCard
             tier="premium"
-            price={5}
+            price={4.99}
             isPopular
             isCurrentPlan={currentMembership === "premium"}
             onSelect={() => handleUpgrade("premium")}

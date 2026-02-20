@@ -41,6 +41,7 @@ export async function createCheckoutSession({
   successUrl,
   cancelUrl,
   discountCode,
+  trialPeriodDays,
 }: {
   userId: string;
   email: string;
@@ -48,6 +49,7 @@ export async function createCheckoutSession({
   successUrl: string;
   cancelUrl: string;
   discountCode?: string;
+  trialPeriodDays?: number;
 }) {
   const sessionParams: Stripe.Checkout.SessionCreateParams = {
     mode: "subscription",
@@ -61,6 +63,11 @@ export async function createCheckoutSession({
       metadata: { userId },
     },
   };
+
+  // Add free trial if specified
+  if (trialPeriodDays && trialPeriodDays > 0) {
+    sessionParams.subscription_data!.trial_period_days = trialPeriodDays;
+  }
 
   // Add discount code if provided, otherwise allow users to enter one
   if (discountCode) {

@@ -14,6 +14,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get locale from request body (optional)
+    const body = await req.json().catch(() => ({}));
+    const locale = body.locale || 'en';
+
     // Get user from database
     const user = await db.query.users.findFirst({
       where: eq(users.id, session.user.id),
@@ -30,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     const portalSession = await createPortalSession({
       customerId: user.stripeCustomerId,
-      returnUrl: `${origin}/profile/billing`,
+      returnUrl: `${origin}/${locale}/profile/billing`,
     });
 
     return NextResponse.json({ url: portalSession.url });

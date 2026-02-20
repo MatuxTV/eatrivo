@@ -1,5 +1,5 @@
 {
-  "id": "0991df6d-4523-424a-9810-082613b9acae",
+  "id": "f0dfb2d0-2792-4a5f-b104-dc832161c007",
   "prevId": "07cf36c8-985a-445f-87da-e52772c81795",
   "version": "7",
   "dialect": "postgresql",
@@ -1212,6 +1212,12 @@
           "notNull": false,
           "default": false
         },
+        "cancel_at": {
+          "name": "cancel_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "gifted_by": {
           "name": "gifted_by",
           "type": "uuid",
@@ -1609,6 +1615,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'user'"
+        },
+        "dateOfBirth": {
+          "name": "dateOfBirth",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "isProfileComplete": {
           "name": "isProfileComplete",

@@ -105,7 +105,7 @@ export async function POST(_req: NextRequest) {
     weekEnd.setDate(weekStart.getDate() + daysUntilSunday);
     weekEnd.setHours(23, 59, 59, 999);
 
-    const language = userInfo.language === "en" ? "en" : "sk";
+    const language: "sk" | "en" = userInfo.language === "en" ? "en" : "sk";
 
     apiLogger.info("Generating AI shopping list for premium user", {
       metadata: {

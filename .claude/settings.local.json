@@ -6,7 +6,8 @@
       "WebFetch(domain:docs.langchain.com)",
       "Bash(npm run lint:*)",
       "Bash(npx eslint:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

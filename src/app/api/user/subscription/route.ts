@@ -41,7 +41,7 @@ export async function GET() {
         ? {
             status: subscription.status,
             currentPeriodEnd: subscription.currentPeriodEnd,
-            cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+            cancelAt: subscription.cancelAt, // Only use cancelAt timestamp
             isGifted: subscription.status === "gifted",
             giftReason: subscription.giftReason,
           }
