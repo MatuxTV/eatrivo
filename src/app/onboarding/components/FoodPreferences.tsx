@@ -72,10 +72,10 @@ export default function FoodPreferences({
       weight: 70,
       activity_level: undefined,
       meal_per_day: 3,
-      cooking_time_pref: undefined,
+      cooking_time_pref: "normal",
       meal_prep: false,
       meal_prep_days: undefined,
-      goal: undefined,
+      goal: "maintain_weight",
       diet_preferences: "none",
       budget_preference: "medium",
       likes: "",
@@ -139,12 +139,18 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder={t("food.sexPlaceholder")} />
+                              <SelectValue
+                                placeholder={t("food.sexPlaceholder")}
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="man">{t("food.sexOptions.man")}</SelectItem>
-                            <SelectItem value="woman">{t("food.sexOptions.woman")}</SelectItem>
+                            <SelectItem value="man">
+                              {t("food.sexOptions.man")}
+                            </SelectItem>
+                            <SelectItem value="woman">
+                              {t("food.sexOptions.woman")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -226,7 +232,8 @@ export default function FoodPreferences({
                       <FormItem>
                         <FormLabel className={labelClasses}>
                           <Activity className="w-4 h-4 text-eatrivo-orange" />
-                          {t("food.activityLevel")} <span aria-hidden="true">*</span>
+                          {t("food.activityLevel")}{" "}
+                          <span aria-hidden="true">*</span>
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -234,7 +241,9 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder={t("food.activityPlaceholder")} />
+                              <SelectValue
+                                placeholder={t("food.activityPlaceholder")}
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -275,7 +284,9 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder={t("food.goalPlaceholder")} />
+                              <SelectValue
+                                placeholder={t("food.goalPlaceholder")}
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -343,7 +354,9 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder={t("food.cookingTimePlaceholder")} />
+                              <SelectValue
+                                placeholder={t("food.cookingTimePlaceholder")}
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -370,8 +383,12 @@ export default function FoodPreferences({
                   <div className="flex gap-3 p-4 bg-eatrivo-green/5 border border-eatrivo-green/20 rounded-xl">
                     <ChefHat className="w-5 h-5 text-eatrivo-green flex-shrink-0 mt-0.5" />
                     <div className="space-y-1">
-                      <p className="text-sm font-semibold text-gray-800">{t("food.mealPrepNote.title")}</p>
-                      <p className="text-xs text-gray-600 leading-relaxed">{t("food.mealPrepNote.description")}</p>
+                      <p className="text-sm font-semibold text-gray-800">
+                        {t("food.mealPrepNote.title")}
+                      </p>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        {t("food.mealPrepNote.description")}
+                      </p>
                     </div>
                   </div>
 
@@ -386,19 +403,27 @@ export default function FoodPreferences({
                         </FormLabel>
                         <FormControl>
                           <RadioGroup
-                            onValueChange={(value) => field.onChange(value === "true")}
+                            onValueChange={(value) =>
+                              field.onChange(value === "true")
+                            }
                             value={field.value ? "true" : "false"}
                             className="flex flex-col space-y-2"
                           >
                             <div className="flex items-center space-x-3 p-3 border-2 border-gray-200 rounded-xl hover:border-eatrivo-purple/50 transition-colors cursor-pointer">
                               <RadioGroupItem value="true" id="mealPrep-yes" />
-                              <label htmlFor="mealPrep-yes" className="flex-1 cursor-pointer text-sm font-medium text-gray-700">
+                              <label
+                                htmlFor="mealPrep-yes"
+                                className="flex-1 cursor-pointer text-sm font-medium text-gray-700"
+                              >
                                 {t("food.mealPrepYes")}
                               </label>
                             </div>
                             <div className="flex items-center space-x-3 p-3 border-2 border-gray-200 rounded-xl hover:border-eatrivo-purple/50 transition-colors cursor-pointer">
                               <RadioGroupItem value="false" id="mealPrep-no" />
-                              <label htmlFor="mealPrep-no" className="flex-1 cursor-pointer text-sm font-medium text-gray-700">
+                              <label
+                                htmlFor="mealPrep-no"
+                                className="flex-1 cursor-pointer text-sm font-medium text-gray-700"
+                              >
                                 {t("food.mealPrepNo")}
                               </label>
                             </div>
@@ -433,7 +458,9 @@ export default function FoodPreferences({
                                 placeholder={t("food.mealPrepDaysPlaceholder")}
                                 {...field}
                                 onChange={(e) =>
-                                  field.onChange(parseInt(e.target.value) || undefined)
+                                  field.onChange(
+                                    parseInt(e.target.value) || undefined,
+                                  )
                                 }
                               />
                             </FormControl>
@@ -463,7 +490,9 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder={t("food.dietPlaceholder")} />
+                              <SelectValue
+                                placeholder={t("food.dietPlaceholder")}
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -476,12 +505,18 @@ export default function FoodPreferences({
                             <SelectItem value="vegetarian">
                               {t("food.dietOptions.vegetarian")}
                             </SelectItem>
-                            <SelectItem value="vegan">{t("food.dietOptions.vegan")}</SelectItem>
+                            <SelectItem value="vegan">
+                              {t("food.dietOptions.vegan")}
+                            </SelectItem>
                             <SelectItem value="pescatarian">
                               {t("food.dietOptions.pescatarian")}
                             </SelectItem>
-                            <SelectItem value="ketogenic">{t("food.dietOptions.ketogenic")}</SelectItem>
-                            <SelectItem value="paleolithic">{t("food.dietOptions.paleo")}</SelectItem>
+                            <SelectItem value="ketogenic">
+                              {t("food.dietOptions.ketogenic")}
+                            </SelectItem>
+                            <SelectItem value="paleolithic">
+                              {t("food.dietOptions.paleo")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -504,13 +539,21 @@ export default function FoodPreferences({
                         >
                           <FormControl>
                             <SelectTrigger className={selectTriggerClasses}>
-                              <SelectValue placeholder={t("food.budgetPlaceholder")} />
+                              <SelectValue
+                                placeholder={t("food.budgetPlaceholder")}
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="low">{t("food.budgetOptions.low")}</SelectItem>
-                            <SelectItem value="medium">{t("food.budgetOptions.medium")}</SelectItem>
-                            <SelectItem value="high">{t("food.budgetOptions.high")}</SelectItem>
+                            <SelectItem value="low">
+                              {t("food.budgetOptions.low")}
+                            </SelectItem>
+                            <SelectItem value="medium">
+                              {t("food.budgetOptions.medium")}
+                            </SelectItem>
+                            <SelectItem value="high">
+                              {t("food.budgetOptions.high")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />

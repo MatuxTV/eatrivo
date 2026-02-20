@@ -25,10 +25,23 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: {
     template: "%s | Eatrivo",
-    default: "Eatrivo - Váš osobný plánovač jedál"
+    default: "Eatrivo - Váš osobný plánovač jedál",
   },
-  description: "Eatrivo vám pomôže plánovať jedlá, generovať nákupné zoznamy a dosiahnuť vaše nutričné ciele pomocou AI odporúčaní. | Eatrivo helps you plan your meals.",
-  keywords: ["plánovač jedál", "výživa", "diéta", "zdravé stravovanie", "nákupný zoznam", "AI jedálniček", "meal planner", "nutrition", "diet", "healthy eating", "shopping list"],
+  description:
+    "Eatrivo vám pomôže plánovať jedlá, generovať nákupné zoznamy a dosiahnuť vaše nutričné ciele pomocou AI odporúčaní. | Eatrivo helps you plan your meals.",
+  keywords: [
+    "plánovač jedál",
+    "výživa",
+    "diéta",
+    "zdravé stravovanie",
+    "nákupný zoznam",
+    "AI jedálniček",
+    "meal planner",
+    "nutrition",
+    "diet",
+    "healthy eating",
+    "shopping list",
+  ],
   authors: [{ name: "Eatrivo Team" }],
   creator: "Eatrivo",
   publisher: "Eatrivo",
@@ -40,11 +53,23 @@ export const metadata: Metadata = {
   },
   icons: {
     apple: [
-      { url: "/logo/favicon_io/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      {
+        url: "/logo/favicon_io/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
     ],
     icon: [
-      { url: "/logo/favicon_io/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/logo/favicon_io/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      {
+        url: "/logo/favicon_io/favicon-32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "/logo/favicon_io/favicon-16x16.png",
+        sizes: "16x16",
+        type: "image/png",
+      },
     ],
   },
   openGraph: {
@@ -53,20 +78,22 @@ export const metadata: Metadata = {
     alternateLocale: "en_US",
     url: process.env.NEXT_PUBLIC_APP_URL || "https://eatrivo.com",
     title: "Eatrivo - Váš osobný plánovač jedál",
-    description: "Plánujte jedlá, generujte nákupné zoznamy a dosiahnite svoje ciele.",
+    description:
+      "Plánujte jedlá, generujte nákupné zoznamy a dosiahnite svoje ciele.",
     siteName: "Eatrivo",
   },
   twitter: {
     card: "summary_large_image",
     title: "Eatrivo - Váš osobný plánovač jedál",
-    description: "Plánujte jedlá, generujte nákupné zoznamy a dosiahnite svoje ciele.",
+    description:
+      "Plánujte jedlá, generujte nákupné zoznamy a dosiahnite svoje ciele.",
     creator: "@eatrivo",
   },
   alternates: {
-    canonical: '/',
+    canonical: "/",
     languages: {
-      'en': '/en',
-      'sk': '/sk',
+      en: "/en",
+      sk: "/sk",
     },
   },
   robots: {
@@ -75,9 +102,9 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
 };
@@ -98,7 +125,9 @@ export default async function RootLayout({
         <Providers>
           <NextIntlClientProvider locale={locale} messages={messages}>
             {children}
-            <FeedbackButton />
+            <div className="hidden md:block">
+              <FeedbackButton />
+            </div>
             <Analytics />
           </NextIntlClientProvider>
         </Providers>

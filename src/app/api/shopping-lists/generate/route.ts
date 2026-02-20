@@ -8,10 +8,10 @@ import {
   userProfiles,
   userInfoTable,
 } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { EatrivoAIService } from "@/lib/langchain";
 import { apiLogger } from "@/lib/logger";
-import { CacheService } from "@/lib/redis";
+import { CacheService, RequestLock } from "@/lib/redis";
 
 /**
  * POST /api/shopping-lists/generate
@@ -90,17 +90,19 @@ export async function POST(_req: NextRequest) {
       }
     }
 
-    // Calculate week dates (next Monday to Sunday)
+    // Calculate week dates (start = today, end = nearest upcoming Sunday)
     const now = new Date();
-    const dayOfWeek = now.getDay();
-    const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
-
     const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() + daysUntilMonday);
     weekStart.setHours(0, 0, 0, 0);
 
+    const dayOfWeek = now.getDay(); // 0 is Sunday
+    // If today is Sunday, we still want it to generate for the next week
+    // so `7` days to next Sunday, or maybe `0` if it's meant just for today.
+    // The previous implementation for templates did `dayOfWeek === 0 ? 7 : 7 - dayOfWeek`
+    const daysUntilSunday = dayOfWeek === 0 ? 7 : 7 - dayOfWeek;
+
     const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setDate(weekStart.getDate() + daysUntilSunday);
     weekEnd.setHours(23, 59, 59, 999);
 
     const language = userInfo.language === "en" ? "en" : "sk";
@@ -114,133 +116,222 @@ export async function POST(_req: NextRequest) {
       },
     });
 
-    // Generate shopping list with AI
-    const shoppingListMarkdown = await EatrivoAIService.generateShoppingList({
-      sex: userInfo.sex,
-      dateOfBirth: new Date(userInfo.dateOfBirth),
-      height: Number(userInfo.height),
-      weight: Number(userInfo.weight),
-      activity_level: userInfo.activity_level,
-      goal: userInfo.goal,
-      meal_per_day: Number(userInfo.meal_per_day),
-      cooking_time_pref: userInfo.cooking_time_pref,
-      diet_preferences: userInfo.diet_preferences,
-      budget_preference: userInfo.budget_preference,
-      likes: userInfo.likes,
-      dislikes: userInfo.dislikes,
-      allergies: userInfo.allergies,
-      language,
-    });
-
-    // Save shopping list to database
-    const [newShoppingList] = await db
-      .insert(shoppingLists)
-      .values({
-        userProfileId: userProfile.id,
-        title: `Nákupný zoznam - ${weekStart.toLocaleDateString("sk-SK", { month: "long", day: "numeric" })} - ${weekEnd.toLocaleDateString("sk-SK", { month: "long", day: "numeric" })}`,
-        description: "Automaticky vygenerovaný AI nákupný zoznam",
-        markdownContent: shoppingListMarkdown,
-        weekStartDate: weekStart,
-        weekEndDate: weekEnd,
-        status: "active",
-      })
-      .returning();
-
-    apiLogger.info("Shopping list generated and saved", {
-      metadata: {
-        shoppingListId: newShoppingList.id,
-        userProfileId: userProfile.id,
-      },
-    });
-
-    // Generate meal plan with AI
-    let mealPlan = null;
-    try {
-      apiLogger.info("Generating AI meal plan for premium user", {
-        metadata: {
-          userProfileId: userProfile.id,
-          shoppingListId: newShoppingList.id,
-        },
-      });
-
-      const mealPlanData = await EatrivoAIService.generateWeeklyMealPlan(
-        {
-          sex: userInfo.sex,
-          dateofBirth: new Date(userInfo.dateOfBirth),
-          height: Number(userInfo.height),
-          weight: Number(userInfo.weight),
-          activityLevel: userInfo.activity_level,
-          goal: userInfo.goal,
-          mealsPerDay: Number(userInfo.meal_per_day),
-          maxPrepTime: userInfo.cooking_time_pref,
-          dietType: userInfo.diet_preferences,
-          budget: userInfo.budget_preference,
-          language,
-        },
-        {
-          markdown: shoppingListMarkdown,
-        },
+    // Check if the user already has an active shopping list
+    const activeLists = await db
+      .select()
+      .from(shoppingLists)
+      .where(
+        and(
+          eq(shoppingLists.userProfileId, userProfile.id),
+          eq(shoppingLists.status, "active"),
+        ),
       );
 
-      // Save meal plan to database
-      [mealPlan] = await db
-        .insert(mealPlans)
+    if (activeLists.length > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "You already have an active shopping list. Please complete or cancel it before generating a new one.",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Acquire generation lock (prevents duplicate requests & persists state across reloads)
+    const lockKey = `shopping-list-generation:${session.user.id}`;
+    const lockAcquired = await RequestLock.acquire(lockKey, 300); // 5 min TTL
+
+    if (!lockAcquired) {
+      return NextResponse.json(
+        {
+          error:
+            "Shopping list generation is already in progress. Please wait.",
+        },
+        { status: 429 },
+      );
+    }
+
+    try {
+      const shoppingListMarkdown = await EatrivoAIService.generateShoppingList({
+        sex: userInfo.sex as "man" | "woman",
+        dateOfBirth: userInfo.dateOfBirth
+          ? new Date(userInfo.dateOfBirth)
+          : new Date(),
+        height: Number(userInfo.height),
+        weight: Number(userInfo.weight),
+        activity_level: userInfo.activity_level as
+          | "sedentary"
+          | "lightly_active"
+          | "moderately_active"
+          | "very_active"
+          | "athlete",
+        goal: userInfo.goal as
+          | "lose_weight"
+          | "maintain_weight"
+          | "gain_muscle",
+        meal_per_day: Number(userInfo.meal_per_day),
+        cooking_time_pref:
+          (userInfo.cooking_time_pref as "quick" | "normal" | "slow") ||
+          undefined,
+        diet_preferences: (userInfo.diet_preferences as any) || undefined,
+        budget_preference:
+          (userInfo.budget_preference as "low" | "medium" | "high") || "medium",
+        likes: userInfo.likes || undefined,
+        dislikes: userInfo.dislikes || undefined,
+        allergies: userInfo.allergies || undefined,
+        language: language || "sk",
+        startDate: weekStart.toLocaleDateString(
+          language === "en" ? "en-US" : "sk-SK",
+          { month: "long", day: "numeric" },
+        ),
+        endDate: weekEnd.toLocaleDateString(
+          language === "en" ? "en-US" : "sk-SK",
+          { month: "long", day: "numeric" },
+        ),
+      });
+
+      // Save shopping list to database
+      const [newShoppingList] = await db
+        .insert(shoppingLists)
         .values({
           userProfileId: userProfile.id,
-          shoppingListId: newShoppingList.id,
+          title: shoppingListMarkdown.title,
+          description: shoppingListMarkdown.description,
+          markdownContent: shoppingListMarkdown.markdown,
           weekStartDate: weekStart,
           weekEndDate: weekEnd,
-          meals: mealPlanData,
+          status: "active",
         })
         .returning();
 
-      apiLogger.info("Meal plan generated and saved", {
+      apiLogger.info("Shopping list generated and saved", {
         metadata: {
-          mealPlanId: mealPlan.id,
           shoppingListId: newShoppingList.id,
+          userProfileId: userProfile.id,
         },
       });
-    } catch (mealPlanError) {
-      apiLogger.error("Failed to generate meal plan (continuing anyway)", mealPlanError, {
-        metadata: { shoppingListId: newShoppingList.id },
-      });
-      // Don't fail the request - shopping list was created successfully
-    }
 
-    // Invalidate caches
-    const cacheKeys = [
-      `shopping-lists:${session.user.id}`,
-      `meal-plan:${userProfile.id}`,
-    ];
-
-    for (const key of cacheKeys) {
+      // Generate meal plan with AI
+      let mealPlan = null;
       try {
-        await CacheService.delete(key);
-      } catch (error) {
-        apiLogger.warn("Failed to invalidate cache", {
-          metadata: { key, error },
+        apiLogger.info("Generating AI meal plan for premium user", {
+          metadata: {
+            userProfileId: userProfile.id,
+            shoppingListId: newShoppingList.id,
+          },
         });
+
+        const mealPlanData = await EatrivoAIService.generateWeeklyMealPlan(
+          {
+            sex: userInfo.sex as "man" | "woman",
+            dateofBirth: userInfo.dateOfBirth
+              ? new Date(userInfo.dateOfBirth)
+              : new Date(),
+            height: Number(userInfo.height),
+            weight: Number(userInfo.weight),
+            activityLevel: userInfo.activity_level as
+              | "sedentary"
+              | "lightly_active"
+              | "moderately_active"
+              | "very_active"
+              | "athlete",
+            goal: userInfo.goal as
+              | "lose_weight"
+              | "maintain_weight"
+              | "gain_muscle",
+            mealsPerDay: Number(userInfo.meal_per_day),
+            maxPrepTime:
+              (userInfo.cooking_time_pref as "quick" | "normal" | "slow") ||
+              "normal",
+            dietType: (userInfo.diet_preferences as any) || undefined,
+            budget:
+              (userInfo.budget_preference as "low" | "medium" | "high") ||
+              "medium",
+            likedFoods: userInfo.likes || "",
+            dislikedFoods: userInfo.dislikes || "",
+            allergies: userInfo.allergies || "",
+            language: (language as "sk" | "en") || "sk",
+          },
+          {
+            markdown: shoppingListMarkdown.markdown,
+          },
+        );
+
+        // Save meal plan to database
+        [mealPlan] = await db
+          .insert(mealPlans)
+          .values({
+            userProfileId: userProfile.id,
+            shoppingListId: newShoppingList.id,
+            weekStartDate: weekStart,
+            weekEndDate: weekEnd,
+            meals: mealPlanData,
+          })
+          .returning();
+
+        apiLogger.info("Meal plan generated and saved", {
+          metadata: {
+            mealPlanId: mealPlan.id,
+            shoppingListId: newShoppingList.id,
+          },
+        });
+      } catch (mealPlanError) {
+        apiLogger.error(
+          "Failed to generate meal plan (continuing anyway)",
+          mealPlanError,
+          {
+            metadata: { shoppingListId: newShoppingList.id },
+          },
+        );
+        // Don't fail the request - shopping list was created successfully
       }
+
+      // Invalidate caches
+      const cacheKeys = [
+        `shopping-lists:${session.user.id}`,
+        `meal-plan:${userProfile.id}`,
+      ];
+
+      for (const key of cacheKeys) {
+        try {
+          await CacheService.delete(key);
+        } catch (error) {
+          apiLogger.warn("Failed to invalidate cache", {
+            metadata: { key, error },
+          });
+        }
+      }
+
+      apiLogger.info("Successfully generated shopping list and meal plan", {
+        metadata: {
+          userId: session.user.id,
+          shoppingListId: newShoppingList.id,
+          mealPlanId: mealPlan?.id,
+        },
+      });
+
+      // Release the generation lock on success
+      await RequestLock.release(lockKey);
+
+      return NextResponse.json({
+        success: true,
+        shoppingList: newShoppingList,
+        mealPlan: mealPlan,
+        message: "Shopping list and meal plan generated successfully!",
+      });
+    } catch (innerError) {
+      // Release the lock if anything inside the generation fails
+      await RequestLock.release(lockKey);
+      throw innerError;
     }
-
-    apiLogger.info("Successfully generated shopping list and meal plan", {
-      metadata: {
-        userId: session.user.id,
-        shoppingListId: newShoppingList.id,
-        mealPlanId: mealPlan?.id,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      shoppingList: newShoppingList,
-      mealPlan: mealPlan,
-      message: "Shopping list and meal plan generated successfully!",
-    });
   } catch (error) {
-    apiLogger.error("Failed to generate shopping list for premium user", error, {
-      metadata: { userId: (await auth())?.user?.id },
-    });
+    apiLogger.error(
+      "Failed to generate shopping list for premium user",
+      error,
+      {
+        metadata: { userId: (await auth())?.user?.id },
+      },
+    );
     return NextResponse.json(
       { error: "Failed to generate shopping list. Please try again." },
       { status: 500 },

@@ -79,9 +79,10 @@ async function createShoppingListFromTemplate(
   language: string = "sk",
 ) {
   // Generate accurate title based on date range
-  const title = language === "en"
-    ? `Shopping List - ${weekDates.start.toLocaleDateString("en-US", { month: "long", day: "numeric" })} - ${weekDates.end.toLocaleDateString("en-US", { month: "long", day: "numeric" })}`
-    : `Nákupný zoznam - ${weekDates.start.toLocaleDateString("sk-SK", { day: "numeric", month: "long" })} - ${weekDates.end.toLocaleDateString("sk-SK", { day: "numeric", month: "long" })}`;
+  const title =
+    language === "en"
+      ? `Shopping List - ${weekDates.start.toLocaleDateString("en-US", { month: "long", day: "numeric" })} - ${weekDates.end.toLocaleDateString("en-US", { month: "long", day: "numeric" })}`
+      : `Nákupný zoznam - ${weekDates.start.toLocaleDateString("sk-SK", { day: "numeric", month: "long" })} - ${weekDates.end.toLocaleDateString("sk-SK", { day: "numeric", month: "long" })}`;
 
   const [shoppingList] = await db
     .insert(shoppingLists)
@@ -290,8 +291,8 @@ export async function assignTemplateToUser(
       userProfileId,
       template,
       shoppingList,
-      mealPlan,
-      mealPlanTemplate,
+      mealPlan || null,
+      mealPlanTemplate || null,
     );
 
     apiLogger.info("Successfully assigned template to user", {

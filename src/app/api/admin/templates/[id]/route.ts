@@ -13,7 +13,7 @@ import { apiLogger } from "@/lib/logger";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Check if user is admin/trainer
@@ -25,7 +25,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const templateId = params.id;
+    const { id: templateId } = await params;
 
     // Fetch template
     const template = await db.query.shoppingListTemplates.findFirst({
@@ -50,7 +50,7 @@ export async function GET(
     });
   } catch (error) {
     apiLogger.error("Error fetching template", error, {
-      metadata: { templateId: params.id },
+      metadata: { templateId: "unknown" },
     });
     return NextResponse.json(
       { error: "Failed to fetch template" },
@@ -65,7 +65,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Check if user is admin/trainer
@@ -77,7 +77,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const templateId = params.id;
+    const { id: templateId } = await params;
 
     // Parse and validate request body
     const body = await request.json();
@@ -124,7 +124,7 @@ export async function PUT(
     return NextResponse.json({ template: updatedTemplate });
   } catch (error) {
     apiLogger.error("Error updating template", error, {
-      metadata: { templateId: params.id },
+      metadata: { templateId: "unknown" },
     });
     return NextResponse.json(
       { error: "Failed to update template" },
@@ -192,7 +192,7 @@ export async function DELETE(
     });
   } catch (error) {
     apiLogger.error("Error deleting template", error, {
-      metadata: { templateId: params },
+      metadata: { templateId: "unknown" },
     });
     return NextResponse.json(
       { error: "Failed to delete template" },

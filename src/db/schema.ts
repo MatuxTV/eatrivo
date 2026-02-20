@@ -97,7 +97,6 @@ export const userProfiles = pgTable("user_profiles", {
   fullName: text("fullName").notNull(),
   // username: text("username").unique(),
   role: roleEnum("role").default("user").notNull(),
-  dateOfBirth: timestamp("dateOfBirth"),
   isProfileComplete: boolean("isProfileComplete").default(false).notNull(),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()

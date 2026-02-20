@@ -29,7 +29,7 @@ interface UserProfile {
   likedFoods: string;
   dislikedFoods: string;
   allergies: string;
-  language:"sk"|"en";
+  language: "sk" | "en";
 }
 
 interface ShoppingData {
@@ -37,7 +37,7 @@ interface ShoppingData {
 }
 
 const model = new ChatGoogleGenerativeAI({
-  model: "gemini-2.5-flash",
+  model: "gemini-3-flash-preview",
   maxOutputTokens: 150000,
   temperature: 0.7,
   apiKey: process.env.GOOGLE_AI_API_KEY,
@@ -69,7 +69,9 @@ interface ShoppingListUserInfo {
   likes?: string;
   dislikes?: string;
   allergies?: string;
-  language?:string;
+  language?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export class EatrivoAIService {
@@ -129,7 +131,7 @@ export class EatrivoAIService {
 
   static async generateWeeklyMealPlan(
     userProfile: UserProfile,
-    shoppingListData: ShoppingData
+    shoppingListData: ShoppingData,
   ) {
     try {
       if (!process.env.GOOGLE_AI_API_KEY) {
@@ -152,16 +154,16 @@ export class EatrivoAIService {
       const heightInMeters = userProfile.height / 100;
       const bmi =
         Math.round(
-          (userProfile.weight / (heightInMeters * heightInMeters)) * 10
+          (userProfile.weight / (heightInMeters * heightInMeters)) * 10,
         ) / 10;
       const bmiCategory =
         bmi < 18.5
           ? "podváha"
           : bmi < 25
-          ? "normálna"
-          : bmi < 30
-          ? "nadváha"
-          : "obezita";
+            ? "normálna"
+            : bmi < 30
+              ? "nadváha"
+              : "obezita";
 
       const prompt = `Si expert AI nutricionista. Vytvor personalizovaný 7-dňový jedálny plán (Pondelok–Nedeľa) VÝHRADNE z poskytnutého nákupného zoznamu.
 JAZYK:
@@ -190,10 +192,10 @@ Obľúbené: ${userProfile.likedFoods || "-"} | Neobľúbené: ${
         bmi < 18.5
           ? "Pri podváhe: Väčšie porcie, kaloricky husté potraviny"
           : bmi < 25
-          ? "Normálna váha: Vyvážené porcie"
-          : bmi < 30
-          ? "Nadváha: Primerane menšie porcie, viac zeleniny"
-          : "Obezita: Výrazne menšie porcie, nízkokalorické potraviny"
+            ? "Normálna váha: Vyvážené porcie"
+            : bmi < 30
+              ? "Nadváha: Primerane menšie porcie, viac zeleniny"
+              : "Obezita: Výrazne menšie porcie, nízkokalorické potraviny"
       }
 
 🛒 NÁKUP:
@@ -212,10 +214,10 @@ ${
   userProfile.mealsPerDay === 3
     ? "raňajky, obed, večera"
     : userProfile.mealsPerDay === 4
-    ? "raňajky, desiata, obed, večera"
-    : userProfile.mealsPerDay === 5
-    ? "raňajky, desiata, obed, olovrant, večera"
-    : "raňajky, desiata, obed, olovrant, večera, druhá večera"
+      ? "raňajky, desiata, obed, večera"
+      : userProfile.mealsPerDay === 5
+        ? "raňajky, desiata, obed, olovrant, večera"
+        : "raňajky, desiata, obed, olovrant, večera, druhá večera"
 }
 
 ⚠️ TYPY:
@@ -262,7 +264,7 @@ ${
         contentText = response.content
           .filter(
             (part): part is { type: string; text: string } =>
-              typeof part === "object" && part !== null && "text" in part
+              typeof part === "object" && part !== null && "text" in part,
           )
           .map((part) => part.text)
           .join("");
@@ -279,7 +281,10 @@ ${
         metadata: {
           model: "gemini-2.5-flash",
           hasApiKey: Boolean(process.env.GOOGLE_AI_API_KEY),
-          promptChars: typeof shoppingListData?.markdown === "string" ? shoppingListData.markdown.length : undefined,
+          promptChars:
+            typeof shoppingListData?.markdown === "string"
+              ? shoppingListData.markdown.length
+              : undefined,
           errorDetails: this.getErrorDetails(error),
         },
       });
@@ -347,7 +352,7 @@ ${
       // Realistic protein: 1.2g/kg for normal goals, 2g/kg for muscle gain
       const proteinMultiplier = userInfo.goal === "gain_muscle" ? 2.0 : 1.2;
       const dailyProtein = Math.round(
-        Number(userInfo.weight) * proteinMultiplier
+        Number(userInfo.weight) * proteinMultiplier,
       );
       const dailyFat = Math.round((dailyCalories * 0.25) / 9);
 
@@ -355,19 +360,21 @@ ${
       let carbPercentage;
       if (userInfo.goal === "lose_weight") {
         // Weight loss: 30-35% carbs (lower to create better deficit)
-        carbPercentage = userInfo.activity_level === "athlete" || userInfo.activity_level === "very_active" 
-          ? 0.35 
-          : 0.30;
+        carbPercentage =
+          userInfo.activity_level === "athlete" ||
+          userInfo.activity_level === "very_active"
+            ? 0.35
+            : 0.3;
       } else if (userInfo.goal === "gain_muscle") {
         // Muscle gain: 45-50% carbs (higher for energy)
-        carbPercentage = userInfo.activity_level === "athlete" 
-          ? 0.50 
-          : 0.45;
+        carbPercentage = userInfo.activity_level === "athlete" ? 0.5 : 0.45;
       } else {
         // Maintain: 40-45% carbs
-        carbPercentage = userInfo.activity_level === "athlete" || userInfo.activity_level === "very_active"
-          ? 0.45 
-          : 0.40;
+        carbPercentage =
+          userInfo.activity_level === "athlete" ||
+          userInfo.activity_level === "very_active"
+            ? 0.45
+            : 0.4;
       }
       const dailyCarbs = Math.round((dailyCalories * carbPercentage) / 4);
 
@@ -377,25 +384,25 @@ ${
         currentMonth >= 3 && currentMonth <= 5
           ? "jar"
           : currentMonth >= 6 && currentMonth <= 8
-          ? "leto"
-          : currentMonth >= 9 && currentMonth <= 11
-          ? "jeseň"
-          : "zima";
+            ? "leto"
+            : currentMonth >= 9 && currentMonth <= 11
+              ? "jeseň"
+              : "zima";
 
       // Calculate BMI for body composition context
       const heightInMeters = userInfo.height / 100;
       const bmi =
         Math.round(
-          (Number(userInfo.weight) / (heightInMeters * heightInMeters)) * 10
+          (Number(userInfo.weight) / (heightInMeters * heightInMeters)) * 10,
         ) / 10;
       const bmiCategory =
         bmi < 18.5
           ? "podváha"
           : bmi < 25
-          ? "normálna"
-          : bmi < 30
-          ? "nadváha"
-          : "obezita";
+            ? "normálna"
+            : bmi < 30
+              ? "nadváha"
+              : "obezita";
 
       const prompt = `Si expert AI nutricionista. Vytvor týždenný nákupný zoznam s presnými množstvami.
 
@@ -426,17 +433,17 @@ Cieľové kalórie: ${dailyCalories} kcal ${
         userInfo.goal === "lose_weight"
           ? `(TDEE -${Math.round(tdee - dailyCalories)} kcal deficit)`
           : userInfo.goal === "gain_muscle"
-          ? "(TDEE +15% surplus)"
-          : "(udržanie TDEE)"
+            ? "(TDEE +15% surplus)"
+            : "(udržanie TDEE)"
       }
 
 💪 MAKRONUTRIENTY:
 Proteín: ${dailyProtein}g/deň (${proteinMultiplier}g/kg váhy) = ${Math.round(
-        ((dailyProtein * 4) / dailyCalories) * 100
+        ((dailyProtein * 4) / dailyCalories) * 100,
       )}% kalórií
 Tuky: ${dailyFat}g/deň = 25% kalórií
 Sacharidy: ${dailyCarbs}g/deň = ${Math.round(
-        carbPercentage * 100
+        carbPercentage * 100,
       )}% kalórií (prispôsobené ${userInfo.activity_level})
 
 🎯 7-DŇOVÉ CIELE:
@@ -449,6 +456,10 @@ ${dailyCalories * 7} kcal | ${dailyProtein * 7}g proteín | ${
 🌡️ ROČNÉ OBDOBIE: ${season.toUpperCase()}
 Skus sezónne ovocie a zeleninu (${season}) pre čerstvosť a cenu.Zohladni najblizsi sviatok aby klient zazil pravu atmosferu toho sviatku(napr.Vianoce a pridame punc ci vianocne pecivo)
 
+📅 OBDOBIE NÁKUPU:
+Od: ${userInfo.startDate || "dnes"}
+Do: ${userInfo.endDate || "nedele"}
+
 💡 KONTEXT VÝŠKY A VÁHY:
 • Výška ${userInfo.height}cm významne ovplyvňuje BMR (+6.25 kcal za každý cm)
 • Osoba s výškou 200cm má o ~220 kcal vyšší BMR než osoba s výškou 165cm (pri rovnakej váhe/veku/pohlaví)
@@ -456,10 +467,10 @@ Skus sezónne ovocie a zeleninu (${season}) pre čerstvosť a cenu.Zohladni najb
         bmi < 18.5
           ? "zvýš porcie, kaloricky husté potraviny"
           : bmi < 25
-          ? "vyvážené porcie"
-          : bmi < 30
-          ? "menšie porcie, viac zeleniny"
-          : "menšie porcie, nízkokalorické"
+            ? "vyvážené porcie"
+            : bmi < 30
+              ? "menšie porcie, viac zeleniny"
+              : "menšie porcie, nízkokalorické"
       }
 
 ⚙️ PRAVIDLÁ:
@@ -477,15 +488,15 @@ Skus sezónne ovocie a zeleninu (${season}) pre čerstvosť a cenu.Zohladni najb
         userInfo.meal_per_day <= 3
           ? "Väčšie porcie"
           : userInfo.meal_per_day >= 5
-          ? "Menšie porcie, rychlé"
-          : "Stredné porcie"
+            ? "Menšie porcie, rychlé"
+            : "Stredné porcie"
       }
 🎨 ${userInfo.cooking_time_pref || "normal"} → ${
         userInfo.cooking_time_pref === "quick"
           ? "Mrazené, instant"
           : userInfo.cooking_time_pref === "slow"
-          ? "Čerstvé, celé kusy"
-          : "Mix"
+            ? "Čerstvé, celé kusy"
+            : "Mix"
       }
 
 💡 CIEĽ ${userInfo.goal}:
@@ -493,8 +504,8 @@ ${
   userInfo.goal === "lose_weight"
     ? "• Viac zeleniny, chudé proteíny, zelený čaj"
     : userInfo.goal === "gain_muscle"
-    ? `• ${proteinMultiplier}g proteín/kg, kaloricky husté, protein shaky`
-    : "• Vyvážené makro"
+      ? `• ${proteinMultiplier}g proteín/kg, kaloricky husté, protein shaky`
+      : "• Vyvážené makro"
 }
 
 🥗 DIÉTA ${userInfo.diet_preferences || "žiadna"}:
@@ -502,14 +513,14 @@ ${
   userInfo.diet_preferences === "vegan"
     ? "⛔ Živočíšne | ✅ Tofu 800g, tempeh 400g, fazuľa 500g, orechy 300g, B12 POVINNE"
     : userInfo.diet_preferences === "vegetarian"
-    ? "⛔ Mäso/ryby | ✅ Vajcia 10-15ks, cottage 500g, jogurt 500g, fazuľa 400g"
-    : userInfo.diet_preferences === "lactosefree"
-    ? "⛔ Laktóza | ✅ Rastlinné mlieka, lactofree jogurty, ghee"
-    : userInfo.diet_preferences === "ketogenic"
-    ? "✅ Tuky 70%, proteín 20% | ⛔ Sacharidy <10%"
-    : userInfo.diet_preferences === "paleolithic"
-    ? "✅ Mäso, ryby, vajcia, zelenina, ovocie | ⛔ Obilniny, strukoviny, mliečne"
-    : "• Bez obmedzení"
+      ? "⛔ Mäso/ryby | ✅ Vajcia 10-15ks, cottage 500g, jogurt 500g, fazuľa 400g"
+      : userInfo.diet_preferences === "lactosefree"
+        ? "⛔ Laktóza | ✅ Rastlinné mlieka, lactofree jogurty, ghee"
+        : userInfo.diet_preferences === "ketogenic"
+          ? "✅ Tuky 70%, proteín 20% | ⛔ Sacharidy <10%"
+          : userInfo.diet_preferences === "paleolithic"
+            ? "✅ Mäso, ryby, vajcia, zelenina, ovocie | ⛔ Obilniny, strukoviny, mliečne"
+            : "• Bez obmedzení"
 }
 
 📝 FORMÁT:
@@ -573,8 +584,8 @@ ${
         userInfo.budget_preference === "low"
           ? "25-35€"
           : userInfo.budget_preference === "medium"
-          ? "45-55€"
-          : "90-110€"
+            ? "45-55€"
+            : "90-110€"
       } | 🕐 **Čas nákupu:** [XX] min | 📦 **Hmotnosť:** [XX] kg
 
 ✅ VALIDÁCIA:
@@ -586,17 +597,20 @@ ${
         userInfo.budget_preference === "low"
           ? "~30€"
           : userInfo.budget_preference === "medium"
-          ? "~50€"
-          : "~100€"
+            ? "~50€"
+            : "~100€"
       }), min. 3-4 položky/kategória
 4. Doplnky: Zohľadni ${season}, ${userInfo.sex === "man" ? "muž" : "žena"}, ${
         userInfo.goal
       }, ${userInfo.diet_preferences || "žiadna diéta"}, aktivita ${
         userInfo.activity_level
       }
-5. Tipy pre ${userInfo.goal}
+⚡ VÝSTUP: Vráť VÝHRADNE JSON objekt s nasledovnými kľúčmi:
+1. "title": Kreatívny a chytľavý názov pre tento nákupný zoznam, ktorý VŽDY obsahuje zadaný počiatočný a koncový dátum z "OBDOBIE NÁKUPU" (napríklad "Nákup: ${userInfo.startDate} - ${userInfo.endDate}").
+2. "description": Krátky, motivujúci popis k tomuto nákupnému zoznamu (maximálne 2 vety).
+3. "markdown": Samotný nákupný zoznam vo formáte Markdown (začni "# 🛒" ako doteraz).
 
-⚡ VÝSTUP: Len markdown. Začni "# 🛒", žiadne \`\`\`markdown wrappery.`;
+Uisti sa, že vrátiš čistý JSON (začni { a skonči }), bez markdown wrapperov (bez \`\`\`json alebo podobne) a nepridávaj žiadny text pred ani za JSON.`;
 
       const response = await model.invoke([new HumanMessage(prompt)]);
 
@@ -607,7 +621,7 @@ ${
         contentText = response.content
           .filter(
             (part): part is { type: string; text: string } =>
-              typeof part === "object" && part !== null && "text" in part
+              typeof part === "object" && part !== null && "text" in part,
           )
           .map((part) => part.text)
           .join("");
@@ -615,12 +629,23 @@ ${
         contentText = JSON.stringify(response.content);
       }
 
-      contentText = contentText
-        .replace(/```(?:markdown|md)?\s*/g, "")
-        .replace(/```\s*$/g, "")
-        .trim();
+      contentText = this.extractJSON(contentText);
 
-      return contentText;
+      try {
+        const parsed = JSON.parse(contentText);
+        return {
+          title: parsed.title || "Nákupný zoznam",
+          description: parsed.description || "Automaticky vygenerovaný zoznam",
+          markdown: parsed.markdown || contentText,
+        };
+      } catch (e) {
+        // Fallback ak parsovanie zlyhá
+        return {
+          title: "Nákupný zoznam",
+          description: "Automaticky vygenerovaný zoznam",
+          markdown: contentText,
+        };
+      }
     } catch (error) {
       apiLogger.error("Error generating shopping list", error, {
         context: "LangChain",

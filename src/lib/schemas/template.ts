@@ -23,9 +23,7 @@ export const shoppingListTemplateSchema = z.object({
   diet: dietEnumSchema,
   title: z.string().min(3, "Title must be at least 3 characters").max(200),
   description: z.string().max(500).optional(),
-  markdownContent: z
-    .string()
-    .min(10, "Content must be at least 10 characters"),
+  markdownContent: z.string().min(10, "Content must be at least 10 characters"),
   isActive: z.boolean().default(true),
 });
 
@@ -34,7 +32,7 @@ export const mealPlanTemplateSchema = z.object({
   shoppingListTemplateId: z.string().uuid(),
   goal: goalEnumSchema,
   diet: dietEnumSchema,
-  meals: z.record(z.any()), // JSON structure for meal plan
+  meals: z.record(z.string(), z.any()), // JSON structure for meal plan
   isActive: z.boolean().default(true),
 });
 

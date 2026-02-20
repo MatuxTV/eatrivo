@@ -217,8 +217,11 @@ export default function PersonalInfoSection({
                   {t("personal.membership.helper")}
                 </p>
               </div>
-              <div className="px-4 py-2 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink text-white font-bold text-sm rounded-lg">
-                {profileData?.membership || "FREE"}
+
+              <div
+                className={`px-4 py-2 bg-eatrivo-white-primary ${profileData?.membership === "premium" ? "border-eatrivo-yellow/40 text-eatrivo-yellow" : "text-eatrivo-black-secondary"} border-2 font-bold text-sm rounded-lg`}
+              >
+                {profileData?.membership?.toUpperCase() || "FREE"}
               </div>
             </div>
             <Link href={`/${locale}/pricing`} className="block mt-3">

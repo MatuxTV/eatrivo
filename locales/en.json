@@ -38,19 +38,19 @@
       "rating": { "value": "4.8", "label": "App rating" },
       "speed": { "value": "2 min", "label": "To create a plan" }
     },
-      "goals": {
-        "title": "What is your goal?",
-        "subtitle": "Eatrivo adapts to your exact needs",
-        "loseWeight": {
-          "title": "Lose weight",
-          "description": "A personalized plan for healthy and sustainable weight loss",
-          "detailTitle": "Your Path to Healthy Weight Loss",
-          "detailDescription": "Our AI creates personalized meal plans with a balanced calorie deficit, ensuring you lose weight in a healthy and sustainable way. Every recipe is designed to keep you satisfied while helping you reach your goals.",
-          "feature1Title": "Smart Calorie Management",
-          "feature1Description": "Automatically calculated calorie deficit based on your metabolism and activity level",
-          "feature2Title": "Satisfying Meals",
-          "feature2Description": "High-protein recipes that keep you full and prevent muscle loss during weight loss"
-        },
+    "goals": {
+      "title": "What is your goal?",
+      "subtitle": "Eatrivo adapts to your exact needs",
+      "loseWeight": {
+        "title": "Lose weight",
+        "description": "A personalized plan for healthy and sustainable weight loss",
+        "detailTitle": "Your Path to Healthy Weight Loss",
+        "detailDescription": "Our AI creates personalized meal plans with a balanced calorie deficit, ensuring you lose weight in a healthy and sustainable way. Every recipe is designed to keep you satisfied while helping you reach your goals.",
+        "feature1Title": "Smart Calorie Management",
+        "feature1Description": "Automatically calculated calorie deficit based on your metabolism and activity level",
+        "feature2Title": "Satisfying Meals",
+        "feature2Description": "High-protein recipes that keep you full and prevent muscle loss during weight loss"
+      },
       "maintain": {
         "title": "Maintain weight",
         "description": "A balanced meal plan to maintain your ideal weight",
@@ -421,7 +421,9 @@
     "nav": {
       "dashboard": "Dashboard",
       "profile": "Profile",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "pantry": "Pantry",
+      "chatWithRivo": "Chat with Rivo"
     },
     "navbar": {
       "language": "Language"
@@ -457,7 +459,10 @@
       "generatingShoppingList": "Generating your personalized shopping list...",
       "shoppingListAndMealPlanGenerated": "Shopping list and meal plan generated successfully! 🎉",
       "shoppingListGenerated": "Shopping list generated successfully!",
-      "generateError": "Failed to generate shopping list. Please try again."
+      "generateError": "Failed to generate shopping list. Please try again.",
+      "shoppingListGenerateError": "Failed to generate shopping list. Please try again.",
+      "generationInProgress": "Your shopping list is still being generated... 🍳",
+      "generationAlreadyInProgress": "Generation is already in progress. Please wait."
     },
     "nutrition": {
       "calories": "Calories",
@@ -509,6 +514,21 @@
         "title": "Upgrade to Premium",
         "description": "Generate unlimited personalized shopping lists on-demand with AI",
         "button": "View Plans"
+      },
+      "createNew": {
+        "title": "Let me cook! 🍳",
+        "subtitle": "I'll create a personalized shopping list just for you",
+        "locked": "Unlock with Premium 🔒",
+        "lockedSubtitle": "Generate unlimited AI shopping lists",
+        "completeActiveError": "Please complete your active shopping list first! 🛒",
+        "activeListExists": "Complete active list first! 🛒",
+        "activeListExistsSubtitle": "You can only have one active list at a time",
+        "loader": {
+          "scanning": "Scanning your pantry 🔍",
+          "optimizing": "Optimizing macros 🧮",
+          "finishing": "Almost ready... ✨"
+        },
+        "sitTight": "Crafting the perfect meal plan tailored for your body and goals."
       }
     },
     "shoppingList": {
@@ -521,9 +541,23 @@
       "pdfDocument": "PDF Document",
       "view": "View",
       "download": "Download",
+      "edit": {
+        "title": "Edit Shopping List",
+        "nameLabel": "Name",
+        "namePlaceholder": "E.g., Weekly Groceries",
+        "descriptionLabel": "Description (optional)",
+        "descriptionPlaceholder": "E.g., Special dinner on Friday",
+        "cancel": "Cancel",
+        "save": "Save changes",
+        "saving": "Saving..."
+      },
+      "success": {
+        "updated": "Shopping list updated successfully"
+      },
       "errors": {
         "download": "Failed to download shopping list",
-        "view": "Failed to open shopping list"
+        "view": "Failed to open shopping list",
+        "update": "Failed to update shopping list"
       }
     },
     "weightTracker": {
@@ -619,6 +653,40 @@
     "notifications": {
       "title": "Push Notifications",
       "description": "Enable notifications to stay updated on new shopping lists and meal plans."
+    },
+    "comingSoon": {
+      "sectionTitle": "What's Next",
+      "badge": "Coming Soon",
+      "backToDashboard": "Back to Dashboard",
+      "teaser": {
+        "feature1": "AI-Powered",
+        "feature2": "Personalized",
+        "feature3": "Smart"
+      },
+      "pantry": {
+        "title": "Pantry",
+        "description": "Track what's in your kitchen. Rivo will suggest meals based on what you already have.",
+        "badge": "● COMING SOON",
+        "tags": {
+          "tag1": "Automatic",
+          "tag2": "Saves time",
+          "tag3": "Effortless"
+        },
+        "cta": "🔔 Notify me when it launches",
+        "secondaryAction": "Back to Dashboard"
+      },
+      "chatWithRivo": {
+        "title": "Chat with Rivo",
+        "description": "Ask Rivo anything about nutrition, recipes, or meal planning. Your personal AI chef, always ready.",
+        "badge": "● COMING SOON",
+        "tags": {
+          "tag1": "Smart",
+          "tag2": "24/7 Available",
+          "tag3": "Personalized"
+        },
+        "cta": "🔔 Notify me when it launches",
+        "secondaryAction": "Back to Dashboard"
+      }
     }
   },
   "profile": {
@@ -985,6 +1053,9 @@
     "guarantee": "30-day satisfaction guarantee",
     "manageSubscription": "Manage Subscription",
     "managingSubscription": "Opening portal...",
+    "back": "Back",
+    "trustCancel": "Cancel anytime",
+    "trustSecure": "Secure via Stripe",
     "tiers": {
       "basic": {
         "name": "Basic",

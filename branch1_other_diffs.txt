@@ -1,0 +1,394 @@
+diff --git a/src/app/api/shopping-lists/generate/route.ts b/src/app/api/shopping-lists/generate/route.ts
+index a02d4a8..198d1ee 100644
+--- a/src/app/api/shopping-lists/generate/route.ts
++++ b/src/app/api/shopping-lists/generate/route.ts
+@@ -103,7 +103,7 @@ export async function POST(_req: NextRequest) {
+     weekEnd.setDate(weekStart.getDate() + 6);
+     weekEnd.setHours(23, 59, 59, 999);
+ 
+-    const language = userInfo.language === "en" ? "en" : "sk";
++    const language: "sk" | "en" = userInfo.language === "en" ? "en" : "sk";
+ 
+     apiLogger.info("Generating AI shopping list for premium user", {
+       metadata: {
+@@ -117,18 +117,18 @@ export async function POST(_req: NextRequest) {
+     // Generate shopping list with AI
+     const shoppingListMarkdown = await EatrivoAIService.generateShoppingList({
+       sex: userInfo.sex,
+-      dateOfBirth: new Date(userInfo.dateOfBirth),
++      dateOfBirth: new Date(userInfo.dateOfBirth!),
+       height: Number(userInfo.height),
+       weight: Number(userInfo.weight),
+       activity_level: userInfo.activity_level,
+       goal: userInfo.goal,
+       meal_per_day: Number(userInfo.meal_per_day),
+-      cooking_time_pref: userInfo.cooking_time_pref,
+-      diet_preferences: userInfo.diet_preferences,
+-      budget_preference: userInfo.budget_preference,
+-      likes: userInfo.likes,
+-      dislikes: userInfo.dislikes,
+-      allergies: userInfo.allergies,
++      cooking_time_pref: userInfo.cooking_time_pref ?? undefined,
++      diet_preferences: userInfo.diet_preferences ?? undefined,
++      budget_preference: userInfo.budget_preference!,
++      likes: userInfo.likes ?? undefined,
++      dislikes: userInfo.dislikes ?? undefined,
++      allergies: userInfo.allergies ?? undefined,
+       language,
+     });
+ 
+@@ -166,15 +166,18 @@ export async function POST(_req: NextRequest) {
+       const mealPlanData = await EatrivoAIService.generateWeeklyMealPlan(
+         {
+           sex: userInfo.sex,
+-          dateofBirth: new Date(userInfo.dateOfBirth),
++          dateofBirth: new Date(userInfo.dateOfBirth!),
+           height: Number(userInfo.height),
+           weight: Number(userInfo.weight),
+           activityLevel: userInfo.activity_level,
+           goal: userInfo.goal,
+           mealsPerDay: Number(userInfo.meal_per_day),
+-          maxPrepTime: userInfo.cooking_time_pref,
+-          dietType: userInfo.diet_preferences,
+-          budget: userInfo.budget_preference,
++          maxPrepTime: userInfo.cooking_time_pref ?? "normal",
++          dietType: userInfo.diet_preferences ?? undefined,
++          budget: userInfo.budget_preference!,
++          likedFoods: userInfo.likes ?? "",
++          dislikedFoods: userInfo.dislikes ?? "",
++          allergies: userInfo.allergies ?? "",
+           language,
+         },
+         {
+diff --git a/src/app/api/stripe/checkout/route.ts b/src/app/api/stripe/checkout/route.ts
+index 2bc00b4..2abada6 100644
+--- a/src/app/api/stripe/checkout/route.ts
++++ b/src/app/api/stripe/checkout/route.ts
+@@ -11,6 +11,7 @@ import { users } from "@/db/schema";
+ import { eq } from "drizzle-orm";
+ import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
+ import { unauthorizedError } from "@/lib/safeError";
++import { getTrialPeriodForUser } from "@/lib/subscription";
+ 
+ export async function POST(req: NextRequest) {
+   try {
+@@ -57,6 +58,9 @@ export async function POST(req: NextRequest) {
+       return NextResponse.json({ error: "User not found" }, { status: 404 });
+     }
+ 
++    // Get trial period based on user's account age
++    const trialPeriodDays = await getTrialPeriodForUser(session.user.id);
++
+     // Get or create Stripe customer
+     let customerId = user.stripeCustomerId;
+     if (!customerId) {
+@@ -83,6 +87,7 @@ export async function POST(req: NextRequest) {
+       successUrl: `${origin}/profile/billing?success=true`,
+       cancelUrl: `${origin}/pricing?canceled=true`,
+       discountCode,
++      trialPeriodDays,
+     });
+ 
+     return NextResponse.json({ url: checkoutSession.url });
+diff --git a/src/app/api/stripe/portal/route.ts b/src/app/api/stripe/portal/route.ts
+index 74109ed..8d12ccf 100644
+--- a/src/app/api/stripe/portal/route.ts
++++ b/src/app/api/stripe/portal/route.ts
+@@ -14,6 +14,10 @@ export async function POST(req: NextRequest) {
+       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+     }
+ 
++    // Get locale from request body (optional)
++    const body = await req.json().catch(() => ({}));
++    const locale = body.locale || 'en';
++
+     // Get user from database
+     const user = await db.query.users.findFirst({
+       where: eq(users.id, session.user.id),
+@@ -30,7 +34,7 @@ export async function POST(req: NextRequest) {
+ 
+     const portalSession = await createPortalSession({
+       customerId: user.stripeCustomerId,
+-      returnUrl: `${origin}/profile/billing`,
++      returnUrl: `${origin}/${locale}/profile/billing`,
+     });
+ 
+     return NextResponse.json({ url: portalSession.url });
+diff --git a/src/app/api/user/nutrition/route.ts b/src/app/api/user/nutrition/route.ts
+index e337640..088d67e 100644
+--- a/src/app/api/user/nutrition/route.ts
++++ b/src/app/api/user/nutrition/route.ts
+@@ -4,22 +4,7 @@ import { auth } from "../../../../../auth";
+ import { db } from "@/index";
+ import { userProfiles, userInfoTable } from "@/db/schema";
+ import { eq } from "drizzle-orm";
+-import { z } from "zod";
+-
+-const nutritionUpdateSchema = z.object({
+-  sex: z.enum(["man", "woman"]),
+-  height: z.coerce.number().min(100).max(250),
+-  weight: z.string().min(2),
+-  activity_level: z.string().min(1),
+-  goal: z.string().min(1),
+-  meal_per_day: z.coerce.number().min(1).max(6),
+-  cooking_time_pref: z.string().min(1),
+-  diet_preferences: z.string().min(1),
+-  budget_preference: z.string().min(1),
+-  likes: z.string().optional(),
+-  dislikes: z.string().optional(),
+-  allergies: z.string().optional(),
+-});
++import { userFoodPreferencesSchema } from "@/lib/schemas/user";
+ 
+ // PUT /api/user/nutrition - Update user's nutrition preferences
+ export async function PUT(request: NextRequest) {
+@@ -34,7 +19,7 @@ export async function PUT(request: NextRequest) {
+     }
+ 
+     const body = await request.json();
+-    const validation = nutritionUpdateSchema.safeParse(body);
++    const validation = userFoodPreferencesSchema.safeParse(body);
+ 
+     if (!validation.success) {
+       return NextResponse.json(
+@@ -65,16 +50,18 @@ export async function PUT(request: NextRequest) {
+       .set({
+         sex: validation.data.sex,
+         height: validation.data.height,
+-        weight: validation.data.weight.trim(),
+-        activity_level: validation.data.activity_level.trim() as "sedentary" | "lightly_active" | "moderately_active" | "very_active" | "athlete",
+-        goal: validation.data.goal.trim() as "lose_weight" | "maintain_weight" | "gain_muscle",
+-        meal_per_day: validation.data.meal_per_day,
+-        cooking_time_pref: validation.data.cooking_time_pref.trim() as "quick" | "normal" | "slow",
+-        diet_preferences: validation.data.diet_preferences.trim() as "none" | "lactosefree" | "vegetarian" | "vegan" | "pescatarian" | "ketogenic" | "paleolithic",
+-        budget_preference: validation.data.budget_preference.trim() as "low" | "medium" | "high",
+-        likes: validation.data.likes?.trim(),
+-        dislikes: validation.data.dislikes?.trim(),
+-        allergies: validation.data.allergies?.trim(),
++        weight: String(validation.data.weight),
++        activity_level: validation.data.activity_level,
++        goal: validation.data.goal ?? "maintain_weight",
++        meal_per_day: validation.data.meal_per_day ?? null,
++        cooking_time_pref: validation.data.cooking_time_pref ?? null,
++        meal_prep: validation.data.meal_prep ?? false,
++        meal_prep_days: validation.data.meal_prep_days ?? null,
++        diet_preferences: validation.data.diet_preferences ?? "none",
++        budget_preference: validation.data.budget_preference ?? "medium",
++        likes: validation.data.likes?.trim() || null,
++        dislikes: validation.data.dislikes?.trim() || null,
++        allergies: validation.data.allergies?.trim() || null,
+       })
+       .where(eq(userInfoTable.userProfileId, userProfileId))
+       .returning();
+diff --git a/src/app/api/user/profile/route.ts b/src/app/api/user/profile/route.ts
+index b7945ac..559723e 100644
+--- a/src/app/api/user/profile/route.ts
++++ b/src/app/api/user/profile/route.ts
+@@ -57,11 +57,13 @@ export async function GET() {
+     const formattedNutrition = nutrition.length > 0 ? {
+       ...nutrition[0],
+       weight: nutrition[0].weight ? String(nutrition[0].weight) : "",
+-      activity_level: nutrition[0].activity_level?.trim() || "sedentary",
+-      goal: nutrition[0].goal?.trim() || "maintain_weight",
+-      cooking_time_pref: nutrition[0].cooking_time_pref?.trim() || "normal",
+-      diet_preferences: nutrition[0].diet_preferences?.trim() || "none",
+-      budget_preference: nutrition[0].budget_preference?.trim() || "medium",
++      activity_level: nutrition[0].activity_level?.trim() || null,
++      goal: nutrition[0].goal?.trim() || null,
++      cooking_time_pref: nutrition[0].cooking_time_pref?.trim() || null,
++      meal_prep: nutrition[0].meal_prep ?? false,
++      meal_prep_days: nutrition[0].meal_prep_days ?? null,
++      diet_preferences: nutrition[0].diet_preferences?.trim() || null,
++      budget_preference: nutrition[0].budget_preference?.trim() || null,
+       likes: nutrition[0].likes || "",
+       dislikes: nutrition[0].dislikes || "",
+       allergies: nutrition[0].allergies || "",
+diff --git a/src/app/api/user/subscription/route.ts b/src/app/api/user/subscription/route.ts
+index d41865c..dfdddf1 100644
+--- a/src/app/api/user/subscription/route.ts
++++ b/src/app/api/user/subscription/route.ts
+@@ -41,7 +41,7 @@ export async function GET() {
+         ? {
+             status: subscription.status,
+             currentPeriodEnd: subscription.currentPeriodEnd,
+-            cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
++            cancelAt: subscription.cancelAt, // Only use cancelAt timestamp
+             isGifted: subscription.status === "gifted",
+             giftReason: subscription.giftReason,
+           }
+diff --git a/src/components/billing/SubscriptionStatus.tsx b/src/components/billing/SubscriptionStatus.tsx
+index 3d71063..b0269fc 100644
+--- a/src/components/billing/SubscriptionStatus.tsx
++++ b/src/components/billing/SubscriptionStatus.tsx
+@@ -10,7 +10,7 @@ interface SubscriptionStatusProps {
+   membership: "basic" | "premium" | "pro" | "trainer";
+   status?: "active" | "canceled" | "past_due" | "gifted";
+   currentPeriodEnd?: Date | null;
+-  cancelAtPeriodEnd?: boolean;
++  cancelAt?: Date | null;
+   isGifted?: boolean;
+   onManageSubscription?: () => void;
+ }
+@@ -19,7 +19,7 @@ export function SubscriptionStatus({
+   membership,
+   status = "active",
+   currentPeriodEnd,
+-  cancelAtPeriodEnd = false,
++  cancelAt,
+   isGifted = false,
+   onManageSubscription,
+ }: SubscriptionStatusProps) {
+@@ -28,6 +28,12 @@ export function SubscriptionStatus({
+   const tPricing = useTranslations("pricing");
+   const locale = useLocale();
+ 
++  // Determine if subscription is scheduled for cancellation
++  const isScheduledForCancellation = !!cancelAt;
++  
++  // Get the effective cancellation date (cancelAt takes priority)
++  const cancellationDate = cancelAt || currentPeriodEnd;
++
+   const handleManage = async () => {
+     setLoading(true);
+     try {
+@@ -82,17 +88,17 @@ export function SubscriptionStatus({
+                 <div className="flex items-center gap-2 text-muted-foreground">
+                   <Calendar className="h-4 w-4" />
+                   <span>
+-                    {cancelAtPeriodEnd ? t("expiresOn") : t("renewsOn")}
++                    {isScheduledForCancellation ? t("expiresOn") : t("renewsOn")}
+                   </span>
+                 </div>
+                 <span>{formatDate(currentPeriodEnd, locale)}</span>
+               </div>
+             )}
+ 
+-            {cancelAtPeriodEnd && (
++            {isScheduledForCancellation && cancellationDate && (
+               <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-600">
+-                {t("cancelAtPeriodEnd")}{" "}
+-                {currentPeriodEnd ? formatDate(currentPeriodEnd, locale) : ""}
++                {t("scheduledForCancellation")}{" "}
++                {formatDate(cancellationDate, locale)}
+               </p>
+             )}
+           </>
+diff --git a/src/db/schema.ts b/src/db/schema.ts
+index 773f6cb..ba43fa7 100644
+--- a/src/db/schema.ts
++++ b/src/db/schema.ts
+@@ -379,6 +379,7 @@ export const subscriptions = pgTable("subscriptions", {
+   status: subscriptionStatusEnum("status").notNull(),
+   currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
+   cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
++  cancelAt: timestamp("cancel_at", { withTimezone: true }), // Stripe's cancel_at timestamp
+   giftedBy: uuid("gifted_by").references(() => users.id),
+   giftReason: text("gift_reason"),
+   createdAt: timestamp("created_at", { withTimezone: true })
+diff --git a/src/lib/stripe.ts b/src/lib/stripe.ts
+index 29cfc47..a4e8559 100644
+--- a/src/lib/stripe.ts
++++ b/src/lib/stripe.ts
+@@ -41,6 +41,7 @@ export async function createCheckoutSession({
+   successUrl,
+   cancelUrl,
+   discountCode,
++  trialPeriodDays,
+ }: {
+   userId: string;
+   email: string;
+@@ -48,6 +49,7 @@ export async function createCheckoutSession({
+   successUrl: string;
+   cancelUrl: string;
+   discountCode?: string;
++  trialPeriodDays?: number;
+ }) {
+   const sessionParams: Stripe.Checkout.SessionCreateParams = {
+     mode: "subscription",
+@@ -62,6 +64,11 @@ export async function createCheckoutSession({
+     },
+   };
+ 
++  // Add free trial if specified
++  if (trialPeriodDays && trialPeriodDays > 0) {
++    sessionParams.subscription_data!.trial_period_days = trialPeriodDays;
++  }
++
+   // Add discount code if provided, otherwise allow users to enter one
+   if (discountCode) {
+     sessionParams.discounts = [{ coupon: discountCode }];
+diff --git a/src/lib/subscription.ts b/src/lib/subscription.ts
+index e389f0a..50544c9 100644
+--- a/src/lib/subscription.ts
++++ b/src/lib/subscription.ts
+@@ -1,7 +1,14 @@
+ import { db } from "@/index";
+-import { users, subscriptions } from "@/db/schema";
++import { users, subscriptions, userProfiles } from "@/db/schema";
+ import { eq, and, lt, or } from "drizzle-orm";
+ 
++// Trial period configuration
++export const TRIAL_PERIODS = {
++  LEGACY: 30, // days for users created before cutoff date
++  NEW: 14,    // days for new users
++  CUTOFF_DATE: new Date('2026-03-01T00:00:00Z'), // Change this to your desired cutoff
++} as const;
++
+ export interface SubscriptionStatus {
+   isActive: boolean;
+   membership: string;
+@@ -10,6 +17,26 @@ export interface SubscriptionStatus {
+   isExpired: boolean;
+ }
+ 
++/**
++ * Get trial period days for a user based on their account creation date
++ * Legacy users get 30 days, new users get 14 days
++ */
++export async function getTrialPeriodForUser(
++  userId: string,
++): Promise<number> {
++  const userProfile = await db.query.userProfiles.findFirst({
++    where: eq(userProfiles.userId, userId),
++    columns: { created_at: true },
++  });
++
++  if (!userProfile?.created_at) {
++    return TRIAL_PERIODS.NEW; // Default to new user trial
++  }
++
++  const isLegacyUser = userProfile.created_at < TRIAL_PERIODS.CUTOFF_DATE;
++  return isLegacyUser ? TRIAL_PERIODS.LEGACY : TRIAL_PERIODS.NEW;
++}
++
+ /**
+  * Check if a user has an active subscription
+  * Returns detailed subscription status including expiration info
+@@ -127,6 +154,7 @@ export async function validateAndUpdateSubscription(
+ /**
+  * Cleanup all expired subscriptions (for cron job)
+  * Returns count of downgraded users
++ * Checks both currentPeriodEnd and cancelAt timestamps
+  */
+ export async function cleanupExpiredSubscriptions(): Promise<{
+   downgraded: number;
+@@ -134,6 +162,7 @@ export async function cleanupExpiredSubscriptions(): Promise<{
+   const now = new Date();
+ 
+   // Find all expired active subscriptions
++  // Either currentPeriodEnd has passed OR cancelAt has passed
+   const expiredSubscriptions = await db
+     .select({
+       userId: subscriptions.userId,
+@@ -143,7 +172,10 @@ export async function cleanupExpiredSubscriptions(): Promise<{
+     .where(
+       and(
+         eq(subscriptions.status, "active"),
+-        lt(subscriptions.currentPeriodEnd, now),
++        or(
++          lt(subscriptions.currentPeriodEnd, now),
++          lt(subscriptions.cancelAt, now)
++        ),
+       ),
+     );
+ 

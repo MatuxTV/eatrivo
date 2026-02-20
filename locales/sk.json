@@ -421,7 +421,9 @@
     "nav": {
       "dashboard": "Dashboard",
       "profile": "Profil",
-      "signOut": "Odhlásiť sa"
+      "signOut": "Odhlásiť sa",
+      "pantry": "Špajza",
+      "chatWithRivo": "Chat s Rivom"
     },
     "navbar": {
       "language": "Jazyk"
@@ -457,7 +459,10 @@
       "generatingShoppingList": "Generujem váš personalizovaný nákupný zoznam...",
       "shoppingListAndMealPlanGenerated": "Nákupný zoznam a jedálny lístok úspešne vygenerované! 🎉",
       "shoppingListGenerated": "Nákupný zoznam úspešne vygenerovaný!",
-      "generateError": "Nepodarilo sa vygenerovať nákupný zoznam. Skúste to znova."
+      "generateError": "Nepodarilo sa vygenerovať nákupný zoznam. Skúste to znova.",
+      "shoppingListGenerateError": "Nepodarilo sa vygenerovať nákupný zoznam. Skúste to znova.",
+      "generationInProgress": "Váš nákupný zoznam sa stále generuje... 🍳",
+      "generationAlreadyInProgress": "Generovanie už prebieha. Počkajte prosím."
     },
     "nutrition": {
       "calories": "Kalórie",
@@ -509,6 +514,21 @@
         "title": "Upgradnite na Premium",
         "description": "Generujte neobmedzené personalizované nákupné zoznamy na požiadanie s AI",
         "button": "Zobraziť plány"
+      },
+      "createNew": {
+        "title": "Nechaj ma variť! 🍳",
+        "subtitle": "Vytvorím personalizovaný nákupný zoznam len pre teba",
+        "locked": "Odomkni s Premium 🔒",
+        "lockedSubtitle": "Generuj neobmedzené AI nákupné zoznamy",
+        "completeActiveError": "Najprv dokončite svoj aktívny nákupný zoznam! 🛒",
+        "activeListExists": "Najprv dokonči aktívny zoznam! 🛒",
+        "activeListExistsSubtitle": "Môžeš mať iba jeden aktívny nákupný zoznam súčasne",
+        "loader": {
+          "scanning": "Prehľadávam tvoju špajzu 🔍",
+          "optimizing": "Optimalizujem makrá 🧮",
+          "finishing": "Už to bude... ✨"
+        },
+        "sitTight": "Pripravujem dokonalý jedálny plán prispôsobený tvojmu telu a cieľom."
       }
     },
     "shoppingList": {
@@ -521,9 +541,23 @@
       "pdfDocument": "PDF Dokument",
       "view": "Zobraziť",
       "download": "Stiahnuť",
+      "edit": {
+        "title": "Upraviť nákupný zoznam",
+        "nameLabel": "Názov",
+        "namePlaceholder": "Napr. Týždenný nákup",
+        "descriptionLabel": "Popis (voliteľné)",
+        "descriptionPlaceholder": "Napr. Špeciálna večera v piatok",
+        "cancel": "Zrušiť",
+        "save": "Uložiť zmeny",
+        "saving": "Ukladám..."
+      },
+      "success": {
+        "updated": "Nákupný zoznam bol úspešne upravený"
+      },
       "errors": {
         "download": "Nepodarilo sa stiahnuť nákupný zoznam",
-        "view": "Nepodarilo sa otvoriť nákupný zoznam"
+        "view": "Nepodarilo sa otvoriť nákupný zoznam",
+        "update": "Nepodarilo sa upraviť nákupný zoznam"
       }
     },
     "weightTracker": {
@@ -619,6 +653,40 @@
     "notifications": {
       "title": "Push notifikácie",
       "description": "Povoľte notifikácie, aby ste zostali informovaní o nových nákupných zoznamoch a jedálnych plánoch."
+    },
+    "comingSoon": {
+      "sectionTitle": "Čo príde ďalej",
+      "badge": "Už čoskoro",
+      "backToDashboard": "Späť na Dashboard",
+      "teaser": {
+        "feature1": "AI technológia",
+        "feature2": "Personalizované",
+        "feature3": "Inteligentné"
+      },
+      "pantry": {
+        "title": "Inteligentná Špajza",
+        "description": "Zabudni na manuálne zapisovanie. Rivo si čoskoro zapamätá tvoje nákupy a sám odpočíta suroviny, keď si jedlo uvaríš.",
+        "badge": "● UŽ ČOSKORO",
+        "tags": {
+          "tag1": "Automatické",
+          "tag2": "Šetrí čas",
+          "tag3": "Bez námahy"
+        },
+        "cta": "🔔 Upozorni ma pri spustení",
+        "secondaryAction": "Zatiaľ späť na Dashboard"
+      },
+      "chatWithRivo": {
+        "title": "Chat s Rivom",
+        "description": "Opýtaj sa Riva čokoľvek o výžive, receptoch alebo pláne jedál. Tvoj osobný AI šéfkuchár, vždy pripravený.",
+        "badge": "● UŽ ČOSKORO",
+        "tags": {
+          "tag1": "Inteligentný",
+          "tag2": "Dostupný 24/7",
+          "tag3": "Personalizovaný"
+        },
+        "cta": "🔔 Upozorni ma pri spustení",
+        "secondaryAction": "Zatiaľ späť na Dashboard"
+      }
     }
   },
   "profile": {
@@ -987,6 +1055,9 @@
     "guarantee": "30-dňová garancia spokojnosti",
     "manageSubscription": "Spravovať predplatné",
     "managingSubscription": "Otváram portál...",
+    "back": "Späť",
+    "trustCancel": "Zrušiť kedykoľvek",
+    "trustSecure": "Bezpečné cez Stripe",
     "tiers": {
       "basic": {
         "name": "Basic",

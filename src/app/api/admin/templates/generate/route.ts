@@ -80,14 +80,16 @@ export async function POST(request: NextRequest) {
       metadata: {
         goal,
         diet,
-        contentLength: result?.length || 0,
-        hasContent: !!result,
+        contentLength: result?.markdown?.length || 0,
+        hasContent: !!result?.markdown,
         resultType: typeof result,
       },
     });
 
     const response = {
-      markdownContent: result, // result is already a string, not an object
+      markdownContent: result.markdown,
+      title: result.title,
+      description: result.description,
       goal,
       diet,
       generatedFor: "template",

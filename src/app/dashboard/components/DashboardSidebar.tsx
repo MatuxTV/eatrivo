@@ -2,26 +2,56 @@
 
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+
 import { motion } from "framer-motion";
-import { User, LogOut, LayoutDashboard } from "lucide-react";
+import {
+  User,
+  LogOut,
+  LayoutDashboard,
+  CakeSlice,
+  MessageCircleHeart,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 
-export default function DashboardSidebar() {
+interface DashboardSidebarProps {
+  activeSection: "dashboard" | "pantry" | "chatWithRivo" | "profile";
+  onSectionChange: (
+    section: "dashboard" | "pantry" | "chatWithRivo" | "profile",
+  ) => void;
+}
+
+export default function DashboardSidebar({
+  activeSection,
+  onSectionChange,
+}: DashboardSidebarProps) {
   const { data: session } = useSession();
-  const pathname = usePathname();
   const t = useTranslations("dashboard");
 
-  const dashboardHref = "/dashboard";
   const profileHref = "/profile";
   const signOutHref = "/signout";
 
   const navItems = [
-    { href: dashboardHref, label: t("nav.dashboard"), icon: LayoutDashboard },
-  ];
+    {
+      id: "dashboard",
+      label: t("nav.dashboard"),
+      icon: LayoutDashboard,
+    },
+    {
+      id: "pantry",
+      label: t("nav.pantry"),
+      icon: CakeSlice,
+      comingSoon: true,
+    },
+    {
+      id: "chatWithRivo",
+      label: t("nav.chatWithRivo"),
+      icon: MessageCircleHeart,
+      comingSoon: true,
+    },
+  ] as const;
 
   return (
     <motion.div
@@ -55,7 +85,7 @@ export default function DashboardSidebar() {
               </h2>
               <p
                 className={`text-xs capitalize ${getMembershipStatus(
-                  session?.user?.membership
+                  session?.user?.membership,
                 )}`}
               >
                 {session?.user?.membership || "basic"} {t("membershipSuffix")}
@@ -66,17 +96,16 @@ export default function DashboardSidebar() {
           <div className="flex gap-2">
             <Button
               size="sm"
-              className="flex-1 border-2 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700"
-              asChild
+              className={`flex-1 border-2 text-xs h-8 ${activeSection === "profile" ? "bg-eatrivo-purple/10 border-eatrivo-purple/20 text-eatrivo-purple" : "bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700"}`}
+              onClick={() => onSectionChange("profile")}
             >
-              <Link href={profileHref}>
-                <User className="w-3 h-3 mr-1.5" />
-                {t("nav.profile")}
-              </Link>
+              <User className="w-3 h-3 mr-1.5" />
+              {t("nav.profile")}
             </Button>
             <Button
               size="sm"
-              className="h-8 px-2  bg-eatrivo-light text-red-600 hover:text-red-700 hover:bg-red-50"
+              variant="ghost"
+              className="h-8 px-2 hover: text-eatrivo-red"
               asChild
             >
               <Link href={signOutHref} aria-label={t("nav.signOut")}>
@@ -88,30 +117,35 @@ export default function DashboardSidebar() {
         </div>
       </div>
 
-      {/* Navigation Links */}
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = activeSection === item.id;
           return (
-            <Link
-              key={item.href}
-              href={item.href}
+            <Button
+              key={item.id}
+              variant="ghost"
+              onClick={() => onSectionChange(item.id)}
               className={`
-                flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+                w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium h-auto 
                 ${
                   isActive
-                    ? "bg-eatrivo-purple/10 text-eatrivo-purple"
+                    ? "bg-eatrivo-purple/10 text-eatrivo-purple hover:bg-eatrivo-purple/10 hover:text-eatrivo-purple"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }
               `}
             >
               <item.icon
-                className={`w-4 h-4 mr-3 ${
+                className={`w-4 h-4 ${
                   isActive ? "text-eatrivo-purple" : "text-gray-400"
                 }`}
               />
               {item.label}
-            </Link>
+              {"comingSoon" in item && item.comingSoon && (
+                <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 bg-eatrivo-purple/10 text-eatrivo-purple rounded-full">
+                  {t("comingSoon.badge")}
+                </span>
+              )}
+            </Button>
           );
         })}
       </nav>
