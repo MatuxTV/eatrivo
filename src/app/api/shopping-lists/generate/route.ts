@@ -103,7 +103,7 @@ export async function POST(_req: NextRequest) {
     weekEnd.setDate(weekStart.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999);
 
-    const language = userInfo.language === "en" ? "en" : "sk";
+    const language: "sk" | "en" = userInfo.language === "en" ? "en" : "sk";
 
     apiLogger.info("Generating AI shopping list for premium user", {
       metadata: {
@@ -117,18 +117,18 @@ export async function POST(_req: NextRequest) {
     // Generate shopping list with AI
     const shoppingListMarkdown = await EatrivoAIService.generateShoppingList({
       sex: userInfo.sex,
-      dateOfBirth: new Date(userInfo.dateOfBirth),
+      dateOfBirth: new Date(userInfo.dateOfBirth!),
       height: Number(userInfo.height),
       weight: Number(userInfo.weight),
       activity_level: userInfo.activity_level,
       goal: userInfo.goal,
       meal_per_day: Number(userInfo.meal_per_day),
-      cooking_time_pref: userInfo.cooking_time_pref,
-      diet_preferences: userInfo.diet_preferences,
-      budget_preference: userInfo.budget_preference,
-      likes: userInfo.likes,
-      dislikes: userInfo.dislikes,
-      allergies: userInfo.allergies,
+      cooking_time_pref: userInfo.cooking_time_pref ?? undefined,
+      diet_preferences: userInfo.diet_preferences ?? undefined,
+      budget_preference: userInfo.budget_preference!,
+      likes: userInfo.likes ?? undefined,
+      dislikes: userInfo.dislikes ?? undefined,
+      allergies: userInfo.allergies ?? undefined,
       language,
     });
 
@@ -166,15 +166,18 @@ export async function POST(_req: NextRequest) {
       const mealPlanData = await EatrivoAIService.generateWeeklyMealPlan(
         {
           sex: userInfo.sex,
-          dateofBirth: new Date(userInfo.dateOfBirth),
+          dateofBirth: new Date(userInfo.dateOfBirth!),
           height: Number(userInfo.height),
           weight: Number(userInfo.weight),
           activityLevel: userInfo.activity_level,
           goal: userInfo.goal,
           mealsPerDay: Number(userInfo.meal_per_day),
-          maxPrepTime: userInfo.cooking_time_pref,
-          dietType: userInfo.diet_preferences,
-          budget: userInfo.budget_preference,
+          maxPrepTime: userInfo.cooking_time_pref ?? "normal",
+          dietType: userInfo.diet_preferences ?? undefined,
+          budget: userInfo.budget_preference!,
+          likedFoods: userInfo.likes ?? "",
+          dislikedFoods: userInfo.dislikes ?? "",
+          allergies: userInfo.allergies ?? "",
           language,
         },
         {

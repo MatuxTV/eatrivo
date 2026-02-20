@@ -1,6 +1,13 @@
 import { db } from "@/index";
-import { users, subscriptions } from "@/db/schema";
+import { users, subscriptions, userProfiles } from "@/db/schema";
 import { eq, and, lt, or } from "drizzle-orm";
+
+// Trial period configuration
+export const TRIAL_PERIODS = {
+  LEGACY: 30, // days for users created before cutoff date
+  NEW: 14,    // days for new users
+  CUTOFF_DATE: new Date('2026-03-01T00:00:00Z'), // Change this to your desired cutoff
+} as const;
 
 export interface SubscriptionStatus {
   isActive: boolean;
@@ -8,6 +15,26 @@ export interface SubscriptionStatus {
   expiresAt: Date | null;
   daysRemaining: number | null;
   isExpired: boolean;
+}
+
+/**
+ * Get trial period days for a user based on their account creation date
+ * Legacy users get 30 days, new users get 14 days
+ */
+export async function getTrialPeriodForUser(
+  userId: string,
+): Promise<number> {
+  const userProfile = await db.query.userProfiles.findFirst({
+    where: eq(userProfiles.userId, userId),
+    columns: { created_at: true },
+  });
+
+  if (!userProfile?.created_at) {
+    return TRIAL_PERIODS.NEW; // Default to new user trial
+  }
+
+  const isLegacyUser = userProfile.created_at < TRIAL_PERIODS.CUTOFF_DATE;
+  return isLegacyUser ? TRIAL_PERIODS.LEGACY : TRIAL_PERIODS.NEW;
 }
 
 /**
@@ -127,6 +154,7 @@ export async function validateAndUpdateSubscription(
 /**
  * Cleanup all expired subscriptions (for cron job)
  * Returns count of downgraded users
+ * Checks both currentPeriodEnd and cancelAt timestamps
  */
 export async function cleanupExpiredSubscriptions(): Promise<{
   downgraded: number;
@@ -134,6 +162,7 @@ export async function cleanupExpiredSubscriptions(): Promise<{
   const now = new Date();
 
   // Find all expired active subscriptions
+  // Either currentPeriodEnd has passed OR cancelAt has passed
   const expiredSubscriptions = await db
     .select({
       userId: subscriptions.userId,
@@ -143,7 +172,10 @@ export async function cleanupExpiredSubscriptions(): Promise<{
     .where(
       and(
         eq(subscriptions.status, "active"),
-        lt(subscriptions.currentPeriodEnd, now),
+        or(
+          lt(subscriptions.currentPeriodEnd, now),
+          lt(subscriptions.cancelAt, now)
+        ),
       ),
     );
 

@@ -174,10 +174,17 @@ export default function FoodPreferences({
                             className={inputClasses}
                             type="number"
                             placeholder={t("food.heightPlaceholder")}
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value) || 0)
-                            }
+                            value={field.value ?? ""}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              field.onChange(v === "" ? ("" as string | number) : parseInt(v) || "");
+                            }}
+                            onBlur={(e) => {
+                              const v = e.target.value;
+                              field.onChange(v === "" ? undefined : parseInt(v));
+                              field.onBlur();
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -200,10 +207,17 @@ export default function FoodPreferences({
                             type="number"
                             step="0.1"
                             placeholder={t("food.weightPlaceholder")}
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
+                            value={field.value ?? ""}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              field.onChange(v === "" ? ("" as string | number) : parseFloat(v) || "");
+                            }}
+                            onBlur={(e) => {
+                              const v = e.target.value;
+                              field.onChange(v === "" ? undefined : parseFloat(v));
+                              field.onBlur();
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -317,10 +331,17 @@ export default function FoodPreferences({
                             className={inputClasses}
                             type="number"
                             placeholder={t("food.mealsPerDayPlaceholder")}
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value) || 3)
-                            }
+                            value={field.value ?? ""}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              field.onChange(v === "" ? ("" as string | number) : parseInt(v) || "");
+                            }}
+                            onBlur={(e) => {
+                              const v = e.target.value;
+                              field.onChange(v === "" ? undefined : parseInt(v));
+                              field.onBlur();
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -431,10 +452,17 @@ export default function FoodPreferences({
                                 min="1"
                                 max="7"
                                 placeholder={t("food.mealPrepDaysPlaceholder")}
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(parseInt(e.target.value) || undefined)
-                                }
+                                value={field.value ?? ""}
+                                onFocus={(e) => e.target.select()}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  field.onChange(v === "" ? ("" as string | number) : parseInt(v) || "");
+                                }}
+                                onBlur={(e) => {
+                                  const v = e.target.value;
+                                  field.onChange(v === "" ? undefined : parseInt(v));
+                                  field.onBlur();
+                                }}
                               />
                             </FormControl>
                             <FormDescription className="text-xs text-gray-500">

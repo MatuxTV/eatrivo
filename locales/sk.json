@@ -764,6 +764,16 @@
           "label": "Alergie a intolerancie",
           "placeholder": "napr. laktóza, orechy, glutén...",
           "helper": "Tieto položky budú vylúčené zo všetkých vašich jedálnych plánov"
+        },
+        "mealPrep": {
+          "label": "Chcete si pripravovať jedlá vopred?",
+          "yes": "Áno, chcem si variť vopred",
+          "no": "Nie, radšej varím denne",
+          "daysLabel": "Na koľko dní vopred?",
+          "daysPlaceholder": "napr. 3",
+          "daysHelp": "Vyberte koľko dní dopredu si chcete pripravovať jedlá",
+          "noteTitle": "Čo je meal prep?",
+          "noteDescription": "Meal prep znamená prípravu jedál vopred. Uvaríte raz a máte jedlo na niekoľko dní, čo šetrí čas a pomáha dodržiavať stravovací plán."
         }
       },
       "validation": {
@@ -1030,7 +1040,7 @@
     },
     "renewsOn": "Obnovuje sa",
     "expiresOn": "Končí",
-    "cancelAtPeriodEnd": "Ruší sa na konci obdobia",
+    "scheduledForCancellation": "Vaše predplatné bude zrušené",
     "giftNote": "Poznámka k daru",
     "noSubscription": "Žiadne aktívne predplatné",
     "freeAccount": "Používate bezplatný plán",

@@ -764,6 +764,16 @@
           "label": "Allergies and intolerances",
           "placeholder": "e.g. lactose, nuts, gluten…",
           "helper": "These items will be excluded from all your meal plans"
+        },
+        "mealPrep": {
+          "label": "Do you want to prep meals in advance?",
+          "yes": "Yes, I want to prep in advance",
+          "no": "No, I prefer cooking daily",
+          "daysLabel": "How many days ahead?",
+          "daysPlaceholder": "e.g., 3",
+          "daysHelp": "Choose how many days in advance you'd like to prepare meals",
+          "noteTitle": "What is meal prep?",
+          "noteDescription": "Meal prep means preparing meals ahead of time. You cook once and have food ready for several days, which saves time and helps you stick to your nutrition plan."
         }
       },
       "validation": {
@@ -1043,7 +1053,7 @@
     },
     "renewsOn": "Renews on",
     "expiresOn": "Expires on",
-    "cancelAtPeriodEnd": "Cancels at period end",
+    "scheduledForCancellation": "Your subscription will be canceled on",
     "giftNote": "Gift Note",
     "noSubscription": "No active subscription",
     "freeAccount": "You're using the free plan",

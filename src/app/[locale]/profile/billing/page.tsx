@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { SubscriptionStatus } from "@/components/billing/SubscriptionStatus";
 import { PricingCard } from "@/components/billing/PricingCard";
 import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -16,7 +16,7 @@ interface SubscriptionData {
   subscription: {
     status: "active" | "canceled" | "past_due" | "gifted";
     currentPeriodEnd: string | null;
-    cancelAtPeriodEnd: boolean;
+    cancelAt: string | null;
     isGifted: boolean;
     giftReason: string | null;
   } | null;
@@ -33,6 +33,7 @@ export default function BillingPage() {
   } | null>(null);
 
   const t = useTranslations("billing");
+  const locale = useLocale();
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -120,11 +121,11 @@ export default function BillingPage() {
       {/* Back Button */}
       <Button
         variant="ghost"
-        onClick={() => router.back()}
+        onClick={() => router.push(`/${locale}/profile`)}
         className="mb-6 flex items-center gap-2 text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        {t("back")}
+        Back
       </Button>
 
       {toast && (
@@ -148,7 +149,11 @@ export default function BillingPage() {
               ? new Date(data.subscription.currentPeriodEnd)
               : null
           }
-          cancelAtPeriodEnd={data?.subscription?.cancelAtPeriodEnd}
+          cancelAt={
+            data?.subscription?.cancelAt
+              ? new Date(data.subscription.cancelAt)
+              : null
+          }
           isGifted={data?.subscription?.isGifted}
           onManageSubscription={handleManageSubscription}
         />

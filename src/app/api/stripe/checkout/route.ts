@@ -11,6 +11,7 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import { unauthorizedError } from "@/lib/safeError";
+import { getTrialPeriodForUser } from "@/lib/subscription";
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,6 +58,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Get trial period based on user's account age
+    const trialPeriodDays = await getTrialPeriodForUser(session.user.id);
+
     // Get or create Stripe customer
     let customerId = user.stripeCustomerId;
     if (!customerId) {
@@ -83,6 +87,7 @@ export async function POST(req: NextRequest) {
       successUrl: `${origin}/profile/billing?success=true`,
       cancelUrl: `${origin}/pricing?canceled=true`,
       discountCode,
+      trialPeriodDays,
     });
 
     return NextResponse.json({ url: checkoutSession.url });

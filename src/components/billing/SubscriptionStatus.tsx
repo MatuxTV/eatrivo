@@ -10,7 +10,7 @@ interface SubscriptionStatusProps {
   membership: "basic" | "premium" | "pro" | "trainer";
   status?: "active" | "canceled" | "past_due" | "gifted";
   currentPeriodEnd?: Date | null;
-  cancelAtPeriodEnd?: boolean;
+  cancelAt?: Date | null;
   isGifted?: boolean;
   onManageSubscription?: () => void;
 }
@@ -19,7 +19,7 @@ export function SubscriptionStatus({
   membership,
   status = "active",
   currentPeriodEnd,
-  cancelAtPeriodEnd = false,
+  cancelAt,
   isGifted = false,
   onManageSubscription,
 }: SubscriptionStatusProps) {
@@ -27,6 +27,12 @@ export function SubscriptionStatus({
   const t = useTranslations("billing");
   const tPricing = useTranslations("pricing");
   const locale = useLocale();
+
+  // Determine if subscription is scheduled for cancellation
+  const isScheduledForCancellation = !!cancelAt;
+  
+  // Get the effective cancellation date (cancelAt takes priority)
+  const cancellationDate = cancelAt || currentPeriodEnd;
 
   const handleManage = async () => {
     setLoading(true);
@@ -82,17 +88,17 @@ export function SubscriptionStatus({
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                   <span>
-                    {cancelAtPeriodEnd ? t("expiresOn") : t("renewsOn")}
+                    {isScheduledForCancellation ? t("expiresOn") : t("renewsOn")}
                   </span>
                 </div>
                 <span>{formatDate(currentPeriodEnd, locale)}</span>
               </div>
             )}
 
-            {cancelAtPeriodEnd && (
+            {isScheduledForCancellation && cancellationDate && (
               <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-600">
-                {t("cancelAtPeriodEnd")}{" "}
-                {currentPeriodEnd ? formatDate(currentPeriodEnd, locale) : ""}
+                {t("scheduledForCancellation")}{" "}
+                {formatDate(cancellationDate, locale)}
               </p>
             )}
           </>

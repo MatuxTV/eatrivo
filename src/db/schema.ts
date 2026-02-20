@@ -379,6 +379,7 @@ export const subscriptions = pgTable("subscriptions", {
   status: subscriptionStatusEnum("status").notNull(),
   currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
   cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  cancelAt: timestamp("cancel_at", { withTimezone: true }), // Stripe's cancel_at timestamp
   giftedBy: uuid("gifted_by").references(() => users.id),
   giftReason: text("gift_reason"),
   createdAt: timestamp("created_at", { withTimezone: true })
