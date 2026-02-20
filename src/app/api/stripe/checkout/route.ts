@@ -31,9 +31,10 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { tier, discountCode } = body as {
+    const { tier, discountCode, locale = "en" } = body as {
       tier: "premium" | "pro";
       discountCode?: string;
+      locale?: string;
     };
 
     // Validate tier
@@ -84,8 +85,8 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
       email: session.user.email,
       priceId,
-      successUrl: `${origin}/profile/billing?success=true`,
-      cancelUrl: `${origin}/pricing?canceled=true`,
+      successUrl: `${origin}/${locale}/profile/billing?success=true`,
+      cancelUrl: `${origin}/${locale}/pricing?canceled=true`,
       discountCode,
       trialPeriodDays,
     });

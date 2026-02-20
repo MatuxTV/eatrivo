@@ -320,7 +320,7 @@
     "profile": {
       "title": "Osobné údaje",
       "description": "Zadajte vaše osobné údaje pre lepšie plánovanie jedla",
-      "fullName": "Celé meno",
+      "fullName": "Vaše meno a priezvisko",
       "fullNamePlaceholder": "napr. Ján Novák",
       "age": "Vek",
       "agePlaceholder": "napr. 28",
@@ -1162,6 +1162,7 @@
     "feature2": "Personalizované nutričné sledovanie",
     "feature3": "Pokročilé nákupné zoznamy",
     "upgradeButton": "Prejsť na Premium",
-    "maybeLater": "Možno neskôr"
+    "maybeLater": "Možno neskôr",
+    "socialProof": "Pridaj sa k 2 400+ členom, ktorí jedia múdrejšie"
   }
 }

@@ -129,15 +129,27 @@ export default function DashboardPage() {
 
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+  const [welcomeCheckDone, setWelcomeCheckDone] = useState(false);
 
   // Check welcome dialog visibility after session loads (prevents hydration mismatch)
   useEffect(() => {
     if (session?.user) {
       const userVersion = session.user.lastSeenWelcomeVersion;
       const currentVersion = APP_CONFIG.WELCOME_DIALOG_VERSION;
-      setShowWelcomeDialog(!userVersion || userVersion !== currentVersion);
+      const needsWelcome = !userVersion || userVersion !== currentVersion;
+      setShowWelcomeDialog(needsWelcome);
+      setWelcomeCheckDone(true);
     }
   }, [session?.user]);
+
+  // Show upgrade popup for basic users on every dashboard visit
+  useEffect(() => {
+    if (!welcomeCheckDone || !session?.user) return;
+    if (session.user.membership !== "basic") return;
+    if (showWelcomeDialog) return; // handleCloseDialog will show it after welcome dialog closes
+    const timer = setTimeout(() => setShowUpgradePopup(true), 500);
+    return () => clearTimeout(timer);
+  }, [welcomeCheckDone]);
 
   const handleCloseDialog = async () => {
     setShowWelcomeDialog(false);
@@ -158,13 +170,7 @@ export default function DashboardPage() {
 
     // Show upgrade popup for basic users after welcome dialog closes
     if (session?.user?.membership === "basic") {
-      // Check localStorage if user already dismissed upgrade popup
-      const dismissedUpgrade = localStorage.getItem(
-        "eatrivo_upgrade_dismissed",
-      );
-      if (!dismissedUpgrade) {
-        setTimeout(() => setShowUpgradePopup(true), 500);
-      }
+      setTimeout(() => setShowUpgradePopup(true), 500);
     }
   };
 
@@ -534,7 +540,6 @@ export default function DashboardPage() {
         isOpen={showUpgradePopup}
         onClose={() => {
           setShowUpgradePopup(false);
-          localStorage.setItem("eatrivo_upgrade_dismissed", "true");
         }}
       />
 
@@ -687,18 +692,22 @@ export default function DashboardPage() {
                 </section>
               </div>
 
-              {/* Mobile CTA when no active plans */}
-              {!hasActiveShoppingList && !hasActiveMealPlan && (
+              {/* Mobile CTA — always shown for basic users (locked), shown for premium when no active plans */}
+              {(!hasActiveShoppingList && !hasActiveMealPlan) ||
+              session?.user?.membership === "basic" ? (
                 <div className="block md:hidden mb-8 mt-2">
                   <CreateListCTA
-                    isPremium={session?.user?.membership === "premium"}
+                    isPremium={["premium", "pro", "trainer"].includes(
+                      session?.user?.membership?.toLowerCase() || "",
+                    )}
                     isGenerating={isLoading.generatingShoppingList}
                     hasActiveList={hasActiveShoppingList}
                     onGenerate={handleGenerateShoppingList}
+                    onLockedCreate={() => setShowUpgradePopup(true)}
                     className="min-h-[280px]"
                   />
                 </div>
-              )}
+              ) : null}
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Shopping Lists - Takes up 2 columns on large screens, last on mobile */}
@@ -709,6 +718,7 @@ export default function DashboardPage() {
                     isGenerating={isLoading.generatingShoppingList}
                     membership={session?.user?.membership || "basic"}
                     onGenerateNew={handleGenerateShoppingList}
+                    onLockedCreate={() => setShowUpgradePopup(true)}
                   />
                 </div>
 

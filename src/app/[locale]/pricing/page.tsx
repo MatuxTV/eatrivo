@@ -5,7 +5,7 @@ import { PricingCard } from "@/components/billing/PricingCard";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { ArrowLeft, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -22,6 +22,7 @@ export default function PricingPage() {
 
   const t = useTranslations("pricing");
   const tBilling = useTranslations("billing");
+  const locale = useLocale();
 
   useEffect(() => {
     if (searchParams.get("canceled") === "true") {
@@ -55,7 +56,7 @@ export default function PricingPage() {
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ tier, locale }),
       });
 
       const data = await response.json();

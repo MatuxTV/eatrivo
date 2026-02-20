@@ -30,6 +30,7 @@ interface ShoppingListsOverviewProps {
   membership?: string;
   onGenerateNew?: () => void;
   isGenerating?: boolean;
+  onLockedCreate?: () => void;
 }
 
 // ─── Narrative loader phrases ─────────────────────────────────────────────────
@@ -49,12 +50,14 @@ export function CreateListCTA({
   isGenerating,
   hasActiveList,
   onGenerate,
+  onLockedCreate,
   className,
 }: {
   isPremium: boolean;
   isGenerating: boolean;
   hasActiveList?: boolean;
   onGenerate?: () => void;
+  onLockedCreate?: () => void;
   className?: string;
 }) {
   const t = useTranslations("dashboard");
@@ -70,9 +73,16 @@ export function CreateListCTA({
     return () => clearInterval(interval);
   }, [isGenerating]);
 
+  // Basic users are never blocked by hasActiveList — they just open the upgrade popup
+  const isBlockedByActiveList = isPremium && hasActiveList;
+
   const handleClick = () => {
     if (isGenerating) return;
-    if (hasActiveList) {
+    if (!isPremium) {
+      onLockedCreate?.();
+      return;
+    }
+    if (isBlockedByActiveList) {
       toast.error(
         t("shoppingLists.createNew.completeActiveError", {
           defaultValue: "Please complete your active shopping list first! 🛒",
@@ -80,11 +90,7 @@ export function CreateListCTA({
       );
       return;
     }
-    if (isPremium && onGenerate) {
-      onGenerate();
-    } else if (!isPremium) {
-      window.location.href = "/profile/billing";
-    }
+    onGenerate?.();
   };
 
   return (
@@ -97,18 +103,18 @@ export function CreateListCTA({
           : { duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }
       }
       whileHover={
-        shouldReduceMotion || isGenerating || hasActiveList
+        shouldReduceMotion || isGenerating || isBlockedByActiveList
           ? {}
           : { scale: 1.02, y: -4 }
       }
       whileTap={
-        shouldReduceMotion || isGenerating || hasActiveList
+        shouldReduceMotion || isGenerating || isBlockedByActiveList
           ? {}
           : { scale: 0.97 }
       }
       onClick={handleClick}
       className={`relative group select-none flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 rounded-2xl h-full ${
-        hasActiveList ? "cursor-not-allowed opacity-80" : "cursor-pointer"
+        isBlockedByActiveList ? "cursor-not-allowed opacity-80" : "cursor-pointer"
       } ${className || ""}`}
       role="button"
       tabIndex={0}
@@ -131,7 +137,9 @@ export function CreateListCTA({
       {/* Animated glow ring */}
       {!isGenerating && (
         <motion.div
-          className="absolute -inset-[2px] rounded-2xl bg-eatrivo-purple/20 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          className={`absolute -inset-[2px] rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
+            isPremium ? "bg-eatrivo-purple/20" : "bg-amber-400/25"
+          }`}
           animate={shouldReduceMotion ? {} : { opacity: [0, 0.3, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           aria-hidden="true"
@@ -140,10 +148,12 @@ export function CreateListCTA({
 
       {/* Card body */}
       <div
-        className={`relative overflow-hidden flex-1 rounded-2xl border-2 transition-all duration-500 bg-white h-full ${
+        className={`relative overflow-hidden flex-1 rounded-2xl border-2 transition-all duration-500 h-full ${
           isGenerating
-            ? "border-eatrivo-purple/50 shadow-[0_0_30px_-5px_rgba(139,92,246,0.3)] ring-4 ring-eatrivo-purple/10 scale-[1.01]"
-            : "border-eatrivo-purple/30 hover:border-eatrivo-purple/60 shadow-sm"
+            ? "bg-white border-eatrivo-purple/50 shadow-[0_0_30px_-5px_rgba(139,92,246,0.3)] ring-4 ring-eatrivo-purple/10 scale-[1.01]"
+            : isPremium
+              ? "bg-white border-eatrivo-purple/30 hover:border-eatrivo-purple/60 shadow-sm"
+              : "bg-gradient-to-br from-amber-50 to-orange-50/60 border-amber-400/40 hover:border-amber-400/70 shadow-sm shadow-amber-100"
         }`}
       >
         {/* Animated Background when generating */}
@@ -201,11 +211,15 @@ export function CreateListCTA({
           {!isGenerating && (
             <>
               <div
-                className="absolute -top-6 -right-6 w-24 h-24 bg-eatrivo-purple/5 rounded-full blur-md"
+                className={`absolute -top-6 -right-6 w-24 h-24 rounded-full blur-md ${
+                  isPremium ? "bg-eatrivo-purple/5" : "bg-amber-400/10"
+                }`}
                 aria-hidden="true"
               />
               <div
-                className="absolute -bottom-4 -left-4 w-16 h-16 bg-eatrivo-purple/5 rounded-full blur-md"
+                className={`absolute -bottom-4 -left-4 w-16 h-16 rounded-full blur-md ${
+                  isPremium ? "bg-eatrivo-purple/5" : "bg-orange-400/10"
+                }`}
                 aria-hidden="true"
               />
             </>
@@ -282,7 +296,9 @@ export function CreateListCTA({
                 {/* Icon row */}
                 <div className="flex items-center gap-3 mb-4">
                   <motion.div
-                    className="w-12 h-12 md:w-10 md:h-10 rounded-xl bg-eatrivo-purple/10 flex items-center justify-center"
+                    className={`w-12 h-12 md:w-10 md:h-10 rounded-xl flex items-center justify-center ${
+                      isPremium ? "bg-eatrivo-purple/10" : "bg-amber-400/15"
+                    }`}
                     animate={
                       shouldReduceMotion ? {} : { rotate: [0, 8, -5, 0] }
                     }
@@ -303,7 +319,7 @@ export function CreateListCTA({
                         />
                       )
                     ) : (
-                      <Lock className="w-4 h-4 text-eatrivo-purple" />
+                      <Lock className="w-4 h-4 text-amber-600" />
                     )}
                   </motion.div>
 
@@ -318,15 +334,24 @@ export function CreateListCTA({
                     }}
                   >
                     <Sparkles
-                      className="w-5 h-5 text-eatrivo-purple/60"
+                      className={`w-5 h-5 ${isPremium ? "text-eatrivo-purple/60" : "text-amber-500/80"}`}
                       aria-hidden="true"
                     />
                   </motion.div>
+
+                  {/* PRO badge — only for locked state */}
+                  {!isPremium && (
+                    <span className="ml-auto rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-amber-700 ring-1 ring-amber-400/30">
+                      PRO
+                    </span>
+                  )}
                 </div>
 
                 {/* Text */}
                 <div>
-                  <p className="text-lg md:text-base font-bold text-gray-900 mb-2 md:mb-1 leading-snug">
+                  <p className={`text-lg md:text-base font-bold mb-2 md:mb-1 leading-snug ${
+                    isPremium ? "text-gray-900" : "text-amber-800"
+                  }`}>
                     {isPremium
                       ? hasActiveList
                         ? t("shoppingLists.createNew.activeListExists", {
@@ -339,7 +364,9 @@ export function CreateListCTA({
                           defaultValue: "Unlock with Premium 🔒",
                         })}
                   </p>
-                  <p className="text-base md:text-sm text-gray-500 leading-relaxed">
+                  <p className={`text-base md:text-sm leading-relaxed ${
+                    isPremium ? "text-gray-500" : "text-amber-700/70"
+                  }`}>
                     {isPremium
                       ? hasActiveList
                         ? t(
@@ -395,6 +422,7 @@ export default function ShoppingListsOverview({
   isGenerating = false,
   membership = "basic",
   onGenerateNew,
+  onLockedCreate,
 }: ShoppingListsOverviewProps) {
   const t = useTranslations("dashboard");
   const [showAll, setShowAll] = useState(false);
@@ -448,6 +476,23 @@ export default function ShoppingListsOverview({
                 : t("shoppingLists.showAll")}
             </Button>
           )}
+          {/* Locked "Create List" button — visible for basic users */}
+          {!isLoading && !isPremiumUser && (
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={onLockedCreate}
+              className="flex items-center gap-1.5 rounded-full border border-dashed border-amber-400/70 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 shadow-sm transition hover:border-amber-400 hover:bg-amber-100"
+            >
+              <Lock className="h-3 w-3 shrink-0" />
+              {t("shoppingLists.createNew.title", {
+                defaultValue: "Create List",
+              })}
+              <span className="rounded-full bg-amber-400/25 px-1.5 py-px text-[10px] font-bold tracking-wide text-amber-600">
+                PRO
+              </span>
+            </motion.button>
+          )}
         </div>
       </div>
 
@@ -488,14 +533,15 @@ export default function ShoppingListsOverview({
             transition={{ duration: 0.4, ease: "easeOut" as const }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {/* Create New CTA — first card in the grid (hidden if active list exists unless generating) */}
-            {(!hasActiveList || isGenerating) && (
+            {/* Create New CTA — always visible; locked for basic users */}
+            {(!hasActiveList || isGenerating || !isPremiumUser) && (
               <div className="hidden md:block">
                 <CreateListCTA
                   isPremium={isPremiumUser}
                   isGenerating={isGenerating}
                   hasActiveList={hasActiveList}
                   onGenerate={onGenerateNew}
+                  onLockedCreate={onLockedCreate}
                 />
               </div>
             )}
@@ -513,13 +559,14 @@ export default function ShoppingListsOverview({
             className="space-y-6"
           >
             {/* CTA card above the empty-active-state message */}
-            {(!hasActiveList || isGenerating) && (
+            {(!hasActiveList || isGenerating || !isPremiumUser) && (
               <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <CreateListCTA
                   isPremium={isPremiumUser}
                   isGenerating={isGenerating}
                   hasActiveList={hasActiveList}
                   onGenerate={onGenerateNew}
+                  onLockedCreate={onLockedCreate}
                 />
               </div>
             )}
@@ -554,13 +601,14 @@ export default function ShoppingListsOverview({
             className="space-y-6"
           >
             {/* CTA card above the fully-empty-state message */}
-            {(!hasActiveList || isGenerating) && (
+            {(!hasActiveList || isGenerating || !isPremiumUser) && (
               <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <CreateListCTA
                   isPremium={isPremiumUser}
                   isGenerating={isGenerating}
                   hasActiveList={hasActiveList}
                   onGenerate={onGenerateNew}
+                  onLockedCreate={onLockedCreate}
                 />
               </div>
             )}

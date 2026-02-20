@@ -85,7 +85,7 @@ export default function BillingPage() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ tier, locale }),
       });
       const { url, error } = await res.json();
       if (url) {
