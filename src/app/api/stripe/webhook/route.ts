@@ -19,6 +19,8 @@ import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
+export const runtime = "nodejs";
+
 export async function POST(req: NextRequest) {
   // Apply rate limit against webhook flooding
   const identifier = getRateLimitIdentifier(req);
@@ -548,10 +550,3 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
       .onConflictDoNothing();
   }
 }
-
-// Disable body parsing for webhook (need raw body for signature verification)
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
