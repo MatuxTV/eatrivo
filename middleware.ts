@@ -71,6 +71,11 @@ function negotiateLocale(req: Parameters<Parameters<typeof auth>[0]>[0]) {
 export default auth((req) => {
   const { nextUrl } = req;
 
+  // Skip middleware for Stripe webhook
+  if (nextUrl.pathname.includes("/api/stripe/webhook")) {
+    return NextResponse.next();
+  }
+
   const { locale: localeInPath } = stripLocaleFromPathname(nextUrl.pathname);
   if (!localeInPath) {
     const preferred = negotiateLocale(req);
@@ -81,7 +86,9 @@ export default auth((req) => {
 
   const intlResponse = intlMiddleware(req);
 
-  const { pathname: pathnameWithoutLocale } = stripLocaleFromPathname(nextUrl.pathname);
+  const { pathname: pathnameWithoutLocale } = stripLocaleFromPathname(
+    nextUrl.pathname,
+  );
   const locale = localeInPath;
 
   const isLoggedIn = !!req.auth?.user;
@@ -91,7 +98,7 @@ export default auth((req) => {
 
   // Protect all routes defined in permissions config
   const protectedRoute = Object.keys(permissions).some((route) =>
-    new RegExp(`^/${route}(/|$)`).test(pathnameWithoutLocale)
+    new RegExp(`^/${route}(/|$)`).test(pathnameWithoutLocale),
   );
 
   // Auth routes that logged-in users shouldn't access
@@ -104,7 +111,10 @@ export default auth((req) => {
   }
 
   // Check admin access specifically
-  if (pathnameWithoutLocale.startsWith("/admin") && !hasAccess(pathnameWithoutLocale, userRole)) {
+  if (
+    pathnameWithoutLocale.startsWith("/admin") &&
+    !hasAccess(pathnameWithoutLocale, userRole)
+  ) {
     return NextResponse.redirect(new URL(`/${locale}/not-authorized`, nextUrl));
   }
 
@@ -119,8 +129,10 @@ export default auth((req) => {
   }
 
   return intlResponse;
-})
+});
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|manifest.json|site.webmanifest|logo/.*).*)"],
-}
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|manifest.json|site.webmanifest|logo/.*).*)",
+  ],
+};
