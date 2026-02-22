@@ -15,6 +15,41 @@
       "when": 1769072272929,
       "tag": "0001_robust_saracen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770285846933,
+      "tag": "0002_add_analytics_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770981633729,
+      "tag": "0003_organic_hellion",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1771321030286,
+      "tag": "0004_last_clea",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1771598860097,
+      "tag": "0005_happy_malcolm_colcord",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1771666700543,
+      "tag": "0006_chubby_rachel_grey",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
+import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { db } from "../../../../";
 import { userProfiles, users } from "@/db/schema";
 import { eq, isNotNull } from "drizzle-orm";
@@ -8,6 +8,7 @@ import { UpdateNotificationEmail } from "@/components/email-templates/UpdateNoti
 import { logger } from "@/lib/logger";
 import { getMessages } from "next-intl/server";
 import type { EmailTranslations } from "@/types/email.types";
+import { getUserLanguage } from "@/lib/user-utils";
 
 interface UpdateItem {
   title: string;
@@ -26,30 +27,43 @@ interface SendUpdateEmailRequest {
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    
-    // Check if user is admin/trainer
-    if (!session?.user?.membership || !["trainer", "admin"].includes(session.user.membership.toLowerCase())) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
 
     const body: SendUpdateEmailRequest = await request.json();
-    const { version, updateTitle, updateDescription, updates, testEmail, sendToAll } = body;
+    const {
+      version,
+      updateTitle,
+      updateDescription,
+      updates,
+      testEmail,
+      sendToAll,
+    } = body;
 
     // Validate required fields
-    if (!version || !updateTitle || !updateDescription || !updates || updates.length === 0) {
+    if (
+      !version ||
+      !updateTitle ||
+      !updateDescription ||
+      !updates ||
+      updates.length === 0
+    ) {
       return NextResponse.json(
-        { error: "Missing required fields: version, updateTitle, updateDescription, updates" },
-        { status: 400 }
+        {
+          error:
+            "Missing required fields: version, updateTitle, updateDescription, updates",
+        },
+        { status: 400 },
       );
     }
 
-    // Fetch translations (default to SK)
-    const messages = await getMessages({ locale: "sk" });
-    const translations = (messages.emails as unknown) as EmailTranslations;
-
     // If testEmail is provided, send only to that email
     if (testEmail) {
+      // Get test user's language preference
+      const testUserLocale = await getUserLanguage(testEmail);
+      const messages = await getMessages({ locale: testUserLocale });
+      const translations = messages.emails as unknown as EmailTranslations;
+
       const { error } = await resend.emails.send({
         from: DEFAULT_FROM_EMAIL,
         to: testEmail,
@@ -66,11 +80,14 @@ export async function POST(request: Request) {
 
       if (error) {
         logger.error("Failed to send test update email", error);
-        return NextResponse.json({ error: "Failed to send test email" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to send test email" },
+          { status: 500 },
+        );
       }
 
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         message: "Test email sent successfully",
         sentTo: 1,
       });
@@ -97,6 +114,11 @@ export async function POST(request: Request) {
       // Send emails sequentially with delay to respect rate limits (2 req/sec)
       for (const user of usersWithProfiles) {
         try {
+          // Get each user's language preference
+          const userLocale = await getUserLanguage(user.email);
+          const messages = await getMessages({ locale: userLocale });
+          const translations = messages.emails as unknown as EmailTranslations;
+
           const { error } = await resend.emails.send({
             from: DEFAULT_FROM_EMAIL,
             to: user.email,
@@ -119,16 +141,23 @@ export async function POST(request: Request) {
           }
         } catch (err) {
           results.failed++;
-          results.errors.push(`${user.email}: ${err instanceof Error ? err.message : "Unknown error"}`);
+          results.errors.push(
+            `${user.email}: ${err instanceof Error ? err.message : "Unknown error"}`,
+          );
         }
 
         // Wait 600ms between each email to stay under 2 req/sec limit
-        await new Promise(resolve => setTimeout(resolve, 600));
+        await new Promise((resolve) => setTimeout(resolve, 600));
       }
 
-      logger.info("Update emails sent", { 
+      logger.info("Update emails sent", {
         context: "SendUpdateEmail",
-        metadata: { sent: results.sent, failed: results.failed, version, errors: results.errors } 
+        metadata: {
+          sent: results.sent,
+          failed: results.failed,
+          version,
+          errors: results.errors,
+        },
       });
 
       return NextResponse.json({
@@ -142,14 +171,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { error: "Please specify testEmail or sendToAll: true" },
-      { status: 400 }
+      { status: 400 },
     );
-
   } catch (error) {
     logger.error("Error in send-update-email API", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

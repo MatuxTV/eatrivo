@@ -7,6 +7,7 @@ declare module "next-auth" {
     lastSeenWelcomeVersion?: string;
     locale?: string;
     hideInstallPrompt?: boolean;
+    badges?: string[];
   }
 
   interface Session {
@@ -16,6 +17,7 @@ declare module "next-auth" {
       lastSeenWelcomeVersion?: string;
       locale?: string;
       hideInstallPrompt?: boolean;
+      badges?: string[];
     } & DefaultSession["user"];
   }
 }

@@ -11,7 +11,7 @@ export default async function NotAuthorized({ params }: PageProps) {
   const locale: Locale = isLocale(localeParam) ? localeParam : "sk";
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
+    <main className="flex flex-col items-center justify-center min-h-screen bg-eatrivo-white-primary px-4">
       <div className="max-w-md w-full text-center">
         <h1 className="text-3xl font-bold text-destructive mb-4">Access Denied</h1>
         <p className="mb-6 text-muted-foreground">

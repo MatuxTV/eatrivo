@@ -1,7 +1,21 @@
 ﻿import { motion } from "framer-motion";
-import { Plus, Users, UserCircle, Mail, type LucideIcon } from "lucide-react";
+import {
+  Plus,
+  Users,
+  UserCircle,
+  Mail,
+  BarChart3,
+  FileText,
+  type LucideIcon,
+} from "lucide-react";
 
-type TabId = "upload" | "users" | "profiles" | "emails";
+type TabId =
+  | "upload"
+  | "users"
+  | "profiles"
+  | "emails"
+  | "templates"
+  | "analytics";
 
 interface Tab {
   id: TabId;
@@ -19,6 +33,8 @@ const tabs: Tab[] = [
   { id: "users", label: "Používatelia", icon: Users },
   { id: "profiles", label: "Profily", icon: UserCircle },
   { id: "emails", label: "Emaily", icon: Mail },
+  { id: "templates", label: "Šablóny", icon: FileText },
+  { id: "analytics", label: "Analytics", icon: BarChart3 },
 ];
 
 export default function AdminTabs({ activeTab, onTabChange }: AdminTabsProps) {

@@ -26,13 +26,21 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import type { UpdateEmailFormData, UpdateItem, User as UserType } from "../types";
+import type {
+  UpdateEmailFormData,
+  UpdateItem,
+  User as UserType,
+} from "../types";
 
 interface EmailsTabProps {
   users: UserType[];
   emailFormData: UpdateEmailFormData;
   onEmailInputChange: (field: keyof UpdateEmailFormData, value: string) => void;
-  onUpdateItemChange: (index: number, field: keyof UpdateItem, value: string) => void;
+  onUpdateItemChange: (
+    index: number,
+    field: keyof UpdateItem,
+    value: string,
+  ) => void;
   onAddUpdateItem: () => void;
   onRemoveUpdateItem: (index: number) => void;
   onSendTestEmail: () => void;
@@ -85,39 +93,54 @@ export default function EmailsTab({
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="version" className="mb-1.5 block text-xs sm:text-sm">
+                    <Label
+                      htmlFor="version"
+                      className="mb-1.5 block text-xs sm:text-sm"
+                    >
                       Verzia *
                     </Label>
                     <Input
                       id="version"
                       placeholder="napr. 1.2.0"
                       value={emailFormData.version}
-                      onChange={(e) => onEmailInputChange("version", e.target.value)}
+                      onChange={(e) =>
+                        onEmailInputChange("version", e.target.value)
+                      }
                       className="h-10 sm:h-11"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="updateTitle" className="mb-1.5 block text-xs sm:text-sm">
+                    <Label
+                      htmlFor="updateTitle"
+                      className="mb-1.5 block text-xs sm:text-sm"
+                    >
                       Názov aktualizácie *
                     </Label>
                     <Input
                       id="updateTitle"
                       placeholder="napr. Nové funkcie pre váš dashboard"
                       value={emailFormData.updateTitle}
-                      onChange={(e) => onEmailInputChange("updateTitle", e.target.value)}
+                      onChange={(e) =>
+                        onEmailInputChange("updateTitle", e.target.value)
+                      }
                       className="h-10 sm:h-11"
                     />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="updateDescription" className="mb-1.5 block text-xs sm:text-sm">
+                  <Label
+                    htmlFor="updateDescription"
+                    className="mb-1.5 block text-xs sm:text-sm"
+                  >
                     Úvodný text *
                   </Label>
                   <Textarea
                     id="updateDescription"
                     placeholder="Krátky úvodný text pre email..."
                     value={emailFormData.updateDescription}
-                    onChange={(e) => onEmailInputChange("updateDescription", e.target.value)}
+                    onChange={(e) =>
+                      onEmailInputChange("updateDescription", e.target.value)
+                    }
                     rows={2}
                     className="min-h-[70px] text-sm"
                   />
@@ -144,7 +167,10 @@ export default function EmailsTab({
 
                 <div className="space-y-3">
                   {emailFormData.updates.map((update, index) => (
-                    <div key={index} className="p-3 sm:p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+                    <div
+                      key={index}
+                      className="p-3 sm:p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3"
+                    >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-gray-500">
                           Zmena #{index + 1}
@@ -163,12 +189,14 @@ export default function EmailsTab({
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                          <Label className="mb-1 block text-xs text-gray-600">Typ</Label>
+                          <Label className="mb-1 block text-xs text-gray-600">
+                            Typ
+                          </Label>
                           <Select
                             value={update.type}
-                            onValueChange={(value: "feature" | "improvement" | "fix") =>
-                              onUpdateItemChange(index, "type", value)
-                            }
+                            onValueChange={(
+                              value: "feature" | "improvement" | "fix",
+                            ) => onUpdateItemChange(index, "type", value)}
                           >
                             <SelectTrigger className="h-9 text-xs">
                               <SelectValue />
@@ -196,21 +224,33 @@ export default function EmailsTab({
                           </Select>
                         </div>
                         <div className="sm:col-span-2">
-                          <Label className="mb-1 block text-xs text-gray-600">Názov</Label>
+                          <Label className="mb-1 block text-xs text-gray-600">
+                            Názov
+                          </Label>
                           <Input
                             placeholder="napr. Sledovanie váhy"
                             value={update.title}
-                            onChange={(e) => onUpdateItemChange(index, "title", e.target.value)}
+                            onChange={(e) =>
+                              onUpdateItemChange(index, "title", e.target.value)
+                            }
                             className="h-9 text-sm"
                           />
                         </div>
                       </div>
                       <div>
-                        <Label className="mb-1 block text-xs text-gray-600">Popis</Label>
+                        <Label className="mb-1 block text-xs text-gray-600">
+                          Popis
+                        </Label>
                         <Textarea
                           placeholder="Stručný popis zmeny..."
                           value={update.description}
-                          onChange={(e) => onUpdateItemChange(index, "description", e.target.value)}
+                          onChange={(e) =>
+                            onUpdateItemChange(
+                              index,
+                              "description",
+                              e.target.value,
+                            )
+                          }
                           rows={2}
                           className="min-h-[60px] text-sm"
                         />
@@ -227,7 +267,10 @@ export default function EmailsTab({
                   Test email
                 </h3>
                 <div>
-                  <Label htmlFor="testEmail" className="mb-1.5 block text-xs sm:text-sm">
+                  <Label
+                    htmlFor="testEmail"
+                    className="mb-1.5 block text-xs sm:text-sm"
+                  >
                     Testovacia adresa
                   </Label>
                   <Input
@@ -235,7 +278,10 @@ export default function EmailsTab({
                     type="email"
                     placeholder="vas@email.com"
                     value={emailFormData.testEmail}
-                    onChange={(e) => onEmailInputChange("testEmail", e.target.value)}
+                    onChange={(e) =>
+                      onEmailInputChange("testEmail", e.target.value)
+                    }
+                    autoComplete="email"
                     className="h-10 sm:h-11"
                   />
                 </div>
@@ -244,7 +290,12 @@ export default function EmailsTab({
               {/* Send Result */}
               {emailSendResult && (
                 <div
-                  className={"p-4 rounded-lg border " + (emailSendResult.success ? "border-green-600 bg-green-50" : "border-red-600 bg-red-50")}
+                  className={
+                    "p-4 rounded-lg border " +
+                    (emailSendResult.success
+                      ? "border-green-600 bg-green-50"
+                      : "border-red-600 bg-red-50")
+                  }
                 >
                   <div className="flex items-start gap-3">
                     {emailSendResult.success ? (
@@ -253,16 +304,10 @@ export default function EmailsTab({
                       <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                     )}
                     <div className="flex-1">
-                      <h4
-                        className={"text-sm font-semibold mb-1"}
-                      >
+                      <h4 className={"text-sm font-semibold mb-1"}>
                         {emailSendResult.success ? "Úspech" : "Chyba"}
                       </h4>
-                      <p
-                        className={"text-sm"}
-                      >
-                        {emailSendResult.message}
-                      </p>
+                      <p className={"text-sm"}>{emailSendResult.message}</p>
                       {emailSendResult.sent !== undefined && (
                         <p className="text-xs text-gray-600 mt-2">
                           Odoslaných: {emailSendResult.sent}
@@ -270,16 +315,21 @@ export default function EmailsTab({
                             `, Zlyhalo: ${emailSendResult.failed}`}
                         </p>
                       )}
-                      {emailSendResult.errors && emailSendResult.errors.length > 0 && (
-                        <div className="mt-2 space-y-1">
-                          <p className="text-xs font-medium text-red-800">Chyby:</p>
-                          <ul className="text-xs text-red-700 list-disc list-inside">
-                            {emailSendResult.errors.slice(0, 5).map((error, i) => (
-                              <li key={i}>{error}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
+                      {emailSendResult.errors &&
+                        emailSendResult.errors.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            <p className="text-xs font-medium text-red-800">
+                              Chyby:
+                            </p>
+                            <ul className="text-xs text-red-700 list-disc list-inside">
+                              {emailSendResult.errors
+                                .slice(0, 5)
+                                .map((error, i) => (
+                                  <li key={i}>{error}</li>
+                                ))}
+                            </ul>
+                          </div>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -328,8 +378,12 @@ export default function EmailsTab({
             <div className="space-y-3 relative z-10">
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-2xl sm:text-3xl font-bold text-white">{users.length}</p>
-                  <p className="text-xs text-white/80">Celkový počet používateľov</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-white">
+                    {users.length}
+                  </p>
+                  <p className="text-xs text-white/80">
+                    Celkový počet používateľov
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-semibold text-white">

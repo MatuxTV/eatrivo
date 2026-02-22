@@ -1,10 +1,10 @@
 export const APP_CONFIG = {
   // Current welcome dialog version
-  WELCOME_DIALOG_VERSION: "0.6.6",
+  WELCOME_DIALOG_VERSION: "1.0",
   
   // Changelog for each version
   WELCOME_DIALOG_CHANGELOG: {
-    "0.6.6": {
+    "1.0": {
       title: "Vitajte v Eatrivo! V tejto verzii:",
       features: [
         "EATRIVO je teraz optimalizované pre mobilné zariadenia. Stlačte tlačidlo zdieľania v prehliadači a pridajte Eatrivo na domovskú obrazovku pre rýchly prístup k vášmu plánovaču jedál.",

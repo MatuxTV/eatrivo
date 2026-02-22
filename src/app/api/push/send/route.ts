@@ -1,6 +1,6 @@
 ﻿import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { auth } from '../../../../../auth';
+import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { db } from '@/index';
 import { pushSubscriptions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -33,15 +33,8 @@ export async function POST(request: NextRequest) {
        return NextResponse.json({ error: 'Server configuration missing' }, { status: 500 });
     }
 
-    const session = await auth();
-
-    // Only admins/trainers can send push notifications
-    if (!session?.user?.membership || !['trainer', 'admin'].includes(session.user.membership.toLowerCase())) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 403 }
-      );
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
 
     const body = await request.json();
     const { userId, payload }: { userId: string; payload: PushPayload } = body;
