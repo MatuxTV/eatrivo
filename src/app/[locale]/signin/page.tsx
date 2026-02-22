@@ -34,7 +34,6 @@ export default async function SignInPage({ params }: PageProps) {
   const locale: Locale = isLocale(localeParam) ? localeParam : "sk";
 
   const t = await getTranslations({ locale, namespace: "auth" });
-  const tCommon = await getTranslations({ locale, namespace: "common" });
 
   const session = await auth();
   if (session?.user) {

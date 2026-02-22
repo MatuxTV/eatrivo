@@ -90,7 +90,7 @@ export default function TemplatesTab() {
     }
   };
 
-  const handleSave = async (templateData: any) => {
+  const handleSave = async (templateData: Partial<Template>) => {
     try {
       if (editingTemplate) {
         // Update existing template
@@ -137,9 +137,12 @@ export default function TemplatesTab() {
         if (result.mealPlanTemplate) {
           toast.success("Šablóna a jedálny lístok vytvorené! 🎉");
         } else {
-          toast.success("Šablóna vytvorená (jedálny lístok sa nepodaril vygenerovať)", {
-            duration: 4000,
-          });
+          toast.success(
+            "Šablóna vytvorená (jedálny lístok sa nepodaril vygenerovať)",
+            {
+              duration: 4000,
+            },
+          );
         }
       }
 
@@ -148,10 +151,12 @@ export default function TemplatesTab() {
       setSelectedGoal(null);
       setSelectedDiet(null);
       fetchTemplates();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.dismiss("template-save");
       console.error("Error saving template:", error);
-      toast.error(error.message || "Nepodarilo sa uložiť šablónu");
+      toast.error(
+        error instanceof Error ? error.message : "Nepodarilo sa uložiť šablónu",
+      );
     }
   };
 
@@ -192,7 +197,7 @@ export default function TemplatesTab() {
             template={editingTemplate}
             selectedGoal={selectedGoal}
             selectedDiet={selectedDiet}
-            onSave={handleSave}
+            onSave={(data) => handleSave(data as Partial<Template>)}
             onCancel={handleCancel}
           />
         ) : (

@@ -26,7 +26,7 @@ interface AnalyticsData {
   }[];
   componentInteractions: {
     id: string;
-    metadata: Record<string, any> | null;
+    metadata: Record<string, unknown> | null;
     createdAt: string;
     userFullName: string | null;
   }[];
@@ -155,7 +155,7 @@ export default function AnalyticsTab() {
           Aktivita používateľov (Posledné 3 dni)
         </h3>
         <div className="flex flex-wrap items-center justify-center gap-8">
-          {data.dailyActiveUsers.slice(-3).map((day, index) => {
+          {data.dailyActiveUsers.slice(-3).map((day) => {
             const ratio =
               data.overview.totalUsers > 0
                 ? (day.count / data.overview.totalUsers) * 100
@@ -510,13 +510,17 @@ export default function AnalyticsTab() {
 
               // Group by componentName
               const grouped = data.componentInteractions.reduce(
-                (acc, curr) => {
-                  const name = curr.metadata?.componentName || "Neznáme";
+                (
+                  acc: Record<string, typeof data.componentInteractions>,
+                  curr,
+                ) => {
+                  const name =
+                    (curr.metadata?.componentName as string) || "Neznáme";
                   if (!acc[name]) acc[name] = [];
                   acc[name].push(curr);
                   return acc;
                 },
-                {} as Record<string, typeof data.componentInteractions>,
+                {},
               );
 
               // Sort by count descending
@@ -602,7 +606,9 @@ export default function AnalyticsTab() {
                                               : "bg-gray-100 text-gray-700"
                                       }`}
                                     >
-                                      {event.metadata?.action || "Unknown"}
+                                      {String(
+                                        event.metadata?.action || "Unknown",
+                                      )}
                                     </span>
                                   </td>
                                   <td className="px-4 py-3">

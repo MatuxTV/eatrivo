@@ -20,13 +20,23 @@ const activityScores: Record<string, number> = {
 };
 
 // BMI categories and their health scores
-function getBMICategory(
-  bmi: number
-): { labelKey: string; score: number; color: string } {
+function getBMICategory(bmi: number): {
+  labelKey: string;
+  score: number;
+  color: string;
+} {
   if (bmi < 16)
-    return { labelKey: "health.bmi.severeUnderweight", score: 0.3, color: "#ef4444" };
+    return {
+      labelKey: "health.bmi.severeUnderweight",
+      score: 0.3,
+      color: "#ef4444",
+    };
   if (bmi < 17)
-    return { labelKey: "health.bmi.moderateUnderweight", score: 0.5, color: "#f97316" };
+    return {
+      labelKey: "health.bmi.moderateUnderweight",
+      score: 0.5,
+      color: "#f97316",
+    };
   if (bmi < 18.5)
     return { labelKey: "health.bmi.underweight", score: 0.7, color: "#eab308" };
   if (bmi < 25)
@@ -56,7 +66,11 @@ function getHealthScoreLabelKey(score: number): string {
   return "health.score.critical";
 }
 
-export default function BodyHealthCircle({ weight, height, activityLevel }: BodyHealthCircleProps) {
+export default function BodyHealthCircle({
+  weight,
+  height,
+  activityLevel,
+}: BodyHealthCircleProps) {
   const t = useTranslations("dashboard");
 
   const healthData = useMemo(() => {
@@ -70,8 +84,10 @@ export default function BodyHealthCircle({ weight, height, activityLevel }: Body
 
     // Calculate overall health score (0-100)
     // BMI contributes 60%, Activity contributes 40%
-    const healthScore = Math.round((bmiCategory.score * 0.6 + activityScore * 0.4) * 100);
-   
+    const healthScore = Math.round(
+      (bmiCategory.score * 0.6 + activityScore * 0.4) * 100,
+    );
+
     return {
       bmi: Math.round(bmi * 10) / 10,
       bmiCategory,
@@ -103,11 +119,7 @@ export default function BodyHealthCircle({ weight, height, activityLevel }: Body
       <div className="flex flex-col items-center">
         {/* Circular Progress */}
         <div className="relative" style={{ width: size, height: size }}>
-          <svg
-            className="transform -rotate-90"
-            width={size}
-            height={size}
-          >
+          <svg className="transform -rotate-90" width={size} height={size}>
             {/* Background circle */}
             <circle
               cx={size / 2}
@@ -131,10 +143,10 @@ export default function BodyHealthCircle({ weight, height, activityLevel }: Body
               className="transition-all duration-1000 ease-out"
             />
           </svg>
-          
+
           {/* Center content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span 
+            <span
               className="text-4xl font-bold"
               style={{ color: healthData.healthColor }}
             >
@@ -152,9 +164,11 @@ export default function BodyHealthCircle({ weight, height, activityLevel }: Body
           <div className="bg-gray-50 rounded-xl p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Scale className="w-4 h-4 text-gray-400" />
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">BMI</span>
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                BMI
+              </span>
             </div>
-            <div 
+            <div
               className="text-2xl font-bold"
               style={{ color: healthData.bmiCategory.color }}
             >
@@ -169,7 +183,9 @@ export default function BodyHealthCircle({ weight, height, activityLevel }: Body
           <div className="bg-gray-50 rounded-xl p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Activity className="w-4 h-4 text-gray-400" />
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{t("health.activityLabel")}</span>
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                {t("health.activityLabel")}
+              </span>
             </div>
             <div className="text-2xl font-bold text-eatrivo-purple">
               {healthData.activityScore}%

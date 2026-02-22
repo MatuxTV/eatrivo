@@ -40,8 +40,6 @@ interface ProfilesTabProps {
   selectedUserForProfile: string;
   onUserChange: (userId: string) => void;
   userInfo: UserInfo | null;
-  userShoppingLists?: UserShoppingList[];
-  userMealPlans?: UserMealPlan[];
   isLoadingUserInfo: boolean;
 }
 
@@ -50,8 +48,6 @@ export default function ProfilesTab({
   selectedUserForProfile,
   onUserChange,
   userInfo,
-  userShoppingLists,
-  userMealPlans,
   isLoadingUserInfo,
 }: ProfilesTabProps) {
   return (

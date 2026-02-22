@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/../auth";
 import { db } from "@/index";
-import { shoppingListTemplates, mealPlanTemplates, userProfiles } from "@/db/schema";
+import { userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function GET() {
@@ -45,11 +45,14 @@ export async function GET() {
     });
 
     // Group templates by goal + diet
-    const combinations = templates.reduce((acc, t) => {
-      const key = `${t.goal}_${t.diet}`;
-      acc[key] = t;
-      return acc;
-    }, {} as Record<string, (typeof templates)[0]>);
+    const combinations = templates.reduce(
+      (acc, t) => {
+        const key = `${t.goal}_${t.diet}`;
+        acc[key] = t;
+        return acc;
+      },
+      {} as Record<string, (typeof templates)[0]>,
+    );
 
     return NextResponse.json({
       totalShoppingListTemplates: templates.length,
@@ -61,13 +64,24 @@ export async function GET() {
     });
   } catch (error) {
     console.error("[Debug] Error fetching templates:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
 function getMissingCombinations(existing: Record<string, unknown>) {
   const goals = ["lose_weight", "maintain_weight", "gain_muscle"];
-  const diets = ["none", "lactosefree", "vegetarian", "vegan", "pescatarian", "ketogenic", "paleolithic"];
+  const diets = [
+    "none",
+    "lactosefree",
+    "vegetarian",
+    "vegan",
+    "pescatarian",
+    "ketogenic",
+    "paleolithic",
+  ];
 
   const missing = [];
   for (const goal of goals) {

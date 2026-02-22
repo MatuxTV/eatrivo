@@ -30,7 +30,7 @@ interface TemplateFormProps {
   template: Template | null;
   selectedGoal: Goal | null;
   selectedDiet: Diet | null;
-  onSave: (data: any) => void;
+  onSave: (data: unknown) => void;
   onCancel: () => void;
 }
 
@@ -76,9 +76,7 @@ export default function TemplateForm({
     } else {
       // Set default title for new templates
       if (selectedGoal && selectedDiet) {
-        setTitle(
-          `${goalLabels[selectedGoal]} - ${dietLabels[selectedDiet]}`,
-        );
+        setTitle(`${goalLabels[selectedGoal]} - ${dietLabels[selectedDiet]}`);
       }
     }
   }, [template, selectedGoal, selectedDiet]);
@@ -119,7 +117,11 @@ export default function TemplateForm({
       }
     } catch (error) {
       console.error("Error generating template:", error);
-      toast.error(error instanceof Error ? error.message : "Nepodarilo sa vygenerovať šablónu");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Nepodarilo sa vygenerovať šablónu",
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -205,8 +207,8 @@ export default function TemplateForm({
             {/* Meal Plan Auto-Generation Info */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-xs text-blue-800">
-                💡 <strong>Automatická generácia:</strong> Po uložení šablóny
-                sa automaticky vytvorí aj jedálny lístok na základe nákupného
+                💡 <strong>Automatická generácia:</strong> Po uložení šablóny sa
+                automaticky vytvorí aj jedálny lístok na základe nákupného
                 zoznamu.
               </p>
             </div>

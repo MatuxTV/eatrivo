@@ -2,10 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { db } from "@/index";
-import {
-  shoppingListTemplates,
-  mealPlanTemplates,
-} from "@/db/schema";
+import { shoppingListTemplates, mealPlanTemplates } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import {
   createTemplateSchema,
@@ -127,7 +124,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { shoppingList, mealPlan, includeMealPlan } = validationResult.data;
+    const { shoppingList } = validationResult.data;
 
     // Check if template already exists for this goal+diet combination
     const existingTemplate = await db.query.shoppingListTemplates.findFirst({
@@ -161,13 +158,16 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    apiLogger.info("Shopping list template created, starting meal plan generation", {
-      metadata: {
-        templateId: newShoppingListTemplate.id,
-        goal: shoppingList.goal,
-        diet: shoppingList.diet,
+    apiLogger.info(
+      "Shopping list template created, starting meal plan generation",
+      {
+        metadata: {
+          templateId: newShoppingListTemplate.id,
+          goal: shoppingList.goal,
+          diet: shoppingList.diet,
+        },
       },
-    });
+    );
 
     // AUTOMATICALLY generate meal plan template using AI
     let newMealPlanTemplate = null;
@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
       // Generate meal plan based on shopping list
       const mealPlanResult = await EatrivoAIService.generateWeeklyMealPlan(
         genericProfile,
-        { markdown: shoppingList.markdownContent }
+        { markdown: shoppingList.markdownContent },
       );
 
       apiLogger.info("Meal plan generated successfully", {
