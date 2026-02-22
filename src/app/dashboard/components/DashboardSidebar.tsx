@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { UserBadge } from "@/components/ui/UserBadge";
 
 interface DashboardSidebarProps {
   activeSection: "dashboard" | "pantry" | "chatWithRivo" | "profile";
@@ -80,9 +81,14 @@ export default function DashboardSidebar({
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-sm font-bold text-gray-900 truncate">
-                {session?.user?.name}
-              </h2>
+              <div className="flex items-center gap-2 mb-0.5">
+                <h2 className="text-sm font-bold text-gray-900 truncate">
+                  {session?.user?.name}
+                </h2>
+                {session?.user?.badges?.map((badgeStr) => (
+                  <UserBadge key={badgeStr} type={badgeStr} />
+                ))}
+              </div>
               <p
                 className={`text-xs capitalize ${getMembershipStatus(
                   session?.user?.membership,

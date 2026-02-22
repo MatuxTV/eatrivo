@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, Sparkles, ShieldCheck, Coffee } from "lucide-react";
+import { Check, Sparkles, ShieldCheck, Coffee, Gift } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { getLocaleFromPathname } from "@/i18n/routing";
@@ -63,12 +63,12 @@ function PricingCard({
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className={`relative flex flex-col rounded-2xl border bg-white p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-300 ${
         isPopular
-          // Fix: `scale-105` causes the card to overflow the grid container on
-          // single-column mobile layouts. On mobile we use `mt-4` to give extra
-          // breathing room around the "Popular" badge instead of scaling the
-          // card. The scale is only restored from `md:` where both cards sit
-          // side-by-side and there is space for the overflow.
-          ? "border-eatrivo-purple ring-2 ring-eatrivo-purple/20 mt-4 md:scale-105"
+          ? // Fix: `scale-105` causes the card to overflow the grid container on
+            // single-column mobile layouts. On mobile we use `mt-4` to give extra
+            // breathing room around the "Popular" badge instead of scaling the
+            // card. The scale is only restored from `md:` where both cards sit
+            // side-by-side and there is space for the overflow.
+            "border-eatrivo-purple ring-2 ring-eatrivo-purple/20 mt-4 md:scale-105"
           : "border-gray-200"
       }`}
     >
@@ -111,12 +111,51 @@ function PricingCard({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="flex items-center gap-1.5 mt-2"
+            className="flex items-center gap-1.5 mt-2 mb-2"
           >
             <Coffee className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
             <span className="text-xs text-amber-600 font-medium">
               {t("valueAnchor")}
             </span>
+          </motion.div>
+        )}
+
+        {isPopular && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85, rotate: -2 }}
+            whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+            viewport={{ once: true }}
+            whileHover={{ scale: 1.05, rotate: 1 }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 15,
+              delay: 0.4,
+            }}
+            className="mt-3 relative inline-flex group cursor-default"
+          >
+            {/* Animated glow aura */}
+            <motion.div
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 blur-sm"
+            />
+            {/* Badge body */}
+            <div className="relative flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm ring-1 ring-emerald-500/20">
+              <span className="flex items-center justify-center rounded-full bg-emerald-50 p-1">
+                <Gift
+                  className="h-3.5 w-3.5 text-emerald-600"
+                  aria-hidden="true"
+                />
+              </span>
+              <span className="text-sm font-extrabold uppercase tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">
+                {t("trialDays", { days: 14, defaultValue: "14 Dní Zadarmo" })}
+              </span>
+            </div>
           </motion.div>
         )}
       </div>
@@ -148,9 +187,7 @@ function PricingCard({
         >
           <Link
             href={
-              tier.tier === "basic"
-                ? `/${locale}/signin`
-                : `/${locale}/pricing`
+              tier.tier === "basic" ? `/${locale}/signin` : `/${locale}/pricing`
             }
           >
             {tier.tier === "basic" ? t("getStarted") : t("upgrade")}
@@ -166,7 +203,10 @@ function PricingCard({
           transition={{ delay: 0.5 }}
           className="flex items-center justify-center gap-1.5 mt-3"
         >
-          <ShieldCheck className="w-3.5 h-3.5 text-eatrivo-green" aria-hidden="true" />
+          <ShieldCheck
+            className="w-3.5 h-3.5 text-eatrivo-green"
+            aria-hidden="true"
+          />
           <span className="text-xs text-eatrivo-gray">{t("guarantee")}</span>
         </motion.div>
       )}

@@ -1,6 +1,7 @@
 # Medical Disclaimer
 
-**Effective Date:** [INSERT DATE]
+**Effective Date:** 22.2.2026  
+**Last Updated:** 22.2.2026
 
 ---
 

@@ -34,10 +34,7 @@ export async function GET(_request: NextRequest) {
   } catch (error) {
     console.error("Error checking shopping list generation status:", error);
     return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Internal server error" },
       { status: 500 },
     );
   }

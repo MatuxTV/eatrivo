@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     apiLogger.error('Error saving PWA preference', error as Error, { context: 'PWA Preference' });
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

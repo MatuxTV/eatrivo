@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
+import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { db } from "../../../../";
 import { userProfiles, users } from "@/db/schema";
 import { eq, isNotNull } from "drizzle-orm";
@@ -27,15 +27,8 @@ interface SendUpdateEmailRequest {
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-
-    // Check if user is admin/trainer
-    if (
-      !session?.user?.membership ||
-      !["trainer", "admin"].includes(session.user.membership.toLowerCase())
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
 
     const body: SendUpdateEmailRequest = await request.json();
     const {

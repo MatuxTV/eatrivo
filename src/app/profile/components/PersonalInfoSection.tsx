@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useLocale } from "next-intl";
+import { UserBadge } from "@/components/ui/UserBadge";
 
 type PersonalInfoFormData = {
   fullName: string;
@@ -27,6 +28,7 @@ interface PersonalInfoSectionProps {
     email: string;
     dateOfBirth: string;
     membership: string;
+    badges?: string[];
   } | null;
   isLoading: boolean;
   onUpdate: (data: {
@@ -132,9 +134,14 @@ export default function PersonalInfoSection({
       <Card className="p-8 bg-eatrivo-white">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              {t("personal.title")}
-            </h2>
+            <div className="flex items-center gap-2 mb-2">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {t("personal.title")}
+              </h2>
+              {profileData?.badges?.map((badgeStr) => (
+                <UserBadge key={badgeStr} type={badgeStr} />
+              ))}
+            </div>
             <p className="text-sm text-gray-500">{t("personal.description")}</p>
           </div>
 

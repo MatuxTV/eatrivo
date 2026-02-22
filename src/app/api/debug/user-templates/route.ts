@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
+import { auth } from "@/../auth";
 import { db } from "@/index";
 import { userProfiles, userInfoTable, shoppingListTemplates, templateAssignments, shoppingLists, mealPlans } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   try {
     const session = await auth();
     if (!session?.user) {
@@ -92,8 +96,9 @@ export async function GET() {
       },
     });
   } catch (error) {
+    console.error("[Debug] Error fetching user templates:", error);
     return NextResponse.json(
-      { error: String(error), stack: error instanceof Error ? error.stack : undefined },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

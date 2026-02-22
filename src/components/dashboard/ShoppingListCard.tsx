@@ -82,6 +82,18 @@ export default function ShoppingListCard({
   const handleDownload = async () => {
     try {
       setIsDownloading(true);
+
+      // Track analytics
+      fetch("/api/analytics/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventType: "feature",
+          eventName: "shopping_list_downloaded",
+          metadata: { shoppingListId: id },
+        }),
+      }).catch(console.error);
+
       // Open view page with download functionality
       const url = `/api/shopping-lists/${id}/view`;
       window.open(url, "_blank", "noopener,noreferrer");
@@ -99,6 +111,18 @@ export default function ShoppingListCard({
   const handleView = async () => {
     try {
       setIsViewing(true);
+
+      // Track analytics
+      fetch("/api/analytics/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventType: "feature",
+          eventName: "shopping_list_viewed",
+          metadata: { shoppingListId: id },
+        }),
+      }).catch(console.error);
+
       // View as rendered HTML markdown
       const url = `/api/shopping-lists/${id}/view`;
       window.open(url, "_blank", "noopener,noreferrer");

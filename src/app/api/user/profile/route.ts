@@ -2,7 +2,12 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth } from "../../../../../auth";
 import { db } from "@/index";
-import { users, userProfiles, userInfoTable } from "@/db/schema";
+import {
+  users,
+  userProfiles,
+  userInfoTable,
+  badges as badgesTable,
+} from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -48,20 +53,29 @@ export async function GET() {
       .limit(1);
 
     // Format nutrition data for the frontend
-    const formattedNutrition = nutrition.length > 0 ? {
-      ...nutrition[0],
-      weight: nutrition[0].weight ? String(nutrition[0].weight) : "",
-      activity_level: nutrition[0].activity_level?.trim() || null,
-      goal: nutrition[0].goal?.trim() || null,
-      cooking_time_pref: nutrition[0].cooking_time_pref?.trim() || null,
-      meal_prep: nutrition[0].meal_prep ?? false,
-      meal_prep_days: nutrition[0].meal_prep_days ?? null,
-      diet_preferences: nutrition[0].diet_preferences?.trim() || null,
-      budget_preference: nutrition[0].budget_preference?.trim() || null,
-      likes: nutrition[0].likes || "",
-      dislikes: nutrition[0].dislikes || "",
-      allergies: nutrition[0].allergies || "",
-    } : null;
+    const formattedNutrition =
+      nutrition.length > 0
+        ? {
+            ...nutrition[0],
+            weight: nutrition[0].weight ? String(nutrition[0].weight) : "",
+            activity_level: nutrition[0].activity_level?.trim() || null,
+            goal: nutrition[0].goal?.trim() || null,
+            cooking_time_pref: nutrition[0].cooking_time_pref?.trim() || null,
+            meal_prep: nutrition[0].meal_prep ?? false,
+            meal_prep_days: nutrition[0].meal_prep_days ?? null,
+            diet_preferences: nutrition[0].diet_preferences?.trim() || null,
+            budget_preference: nutrition[0].budget_preference?.trim() || null,
+            likes: nutrition[0].likes || "",
+            dislikes: nutrition[0].dislikes || "",
+            allergies: nutrition[0].allergies || "",
+          }
+        : null;
+
+    // Fetch user badges
+    const userBadges = await db.query.badges.findMany({
+      where: eq(badgesTable.userProfileId, userProfile.id),
+      columns: { type: true },
+    });
 
     return NextResponse.json({
       profile: {
@@ -71,6 +85,7 @@ export async function GET() {
           ? new Date(nutrition[0].dateOfBirth).toISOString().split("T")[0]
           : "",
         membership: user[0]?.membership || "basic",
+        badges: userBadges.map((b) => b.type),
       },
       nutrition: formattedNutrition,
     });

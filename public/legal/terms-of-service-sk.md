@@ -1,7 +1,7 @@
 # Všeobecné obchodné podmienky (VOP)
 
-**Dátum účinnosti:** [DOPLNIŤ DÁTUM]  
-**Posledná aktualizácia:** [DOPLNIŤ DÁTUM]
+**Dátum účinnosti:** 22.2.2026  
+**Posledná aktualizácia:** 22.2.2026
 
 ---
 
@@ -9,11 +9,9 @@
 
 ### 1.1 Prevádzkovateľ služby
 
-**[DOPLNIŤ ÚDAJE FIRMY/ŽIVNOSTNÍKA]**  
-Sídlo: [DOPLNIŤ ADRESU]  
-IČO: [DOPLNIŤ IČO]  
-DIČ: [DOPLNIŤ DIČ]  
-Email: [DOPLNIŤ EMAIL]
+Sídlo: Nad plážou 4419/25,97401,Banská Bystrica
+IČO: 56024665
+Email: info@valorixdigital.com
 
 (ďalej len „EatRivo" alebo „poskytovateľ")
 

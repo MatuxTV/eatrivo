@@ -1,18 +1,14 @@
 import type { NextRequest} from "next/server";
 import { NextResponse } from "next/server";
-import { auth } from "../../../../../../auth";
+import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { EatrivoAIService } from "@/lib/langchain";
 import { apiLogger } from "@/lib/logger";
 
 // POST endpoint - Generate shopping list markdown with AI (without saving to DB)
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    
-    // Check if user is admin/trainer
-    if (!session?.user?.membership || !["trainer", "admin"].includes(session.user.membership.toLowerCase())) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
 
     const body = await req.json();
     const { userInfo } = body;

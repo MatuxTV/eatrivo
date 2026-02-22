@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
+import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { db } from "@/index";
 import { userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -12,15 +12,9 @@ import { apiLogger } from "@/lib/logger";
  */
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-
-    // Check if user is admin/trainer
-    if (
-      !session?.user?.membership ||
-      !["trainer", "admin"].includes(session.user.membership.toLowerCase())
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
+    const { session } = authResult;
 
     const { userId } = await req.json();
 
@@ -69,8 +63,7 @@ export async function POST(req: Request) {
     apiLogger.error("Failed to manually assign template", error);
     return NextResponse.json(
       {
-        error: "Failed to assign template",
-        details: error instanceof Error ? error.message : String(error),
+        error: "Internal server error",
       },
       { status: 500 }
     );
@@ -83,15 +76,13 @@ export async function POST(req: Request) {
  */
 export async function GET() {
   try {
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
+    const { session } = authResult;
 
     // Get user profile
     const userProfile = await db.query.userProfiles.findFirst({
-      where: eq(userProfiles.userId, session.user.id),
+      where: eq(userProfiles.userId, session.user.id!),
     });
 
     if (!userProfile) {
@@ -105,7 +96,6 @@ export async function GET() {
       metadata: {
         userId: session.user.id,
         userProfileId: userProfile.id,
-        membership: session.user.membership,
       },
     });
 
@@ -127,8 +117,7 @@ export async function GET() {
     apiLogger.error("Failed to self-assign template", error);
     return NextResponse.json(
       {
-        error: "Failed to assign template",
-        details: error instanceof Error ? error.message : String(error),
+        error: "Internal server error",
       },
       { status: 500 }
     );

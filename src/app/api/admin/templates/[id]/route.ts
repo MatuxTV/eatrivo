@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { auth } from "../../../../../../auth";
+import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { db } from "@/index";
 import { shoppingListTemplates, mealPlanTemplates } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -16,14 +16,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    // Check if user is admin/trainer
-    const session = await auth();
-    if (
-      !session?.user?.membership ||
-      !["trainer", "admin"].includes(session.user.membership.toLowerCase())
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
 
     const { id: templateId } = await params;
 
@@ -68,14 +62,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    // Check if user is admin/trainer
-    const session = await auth();
-    if (
-      !session?.user?.membership ||
-      !["trainer", "admin"].includes(session.user.membership.toLowerCase())
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
 
     const { id: templateId } = await params;
 
@@ -142,14 +130,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    // Check if user is admin/trainer
-    const session = await auth();
-    if (
-      !session?.user?.membership ||
-      !["trainer", "admin"].includes(session.user.membership.toLowerCase())
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
 
     const { id: templateId } = await params;
 

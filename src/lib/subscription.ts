@@ -1,12 +1,12 @@
 import { db } from "@/index";
-import { users, subscriptions, userProfiles } from "@/db/schema";
+import { users, subscriptions, userProfiles, badges } from "@/db/schema";
 import { eq, and, lt, or } from "drizzle-orm";
 
 // Trial period configuration
 export const TRIAL_PERIODS = {
   LEGACY: 30, // days for users created before cutoff date
-  NEW: 14,    // days for new users
-  CUTOFF_DATE: new Date('2026-03-01T00:00:00Z'), // Change this to your desired cutoff
+  NEW: 14, // days for new users
+  CUTOFF_DATE: new Date("2026-03-01T00:00:00Z"), // Change this to your desired cutoff
 } as const;
 
 export interface SubscriptionStatus {
@@ -21,20 +21,28 @@ export interface SubscriptionStatus {
  * Get trial period days for a user based on their account creation date
  * Legacy users get 30 days, new users get 14 days
  */
-export async function getTrialPeriodForUser(
-  userId: string,
-): Promise<number> {
+export async function getTrialPeriodForUser(userId: string): Promise<number> {
   const userProfile = await db.query.userProfiles.findFirst({
     where: eq(userProfiles.userId, userId),
-    columns: { created_at: true },
+    columns: { id: true },
   });
 
-  if (!userProfile?.created_at) {
+  if (!userProfile) {
     return TRIAL_PERIODS.NEW; // Default to new user trial
   }
 
-  const isLegacyUser = userProfile.created_at < TRIAL_PERIODS.CUTOFF_DATE;
-  return isLegacyUser ? TRIAL_PERIODS.LEGACY : TRIAL_PERIODS.NEW;
+  // If userProfile.badges exists and has at least one item, they are a legacy user
+  // (Assuming relation is defined in DB schema. If not, I will do a separate badges query)
+
+  // Let's do a separate query to be safe, since relation might not be defined for badges:
+  const legacyBadge = await db.query.badges.findFirst({
+    where: and(
+      eq(badges.userProfileId, userProfile.id),
+      eq(badges.type, "legacy"),
+    ),
+  });
+
+  return legacyBadge ? TRIAL_PERIODS.LEGACY : TRIAL_PERIODS.NEW;
 }
 
 /**
@@ -174,7 +182,7 @@ export async function cleanupExpiredSubscriptions(): Promise<{
         eq(subscriptions.status, "active"),
         or(
           lt(subscriptions.currentPeriodEnd, now),
-          lt(subscriptions.cancelAt, now)
+          lt(subscriptions.cancelAt, now),
         ),
       ),
     );

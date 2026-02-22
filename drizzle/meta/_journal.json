@@ -43,6 +43,13 @@
       "when": 1771598860097,
       "tag": "0005_happy_malcolm_colcord",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1771666700543,
+      "tag": "0006_chubby_rachel_grey",
+      "breakpoints": true
     }
   ]
 }

@@ -11,6 +11,8 @@ import type {
   ShoppingListFormData,
   UpdateEmailFormData,
   UpdateItem,
+  UserShoppingList,
+  UserMealPlan,
 } from "./types";
 
 // Import shared components
@@ -45,6 +47,10 @@ export default function AdminDashboard() {
   const [selectedUserForProfile, setSelectedUserForProfile] =
     useState<string>("");
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [userShoppingLists, setUserShoppingLists] = useState<
+    UserShoppingList[]
+  >([]);
+  const [userMealPlans, setUserMealPlans] = useState<UserMealPlan[]>([]);
   const [isLoadingUserInfo, setIsLoadingUserInfo] = useState(false);
 
   // Email form state
@@ -553,6 +559,8 @@ export default function AdminDashboard() {
   const fetchUserInfo = async (userId: string) => {
     if (!userId || userId === "0") {
       setUserInfo(null);
+      setUserShoppingLists([]);
+      setUserMealPlans([]);
       return;
     }
 
@@ -566,6 +574,8 @@ export default function AdminDashboard() {
 
       const data = await response.json();
       setUserInfo(data.userInfo || null);
+      setUserShoppingLists(data.shoppingLists || []);
+      setUserMealPlans(data.mealPlans || []);
 
       if (!data.userInfo) {
         toast.info("Používateľ nemá vyplnené nutričné informácie");
@@ -574,6 +584,8 @@ export default function AdminDashboard() {
       console.error("Error fetching user info:", error);
       toast.error("Chyba pri načítavaní údajov používateľa");
       setUserInfo(null);
+      setUserShoppingLists([]);
+      setUserMealPlans([]);
     } finally {
       setIsLoadingUserInfo(false);
     }
@@ -677,6 +689,8 @@ export default function AdminDashboard() {
                 selectedUserForProfile={selectedUserForProfile}
                 onUserChange={handleProfileUserChange}
                 userInfo={userInfo}
+                userShoppingLists={userShoppingLists}
+                userMealPlans={userMealPlans}
                 isLoadingUserInfo={isLoadingUserInfo}
               />
             </motion.div>

@@ -1,11 +1,10 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
+import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { db } from "@/index";
 import {
   shoppingListTemplates,
   mealPlanTemplates,
-  users,
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import {
@@ -21,14 +20,8 @@ import { EatrivoAIService } from "@/lib/langchain";
  */
 export async function GET(request: NextRequest) {
   try {
-    // Check if user is admin/trainer
-    const session = await auth();
-    if (
-      !session?.user?.membership ||
-      !["trainer", "admin"].includes(session.user.membership.toLowerCase())
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
@@ -119,23 +112,9 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is admin/trainer
-    const session = await auth();
-    if (
-      !session?.user?.membership ||
-      !["trainer", "admin"].includes(session.user.membership.toLowerCase())
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Get user ID
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, session.user.email!),
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
+    const { session } = authResult;
 
     // Parse and validate request body
     const body = await request.json();
@@ -178,7 +157,7 @@ export async function POST(request: NextRequest) {
         description: shoppingList.description || null,
         markdownContent: shoppingList.markdownContent,
         isActive: shoppingList.isActive,
-        createdBy: user.id,
+        createdBy: session.user.id!,
       })
       .returning();
 
@@ -233,7 +212,7 @@ export async function POST(request: NextRequest) {
           diet: shoppingList.diet,
           meals: mealPlanResult,
           isActive: shoppingList.isActive,
-          createdBy: user.id,
+          createdBy: session.user.id!,
         })
         .returning();
 
@@ -258,7 +237,7 @@ export async function POST(request: NextRequest) {
         templateId: newShoppingListTemplate.id,
         goal: shoppingList.goal,
         diet: shoppingList.diet,
-        createdBy: user.id,
+        createdBy: session.user.id!,
         hasMealPlan: !!newMealPlanTemplate,
       },
     });

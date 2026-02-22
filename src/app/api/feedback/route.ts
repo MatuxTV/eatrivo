@@ -102,10 +102,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error submitting feedback:", error);
     return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Internal server error" },
       { status: 500 },
     );
   }

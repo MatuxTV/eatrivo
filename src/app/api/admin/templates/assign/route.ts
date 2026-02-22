@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { auth } from "../../../../../../auth";
+import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { z } from "zod";
 import { assignTemplateToUser } from "@/lib/template-assignment";
 import { apiLogger } from "@/lib/logger";
@@ -16,14 +16,8 @@ const assignRequestSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is admin/trainer
-    const session = await auth();
-    if (
-      !session?.user?.membership ||
-      !["trainer", "admin"].includes(session.user.membership.toLowerCase())
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
 
     // Parse and validate request body
     const body = await request.json();

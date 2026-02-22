@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 interface UpgradePopupProps {
   isOpen: boolean;
   onClose: () => void;
+  trialDays?: number;
 }
 
 const COUNTDOWN_SECONDS = 5;
@@ -111,8 +112,28 @@ const featureVariants = {
 const FEATURES = ["feature1", "feature2", "feature3"] as const;
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export function UpgradePopup({ isOpen, onClose }: UpgradePopupProps) {
+export function UpgradePopup({
+  isOpen,
+  onClose,
+  trialDays,
+}: UpgradePopupProps) {
   const [canClose, setCanClose] = useState(false);
+  const [fetchedTrialDays, setFetchedTrialDays] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isOpen && trialDays === undefined && fetchedTrialDays === null) {
+      fetch("/api/user/subscription")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.trialDays !== undefined) {
+            setFetchedTrialDays(data.trialDays);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [isOpen, trialDays, fetchedTrialDays]);
+
+  const displayTrialDays = trialDays ?? fetchedTrialDays ?? 14;
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const [ringProgress, setRingProgress] = useState(1);
 
@@ -250,8 +271,24 @@ export function UpgradePopup({ isOpen, onClose }: UpgradePopupProps) {
                 transition={{ delay: 0.38, duration: 0.38 }}
                 className="mb-1.5 text-center text-[1.35rem] font-bold leading-tight tracking-tight text-white"
               >
-                {t("title")}
+                {t("title", { defaultValue: "Odomkni naplno svoj potenciál!" })}
               </motion.h2>
+
+              {/* ── Trial Days Badge ───────────────────────────────── */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.42, duration: 0.3 }}
+                className="mb-2 flex justify-center"
+              >
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-eatrivo-green/20 px-3 py-1 text-sm font-bold text-eatrivo-green ring-1 ring-eatrivo-green/30 shadow-lg shadow-eatrivo-green/20">
+                  <Zap className="h-3.5 w-3.5" />
+                  {t("trialDays", {
+                    days: displayTrialDays,
+                    defaultValue: `${displayTrialDays} Dní Zadarmo`,
+                  })}
+                </span>
+              </motion.div>
 
               {/* ── Description ────────────────────────────────────── */}
               <motion.p

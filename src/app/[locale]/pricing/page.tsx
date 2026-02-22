@@ -15,6 +15,7 @@ export default function PricingPage() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const [currentMembership, setCurrentMembership] = useState<string>("basic");
+  const [trialDays, setTrialDays] = useState<number | undefined>(undefined);
   const [toast, setToast] = useState<{
     type: "success" | "error";
     message: string;
@@ -40,6 +41,9 @@ export default function PricingPage() {
         .then((data) => {
           if (data.membership) {
             setCurrentMembership(data.membership);
+          }
+          if (data.trialDays !== undefined) {
+            setTrialDays(data.trialDays);
           }
         })
         .catch(console.error);
@@ -175,6 +179,7 @@ export default function PricingPage() {
             isPopular
             isCurrentPlan={currentMembership === "premium"}
             onSelect={() => handleUpgrade("premium")}
+            trialDays={trialDays}
           />
         </div>
 

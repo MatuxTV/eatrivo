@@ -1,6 +1,7 @@
 # Vylúčenie zdravotnej zodpovednosti (Medical Disclaimer)
 
-**Dátum účinnosti:** [DOPLNIŤ DÁTUM]
+**Dátum účinnosti:** 22.2.2026  
+**Posledná aktualizácia:** 22.2.2026
 
 ---
 

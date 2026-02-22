@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Users, Crown, Activity, RefreshCw, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import * as Tooltip from "@radix-ui/react-tooltip";
 
 interface AnalyticsData {
   overview: {
@@ -17,14 +18,29 @@ interface AnalyticsData {
     metadata: Record<string, unknown> | null;
     createdAt: string;
     userId: string | null;
+    userFullName?: string | null;
   }[];
   eventsByType: {
     eventType: string;
     count: number;
   }[];
+  componentInteractions: {
+    id: string;
+    metadata: Record<string, any> | null;
+    createdAt: string;
+    userFullName: string | null;
+  }[];
+  recentAiInsights: {
+    id: string;
+    insightType: string;
+    title: string;
+    generatedAt: string | null;
+    userFullName: string | null;
+  }[];
   dailyActiveUsers: {
     date: string;
     count: number;
+    activeUsers: string[] | null;
   }[];
   subscriptionStats: {
     membership: string;
@@ -40,6 +56,24 @@ export default function AnalyticsTab() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedInteraction, setExpandedInteraction] = useState<string | null>(
+    null,
+  );
+
+  const eventNameTranslations: Record<string, string> = {
+    login: "Prihlásenie",
+    signup: "Vytvorenie používateľa",
+    logout: "Odhlásenie",
+    shopping_list_created: "Vytvorenie nákupného zoznamu",
+    shopping_list_viewed: "Zobrazenie nákupného zoznamu",
+    shopping_list_downloaded: "Stiahnutie nákupného zoznamu",
+    meal_plan_generated: "Generovanie jedálnička",
+    upgrade: "Upgrade predplatného",
+    downgrade: "Zmena predplatného nadol",
+    cancel: "Zrušenie predplatného",
+    onboarding_complete: "Dokončenie onboardingu",
+    push_subscribed: "Aktivácia notifikácií",
+  };
 
   const fetchAnalytics = async () => {
     setIsLoading(true);
@@ -115,6 +149,86 @@ export default function AnalyticsTab() {
         </Button>
       </div>
 
+      {/* Top Level: Last 3 Days Login Ratio */}
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <h3 className="mb-4 text-center font-semibold">
+          Aktivita používateľov (Posledné 3 dni)
+        </h3>
+        <div className="flex flex-wrap items-center justify-center gap-8">
+          {data.dailyActiveUsers.slice(-3).map((day, index) => {
+            const ratio =
+              data.overview.totalUsers > 0
+                ? (day.count / data.overview.totalUsers) * 100
+                : 0;
+            const isGood = ratio > 20;
+            const strokeColor = isGood ? "#22c55e" : "#ef4444"; // green-500 : red-500
+            const bgColor = isGood ? "#dcfce7" : "#fee2e2"; // green-100 : red-100
+
+            // SVG Circle stuff
+            const size = 120;
+            const strokeWidth = 10;
+            const center = size / 2;
+            const radius = center - strokeWidth;
+            const circumference = 2 * Math.PI * radius;
+            // Cap at 100% for the visual arc
+            const strokeDashoffset =
+              circumference - (Math.min(ratio, 100) / 100) * circumference;
+
+            return (
+              <div key={day.date} className="flex flex-col items-center gap-2">
+                <div className="relative" style={{ width: size, height: size }}>
+                  {/* Background Circle */}
+                  <svg
+                    className="absolute top-0 left-0 -rotate-90 transform"
+                    width={size}
+                    height={size}
+                  >
+                    <circle
+                      cx={center}
+                      cy={center}
+                      r={radius}
+                      fill="transparent"
+                      stroke={bgColor}
+                      strokeWidth={strokeWidth}
+                    />
+                    {/* Foreground Circle */}
+                    <circle
+                      cx={center}
+                      cy={center}
+                      r={radius}
+                      fill="transparent"
+                      stroke={strokeColor}
+                      strokeWidth={strokeWidth}
+                      strokeDasharray={circumference}
+                      strokeDashoffset={strokeDashoffset}
+                      strokeLinecap="round"
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span
+                      className={`text-2xl font-bold ${isGood ? "text-green-600" : "text-red-500"}`}
+                    >
+                      {ratio.toFixed(1)}%
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {day.count} / {data.overview.totalUsers}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  {new Date(day.date).toLocaleDateString("sk-SK", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Overview Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border bg-white p-5 shadow-sm">
@@ -171,26 +285,71 @@ export default function AnalyticsTab() {
         {/* Daily Active Users Chart */}
         <div className="rounded-xl border bg-white p-5 shadow-sm">
           <h3 className="mb-4 font-semibold">Denní aktívni používatelia</h3>
-          <div className="flex h-48 items-end gap-1">
-            {data.dailyActiveUsers.slice(-14).map((day, i) => (
-              <div
-                key={i}
-                className="flex flex-1 flex-col items-center gap-1"
-                title={`${day.date}: ${day.count} users`}
-              >
-                <div
-                  className="w-full rounded-t bg-gradient-to-t from-violet-500 to-violet-400 transition-all hover:from-violet-600 hover:to-violet-500"
-                  style={{
-                    height: `${(day.count / maxDailyUsers) * 100}%`,
-                    minHeight: day.count > 0 ? "4px" : "0px",
-                  }}
-                />
-                <span className="text-[10px] text-muted-foreground">
-                  {new Date(day.date).getDate()}
-                </span>
-              </div>
-            ))}
-          </div>
+          <Tooltip.Provider delayDuration={100}>
+            <div className="flex h-48 items-end gap-1">
+              {data.dailyActiveUsers.slice(-14).map((day, i) => (
+                <Tooltip.Root key={i}>
+                  <Tooltip.Trigger asChild>
+                    <div className="flex flex-1 flex-col items-center gap-1 cursor-help group">
+                      <span className="text-[10px] font-bold text-violet-600 mb-0.5">
+                        {day.count > 0 ? day.count : ""}
+                      </span>
+                      <div
+                        className="w-full rounded-t bg-gradient-to-t from-violet-500 to-violet-400 transition-all group-hover:from-violet-600 group-hover:to-violet-500"
+                        style={{
+                          height: `${(day.count / maxDailyUsers) * 100}%`,
+                          minHeight: day.count > 0 ? "4px" : "0px",
+                        }}
+                      />
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(day.date).getDate()}
+                      </span>
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      className="z-50 max-w-[220px] px-3 py-2.5 text-sm text-gray-900 rounded-xl shadow-xl bg-white/95 backdrop-blur-md border border-gray-100 animate-in fade-in zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95"
+                      sideOffset={5}
+                      side="top"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between border-b pb-2 gap-4">
+                          <span className="font-semibold">
+                            {new Date(day.date).toLocaleDateString("sk-SK", {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                          </span>
+                          <span className="text-violet-600 font-bold bg-violet-50 px-2 py-0.5 rounded-full text-xs">
+                            {day.count}{" "}
+                            <Users className="inline w-3 h-3 ml-0.5" />
+                          </span>
+                        </div>
+                        {day.activeUsers && day.activeUsers.length > 0 ? (
+                          <ul className="max-h-32 overflow-y-auto space-y-1 pr-2 scrollbar-thin scrollbar-thumb-gray-200">
+                            {day.activeUsers.map((name, idx) => (
+                              <li
+                                key={idx}
+                                className="truncate text-xs text-gray-600 flex items-center gap-1.5"
+                              >
+                                <div className="w-1 h-1 rounded-full bg-green-500" />
+                                {name}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-xs text-gray-500 italic">
+                            Žiadni používatelia
+                          </p>
+                        )}
+                      </div>
+                      <Tooltip.Arrow className="fill-white" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+              ))}
+            </div>
+          </Tooltip.Provider>
         </div>
 
         {/* Subscription Distribution */}
@@ -230,22 +389,40 @@ export default function AnalyticsTab() {
 
       {/* Feature Usage */}
       <div className="rounded-xl border bg-white p-5 shadow-sm">
-        <h3 className="mb-4 font-semibold">Používanie funkcií</h3>
+        <h3 className="mb-4 font-semibold">Rozdelenie akcií používateľov</h3>
         {data.featureUsage.length > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {data.featureUsage.map((feature) => (
-              <div
-                key={feature.eventName}
-                className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3"
-              >
-                <span className="text-sm">
-                  {feature.eventName.replace(/_/g, " ")}
-                </span>
-                <span className="font-semibold text-violet-600">
-                  {feature.count}
-                </span>
-              </div>
-            ))}
+          <div className="space-y-4">
+            {(() => {
+              const totalEvents = data.featureUsage.reduce(
+                (sum, f) => sum + Number(f.count),
+                0,
+              );
+              return data.featureUsage.map((feature) => {
+                const percentage =
+                  totalEvents > 0
+                    ? ((Number(feature.count) / totalEvents) * 100).toFixed(1)
+                    : "0";
+                return (
+                  <div key={feature.eventName} className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="capitalize">
+                        {eventNameTranslations[feature.eventName] ||
+                          feature.eventName.replace(/_/g, " ")}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {feature.count} ({percentage}%)
+                      </span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                      <div
+                        className="h-full bg-violet-500 rounded-full"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              });
+            })()}
           </div>
         ) : (
           <p className="text-center text-muted-foreground">
@@ -262,6 +439,7 @@ export default function AnalyticsTab() {
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-white">
                 <tr className="border-b text-left">
+                  <th className="pb-2 font-medium">Používateľ</th>
                   <th className="pb-2 font-medium">Typ</th>
                   <th className="pb-2 font-medium">Udalosť</th>
                   <th className="pb-2 font-medium">Čas</th>
@@ -270,6 +448,11 @@ export default function AnalyticsTab() {
               <tbody>
                 {data.recentEvents.slice(0, 20).map((event) => (
                   <tr key={event.id} className="border-b border-gray-100">
+                    <td className="py-2">
+                      <span className="font-medium text-gray-900">
+                        {event.userFullName || "Neznámy"}
+                      </span>
+                    </td>
                     <td className="py-2">
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs ${
@@ -285,7 +468,10 @@ export default function AnalyticsTab() {
                         {event.eventType}
                       </span>
                     </td>
-                    <td className="py-2">{event.eventName}</td>
+                    <td className="py-2">
+                      {eventNameTranslations[event.eventName] ||
+                        event.eventName.replace(/_/g, " ")}
+                    </td>
                     <td className="py-2 text-muted-foreground">
                       {new Date(event.createdAt).toLocaleString("sk-SK")}
                     </td>
@@ -298,6 +484,239 @@ export default function AnalyticsTab() {
           <p className="text-center text-muted-foreground">
             Zatiaľ žiadne udalosti
           </p>
+        )}
+      </div>
+
+      {/* Component Interactions */}
+      <div className="rounded-xl border bg-white p-5 shadow-sm mt-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-semibold mt-1">
+            Interakcie s komponentami (Prehľad)
+          </h3>
+          <span className="rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-semibold text-violet-700">
+            {data.componentInteractions?.length || 0} záznamov
+          </span>
+        </div>
+
+        {!data.componentInteractions ||
+        data.componentInteractions.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8 italic">
+            Zatiaľ žiadne interakcie.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {(() => {
+              const totalInteractions = data.componentInteractions.length;
+
+              // Group by componentName
+              const grouped = data.componentInteractions.reduce(
+                (acc, curr) => {
+                  const name = curr.metadata?.componentName || "Neznáme";
+                  if (!acc[name]) acc[name] = [];
+                  acc[name].push(curr);
+                  return acc;
+                },
+                {} as Record<string, typeof data.componentInteractions>,
+              );
+
+              // Sort by count descending
+              const sortedGroups = Object.entries(grouped).sort(
+                (a, b) => b[1].length - a[1].length,
+              );
+
+              return sortedGroups.map(([componentName, events]) => {
+                const percentage =
+                  totalInteractions > 0
+                    ? ((events.length / totalInteractions) * 100).toFixed(1)
+                    : "0";
+
+                return (
+                  <div
+                    key={componentName}
+                    className="border rounded-lg overflow-hidden bg-white shadow-sm transition-all"
+                  >
+                    {/* Header - Summary */}
+                    <div
+                      className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={() =>
+                        setExpandedInteraction(
+                          expandedInteraction === componentName
+                            ? null
+                            : componentName,
+                        )
+                      }
+                    >
+                      <div className="flex-1">
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="font-semibold text-gray-900">
+                            {componentName}
+                          </span>
+                          <span className="text-muted-foreground font-medium">
+                            {events.length} ({percentage}%)
+                          </span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                          <div
+                            className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Expanded Details */}
+                    {expandedInteraction === componentName && (
+                      <div className="border-t bg-gray-50/50 p-0 text-sm animate-in slide-in-from-top-2 fade-in duration-200">
+                        <div className="max-h-60 overflow-auto">
+                          <table className="w-full text-sm">
+                            <thead className="sticky top-0 bg-gray-100 shadow-sm text-xs text-gray-500 z-10">
+                              <tr className="border-b text-left">
+                                <th className="px-4 py-3 font-medium">Akcia</th>
+                                <th className="px-4 py-3 font-medium">
+                                  Používateľ
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                  Detaily
+                                </th>
+                                <th className="px-4 py-3 font-medium text-right">
+                                  Čas
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {events.map((event) => (
+                                <tr
+                                  key={event.id}
+                                  className="border-b border-gray-100 hover:bg-white transition-colors"
+                                >
+                                  <td className="px-4 py-3">
+                                    <span
+                                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold ${
+                                        event.metadata?.action === "click"
+                                          ? "bg-blue-100 text-blue-700"
+                                          : event.metadata?.action === "view"
+                                            ? "bg-purple-100 text-purple-700"
+                                            : event.metadata?.action ===
+                                                "submit"
+                                              ? "bg-green-100 text-green-700"
+                                              : "bg-gray-100 text-gray-700"
+                                      }`}
+                                    >
+                                      {event.metadata?.action || "Unknown"}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <span className="font-medium text-gray-700 text-xs">
+                                      {event.userFullName || "Neznámy"}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3 text-xs text-gray-500 max-w-[200px] truncate">
+                                    {event.metadata &&
+                                    Object.keys(event.metadata).length > 2 ? (
+                                      Object.entries(event.metadata)
+                                        .filter(
+                                          ([key]) =>
+                                            key !== "componentName" &&
+                                            key !== "action",
+                                        )
+                                        .map(
+                                          ([key, value]) => `${key}: ${value}`,
+                                        )
+                                        .join(", ")
+                                    ) : (
+                                      <span className="text-gray-300">-</span>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3 text-xs text-muted-foreground text-right w-24">
+                                    {new Date(
+                                      event.createdAt,
+                                    ).toLocaleTimeString("sk-SK", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      month: "short",
+                                      day: "numeric",
+                                    })}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        )}
+      </div>
+
+      {/* AI Insights */}
+      <div className="rounded-xl border bg-white p-5 shadow-sm mt-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-semibold mt-1">AI Výstupy</h3>
+          <span className="rounded-full bg-eatrivo-pink/10 px-2.5 py-0.5 text-xs font-semibold text-eatrivo-pink">
+            {data.recentAiInsights?.length || 0} záznamov
+          </span>
+        </div>
+
+        {!data.recentAiInsights || data.recentAiInsights.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8 italic">
+            Zatiaľ žiadne AI výstupy.
+          </p>
+        ) : (
+          <div className="max-h-80 overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 bg-white shadow-sm">
+                <tr className="border-b text-left">
+                  <th className="pb-2 font-medium">Typ</th>
+                  <th className="pb-2 font-medium">Názov / Detail</th>
+                  <th className="pb-2 font-medium">Používateľ</th>
+                  <th className="pb-2 font-medium text-right">
+                    Čas Vytvorenia
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.recentAiInsights.map((insight) => (
+                  <tr
+                    key={insight.id}
+                    className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                  >
+                    <td className="py-3">
+                      <span className="rounded-md px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200 uppercase tracking-wide">
+                        {insight.insightType}
+                      </span>
+                    </td>
+                    <td className="py-3">
+                      <span className="font-medium text-gray-900">
+                        {insight.title}
+                      </span>
+                    </td>
+                    <td className="py-3">
+                      <span className="font-medium text-gray-700 text-xs">
+                        {insight.userFullName || "Neznámy"}
+                      </span>
+                    </td>
+                    <td className="py-3 text-xs text-muted-foreground text-right w-32">
+                      {insight.generatedAt
+                        ? new Date(insight.generatedAt).toLocaleString(
+                            "sk-SK",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )
+                        : "Neznámy čas"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

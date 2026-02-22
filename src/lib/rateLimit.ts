@@ -52,6 +52,26 @@ export const rateLimiters = {
         prefix: "rl:feedback",
       })
     : null,
+
+  // Webhooks and cron - 100 per minute
+  webhook: redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(100, "1 m"),
+        analytics: true,
+        prefix: "rl:webhook",
+      })
+    : null,
+
+  // Analytics events - 50 per minute
+  analytics: redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(50, "1 m"),
+        analytics: true,
+        prefix: "rl:analytics",
+      })
+    : null,
 };
 
 export type RateLimitType = keyof typeof rateLimiters;

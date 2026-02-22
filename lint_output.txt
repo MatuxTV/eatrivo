@@ -1,0 +1,182 @@
+
+> eatrivo@0.1.0 lint
+> eslint
+
+
+C:\Users\matux\Documents\GitHub\eatrivo\.agents\skills\nextjs-security-audit\scripts\generate-report.js
+  12:12  error    A `require()` style import is forbidden                                            @typescript-eslint/no-require-imports
+  13:7   error    'path' is assigned a value but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  13:14  error    A `require()` style import is forbidden                                            @typescript-eslint/no-require-imports
+  93:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\matux\Documents\GitHub\eatrivo\.agents\skills\nextjs-security-audit\scripts\security-scan.js
+   15:12  error    A `require()` style import is forbidden                                                  @typescript-eslint/no-require-imports
+   16:14  error    A `require()` style import is forbidden                                                  @typescript-eslint/no-require-imports
+   24:46  error    'outputFormat' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   33:7   error    'CONFIG_FILES' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   48:12  error    'e' is defined but never used                                                            @typescript-eslint/no-unused-vars
+  420:12  error    'e' is defined but never used                                                            @typescript-eslint/no-unused-vars
+  429:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  430:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  431:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  432:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  435:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  469:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  470:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  471:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  472:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  473:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  474:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  475:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  476:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  477:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  478:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  485:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  486:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  487:20  warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  488:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  503:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+
+C:\Users\matux\Documents\GitHub\eatrivo\.agents\skills\pwa-expert\scripts\pwa-audit.js
+   15:12  error    A `require()` style import is forbidden                                            @typescript-eslint/no-require-imports
+   16:14  error    A `require()` style import is forbidden                                            @typescript-eslint/no-require-imports
+  318:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  319:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  320:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  331:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  332:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  333:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  336:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  338:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  339:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  341:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  345:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  347:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  348:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  350:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  354:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  356:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  363:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\matux\Documents\GitHub\eatrivo\.agents\skills\pwa-expert\scripts\validate-manifest.js
+   12:12  error    A `require()` style import is forbidden                                            @typescript-eslint/no-require-imports
+   13:7   error    'path' is assigned a value but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+   13:14  error    A `require()` style import is forbidden                                            @typescript-eslint/no-require-imports
+  138:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  139:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  140:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  143:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  144:23  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  145:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  149:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  150:25  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  151:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  155:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  156:21  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  157:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  161:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\matux\Documents\GitHub\eatrivo\.claude\get-shit-done\bin\gsd-tools.js
+   117:12  error  A `require()` style import is forbidden                                                  @typescript-eslint/no-require-imports
+   118:14  error  A `require()` style import is forbidden                                                  @typescript-eslint/no-require-imports
+   119:22  error  A `require()` style import is forbidden                                                  @typescript-eslint/no-require-imports
+   722:18  error  'e' is defined but never used                                                            @typescript-eslint/no-unused-vars
+  1743:7   error  'phaseDirName' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2864:9   error  'normalized' is assigned a value but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  3242:9   error  'roadmapPath' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\.claude\get-shit-done\bin\gsd-tools.test.js
+   5:51  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   6:16  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   7:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   8:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   9:22  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  33:43  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\matux\Documents\GitHub\eatrivo\.claude\hooks\gsd-check-update.js
+  5:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  6:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  7:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  8:19  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\matux\Documents\GitHub\eatrivo\.claude\hooks\gsd-statusline.js
+   5:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   6:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   7:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  62:20  error  'e' is defined but never used            @typescript-eslint/no-unused-vars
+  64:16  error  'e' is defined but never used            @typescript-eslint/no-unused-vars
+  78:16  error  'e' is defined but never used            @typescript-eslint/no-unused-vars
+  88:12  error  'e' is defined but never used            @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\[locale]\signin\page.tsx
+  37:9  error  'tCommon' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\admin\components\tabs\AnalyticsTab.tsx
+   29:30  error  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  158:54  error  'index' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\admin\components\tabs\TemplatesTab.tsx
+   93:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\admin\components\tabs\templates\TemplateForm.tsx
+   33:18  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+   93:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  102:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  111:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\admin\components\types.ts
+  46:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\api\admin\assign-templates-bulk\route.ts
+  40:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\api\admin\templates\[id]\route.ts
+  6:14  error  'and' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\api\admin\templates\route.ts
+  130:27  error  'mealPlan' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  130:37  error  'includeMealPlan' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\api\auth\[...nextauth]\route.ts
+  2:1  error  All imports in the declaration are only used as types. Use `import type`  @typescript-eslint/consistent-type-imports
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\api\debug\templates\route.ts
+  4:10  error  'shoppingListTemplates' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  4:33  error  'mealPlanTemplates' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\api\shopping-lists\generate\route.ts
+  178:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  274:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\dashboard\components\DashboardPage.tsx
+  152:6  warning  React Hook useEffect has missing dependencies: 'session.user' and 'showWelcomeDialog'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  283:6  warning  React Hook useEffect has a missing dependency: 'fetchShoppingLists'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\dashboard\components\DashboardSidebar.tsx
+  34:9  error  'profileHref' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\dashboard\components\MobileNavigation.tsx
+  4:10  error  'Link' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\not-found.tsx
+  10:23  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  10:44  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\app\profile\components\ProfilePageClient.tsx
+  39:45  error  'onBack' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\components\landing\DownloadCTA.tsx
+   5:22  error  'Zap' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  20:9   error  'scaleIn' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\components\ui\UserBadge.tsx
+  4:10  error  'Award' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  4:24  error  'Shield' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\matux\Documents\GitHub\eatrivo\src\lib\langchain.ts
+  641:16  error  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 120 problems (64 errors, 56 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

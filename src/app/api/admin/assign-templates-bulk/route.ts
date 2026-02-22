@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
+import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { db } from "@/index";
 import { users, userProfiles, shoppingLists } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -13,15 +13,9 @@ import { apiLogger } from "@/lib/logger";
  */
 export async function POST() {
   try {
-    const session = await auth();
-
-    // Check if user is admin/trainer
-    if (
-      !session?.user?.membership ||
-      !["trainer", "admin"].includes(session.user.membership.toLowerCase())
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
+    const { session } = authResult;
 
     apiLogger.info("Starting bulk template assignment", {
       metadata: { adminUserId: session.user.id },
@@ -118,7 +112,7 @@ export async function POST() {
           userId: user.id,
           email: user.email,
           status: "error",
-          error: error instanceof Error ? error.message : String(error),
+          error: "Template assignment failed",
         });
 
         apiLogger.error("Error assigning template in bulk", error, {
@@ -140,8 +134,7 @@ export async function POST() {
     apiLogger.error("Failed bulk template assignment", error);
     return NextResponse.json(
       {
-        error: "Failed to assign templates",
-        details: error instanceof Error ? error.message : String(error),
+        error: "Internal server error",
       },
       { status: 500 }
     );

@@ -61,6 +61,8 @@ export const consentTypeEnum = pgEnum("consent_type", [
   "health_data_processing",
 ]);
 
+export const badgeTypeEnum = pgEnum("badge_type", ["legacy"]);
+
 export const foodItems = pgTable("food_items", {
   id: integer("id").primaryKey().notNull(),
   name: text().notNull(),
@@ -453,6 +455,18 @@ export const analyticsEvents = pgTable("analytics_events", {
   eventName: text("event_name").notNull(),
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+// User Badges table
+export const badges = pgTable("badges", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userProfileId: uuid("userProfileId")
+    .notNull()
+    .references(() => userProfiles.id, { onDelete: "cascade" }),
+  type: badgeTypeEnum("type").notNull(),
+  grantedAt: timestamp("granted_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });

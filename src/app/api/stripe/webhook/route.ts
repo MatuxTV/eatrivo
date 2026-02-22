@@ -3,14 +3,30 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { stripe, getMembershipFromPriceId } from "@/lib/stripe";
 import { db } from "@/index";
-import { users, subscriptions, invoices, shoppingLists, userProfiles, mealPlans } from "@/db/schema";
+import {
+  users,
+  subscriptions,
+  invoices,
+  shoppingLists,
+  userProfiles,
+  mealPlans,
+} from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Analytics } from "@/lib/analytics";
 import { CacheService } from "@/lib/redis";
 
+import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
+
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(req: NextRequest) {
+  // Apply rate limit against webhook flooding
+  const identifier = getRateLimitIdentifier(req);
+  const rateLimitResult = await checkRateLimit(identifier, "webhook");
+  if (!rateLimitResult.success && rateLimitResult.response) {
+    return rateLimitResult.response;
+  }
+
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
 
@@ -139,7 +155,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
           .where(eq(shoppingLists.userProfileId, userProfile.id));
 
         console.warn(
-          `[Subscription] Deleted all template-based shopping lists and meal plans for upgraded user: ${userId}`
+          `[Subscription] Deleted all template-based shopping lists and meal plans for upgraded user: ${userId}`,
         );
 
         // Invalidate cache so user gets fresh empty state
@@ -161,8 +177,10 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     // Get cancel_at from Stripe subscription
-    const cancelAtTimestamp = (stripeSubscription as unknown as { cancel_at: number | null }).cancel_at;
-    
+    const cancelAtTimestamp = (
+      stripeSubscription as unknown as { cancel_at: number | null }
+    ).cancel_at;
+
     // Create subscription record
     await db.insert(subscriptions).values({
       userId: userId,
@@ -189,7 +207,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const userId = subscription.metadata?.userId;
   const subscriptionId = subscription.id;
   const priceId = subscription.items.data[0]?.price.id;
-  
+
   if (!userId) {
     console.error("Missing userId in subscription metadata");
     return;
@@ -240,48 +258,65 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       case "incomplete_expired":
         return "canceled";
       default:
-        console.warn(`Unknown subscription status: ${stripeStatus}, defaulting to canceled`);
+        console.warn(
+          `Unknown subscription status: ${stripeStatus}, defaulting to canceled`,
+        );
         return "canceled";
     }
   };
 
   // Safely get current_period_end and cancel_at
   const rawSubscription = subscription as unknown as Record<string, unknown>;
-  let currentPeriodEnd = rawSubscription.current_period_end as number | undefined;
-  let cancelAtTimestamp = rawSubscription.cancel_at as number | null | undefined;
+  let currentPeriodEnd = rawSubscription.current_period_end as
+    | number
+    | undefined;
+  let cancelAtTimestamp = rawSubscription.cancel_at as
+    | number
+    | null
+    | undefined;
 
   // If current_period_end is not at top level, check subscription items
   if (!currentPeriodEnd && subscription.items?.data?.[0]) {
-    const firstItem = subscription.items.data[0] as unknown as Record<string, unknown>;
+    const firstItem = subscription.items.data[0] as unknown as Record<
+      string,
+      unknown
+    >;
     currentPeriodEnd = firstItem.current_period_end as number | undefined;
   }
 
   // If critical fields are still missing for active subscriptions, fetch from Stripe API
   if (!currentPeriodEnd && subscription.status === "active") {
     console.warn(
-      `[Webhook] Missing current_period_end for active subscription ${subscriptionId}, fetching from Stripe API`
+      `[Webhook] Missing current_period_end for active subscription ${subscriptionId}, fetching from Stripe API`,
     );
-    
+
     try {
-      const fullSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+      const fullSubscription =
+        await stripe.subscriptions.retrieve(subscriptionId);
       const fullRaw = fullSubscription as unknown as Record<string, unknown>;
-      
+
       // Check subscription level first
       currentPeriodEnd = fullRaw.current_period_end as number | undefined;
-      
+
       // If not there, check items
       if (!currentPeriodEnd && fullSubscription.items?.data?.[0]) {
-        const item = fullSubscription.items.data[0] as unknown as Record<string, unknown>;
+        const item = fullSubscription.items.data[0] as unknown as Record<
+          string,
+          unknown
+        >;
         currentPeriodEnd = item.current_period_end as number | undefined;
       }
-      
+
       cancelAtTimestamp = fullRaw.cancel_at as number | null | undefined;
-      
+
       console.warn(
-        `[Webhook] Fetched full subscription data: current_period_end=${!!currentPeriodEnd}, cancel_at=${!!cancelAtTimestamp}`
+        `[Webhook] Fetched full subscription data: current_period_end=${!!currentPeriodEnd}, cancel_at=${!!cancelAtTimestamp}`,
       );
     } catch (error) {
-      console.error(`Failed to fetch full subscription ${subscriptionId}:`, error);
+      console.error(
+        `Failed to fetch full subscription ${subscriptionId}:`,
+        error,
+      );
     }
   }
 
@@ -306,7 +341,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     updateData.currentPeriodEnd = new Date(currentPeriodEnd * 1000);
   } else {
     console.warn(
-      `Missing current_period_end for subscription ${subscriptionId}, keeping existing value`
+      `Missing current_period_end for subscription ${subscriptionId}, keeping existing value`,
     );
   }
 
@@ -349,7 +384,10 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   });
 
   if (!existingSubscription) {
-    console.warn("Subscription record not found for deletion:", subscription.id);
+    console.warn(
+      "Subscription record not found for deletion:",
+      subscription.id,
+    );
     // Continue to downgrade user even if subscription record is missing
   }
 
@@ -448,7 +486,10 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
 
   if (!subscriptionId) {
-    console.warn("Invoice payment failed but no subscription ID found:", invoice.id);
+    console.warn(
+      "Invoice payment failed but no subscription ID found:",
+      invoice.id,
+    );
     return;
   }
 

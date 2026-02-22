@@ -1,7 +1,7 @@
 # Terms of Service
 
-**Effective Date:** [INSERT DATE]  
-**Last Updated:** [INSERT DATE]
+**Effective Date:** 22.2.2026  
+**Last Updated:** 22.2.2026
 
 ---
 
@@ -9,11 +9,9 @@
 
 ### 1.1 Service Provider
 
-**[INSERT COMPANY/BUSINESS DETAILS]**  
-Address: [INSERT ADDRESS]  
-Company ID: [INSERT ID]  
-VAT ID: [INSERT VAT ID]  
-Email: [INSERT EMAIL]
+Address: Nad plážou 4419/25,97401,Banská Bystrica
+Company ID: 56024665
+Email: info@valorixdigital.com
 
 (hereinafter referred to as "EatRivo" or "provider")
 

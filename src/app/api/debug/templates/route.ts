@@ -1,9 +1,28 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/../auth";
 import { db } from "@/index";
-import { shoppingListTemplates, mealPlanTemplates } from "@/db/schema";
+import { shoppingListTemplates, mealPlanTemplates, userProfiles } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userProfile = await db.query.userProfiles.findFirst({
+      where: eq(userProfiles.userId, session.user.id),
+    });
+
+    if (!userProfile || userProfile.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const templates = await db.query.shoppingListTemplates.findMany({
       columns: {
         id: true,
@@ -30,7 +49,7 @@ export async function GET() {
       const key = `${t.goal}_${t.diet}`;
       acc[key] = t;
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, (typeof templates)[0]>);
 
     return NextResponse.json({
       totalShoppingListTemplates: templates.length,
@@ -41,11 +60,12 @@ export async function GET() {
       missing: getMissingCombinations(combinations),
     });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    console.error("[Debug] Error fetching templates:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-function getMissingCombinations(existing: Record<string, any>) {
+function getMissingCombinations(existing: Record<string, unknown>) {
   const goals = ["lose_weight", "maintain_weight", "gain_muscle"];
   const diets = ["none", "lactosefree", "vegetarian", "vegan", "pescatarian", "ketogenic", "paleolithic"];
 

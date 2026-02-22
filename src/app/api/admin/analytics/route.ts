@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth } from "@/../auth";
 import { db } from "@/index";
-import { analyticsEvents, users, userProfiles } from "@/db/schema";
+import { analyticsEvents, users, userProfiles, aiInsights } from "@/db/schema";
 import { sql, gte, count, eq, and, desc } from "drizzle-orm";
 
 export async function GET(_req: NextRequest) {
@@ -36,6 +36,8 @@ export async function GET(_req: NextRequest) {
       eventsByType,
       dailyActiveUsers,
       subscriptionStats,
+      componentInteractions,
+      recentAiInsights,
     ] = await Promise.all([
       // Total users
       db.select({ count: count() }).from(users),
@@ -68,8 +70,10 @@ export async function GET(_req: NextRequest) {
           metadata: analyticsEvents.metadata,
           createdAt: analyticsEvents.createdAt,
           userId: analyticsEvents.userId,
+          userFullName: userProfiles.fullName,
         })
         .from(analyticsEvents)
+        .leftJoin(userProfiles, eq(analyticsEvents.userId, userProfiles.userId))
         .orderBy(desc(analyticsEvents.createdAt))
         .limit(50),
 
@@ -90,8 +94,14 @@ export async function GET(_req: NextRequest) {
           count: sql<number>`COUNT(DISTINCT ${analyticsEvents.userId})`.as(
             "count",
           ),
+          activeUsers: sql<
+            string[]
+          >`JSON_AGG(DISTINCT ${userProfiles.fullName}) FILTER (WHERE ${userProfiles.fullName} IS NOT NULL)`.as(
+            "activeUsers",
+          ),
         })
         .from(analyticsEvents)
+        .leftJoin(userProfiles, eq(analyticsEvents.userId, userProfiles.userId))
         .where(gte(analyticsEvents.createdAt, thirtyDaysAgo))
         .groupBy(sql`DATE(${analyticsEvents.createdAt})`)
         .orderBy(sql`DATE(${analyticsEvents.createdAt})`),
@@ -104,6 +114,39 @@ export async function GET(_req: NextRequest) {
         })
         .from(users)
         .groupBy(users.membership),
+
+      // Component interactions (last 50)
+      db
+        .select({
+          id: analyticsEvents.id,
+          metadata: analyticsEvents.metadata,
+          createdAt: analyticsEvents.createdAt,
+          userFullName: userProfiles.fullName,
+        })
+        .from(analyticsEvents)
+        .leftJoin(userProfiles, eq(analyticsEvents.userId, userProfiles.userId))
+        .where(
+          and(
+            eq(analyticsEvents.eventType, "engagement"),
+            eq(analyticsEvents.eventName, "interaction"),
+          ),
+        )
+        .orderBy(desc(analyticsEvents.createdAt))
+        .limit(50),
+
+      // AI Insights (last 50)
+      db
+        .select({
+          id: aiInsights.id,
+          insightType: aiInsights.insightType,
+          title: aiInsights.title,
+          generatedAt: aiInsights.generatedAt,
+          userFullName: userProfiles.fullName,
+        })
+        .from(aiInsights)
+        .leftJoin(userProfiles, eq(aiInsights.userProfileId, userProfiles.id))
+        .orderBy(desc(aiInsights.generatedAt))
+        .limit(50),
     ]);
 
     // Feature usage stats (last 30 days)
@@ -113,12 +156,7 @@ export async function GET(_req: NextRequest) {
         count: count(),
       })
       .from(analyticsEvents)
-      .where(
-        and(
-          eq(analyticsEvents.eventType, "feature"),
-          gte(analyticsEvents.createdAt, thirtyDaysAgo),
-        ),
-      )
+      .where(gte(analyticsEvents.createdAt, thirtyDaysAgo))
       .groupBy(analyticsEvents.eventName)
       .orderBy(desc(count()));
 
@@ -133,6 +171,8 @@ export async function GET(_req: NextRequest) {
       dailyActiveUsers,
       subscriptionStats,
       featureUsage,
+      componentInteractions,
+      recentAiInsights,
     });
   } catch (error) {
     console.error("[Admin Analytics] Error:", error);

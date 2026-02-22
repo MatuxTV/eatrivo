@@ -3,7 +3,9 @@ export const permissions = {
   admin: ['trainer'],
   dashboard: ['user', 'trainer'],
   onboarding: ['user', 'trainer'],
-  // ...add more routes and roles as needed
+  profile: ['user', 'trainer'],
+  'chat-with-rivo': ['user', 'trainer'],
+  pantry: ['user', 'trainer'],
 };
 
 export function hasAccess(route: string, role: string) {

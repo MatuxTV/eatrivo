@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import { getLocaleFromPathname } from "@/i18n/routing";
 import { useFadeInUp, useScaleIn } from "@/hooks/useAnimations";
 import type { SectionProps } from "@/types/landing";
+import { trackInteraction } from "@/lib/analytics-client";
 
 export function DownloadCTA({ className = "" }: SectionProps) {
   const t = useTranslations("landing.downloadCta");
@@ -33,7 +34,12 @@ export function DownloadCTA({ className = "" }: SectionProps) {
         <motion.div
           className="absolute bottom-0 left-0 w-96 h-96 bg-eatrivo-pink/10 rounded-full blur-3xl"
           animate={{ scale: [1, 1.12, 1], opacity: [0.4, 0.65, 0.4] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.5,
+          }}
         />
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-white/3 rounded-full blur-3xl"
@@ -49,17 +55,6 @@ export function DownloadCTA({ className = "" }: SectionProps) {
           viewport={{ once: true }}
           className="text-center space-y-6"
         >
-          {/* Badge */}
-          <motion.div
-            variants={scaleIn}
-            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 px-4 py-2 rounded-full"
-          >
-            <Zap className="w-4 h-4 text-eatrivo-yellow" aria-hidden="true" />
-            <span className="text-white/90 text-sm font-medium">
-              {t("badge")}
-            </span>
-          </motion.div>
-
           {/* Headline — identity-forward, reflective layer */}
           <motion.h2
             id="download-cta-title"
@@ -83,7 +78,16 @@ export function DownloadCTA({ className = "" }: SectionProps) {
               whileTap={{ scale: 0.97 }}
               className="inline-block"
             >
-              <Link href={`/${locale}/signin`}>
+              <Link
+                href={`/${locale}/signin`}
+                onClick={() =>
+                  trackInteraction({
+                    componentName: "DownloadCTA",
+                    action: "click",
+                    metadata: { destination: "signin" },
+                  })
+                }
+              >
                 <Button
                   size="lg"
                   className="bg-white text-eatrivo-purple hover:bg-white/95 rounded-full px-10 h-14 sm:h-16 text-base sm:text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-eatrivo-purple"
@@ -101,9 +105,7 @@ export function DownloadCTA({ className = "" }: SectionProps) {
             className="flex items-center justify-center gap-2"
           >
             <ShieldCheck className="w-4 h-4 text-white/50" aria-hidden="true" />
-            <p className="text-sm text-white/60">
-              {t("trustText")}
-            </p>
+            <p className="text-sm text-white/60">{t("trustText")}</p>
           </motion.div>
         </motion.div>
       </div>

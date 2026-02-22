@@ -3,7 +3,10 @@ import { auth } from "@/../auth";
 import { db } from "@/index";
 import { users, subscriptions } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { validateAndUpdateSubscription } from "@/lib/subscription";
+import {
+  validateAndUpdateSubscription,
+  getTrialPeriodForUser,
+} from "@/lib/subscription";
 
 export async function GET() {
   try {
@@ -46,6 +49,7 @@ export async function GET() {
             giftReason: subscription.giftReason,
           }
         : null,
+      trialDays: await getTrialPeriodForUser(session.user.id),
     });
   } catch (error) {
     console.error("Get subscription error:", error);

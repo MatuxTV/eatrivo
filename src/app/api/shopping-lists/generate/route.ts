@@ -7,11 +7,13 @@ import {
   mealPlans,
   userProfiles,
   userInfoTable,
+  aiInsights,
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { EatrivoAIService } from "@/lib/langchain";
 import { apiLogger } from "@/lib/logger";
 import { CacheService, RequestLock } from "@/lib/redis";
+import { Analytics } from "@/lib/analytics";
 
 /**
  * POST /api/shopping-lists/generate
@@ -211,6 +213,32 @@ export async function POST(_req: NextRequest) {
         },
       });
 
+      // Track AI Insight (Shopping List)
+      const expirationDate = new Date();
+      expirationDate.setHours(expirationDate.getHours() + 24);
+
+      try {
+        await db.insert(aiInsights).values({
+          userProfileId: userProfile.id,
+          insightType: "shopping_list",
+          title: newShoppingList.title || "Nákupný Zoznam",
+          content: shoppingListMarkdown,
+          metadata: {
+            goal: userInfo.goal,
+            dietPreferences: userInfo.diet_preferences,
+            generationTime: new Date().toISOString(),
+          },
+          expiresAt: expirationDate,
+        });
+      } catch (dbError) {
+        apiLogger.error("AI insights shopping list save FAILED:", dbError);
+      }
+
+      // Track feature usage
+      await Analytics.shoppingListCreated(session.user.id, {
+        source: "ai_generator",
+      });
+
       // Generate meal plan with AI
       let mealPlan = null;
       try {
@@ -274,6 +302,28 @@ export async function POST(_req: NextRequest) {
             mealPlanId: mealPlan.id,
             shoppingListId: newShoppingList.id,
           },
+        });
+
+        // Track AI Insight (Meal Plan)
+        try {
+          await db.insert(aiInsights).values({
+            userProfileId: userProfile.id,
+            insightType: "meal_plan",
+            title: `Meal Plan pre Nákupný Zoznam`,
+            content: mealPlanData,
+            metadata: {
+              shoppingListId: newShoppingList.id,
+              generationTime: new Date().toISOString(),
+            },
+            expiresAt: expirationDate,
+          });
+        } catch (dbError) {
+          apiLogger.error("AI insights meal plan save FAILED:", dbError);
+        }
+
+        // Track feature usage
+        await Analytics.mealPlanGenerated(session.user.id, {
+          tier: session.user.membership || "premium",
         });
       } catch (mealPlanError) {
         apiLogger.error(

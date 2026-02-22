@@ -6,6 +6,7 @@ import { userProfiles, userInfoTable, consentLogs } from "@/db/schema";
 import { completeOnboardingSchema } from "@/lib/schemas/user";
 import { checkUserProfileExists } from "@/lib/user-utils";
 import { apiLogger } from "@/lib/logger";
+import { Analytics } from "@/lib/analytics";
 
 export async function POST(request: NextRequest) {
   try {
@@ -119,7 +120,9 @@ export async function POST(request: NextRequest) {
     const userMembership = session.user.membership?.toLowerCase() || "basic";
     if (userMembership === "basic") {
       try {
-        const { assignTemplateToUser } = await import("@/lib/template-assignment");
+        const { assignTemplateToUser } = await import(
+          "@/lib/template-assignment"
+        );
         const assignmentResult = await assignTemplateToUser(userProfile.id);
 
         if (assignmentResult.shoppingList) {
@@ -142,12 +145,19 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (templateError) {
-        apiLogger.error("Template assignment failed during onboarding", templateError, {
-          metadata: { userId, userProfileId: userProfile.id },
-        });
+        apiLogger.error(
+          "Template assignment failed during onboarding",
+          templateError,
+          {
+            metadata: { userId, userProfileId: userProfile.id },
+          },
+        );
         // Don't fail onboarding - user can still use the app
       }
     }
+
+    // Track onboarding completion
+    await Analytics.onboardingComplete(userId);
 
     return NextResponse.json({
       success: true,

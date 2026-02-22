@@ -6,6 +6,7 @@ import { Check, Loader2, Crown, Zap, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
+import { trackInteraction } from "@/lib/analytics-client";
 
 interface PricingCardProps {
   tier: "basic" | "premium" | "pro";
@@ -15,6 +16,7 @@ interface PricingCardProps {
   isPopular?: boolean;
   onSelect?: () => void;
   disabled?: boolean;
+  trialDays?: number;
 }
 
 export function PricingCard({
@@ -25,12 +27,20 @@ export function PricingCard({
   isPopular = false,
   onSelect,
   disabled = false,
+  trialDays,
 }: PricingCardProps) {
   const [loading, setLoading] = useState(false);
   const t = useTranslations("pricing");
 
   const handleClick = async () => {
     if (disabled || isCurrentPlan || tier === "basic") return;
+
+    trackInteraction({
+      componentName: "PricingCard",
+      action: "click",
+      metadata: { targetTier: tier, price },
+    });
+
     setLoading(true);
     try {
       await onSelect?.();
@@ -158,13 +168,25 @@ export function PricingCard({
               </span>
             </div>
           ) : (
-            <div className="flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold text-eatrivo-black-primary tracking-tight">
-                €{price}
-              </span>
-              <span className="text-sm text-eatrivo-black-secondary font-medium">
-                {t("perMonth")}
-              </span>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-extrabold text-eatrivo-black-primary tracking-tight">
+                  €{price}
+                </span>
+                <span className="text-sm text-eatrivo-black-secondary font-medium">
+                  {t("perMonth")}
+                </span>
+              </div>
+              {trialDays && !isCurrentPlan && (
+                <div className="inline-flex items-center mt-1">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-eatrivo-green/10 text-eatrivo-green text-xs font-bold border border-eatrivo-green/20">
+                    {t("trialDays", {
+                      days: trialDays,
+                      defaultValue: `${trialDays} Dní Zadarmo`,
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>

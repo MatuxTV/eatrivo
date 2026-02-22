@@ -6,6 +6,7 @@ import { LogOut, User, DiamondPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
 import { useSession } from "next-auth/react";
+import { UserBadge } from "@/components/ui/UserBadge";
 
 interface DashboardHeaderProps {
   onSectionChange: (
@@ -40,9 +41,14 @@ export default function DashboardHeader({
             </div>
           )}
           <div>
-            <h2 className="text-sm font-bold text-gray-900 truncate max-w-[150px]">
-              {session?.user?.name}
-            </h2>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <h2 className="text-sm font-bold text-gray-900 truncate max-w-[150px]">
+                {session?.user?.name}
+              </h2>
+              {session?.user?.badges?.map((badgeStr) => (
+                <UserBadge key={badgeStr} type={badgeStr} />
+              ))}
+            </div>
             <p
               className={`text-[10px] font-medium capitalize ${getMembershipStatus(session?.user?.membership)}`}
             >
