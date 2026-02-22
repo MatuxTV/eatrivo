@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { db } from "@/index";
 import { shoppingListTemplates, mealPlanTemplates } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { updateTemplateSchema } from "@/lib/schemas/template";
 import { apiLogger } from "@/lib/logger";
 

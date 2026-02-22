@@ -689,8 +689,6 @@ export default function AdminDashboard() {
                 selectedUserForProfile={selectedUserForProfile}
                 onUserChange={handleProfileUserChange}
                 userInfo={userInfo}
-                userShoppingLists={userShoppingLists}
-                userMealPlans={userMealPlans}
                 isLoadingUserInfo={isLoadingUserInfo}
               />
             </motion.div>

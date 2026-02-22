@@ -37,7 +37,7 @@ export async function POST() {
       assigned: 0,
       skipped: 0,
       failed: 0,
-      details: [] as any[],
+      details: [] as unknown[],
     };
 
     for (const user of basicUsers) {
@@ -136,7 +136,7 @@ export async function POST() {
       {
         error: "Internal server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

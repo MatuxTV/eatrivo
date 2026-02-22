@@ -175,7 +175,15 @@ export async function POST(_req: NextRequest) {
         cooking_time_pref:
           (userInfo.cooking_time_pref as "quick" | "normal" | "slow") ||
           undefined,
-        diet_preferences: (userInfo.diet_preferences as any) || undefined,
+        diet_preferences:
+          (userInfo.diet_preferences as
+            | "none"
+            | "lactosefree"
+            | "vegetarian"
+            | "vegan"
+            | "pescatarian"
+            | "ketogenic"
+            | "paleolithic") || undefined,
         budget_preference:
           (userInfo.budget_preference as "low" | "medium" | "high") || "medium",
         likes: userInfo.likes || undefined,
@@ -271,7 +279,15 @@ export async function POST(_req: NextRequest) {
             maxPrepTime:
               (userInfo.cooking_time_pref as "quick" | "normal" | "slow") ||
               "normal",
-            dietType: (userInfo.diet_preferences as any) || undefined,
+            dietType:
+              (userInfo.diet_preferences as
+                | "none"
+                | "lactosefree"
+                | "vegetarian"
+                | "vegan"
+                | "pescatarian"
+                | "ketogenic"
+                | "paleolithic") || undefined,
             budget:
               (userInfo.budget_preference as "low" | "medium" | "high") ||
               "medium",
