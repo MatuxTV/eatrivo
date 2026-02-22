@@ -1,27 +1,24 @@
-import { Navbar } from "@/components/landing/Navbar";
-import { Hero } from "@/components/landing/Hero";
-import { HowItWorks } from "@/components/landing/HowItWorks";
-import { Features } from "@/components/landing/Features";
-import { CTA } from "@/components/landing/CTA";
-import { Footer } from "@/components/landing/Footer";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { defaultLocale } from "@/i18n/routing";
 
-export const metadata = {
-  title: "EatRivo - AI Asistent pre Zdravé Stravovanie",
-  description:
-    "Vytvorte si personalizovaný jedálny plán pomocou AI. Nahrajte nákupný lístok a získajte recepty na mieru.",
-};
-
-export default function Home() {
-  return (
-    <div className="min-h-screen bg-white selection:bg-eatrivo-purple selection:text-white">
-      <Navbar />
-      <main>
-        <Hero />
-        <HowItWorks />
-        <Features />
-        <CTA />
-      </main>
-      <Footer />
-    </div>
-  );
+export default async function RootPage() {
+  // Get headers to determine preferred locale
+  const headersList = await headers();
+  const acceptLanguage = headersList.get("accept-language");
+  
+  // Simple locale detection
+  let locale = defaultLocale;
+  if (acceptLanguage) {
+    const primary = acceptLanguage.split(",")[0]?.trim()?.toLowerCase();
+    const primaryTag = primary?.split("-")[0];
+    if (primaryTag === "sk" || primaryTag === "cs") {
+      locale = "sk";
+    } else if (primaryTag === "en") {
+      locale = "en";
+    }
+  }
+  
+  // Redirect to localized version
+  redirect(`/${locale}`);
 }

@@ -1,0 +1,46 @@
+graph TD
+    START((Start)) --> FETCH_USER[📥 Fetch User Profile]
+    
+    FETCH_USER --> MACRO_CALC[🧮 Macro Calculator]
+    
+    MACRO_CALC --> PANTRY_HEALTH{🏥 Pantry Health Check}
+    PANTRY_HEALTH -- "Expired Items" --> ALERT_USER[⚠️ Alert User]
+    PANTRY_HEALTH -- "OK" --> FETCH_HISTORY
+    
+    FETCH_HISTORY[📂 Fetch Shopping History] --> INVENTORY_SCAN[🔍 Enhanced Inventory Scanner]
+    
+    INVENTORY_SCAN -- "Classify + Calculate Remaining" --> VIRTUAL_PANTRY[📦 Virtual Pantry State]
+    
+    VIRTUAL_PANTRY --> PROMPT_BUILDER[📝 Prompt Builder]
+    MACRO_CALC --> PROMPT_BUILDER
+    
+    PROMPT_BUILDER --> AI_GEN[🤖 AI Generator]
+    
+    AI_GEN --> MERGER[➕ Smart Merger<br/>Deduplication + Cost Calc]
+    VIRTUAL_PANTRY --> MERGER
+    
+    MERGER --> MACRO_VALIDATOR{⚖️ Macro Validator<br/>90-110% Range}
+    
+    MACRO_VALIDATOR -- "Invalid & Retries<3" --> FEEDBACK[🔄 Structured Feedback]
+    FEEDBACK --> PROMPT_BUILDER
+    
+    MACRO_VALIDATOR -- "Valid" --> FINAL_FORMAT[✨ Dual Format Output]
+    
+    FINAL_FORMAT --> SAVE_DB[(💾 Save to DB<br/>+ Update Pantry State)]
+    
+    SAVE_DB --> NOTIFY_USER[📧 Notify User]
+    
+    NOTIFY_USER --> END((End))
+    
+    classDef user fill:#1F2937,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef math fill:#3B82F6,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef ai fill:#7B4FD6,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef logic fill:#EC4899,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef db fill:#10B981,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef error fill:#EF4444,stroke:#fff,stroke-width:2px,color:#fff;
+    
+    class FETCH_USER,ALERT_USER,NOTIFY_USER user
+    class MACRO_CALC,MACRO_VALIDATOR math
+    class AI_GEN,FEEDBACK ai
+    class PANTRY_HEALTH,INVENTORY_SCAN,MERGER,VIRTUAL_PANTRY,PROMPT_BUILDER,FINAL_FORMAT logic
+    class FETCH_HISTORY,SAVE_DB db

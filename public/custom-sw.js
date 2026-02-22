@@ -3,8 +3,8 @@ self.addEventListener('push', function(event) {
     const data = event.data.json();
     const options = {
       body: data.body,
-      icon: data.icon || '/logo/icon-192x192.png',
-      badge: '/logo/badge-72x72.png',
+      icon: data.icon || '/logo/favicon_io/android-chrome-192x192.png',
+      badge: '/logo/favicon_io/android-chrome-192x192.png',
       vibrate: [100, 50, 100],
       data: {
         dateOfArrival: Date.now(),

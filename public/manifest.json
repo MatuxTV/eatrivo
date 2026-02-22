@@ -28,7 +28,7 @@
       "purpose": "any"
     },
     {
-      "src": "/logo/favicon_io/android-chrome-512x512.png",
+      "src": "/logo/favicon_io/icon-maskable-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -38,6 +38,32 @@
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
+    }
+  ],
+  "lang": "sk",
+  "dir": "ltr",
+  "categories": ["food", "health", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "/images/screenshots/en/dashboard.PNG",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard"
+    },
+    {
+      "src": "/images/screenshots/en/health-circle.PNG",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Health Score"
+    },
+    {
+      "src": "/images/screenshots/en/shopping-list.PNG",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Shopping List"
     }
   ]
 }

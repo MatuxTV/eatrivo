@@ -1,54 +1,75 @@
-import type { NextRequest} from "next/server";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { auth } from "@/../auth";
 import { db } from "@/index";
-import { shoppingLists } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { shoppingLists, userProfiles } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import MarkdownIt from "markdown-it";
 
 const md = new MarkdownIt({
-  html: true,
+  html: false,
   breaks: true,
   linkify: true,
 });
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userProfile = await db.query.userProfiles.findFirst({
+      where: eq(userProfiles.userId, session.user.id),
+    });
+
+    if (!userProfile) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
 
-    // Fetch shopping list from DB
-    const rows = await db
-      .select()
-      .from(shoppingLists)
-      .where(eq(shoppingLists.id, id))
-      .limit(1);
+    // Fetch shopping list — check ownership (or admin/trainer access)
+    const isAdmin = ["admin", "trainer"].includes(userProfile.role ?? "");
+    const rows = isAdmin
+      ? await db.select().from(shoppingLists).where(eq(shoppingLists.id, id)).limit(1)
+      : await db.select().from(shoppingLists).where(
+          and(eq(shoppingLists.id, id), eq(shoppingLists.userProfileId, userProfile.id))
+        ).limit(1);
 
     const item = rows[0];
     if (!item) {
       return NextResponse.json(
         { error: "Shopping list not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Convert markdown to HTML
     const htmlContent = md.render(item.markdownContent);
 
-    // Create formatted dates
-    const weekStart = new Date(item.weekStartDate).toLocaleDateString("sk-SK", {
+    // Create formatted dates using Intl.DateTimeFormat
+    const dateFormatter = new Intl.DateTimeFormat("sk-SK", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     });
-    const weekEnd = new Date(item.weekEndDate).toLocaleDateString("sk-SK", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    const weekStart = dateFormatter.format(new Date(item.weekStartDate));
+    const weekEnd = dateFormatter.format(new Date(item.weekEndDate));
 
     // Create a nice HTML page
     const html = `
@@ -57,7 +78,7 @@ export async function GET(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${item.title}</title>
+  <title>${escapeHtml(item.title)}</title>
   <style>
     * {
       margin: 0;
@@ -218,7 +239,7 @@ export async function GET(
 <body>
   <div class="container" id="content-area">
     <div class="header">
-      <h1>${item.title}</h1>
+      <h1>${escapeHtml(item.title)}</h1>
       <div class="date-range">${weekStart} – ${weekEnd}</div>
     </div>
     
@@ -227,7 +248,7 @@ export async function GET(
     </div>
     
     <div class="footer">
-      Vytvorené pomocou Eatrivo • ${new Date().toLocaleDateString("sk-SK")}
+      Vytvorené pomocou Eatrivo • ${new Intl.DateTimeFormat("sk-SK").format(new Date())}
     </div>
   </div>
   
@@ -245,7 +266,7 @@ export async function GET(
 
   <script>
     const sanitizeFilename = (name) => name.replace(/[\\\\/:*?"<>|]+/g, '').trim();
-    const filename = sanitizeFilename('${item.title}') + '_' + sanitizeFilename('${weekStart}') + '_to_' + sanitizeFilename('${weekEnd}') + '.pdf';
+    const filename = sanitizeFilename(${JSON.stringify(item.title)}) + '_' + sanitizeFilename(${JSON.stringify(weekStart)}) + '_to_' + sanitizeFilename(${JSON.stringify(weekEnd)}) + '.pdf';
 
     document.getElementById('downloadBtn').addEventListener('click', async function() {
       const btn = this;
@@ -341,7 +362,7 @@ export async function GET(
     console.error("[API] Error rendering markdown:", err);
     return NextResponse.json(
       { error: "Failed to render markdown" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

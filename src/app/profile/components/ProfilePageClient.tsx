@@ -1,14 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { User, Settings, ArrowLeft } from "lucide-react";
+import { User, Settings } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import PersonalInfoSection from "./PersonalInfoSection";
 import NutritionPreferencesSection from "./NutritionPreferencesSection";
-import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
 interface UserProfileData {
@@ -22,10 +19,12 @@ interface UserNutritionData {
   sex: "man" | "woman";
   height: number;
   weight: string | number;
-  activity_level: string;
-  goal: string;
+  activity_level: string | null;
+  goal: string | null;
   meal_per_day: number | null;
   cooking_time_pref: string | null;
+  meal_prep: boolean | null;
+  meal_prep_days: number | null;
   diet_preferences: string | null;
   budget_preference: string | null;
   likes: string | null;
@@ -33,13 +32,20 @@ interface UserNutritionData {
   allergies: string | null;
 }
 
-export default function ProfilePageClient() {
-  const { data: session } = useSession();
+interface ProfilePageClientProps {
+  onBack?: () => void;
+}
+
+export default function ProfilePageClient({ onBack }: ProfilePageClientProps) {
   const t = useTranslations("profile");
-  const [activeTab, setActiveTab] = useState<"personal" | "nutrition">("personal");
+  const [activeTab, setActiveTab] = useState<"personal" | "nutrition">(
+    "personal",
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
-  const [nutritionData, setNutritionData] = useState<UserNutritionData | null>(null);
+  const [nutritionData, setNutritionData] = useState<UserNutritionData | null>(
+    null,
+  );
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -48,7 +54,7 @@ export default function ProfilePageClient() {
         // Fetch user profile and nutrition data
         const response = await fetch("/api/user/profile");
         if (!response.ok) throw new Error("Failed to fetch profile");
-        
+
         const data = await response.json();
         setProfileData(data.profile);
         setNutritionData(data.nutrition);
@@ -69,38 +75,7 @@ export default function ProfilePageClient() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-5xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-xl hover:bg-gray-100"
-                  aria-label={t("navigation.backToDashboard")}
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">{t("header.title")}</h1>
-                <p className="text-xs text-gray-500">
-                  {t("header.description")}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-eatrivo-purple to-eatrivo-pink rounded-full flex items-center justify-center text-white font-bold text-sm">
-                {session?.user?.name?.[0] || session?.user?.email?.[0]?.toUpperCase() || "U"}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div className="bg-eatrivo-white-primary h-full">
       <div className="max-w-5xl mx-auto p-6">
         {/* Navigation Tabs */}
         <div className="mb-8">

@@ -1,12 +1,19 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { getCurrentDay, getDayIndex } from "@/lib/functions";
 import { APP_CONFIG } from "@/app/config/app";
 import { logger } from "@/lib/logger";
-import { ReceiptText, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ReceiptText,
+  ChevronLeft,
+  ChevronRight,
+  CakeSlice,
+  MessageCircleHeart,
+} from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -25,14 +32,20 @@ import DashboardHeader from "./DashboardHeader";
 import MobileNavigation from "./MobileNavigation";
 import DailyNutritionSummary from "./DailyNutritionSummary";
 import DailyMealPlan from "./DailyMealPlan";
-import ShoppingListsOverview from "./ShoppingListsOverview";
+import ShoppingListsOverview, { CreateListCTA } from "./ShoppingListsOverview";
+import ComingSoonPage from "./ComingSoonPage";
 import BodyHealthCircle from "./BodyHealtCircle";
 import WeightTracker from "./WeightTracker";
+import ProfilePageClient from "@/app/profile/components/ProfilePageClient";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
 import { PushNotificationToggle } from "@/components/pwa/PushNotificationToggle";
+import { UpgradePopup } from "@/components/billing/UpgradePopup";
 
 // PWA utilities
-import { saveLatestShoppingList, getLatestShoppingList } from "@/lib/pwa/offlineStorage";
+import {
+  saveLatestShoppingList,
+  getLatestShoppingList,
+} from "@/lib/pwa/offlineStorage";
 
 // Type definitions
 interface Ingredient {
@@ -88,16 +101,24 @@ export default function DashboardPage() {
   const { data: session } = useSession();
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
   const [userHealthData, setUserHealthData] = useState<UserHealthData | null>(
-    null
+    null,
   );
   const [isLoading, setIsLoading] = useState({
-    shoppingLists: false,
-    mealPlan: true, // Always start loading
-  });
+    shoppingLists: true,
+    mealPlans: true,
+    generatingShoppingList: false,
+  }); // Always start loading
   const [mealPlanData, setMealPlanData] = useState<DayMealPlan[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [currentDay, setCurrentDay] = useState<string | null>(null);
-  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(new Date().getDay());
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(
+    new Date().getDay(),
+  );
+
+  // ... inside DashboardPage component ...
+  const [activeSection, setActiveSection] = useState<
+    "dashboard" | "pantry" | "chatWithRivo" | "profile"
+  >("dashboard");
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -107,15 +128,28 @@ export default function DashboardPage() {
   }, [locale]);
 
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+  const [welcomeCheckDone, setWelcomeCheckDone] = useState(false);
 
   // Check welcome dialog visibility after session loads (prevents hydration mismatch)
   useEffect(() => {
     if (session?.user) {
       const userVersion = session.user.lastSeenWelcomeVersion;
       const currentVersion = APP_CONFIG.WELCOME_DIALOG_VERSION;
-      setShowWelcomeDialog(!userVersion || userVersion !== currentVersion);
+      const needsWelcome = !userVersion || userVersion !== currentVersion;
+      setShowWelcomeDialog(needsWelcome);
+      setWelcomeCheckDone(true);
     }
   }, [session?.user]);
+
+  // Show upgrade popup for basic users on every dashboard visit
+  useEffect(() => {
+    if (!welcomeCheckDone || !session?.user) return;
+    if (session.user.membership !== "basic") return;
+    if (showWelcomeDialog) return; // handleCloseDialog will show it after welcome dialog closes
+    const timer = setTimeout(() => setShowUpgradePopup(true), 500);
+    return () => clearTimeout(timer);
+  }, [welcomeCheckDone]);
 
   const handleCloseDialog = async () => {
     setShowWelcomeDialog(false);
@@ -133,63 +167,189 @@ export default function DashboardPage() {
         metadata: { userId: session?.user?.id },
       });
     }
+
+    // Show upgrade popup for basic users after welcome dialog closes
+    if (session?.user?.membership === "basic") {
+      setTimeout(() => setShowUpgradePopup(true), 500);
+    }
   };
 
   // FETCH SHOPPING LISTS
-  useEffect(() => {
-    if (!isMounted || !session?.user) return;
+  const fetchShoppingLists = async () => {
+    if (!session?.user) return;
 
-    const fetchShoppingLists = async () => {
-      try {
-        setIsLoading((prev) => ({ ...prev, shoppingLists: true }));
-        const response = await fetch("/api/shopping-lists");
-        if (!response.ok) throw new Error("Failed to fetch shopping lists");
-        const data = await response.json();
-        const lists = data.shoppingLists || [];
-        setShoppingLists(lists);
+    try {
+      setIsLoading((prev) => ({ ...prev, shoppingLists: true }));
+      const response = await fetch("/api/shopping-lists");
+      if (!response.ok) throw new Error("Failed to fetch shopping lists");
+      const data = await response.json();
+      const lists = data.shoppingLists || [];
+      setShoppingLists(lists);
 
-        // Save latest shopping list for offline access
-        if (lists.length > 0) {
-          try {
-            await saveLatestShoppingList(lists[0]);
-          } catch (offlineError) {
-            console.error("Failed to save shopping list offline:", offlineError);
-          }
-        }
-      } catch (error) {
-        logger.error("Error fetching shopping lists", error, {
-          context: "DashboardPage",
-          metadata: { userId: session?.user?.id },
-        });
-        
-        // Try to load from offline storage
+      // Save latest shopping list for offline access
+      if (lists.length > 0) {
         try {
-          const offlineList = await getLatestShoppingList();
-          if (offlineList) {
-            const formattedList: ShoppingList = {
-              ...offlineList,
-              description: offlineList.description || undefined,
-              weekStartDate: offlineList.weekStartDate.toString(),
-              weekEndDate: offlineList.weekEndDate.toString(),
-              createdAt: offlineList.createdAt.toString(),
-              status: offlineList.status as "active" | "completed" | "cancelled",
-            };
-            setShoppingLists([formattedList]);
-            toast.info(t("pwa.offline.showingData"));
-          } else {
-            toast.error(t("toasts.shoppingListsLoadError"));
-            setShoppingLists([]);
-          }
-        } catch {
+          await saveLatestShoppingList(lists[0]);
+        } catch (offlineError) {
+          console.error("Failed to save shopping list offline:", offlineError);
+        }
+      }
+    } catch (error) {
+      logger.error("Error fetching shopping lists", error, {
+        context: "DashboardPage",
+        metadata: { userId: session?.user?.id },
+      });
+
+      // Try to load from offline storage
+      try {
+        const offlineList = await getLatestShoppingList();
+        if (offlineList) {
+          const formattedList: ShoppingList = {
+            ...offlineList,
+            description: offlineList.description || undefined,
+            weekStartDate: offlineList.weekStartDate.toString(),
+            weekEndDate: offlineList.weekEndDate.toString(),
+            createdAt: offlineList.createdAt.toString(),
+            status: offlineList.status as "active" | "completed" | "cancelled",
+          };
+          setShoppingLists([formattedList]);
+          toast.info(t("pwa.offline.showingData"));
+        } else {
           toast.error(t("toasts.shoppingListsLoadError"));
           setShoppingLists([]);
         }
-      } finally {
-        setIsLoading((prev) => ({ ...prev, shoppingLists: false }));
+      } catch {
+        toast.error(t("toasts.shoppingListsLoadError"));
+        setShoppingLists([]);
       }
+    } finally {
+      setIsLoading((prev) => ({ ...prev, shoppingLists: false }));
+    }
+  };
+
+  useEffect(() => {
+    if (!isMounted || !session?.user) return;
+
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+
+    const init = async () => {
+      // 1. Check if generation is in progress FIRST (before rendering lists)
+      try {
+        const statusRes = await fetch("/api/shopping-lists/generate/status");
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+
+          if (statusData.isGenerating) {
+            setIsLoading((prev) => ({ ...prev, generatingShoppingList: true }));
+
+            // Start polling until generation finishes
+            pollInterval = setInterval(async () => {
+              try {
+                const pollRes = await fetch(
+                  "/api/shopping-lists/generate/status",
+                );
+                if (!pollRes.ok) return;
+                const pollData = await pollRes.json();
+
+                if (!pollData.isGenerating) {
+                  if (pollInterval) clearInterval(pollInterval);
+                  pollInterval = null;
+                  setIsLoading((prev) => ({
+                    ...prev,
+                    generatingShoppingList: false,
+                  }));
+                  // Reload to get fresh data
+                  window.location.reload();
+                }
+              } catch {
+                // Silently ignore poll errors
+              }
+            }, 5000);
+          }
+        }
+      } catch {
+        // Silently ignore status check errors
+      }
+
+      // 2. Then fetch shopping lists
+      await fetchShoppingLists();
     };
-    fetchShoppingLists();
+
+    init();
+
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
   }, [isMounted, session, t]);
+
+  // GENERATE NEW SHOPPING LIST (Premium users only)
+  const handleGenerateShoppingList = async () => {
+    if (!session?.user) return;
+
+    const membership = session.user.membership?.toLowerCase();
+    if (!["premium", "pro", "trainer"].includes(membership || "")) {
+      toast.error(
+        t("toasts.premiumOnly", {
+          defaultValue: "This feature is only available for premium members",
+        }),
+      );
+      return;
+    }
+
+    try {
+      setIsLoading((prev) => ({ ...prev, generatingShoppingList: true }));
+
+      const response = await fetch("/api/shopping-lists/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate shopping list");
+      }
+
+      const data = await response.json();
+
+      if (data.mealPlan) {
+        toast.success(
+          t("toasts.shoppingListAndMealPlanGenerated", {
+            defaultValue:
+              "Shopping list and meal plan generated successfully! 🎉",
+          }),
+        );
+      } else {
+        toast.success(
+          t("toasts.shoppingListGenerated", {
+            defaultValue: "Shopping list generated successfully!",
+          }),
+        );
+      }
+
+      // Refresh shopping lists
+      await fetchShoppingLists();
+
+      // Refresh meal plan by reloading the page (meal plan fetches on mount)
+      if (data.mealPlan) {
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.dismiss("generate-shopping-list");
+      logger.error("Error generating shopping list", error, {
+        context: "DashboardPage",
+      });
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("toasts.shoppingListGenerateError", {
+              defaultValue:
+                "Failed to generate shopping list. Please try again.",
+            }),
+      );
+    } finally {
+      setIsLoading((prev) => ({ ...prev, generatingShoppingList: false }));
+    }
+  };
 
   // FETCH USER HEALTH DATA
   useEffect(() => {
@@ -281,7 +441,7 @@ export default function DashboardPage() {
         // Successfully loaded meal plan (from cache, DB, or fresh generation)
         const hasData = data.insights?.week && data.insights.week.length > 0;
         setMealPlanData(hasData ? data.insights.week : []);
-        setIsLoading((prev) => ({ ...prev, mealPlan: false }));
+        setIsLoading((prev) => ({ ...prev, mealPlans: false }));
 
         // Only show success toast if we have data and it's freshly generated (not cached/DB)
         if (
@@ -298,7 +458,7 @@ export default function DashboardPage() {
           metadata: { userId: session?.user?.id },
         });
         toast.error(t("toasts.mealPlanLoadError"));
-        setIsLoading((prev) => ({ ...prev, mealPlan: false }));
+        setIsLoading((prev) => ({ ...prev, mealPlans: false }));
       }
     };
 
@@ -316,9 +476,11 @@ export default function DashboardPage() {
   const todaysMeals = useMemo(() => {
     if (!isMounted) return [];
     if (!mealPlanData || mealPlanData.length === 0) return [];
-    
-    const todayPlan = mealPlanData.find((day) => getDayIndex(day.day) === selectedDayIndex);
-    
+
+    const todayPlan = mealPlanData.find(
+      (day) => getDayIndex(day.day) === selectedDayIndex,
+    );
+
     if (!todayPlan || !todayPlan.meals) return [];
 
     return todayPlan.meals.map((meal: MealData, index: number) => ({
@@ -339,9 +501,11 @@ export default function DashboardPage() {
   const todaysNutrition = useMemo(() => {
     if (!isMounted) return null;
     if (!mealPlanData || mealPlanData.length === 0) return null;
-    
-    const todayPlan = mealPlanData.find((day) => getDayIndex(day.day) === selectedDayIndex);
-    
+
+    const todayPlan = mealPlanData.find(
+      (day) => getDayIndex(day.day) === selectedDayIndex,
+    );
+
     return todayPlan
       ? {
           calories: todayPlan.totalDailyCalories,
@@ -352,8 +516,16 @@ export default function DashboardPage() {
       : null;
   }, [mealPlanData, isMounted, selectedDayIndex]);
 
+  const hasActiveShoppingList = useMemo(() => {
+    return shoppingLists.some((list) => list.status === "active");
+  }, [shoppingLists]);
+
+  const hasActiveMealPlan = useMemo(() => {
+    return mealPlanData && mealPlanData.length > 0;
+  }, [mealPlanData]);
+
   return (
-    <div className="min-h-screen bg-gray-50/50 flex">
+    <div className="min-h-screen bg-eatrivo-white-primary flex">
       <WelcomeDialog
         open={showWelcomeDialog}
         onOpenChange={handleCloseDialog}
@@ -363,171 +535,349 @@ export default function DashboardPage() {
         }
       />
 
+      {/* Upgrade Popup for basic users */}
+      <UpgradePopup
+        isOpen={showUpgradePopup}
+        onClose={() => {
+          setShowUpgradePopup(false);
+        }}
+      />
+
       {/* Desktop Sidebar */}
-      <DashboardSidebar />
+      <DashboardSidebar
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+      />
 
       {/* Mobile Header */}
-      <DashboardHeader />
+      <DashboardHeader onSectionChange={setActiveSection} />
 
       {/* Main Content */}
       <main className="flex-1 w-full md:max-w-[calc(100vw-256px)] pt-20 md:pt-8 pb-24 md:pb-8 px-4 md:px-8 overflow-y-auto h-screen">
-        <div className="max-w-7xl mx-auto space-y-8">
-          {/* Welcome Section */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                {t("greeting.title", {
-                  name: session?.user?.name?.split(" ")[0] || "",
-                })}
-              </h1>
-              <p className="text-gray-500 mt-1">
-                {t("greeting.subtitle")}{" "}
-                <span className="font-medium text-eatrivo-purple">
-                  {currentDay ? currentDay : ""}
-                </span>
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 text-xs font-medium text-gray-600 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                {t("version", { version: APP_CONFIG.WELCOME_DIALOG_VERSION })}
+        <AnimatePresence mode="wait">
+          {activeSection === "dashboard" ? (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-7xl mx-auto space-y-8"
+            >
+              {/* Welcome Section */}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                    {t("greeting.title", {
+                      name: session?.user?.name?.split(" ")[0] || "",
+                    })}
+                  </h1>
+                  <p className="text-gray-500 mt-1">
+                    {t("greeting.subtitle")}{" "}
+                    <span className="font-medium text-eatrivo-purple">
+                      {currentDay ? currentDay : ""}
+                    </span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 text-xs font-medium text-gray-600 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    {t("version", {
+                      version: APP_CONFIG.WELCOME_DIALOG_VERSION,
+                    })}
+                  </div>
+                  <Select
+                    value={locale}
+                    onValueChange={(value) => {
+                      if (!isLocale(value)) return;
+                      const nextPathname = replaceLocaleInPathname(
+                        pathname,
+                        value,
+                      );
+                      const queryString = searchParams.toString();
+                      const hash =
+                        typeof window !== "undefined"
+                          ? window.location.hash
+                          : "";
+                      router.push(
+                        `${nextPathname}${queryString ? `?${queryString}` : ""}${hash}`,
+                      );
+                    }}
+                  >
+                    <SelectTrigger
+                      size="sm"
+                      aria-label={t("navbar.language")}
+                      className="h-9 w-[4.5rem] rounded-full border-transparent bg-transparent px-2 shadow-none hover:bg-gray-100 focus:ring-eatrivo-purple/15"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sk">SK</SelectItem>
+                      <SelectItem value="en">EN</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <Select
-                value={locale}
-                onValueChange={(value) => {
-                  if (!isLocale(value)) return;
-                  const nextPathname = replaceLocaleInPathname(pathname, value);
-                  const queryString = searchParams.toString();
-                  const hash =
-                    typeof window !== "undefined" ? window.location.hash : "";
-                  router.push(
-                    `${nextPathname}${queryString ? `?${queryString}` : ""}${hash}`
+
+              {/* Daily Plan Section */}
+              <div
+                className={
+                  !hasActiveShoppingList && !hasActiveMealPlan
+                    ? "hidden md:block"
+                    : ""
+                }
+              >
+                <section className="space-y-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="p-2 bg-blue-50 rounded-lg">
+                        <ReceiptText className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <h2 className="text-xl font-bold text-gray-900">
+                        {t("dailyPlan.title")}
+                      </h2>
+
+                      {/* Day Navigation */}
+                      {isMounted && mealPlanData.length > 0 && (
+                        <div className="flex items-center gap-2 bg-white rounded-full px-2 py-1 shadow-sm border border-gray-100">
+                          <button
+                            onClick={() =>
+                              setSelectedDayIndex((prev) =>
+                                prev === 0 ? 6 : prev - 1,
+                              )
+                            }
+                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                            aria-label="Previous day"
+                          >
+                            <ChevronLeft className="w-4 h-4 text-gray-600" />
+                          </button>
+                          <span className="text-sm font-medium text-gray-700 min-w-[80px] text-center">
+                            {selectedDayIndex === new Date().getDay() ? (
+                              <span className="text-eatrivo-purple capitalize">
+                                {t("dailyPlan.today")}
+                              </span>
+                            ) : (
+                              mealPlanData.find(
+                                (day) =>
+                                  getDayIndex(day.day) === selectedDayIndex,
+                              )?.day || currentDay
+                            )}
+                          </span>
+                          <button
+                            onClick={() =>
+                              setSelectedDayIndex((prev) =>
+                                prev === 6 ? 0 : prev + 1,
+                              )
+                            }
+                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                            aria-label="Next day"
+                          >
+                            <ChevronRight className="w-4 h-4 text-gray-600" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Nutrition Summary */}
+                    <div className="w-full md:w-auto">
+                      <DailyNutritionSummary data={todaysNutrition} />
+                    </div>
+                  </div>
+
+                  {/* Meals Grid */}
+                  <DailyMealPlan
+                    meals={todaysMeals}
+                    isLoading={isLoading.mealPlans}
+                  />
+                </section>
+              </div>
+
+              {/* Mobile CTA — always shown for basic users (locked), shown for premium when no active plans */}
+              {(!hasActiveShoppingList && !hasActiveMealPlan) ||
+              session?.user?.membership === "basic" ? (
+                <div className="block md:hidden mb-8 mt-2">
+                  <CreateListCTA
+                    isPremium={["premium", "pro", "trainer"].includes(
+                      session?.user?.membership?.toLowerCase() || "",
+                    )}
+                    isGenerating={isLoading.generatingShoppingList}
+                    hasActiveList={hasActiveShoppingList}
+                    onGenerate={handleGenerateShoppingList}
+                    onLockedCreate={() => setShowUpgradePopup(true)}
+                    className="min-h-[280px]"
+                  />
+                </div>
+              ) : null}
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Shopping Lists - Takes up 2 columns on large screens, last on mobile */}
+                <div className="lg:col-span-2 order-2 lg:order-1">
+                  <ShoppingListsOverview
+                    lists={shoppingLists}
+                    isLoading={isLoading.shoppingLists}
+                    isGenerating={isLoading.generatingShoppingList}
+                    membership={session?.user?.membership || "basic"}
+                    onGenerateNew={handleGenerateShoppingList}
+                    onLockedCreate={() => setShowUpgradePopup(true)}
+                  />
+                </div>
+
+                {/* Right Column: Health Circle & Weight Tracker - first on mobile */}
+                <div className="space-y-6 order-1 lg:order-2">
+                  {/* Body Health Circle */}
+                  <AnimatePresence mode="wait">
+                    {userHealthData ? (
+                      <motion.div
+                        key="health-content"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.4, ease: "easeOut" as const }}
+                      >
+                        <BodyHealthCircle
+                          weight={userHealthData.weight}
+                          height={userHealthData.height}
+                          activityLevel={userHealthData.activityLevel}
+                        />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="health-loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.3, ease: "easeOut" as const }}
+                        className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-fit animate-pulse"
+                      >
+                        <div className="h-6 bg-gray-200 rounded w-1/2 mb-6"></div>
+                        <div className="flex justify-center">
+                          <div className="w-[180px] h-[180px] bg-gray-200 rounded-full"></div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-6">
+                          <div className="h-20 bg-gray-200 rounded-xl"></div>
+                          <div className="h-20 bg-gray-200 rounded-xl"></div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Weight Tracker */}
+                  <WeightTracker
+                    initialWeight={userHealthData?.weight}
+                    goal={userHealthData?.goal}
+                    onWeightUpdate={(newWeight) => {
+                      if (userHealthData) {
+                        setUserHealthData({
+                          ...userHealthData,
+                          weight: newWeight,
+                        });
+                      }
+                    }}
+                  />
+
+                  {/* Push Notification Toggle */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      {t("notifications.title")}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      {t("notifications.description")}
+                    </p>
+                    <PushNotificationToggle />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : activeSection === "pantry" ? (
+            <motion.div
+              key="pantry"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="h-full flex items-center justify-center p-4 md:p-8"
+            >
+              <ComingSoonPage
+                titleKey="pantry.title"
+                descriptionKey="pantry.description"
+                icon={<CakeSlice className="w-8 h-8 text-eatrivo-purple" />}
+                rivoImage="/rivo/RIVO3-remove.png"
+                gradient="bg-gradient-to-br from-orange-400 to-pink-400"
+                showBackButton={false}
+                className="w-full max-w-2xl"
+                // New props
+                badgeKey="pantry.badge"
+                features={[
+                  t("comingSoon.pantry.tags.tag1"),
+                  t("comingSoon.pantry.tags.tag2"),
+                  t("comingSoon.pantry.tags.tag3"),
+                ]}
+                ctaLabelKey="pantry.cta"
+                secondaryLabelKey="pantry.secondaryAction"
+                onCtaClick={() => {
+                  toast.success(
+                    "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
                   );
                 }}
-              >
-                <SelectTrigger
-                  size="sm"
-                  aria-label={t("navbar.language")}
-                  className="h-9 w-[4.5rem] rounded-full border-transparent bg-transparent px-2 shadow-none hover:bg-gray-100 focus:ring-eatrivo-purple/15"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sk">SK</SelectItem>
-                  <SelectItem value="en">EN</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Daily Plan Section */}
-          <section className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="p-2 bg-blue-50 rounded-lg">
-                  <ReceiptText className="w-5 h-5 text-blue-600" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  {t("dailyPlan.title")}
-                </h2>
-                
-                {/* Day Navigation */}
-                {isMounted && mealPlanData.length > 0 && (
-                  <div className="flex items-center gap-2 bg-white rounded-full px-2 py-1 shadow-sm border border-gray-100">
-                    <button
-                      onClick={() => setSelectedDayIndex((prev) => (prev === 0 ? 6 : prev - 1))}
-                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                      aria-label="Previous day"
-                    >
-                      <ChevronLeft className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <span className="text-sm font-medium text-gray-700 min-w-[80px] text-center">
-                      {selectedDayIndex === new Date().getDay() 
-                        ? <span className="text-eatrivo-purple capitalize">{t("dailyPlan.today")}</span>
-                        : mealPlanData.find(day => getDayIndex(day.day) === selectedDayIndex)?.day || currentDay
-                      }
-                    </span>
-                    <button
-                      onClick={() => setSelectedDayIndex((prev) => (prev === 6 ? 0 : prev + 1))}
-                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                      aria-label="Next day"
-                    >
-                      <ChevronRight className="w-4 h-4 text-gray-600" />
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Nutrition Summary */}
-              <div className="w-full md:w-auto">
-                <DailyNutritionSummary data={todaysNutrition} />
-              </div>
-            </div>
-
-            {/* Meals Grid */}
-            <DailyMealPlan meals={todaysMeals} isLoading={isLoading.mealPlan} />
-          </section>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Shopping Lists - Takes up 2 columns on large screens, last on mobile */}
-            <div className="lg:col-span-2 order-2 lg:order-1">
-              <ShoppingListsOverview
-                lists={shoppingLists}
-                isLoading={isLoading.shoppingLists}
+                onSecondaryClick={() => setActiveSection("dashboard")}
               />
-            </div>
-
-            {/* Right Column: Health Circle & Weight Tracker - first on mobile */}
-            <div className="space-y-6 order-1 lg:order-2">
-              {/* Body Health Circle */}
-              {userHealthData ? (
-                <BodyHealthCircle
-                  weight={userHealthData.weight}
-                  height={userHealthData.height}
-                  activityLevel={userHealthData.activityLevel}
-                />
-              ) : (
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-fit animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-1/2 mb-6"></div>
-                  <div className="flex justify-center">
-                    <div className="w-[180px] h-[180px] bg-gray-200 rounded-full"></div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 mt-6">
-                    <div className="h-20 bg-gray-200 rounded-xl"></div>
-                    <div className="h-20 bg-gray-200 rounded-xl"></div>
-                  </div>
-                </div>
-              )}
-
-              {/* Weight Tracker */}
-              <WeightTracker
-                initialWeight={userHealthData?.weight}
-                goal={userHealthData?.goal}
-                onWeightUpdate={(newWeight) => {
-                  if (userHealthData) {
-                    setUserHealthData({ ...userHealthData, weight: newWeight });
-                  }
+            </motion.div>
+          ) : activeSection === "profile" ? (
+            <motion.div
+              key="profile"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="h-full -mx-4 md:-mx-8 -my-8" // Negative margins to let profile utilize full dashboard content area
+            >
+              <ProfilePageClient onBack={() => setActiveSection("dashboard")} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="chatWithRivo"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="h-full flex items-center justify-center p-4 md:p-8"
+            >
+              <ComingSoonPage
+                titleKey="chatWithRivo.title"
+                descriptionKey="chatWithRivo.description"
+                icon={
+                  <MessageCircleHeart className="w-8 h-8 text-eatrivo-purple" />
+                }
+                rivoImage="/rivo/RIVO4-remove.png"
+                gradient="bg-gradient-to-br from-purple-400 to-violet-400"
+                showBackButton={false}
+                className="w-full max-w-2xl"
+                badgeKey="chatWithRivo.badge"
+                features={[
+                  t("comingSoon.chatWithRivo.tags.tag1"),
+                  t("comingSoon.chatWithRivo.tags.tag2"),
+                  t("comingSoon.chatWithRivo.tags.tag3"),
+                ]}
+                ctaLabelKey="chatWithRivo.cta"
+                secondaryLabelKey="chatWithRivo.secondaryAction"
+                onCtaClick={() => {
+                  toast.success(
+                    "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
+                  );
                 }}
+                onSecondaryClick={() => setActiveSection("dashboard")}
               />
-              
-              {/* Push Notification Toggle */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  {t("notifications.title")}
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  {t("notifications.description")}
-                </p>
-                <PushNotificationToggle />
-              </div>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <MobileNavigation />
-      
+      <MobileNavigation
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+      />
+
       {/* PWA Install Prompt */}
       <PWAInstallPrompt />
     </div>

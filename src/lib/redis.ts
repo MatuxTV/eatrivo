@@ -40,10 +40,15 @@ export class CacheService {
   static async del(key: string): Promise<void> {
     try {
       await redis.del(key)
-    
+
     } catch (error) {
       cacheLogger.error('Cache delete error', error, { metadata: { key } })
     }
+  }
+
+  // Alias for del method (backward compatibility)
+  static async delete(key: string): Promise<void> {
+    return this.del(key);
   }
 
   static async invalidatePattern(pattern: string): Promise<void> {

@@ -2,7 +2,12 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth } from "../../../../../auth";
 import { db } from "@/index";
-import { users, userProfiles, userInfoTable } from "@/db/schema";
+import {
+  users,
+  userProfiles,
+  userInfoTable,
+  badges as badgesTable,
+} from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -17,10 +22,7 @@ export async function GET() {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Fetch user profile
@@ -31,10 +33,7 @@ export async function GET() {
       .limit(1);
 
     if (!profile || profile.length === 0) {
-      return NextResponse.json(
-        { error: "Profile not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
     const userProfile = profile[0];
@@ -54,25 +53,39 @@ export async function GET() {
       .limit(1);
 
     // Format nutrition data for the frontend
-    const formattedNutrition = nutrition.length > 0 ? {
-      ...nutrition[0],
-      weight: nutrition[0].weight ? String(nutrition[0].weight) : "",
-      activity_level: nutrition[0].activity_level?.trim() || "sedentary",
-      goal: nutrition[0].goal?.trim() || "maintain_weight",
-      cooking_time_pref: nutrition[0].cooking_time_pref?.trim() || "normal",
-      diet_preferences: nutrition[0].diet_preferences?.trim() || "none",
-      budget_preference: nutrition[0].budget_preference?.trim() || "medium",
-      likes: nutrition[0].likes || "",
-      dislikes: nutrition[0].dislikes || "",
-      allergies: nutrition[0].allergies || "",
-    } : null;
+    const formattedNutrition =
+      nutrition.length > 0
+        ? {
+            ...nutrition[0],
+            weight: nutrition[0].weight ? String(nutrition[0].weight) : "",
+            activity_level: nutrition[0].activity_level?.trim() || null,
+            goal: nutrition[0].goal?.trim() || null,
+            cooking_time_pref: nutrition[0].cooking_time_pref?.trim() || null,
+            meal_prep: nutrition[0].meal_prep ?? false,
+            meal_prep_days: nutrition[0].meal_prep_days ?? null,
+            diet_preferences: nutrition[0].diet_preferences?.trim() || null,
+            budget_preference: nutrition[0].budget_preference?.trim() || null,
+            likes: nutrition[0].likes || "",
+            dislikes: nutrition[0].dislikes || "",
+            allergies: nutrition[0].allergies || "",
+          }
+        : null;
+
+    // Fetch user badges
+    const userBadges = await db.query.badges.findMany({
+      where: eq(badgesTable.userProfileId, userProfile.id),
+      columns: { type: true },
+    });
 
     return NextResponse.json({
       profile: {
         fullName: userProfile.fullName,
         email: session.user.email,
-        dateOfBirth: userProfile.dateOfBirth ? userProfile.dateOfBirth.toISOString().split('T')[0] : "",
+        dateOfBirth: nutrition[0]?.dateOfBirth
+          ? new Date(nutrition[0].dateOfBirth).toISOString().split("T")[0]
+          : "",
         membership: user[0]?.membership || "basic",
+        badges: userBadges.map((b) => b.type),
       },
       nutrition: formattedNutrition,
     });
@@ -80,7 +93,7 @@ export async function GET() {
     console.error("Error fetching profile:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -91,10 +104,7 @@ export async function PUT(request: NextRequest) {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -103,29 +113,33 @@ export async function PUT(request: NextRequest) {
     if (!validation.success) {
       return NextResponse.json(
         { error: "Validation failed", details: validation.error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const { fullName, dateOfBirth } = validation.data;
 
-    // Update user profile
+    // Update user profile (fullName only, dateOfBirth lives in userInfoTable)
     const updated = await db
       .update(userProfiles)
       .set({
         fullName,
-        dateOfBirth: new Date(dateOfBirth),
         updated_at: new Date(),
       })
       .where(eq(userProfiles.userId, session.user.id))
       .returning();
 
     if (!updated || updated.length === 0) {
-      return NextResponse.json(
-        { error: "Profile not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
+
+    // Update dateOfBirth in userInfoTable (single source of truth)
+    await db
+      .update(userInfoTable)
+      .set({
+        dateOfBirth: new Date(dateOfBirth),
+      })
+      .where(eq(userInfoTable.userProfileId, updated[0].id));
 
     // Fetch user for membership
     const user = await db
@@ -139,7 +153,7 @@ export async function PUT(request: NextRequest) {
       profile: {
         fullName: updated[0].fullName,
         email: session.user.email,
-        dateOfBirth: updated[0].dateOfBirth ? updated[0].dateOfBirth.toISOString().split('T')[0] : "",
+        dateOfBirth: dateOfBirth || "",
         membership: user[0]?.membership || "basic",
       },
     });
@@ -147,7 +161,7 @@ export async function PUT(request: NextRequest) {
     console.error("Error updating profile:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

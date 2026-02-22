@@ -1,0 +1,307 @@
+diff --git a/src/app/api/stripe/webhook/route.ts b/src/app/api/stripe/webhook/route.ts
+index 048967d..f94838a 100644
+--- a/src/app/api/stripe/webhook/route.ts
++++ b/src/app/api/stripe/webhook/route.ts
+@@ -138,8 +138,8 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
+           .delete(shoppingLists)
+           .where(eq(shoppingLists.userProfileId, userProfile.id));
+ 
+-        console.log(
+-          `Deleted all template-based shopping lists and meal plans for upgraded user: ${userId}`
++        console.warn(
++          `[Subscription] Deleted all template-based shopping lists and meal plans for upgraded user: ${userId}`
+         );
+ 
+         // Invalidate cache so user gets fresh empty state
+@@ -160,6 +160,9 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
+       ? new Date(currentPeriodEnd * 1000)
+       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+ 
++    // Get cancel_at from Stripe subscription
++    const cancelAtTimestamp = (stripeSubscription as unknown as { cancel_at: number | null }).cancel_at;
++    
+     // Create subscription record
+     await db.insert(subscriptions).values({
+       userId: userId,
+@@ -168,6 +171,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
+       status: "active",
+       currentPeriodEnd: periodEndDate,
+       cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end ?? false,
++      cancelAt: cancelAtTimestamp ? new Date(cancelAtTimestamp * 1000) : null,
+     });
+ 
+     // Track subscription upgrade event
+@@ -184,38 +188,138 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
+ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
+   const userId = subscription.metadata?.userId;
+   const subscriptionId = subscription.id;
+-  const priceId = subscription.items.data[0].price.id;
+-  const membership = getMembershipFromPriceId(priceId);
+-
++  const priceId = subscription.items.data[0]?.price.id;
++  
+   if (!userId) {
+     console.error("Missing userId in subscription metadata");
+     return;
+   }
+ 
++  if (!priceId) {
++    console.error("Missing priceId in subscription items");
++    return;
++  }
++
++  const membership = getMembershipFromPriceId(priceId);
++
++  // Check if user exists
++  const existingUser = await db.query.users.findFirst({
++    where: eq(users.id, userId),
++    columns: { id: true },
++  });
++
++  if (!existingUser) {
++    console.error("User not found for subscription update:", userId);
++    return;
++  }
++
++  // Check if subscription record exists
++  const existingSubscription = await db.query.subscriptions.findFirst({
++    where: eq(subscriptions.stripeSubscriptionId, subscriptionId),
++    columns: { id: true },
++  });
++
++  if (!existingSubscription) {
++    console.error("Subscription record not found:", subscriptionId);
++    return;
++  }
++
++  // Map Stripe subscription status to our database enum
++  const mapSubscriptionStatus = (
++    stripeStatus: string,
++  ): "active" | "canceled" | "past_due" | "gifted" => {
++    switch (stripeStatus) {
++      case "active":
++      case "trialing":
++        return "active";
++      case "past_due":
++      case "unpaid":
++        return "past_due";
++      case "canceled":
++      case "incomplete":
++      case "incomplete_expired":
++        return "canceled";
++      default:
++        console.warn(`Unknown subscription status: ${stripeStatus}, defaulting to canceled`);
++        return "canceled";
++    }
++  };
++
++  // Safely get current_period_end and cancel_at
++  const rawSubscription = subscription as unknown as Record<string, unknown>;
++  let currentPeriodEnd = rawSubscription.current_period_end as number | undefined;
++  let cancelAtTimestamp = rawSubscription.cancel_at as number | null | undefined;
++
++  // If current_period_end is not at top level, check subscription items
++  if (!currentPeriodEnd && subscription.items?.data?.[0]) {
++    const firstItem = subscription.items.data[0] as unknown as Record<string, unknown>;
++    currentPeriodEnd = firstItem.current_period_end as number | undefined;
++  }
++
++  // If critical fields are still missing for active subscriptions, fetch from Stripe API
++  if (!currentPeriodEnd && subscription.status === "active") {
++    console.warn(
++      `[Webhook] Missing current_period_end for active subscription ${subscriptionId}, fetching from Stripe API`
++    );
++    
++    try {
++      const fullSubscription = await stripe.subscriptions.retrieve(subscriptionId);
++      const fullRaw = fullSubscription as unknown as Record<string, unknown>;
++      
++      // Check subscription level first
++      currentPeriodEnd = fullRaw.current_period_end as number | undefined;
++      
++      // If not there, check items
++      if (!currentPeriodEnd && fullSubscription.items?.data?.[0]) {
++        const item = fullSubscription.items.data[0] as unknown as Record<string, unknown>;
++        currentPeriodEnd = item.current_period_end as number | undefined;
++      }
++      
++      cancelAtTimestamp = fullRaw.cancel_at as number | null | undefined;
++      
++      console.warn(
++        `[Webhook] Fetched full subscription data: current_period_end=${!!currentPeriodEnd}, cancel_at=${!!cancelAtTimestamp}`
++      );
++    } catch (error) {
++      console.error(`Failed to fetch full subscription ${subscriptionId}:`, error);
++    }
++  }
++
++  // Build update object conditionally
++  const updateData: {
++    stripePriceId: string;
++    status: "active" | "canceled" | "past_due" | "gifted";
++    cancelAtPeriodEnd: boolean;
++    cancelAt: Date | null;
++    updatedAt: Date;
++    currentPeriodEnd?: Date;
++  } = {
++    stripePriceId: priceId,
++    status: mapSubscriptionStatus(subscription.status),
++    cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
++    cancelAt: cancelAtTimestamp ? new Date(cancelAtTimestamp * 1000) : null,
++    updatedAt: new Date(),
++  };
++
++  // Only update currentPeriodEnd if it exists
++  if (currentPeriodEnd) {
++    updateData.currentPeriodEnd = new Date(currentPeriodEnd * 1000);
++  } else {
++    console.warn(
++      `Missing current_period_end for subscription ${subscriptionId}, keeping existing value`
++    );
++  }
++
+   // Update user membership
+   await db
+     .update(users)
+     .set({ membership: membership })
+     .where(eq(users.id, userId));
+ 
+-  // Update subscription record
++  // Update subscription record with validated data
+   await db
+     .update(subscriptions)
+-    .set({
+-      stripePriceId: priceId,
+-      status:
+-        subscription.status === "active"
+-          ? "active"
+-          : subscription.status === "past_due"
+-            ? "past_due"
+-            : "canceled",
+-      currentPeriodEnd: new Date(
+-        (subscription as unknown as { current_period_end: number })
+-          .current_period_end * 1000,
+-      ),
+-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+-      updatedAt: new Date(),
+-    })
++    .set(updateData)
+     .where(eq(subscriptions.stripeSubscriptionId, subscriptionId));
+ }
+ 
+@@ -227,20 +331,51 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+     return;
+   }
+ 
+-  // Downgrade user to basic
+-  await db
+-    .update(users)
+-    .set({ membership: "basic" })
+-    .where(eq(users.id, userId));
++  // Check if user exists
++  const existingUser = await db.query.users.findFirst({
++    where: eq(users.id, userId),
++    columns: { id: true, membership: true },
++  });
+ 
+-  // Update subscription record
+-  await db
+-    .update(subscriptions)
+-    .set({
+-      status: "canceled",
+-      updatedAt: new Date(),
+-    })
+-    .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
++  if (!existingUser) {
++    console.error("User not found for subscription deletion:", userId);
++    return;
++  }
++
++  // Check if subscription record exists
++  const existingSubscription = await db.query.subscriptions.findFirst({
++    where: eq(subscriptions.stripeSubscriptionId, subscription.id),
++    columns: { id: true },
++  });
++
++  if (!existingSubscription) {
++    console.warn("Subscription record not found for deletion:", subscription.id);
++    // Continue to downgrade user even if subscription record is missing
++  }
++
++  // Downgrade user to basic (only if they're not already basic)
++  if (existingUser.membership !== "basic") {
++    await db
++      .update(users)
++      .set({ membership: "basic" })
++      .where(eq(users.id, userId));
++  }
++
++  // Update subscription record if it exists
++  if (existingSubscription) {
++    await db
++      .update(subscriptions)
++      .set({
++        status: "canceled",
++        updatedAt: new Date(),
++      })
++      .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
++  }
++
++  // Track cancellation event
++  Analytics.subscriptionCancel(userId, {
++    tier: existingUser.membership,
++  });
+ }
+ 
+ async function handleInvoicePaid(invoice: Stripe.Invoice) {
+@@ -308,20 +443,39 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
+ }
+ 
+ async function handlePaymentFailed(invoice: Stripe.Invoice) {
+-  const subscriptionId = (invoice as unknown as { subscription: string | null })
+-    .subscription;
++  const rawInvoice = invoice as unknown as { subscription: string | null };
++  const subscriptionId = rawInvoice.subscription;
+   const customerId = invoice.customer as string;
+ 
+-  if (!subscriptionId) return;
++  if (!subscriptionId) {
++    console.warn("Invoice payment failed but no subscription ID found:", invoice.id);
++    return;
++  }
+ 
+-  // Update subscription status to past_due
+-  await db
+-    .update(subscriptions)
+-    .set({
+-      status: "past_due",
+-      updatedAt: new Date(),
+-    })
+-    .where(eq(subscriptions.stripeSubscriptionId, subscriptionId));
++  if (!customerId) {
++    console.error("Missing customer ID in failed invoice:", invoice.id);
++    return;
++  }
++
++  // Check if subscription exists before updating
++  const existingSubscription = await db.query.subscriptions.findFirst({
++    where: eq(subscriptions.stripeSubscriptionId, subscriptionId),
++    columns: { id: true },
++  });
++
++  if (!existingSubscription) {
++    console.warn("Subscription not found for payment failure:", subscriptionId);
++    // Continue to record invoice even if subscription is missing
++  } else {
++    // Update subscription status to past_due
++    await db
++      .update(subscriptions)
++      .set({
++        status: "past_due",
++        updatedAt: new Date(),
++      })
++      .where(eq(subscriptions.stripeSubscriptionId, subscriptionId));
++  }
+ 
+   // Also record the failed invoice
+   const user = await db

@@ -94,7 +94,7 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-eatrivo-white-primary flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-2xl mx-auto px-3 md:px-4 py-4 md:py-6">
@@ -144,7 +144,7 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
                   2
                 </div>
                 <span className="ml-1 md:ml-2 text-xs md:text-sm font-medium text-gray-900">
-                  {t("steps.food")}
+                  {t("steps.preferences")}
                 </span>
               </div>
             </div>

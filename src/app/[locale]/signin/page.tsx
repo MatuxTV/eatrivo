@@ -1,18 +1,27 @@
 import { auth, signIn } from "../../../../auth";
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { isLocale, type Locale } from "@/i18n/routing";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
 };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { locale: localeParam } = await params;
   const locale: Locale = isLocale(localeParam) ? localeParam : "sk";
 
@@ -25,7 +34,6 @@ export default async function SignInPage({ params }: PageProps) {
   const locale: Locale = isLocale(localeParam) ? localeParam : "sk";
 
   const t = await getTranslations({ locale, namespace: "auth" });
-  const tCommon = await getTranslations({ locale, namespace: "common" });
 
   const session = await auth();
   if (session?.user) {
@@ -33,11 +41,20 @@ export default async function SignInPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-eatrivo-white-primary px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">{tCommon("appName")}</h1>
-          <p className="text-gray-600 mt-2">{t("signIn.tagline")}</p>
+          <Link href={`/${locale}`} className="inline-block">
+            <div className="relative h-12 w-48 mx-auto">
+              <Image
+                src="/logo/LOGO_ROW.png"
+                alt="EatRivo Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          </Link>
         </div>
 
         <Card className=" bg-eatrivo-white-primary">
@@ -52,7 +69,11 @@ export default async function SignInPage({ params }: PageProps) {
                 await signIn("google", { redirectTo: `/${locale}/onboarding` });
               }}
             >
-              <Button type="submit" className="w-full hover:scale-105 duration-150" size="lg">
+              <Button
+                type="submit"
+                className="w-full hover:scale-105 duration-300 active:scale-95 cursor-pointer transition-all"
+                size="lg"
+              >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path
                     fill="currentColor"
@@ -77,11 +98,17 @@ export default async function SignInPage({ params }: PageProps) {
 
             <div className="text-center text-sm text-gray-600">
               {t("signIn.agreement.prefix")}{" "}
-              <Link href="/terms" className="text-blue-600 hover:underline">
+              <Link
+                href={`/${locale}/terms-of-service`}
+                className="text-blue-600 hover:underline"
+              >
                 {t("signIn.agreement.terms")}
               </Link>{" "}
               {t("signIn.agreement.and")}{" "}
-              <Link href="/privacy" className="text-blue-600 hover:underline">
+              <Link
+                href={`/${locale}/privacy-policy`}
+                className="text-blue-600 hover:underline"
+              >
                 {t("signIn.agreement.privacy")}
               </Link>
             </div>

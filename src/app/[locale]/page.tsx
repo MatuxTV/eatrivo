@@ -2,12 +2,16 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { Navbar } from "@/components/landing/Navbar";
-import { Hero } from "@/components/landing/Hero";
-import { HowItWorks } from "@/components/landing/HowItWorks";
-import { Features } from "@/components/landing/Features";
-import { CTA } from "@/components/landing/CTA";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
+import { MeetRivo } from "@/components/landing/MeetRivo";
+import { AppShowcase } from "@/components/landing/AppShowcase";
+import { PainSolution } from "@/components/landing/PainSolution";
+import { FAQ } from "@/components/landing/FAQ";
+import { DownloadCTA } from "@/components/landing/DownloadCTA";
 import { Footer } from "@/components/landing/Footer";
 import { isLocale, type Locale } from "@/i18n/routing";
+import { Pricing } from "@/components/landing/Pricing";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -26,13 +30,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white selection:bg-eatrivo-purple selection:text-white">
+    <div className="min-h-screen bg-eatrivo-white-primary selection:bg-eatrivo-purple selection:text-white">
       <Navbar />
       <main>
-        <Hero />
-        <HowItWorks />
-        <Features />
-        <CTA />
+        <HeroSection />
+        <MeetRivo />
+        <HowItWorksSection />
+        <AppShowcase />
+        <Pricing />
+        <PainSolution />
+        <FAQ />
+        <DownloadCTA />
       </main>
       <Footer />
     </div>

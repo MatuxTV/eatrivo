@@ -1,44 +1,55 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { auth } from "../../../../auth";
 import {
   sendWelcomeEmail,
   sendShoppingListNotification,
 } from "@/lib/emailService";
+import { getUserLanguage } from "@/lib/user-utils";
 
 /**
- * Test endpoint for sending emails
- * POST /api/test-email
+ * Email sending endpoint - PROTECTED
+ * POST /api/send-email
  *
- * Body examples:
- *
- * Welcome email:
- * {
- *   "type": "welcome",
- *   "to": "user@example.com",
- *   "userName": "John Doe"
- * }
- *
- * Shopping list notification:
- * {
- *   "type": "shopping-list",
- *   "to": "client@example.com",
- *   "clientName": "Jane Smith",
- *   "shoppingListName": "Týždenný nákup",
- *   "shoppingListDate": "25.11.2025",
- *   "dashboardUrl": "https://eatrivo.com/dashboard"
- * }
+ * - Welcome emails: Authenticated users can send to themselves
+ * - Shopping list emails: Admin/Trainer only
  */
 export async function POST(request: NextRequest) {
   try {
+    // Authentication required
+    const session = await auth();
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Unauthorized - please sign in" },
+        { status: 401 },
+      );
+    }
+
     const body = await request.json();
     const { type, to, ...props } = body;
 
     if (!type || !to) {
       return NextResponse.json(
         { error: "Missing required fields: type and to" },
-        { status: 400 }
+        { status: 400 },
       );
     }
+
+    // Security: Users can only send welcome emails to themselves
+    // Admins/trainers can send to anyone
+    const isAdmin = ["trainer", "admin"].includes(
+      session.user.membership?.toLowerCase() || "",
+    );
+
+    if (!isAdmin && to !== session.user.email) {
+      return NextResponse.json(
+        { error: "You can only send emails to yourself" },
+        { status: 403 },
+      );
+    }
+
+    // Get recipient's language preference
+    const userLocale = await getUserLanguage(to);
 
     let result;
 
@@ -47,13 +58,13 @@ export async function POST(request: NextRequest) {
         if (!props.userName) {
           return NextResponse.json(
             { error: "Missing userName for welcome email" },
-            { status: 400 }
+            { status: 400 },
           );
         }
         result = await sendWelcomeEmail(to, {
           userName: props.userName,
           userEmail: to,
-        });
+        }, userLocale);
         break;
 
       case "shopping-list":
@@ -67,7 +78,7 @@ export async function POST(request: NextRequest) {
               error:
                 "Missing required fields for shopping list notification: clientName, shoppingListName, shoppingListDate, itemCount",
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
         result = await sendShoppingListNotification(to, {
@@ -76,13 +87,13 @@ export async function POST(request: NextRequest) {
           shoppingListName: props.shoppingListName,
           shoppingListDate: props.shoppingListDate,
           dashboardUrl: props.dashboardUrl,
-        });
+        }, userLocale);
         break;
 
       default:
         return NextResponse.json(
           { error: `Unknown email type: ${type}` },
-          { status: 400 }
+          { status: 400 },
         );
     }
 
@@ -98,17 +109,14 @@ export async function POST(request: NextRequest) {
           success: false,
           error: result.error,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   } catch (error) {
     console.error("Error in test-email endpoint:", error);
     return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

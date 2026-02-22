@@ -6,17 +6,26 @@ import { LogOut, User, DiamondPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
 import { useSession } from "next-auth/react";
+import { UserBadge } from "@/components/ui/UserBadge";
 
-export default function DashboardHeader() {
+interface DashboardHeaderProps {
+  onSectionChange: (
+    section: "dashboard" | "pantry" | "chatWithRivo" | "profile",
+  ) => void;
+}
+
+export default function DashboardHeader({
+  onSectionChange,
+}: DashboardHeaderProps) {
   const { data: session } = useSession();
 
   return (
     <div className="md:hidden fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-100 z-40 px-4 py-3">
       <div className="flex items-center justify-between">
         {/* User Profile Section */}
-        <Link
-          href="/profile"
-          className="flex items-center gap-3 active:opacity-70 transition-opacity"
+        <button
+          onClick={() => onSectionChange("profile")}
+          className="flex items-center gap-3 active:opacity-70 transition-opacity text-left cursor-pointer bg-transparent border-none p-0"
         >
           {session?.user?.image ? (
             <Image
@@ -32,16 +41,21 @@ export default function DashboardHeader() {
             </div>
           )}
           <div>
-            <h2 className="text-sm font-bold text-gray-900 truncate max-w-[150px]">
-              {session?.user?.name}
-            </h2>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <h2 className="text-sm font-bold text-gray-900 truncate max-w-[150px]">
+                {session?.user?.name}
+              </h2>
+              {session?.user?.badges?.map((badgeStr) => (
+                <UserBadge key={badgeStr} type={badgeStr} />
+              ))}
+            </div>
             <p
               className={`text-[10px] font-medium capitalize ${getMembershipStatus(session?.user?.membership)}`}
             >
               {session?.user?.membership || "basic"}
             </p>
           </div>
-        </Link>
+        </button>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
@@ -57,7 +71,7 @@ export default function DashboardHeader() {
               </Button>
             </Link>
           )}
-          
+
           <Link href="/signout">
             <Button
               variant="ghost"

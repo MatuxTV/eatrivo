@@ -1,11 +1,6 @@
-import type { Metadata } from "next";
-import AdminDashboard from "./components/AdminDashboard";
+import { redirect } from "next/navigation";
+import { defaultLocale } from "@/i18n/routing";
 
-export const metadata: Metadata = {
-  title: "Admin Dashboard - Eatrivo",
-  description: "Admin panel for managing meal plans and users",
-};
-
-export default function AdminPage() {
-  return <AdminDashboard />;
+export default function AdminPageWrapper() {
+  redirect(`/${defaultLocale}/admin`);
 }

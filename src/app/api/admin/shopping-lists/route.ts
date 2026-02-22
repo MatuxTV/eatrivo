@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { auth } from "../../../../../auth";
+import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import { db } from '@/index';
 import { shoppingLists, userProfiles, pushSubscriptions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -23,12 +23,8 @@ if (VAPID_PRIVATE_KEY && process.env.ADMIN_EMAIL) {
 // POST endpoint - Save shopping list to database (with markdown content)
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    
-    // Check if user is admin/trainer
-    if (!session?.user?.membership || !["trainer", "admin"].includes(session.user.membership.toLowerCase())) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireAdminAuth();
+    if (isAuthError(authResult)) return authResult;
 
     const body = await request.json();
     const {
