@@ -274,7 +274,7 @@ export default function ChatWithRivoPage() {
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() =>
-                    handleSuggestedPrompt("Chcem vymeniť dnešný obed")
+                    handleSuggestedPrompt("Daj mi recept na dnešný obed")
                   }
                   className="group flex items-center gap-4 p-3.5 rounded-2xl bg-white shadow-sm hover:shadow-md border border-eatrivo-green/10 hover:border-eatrivo-green/30 hover:shadow-eatrivo-green/10 transition-all text-left"
                 >
@@ -282,7 +282,7 @@ export default function ChatWithRivoPage() {
                     <Sprout className="w-4 h-4" />
                   </div>
                   <span className="text-[15px] font-medium text-eatrivo-black-primary transition-colors">
-                    Chcem vymeniť obed
+                    Daj mi recept na dnešný obed
                   </span>
                 </motion.button>
               </motion.div>

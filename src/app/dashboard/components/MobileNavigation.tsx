@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
 import { FeedbackDialog } from "@/components/FeedbackButton";
 
 interface MobileNavigationProps {
@@ -24,6 +25,8 @@ export default function MobileNavigation({
   onSectionChange,
 }: MobileNavigationProps) {
   const t = useTranslations("dashboard");
+  const { data: session } = useSession();
+  const isBeta = session?.user?.isBetaTester ?? false;
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
@@ -109,11 +112,19 @@ export default function MobileNavigation({
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               )}
-              <item.icon
-                className={`w-5 h-5 mb-1 transition-colors duration-200 ${
-                  isActive ? "text-eatrivo-purple" : "text-gray-400"
-                }`}
-              />
+              <div className="relative mb-1">
+                <item.icon
+                  className={`w-5 h-5 transition-colors duration-200 ${
+                    isActive ? "text-eatrivo-purple" : "text-gray-400"
+                  }`}
+                />
+                {isBeta && item.id === "chatWithRivo" && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                  </span>
+                )}
+              </div>
               <span
                 className={`text-[10px] font-medium transition-colors duration-200 ${
                   isActive ? "text-eatrivo-purple" : "text-gray-500"

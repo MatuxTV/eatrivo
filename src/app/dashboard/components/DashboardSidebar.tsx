@@ -148,9 +148,17 @@ export default function DashboardSidebar({
                   }
                 `}
               >
-                <item.icon
-                  className={`w-4 h-4 ${isActive ? "text-eatrivo-purple" : "text-gray-400"}`}
-                />
+                <div className="relative">
+                  <item.icon
+                    className={`w-4 h-4 ${isActive ? "text-eatrivo-purple" : "text-gray-400"}`}
+                  />
+                  {isBeta && item.id === "chatWithRivo" && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                    </span>
+                  )}
+                </div>
                 {item.label}
                 {"comingSoon" in item && item.comingSoon && (
                   <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 bg-eatrivo-purple/10 text-eatrivo-purple rounded-full">
@@ -198,7 +206,15 @@ export default function DashboardSidebar({
                 <span className="absolute top-2.5 right-[calc(50%-10px)] w-1.5 h-1.5 bg-eatrivo-purple/60 rounded-full" />
               )}
 
-              <item.icon className="w-5 h-5" />
+              <div className="relative">
+                <item.icon className="w-5 h-5" />
+                {isBeta && item.id === "chatWithRivo" && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                  </span>
+                )}
+              </div>
               <span className="text-[10px] font-semibold leading-none tracking-wide">
                 {item.label}
               </span>
