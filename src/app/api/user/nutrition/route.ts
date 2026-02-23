@@ -5,6 +5,7 @@ import { db } from "@/index";
 import { userProfiles, userInfoTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { userFoodPreferencesSchema } from "@/lib/schemas/user";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 // PUT /api/user/nutrition - Update user's nutrition preferences
 export async function PUT(request: NextRequest) {
@@ -17,6 +18,9 @@ export async function PUT(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
+    if (!rl.success) return rl.response!;
 
     const body = await request.json();
     const validation = userFoodPreferencesSchema.safeParse(body);

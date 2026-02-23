@@ -10,6 +10,7 @@ import {
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const profileUpdateSchema = z.object({
   fullName: z.string().min(2, "Meno musí mať aspoň 2 znaky"),
@@ -24,6 +25,9 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
+    if (!rl.success) return rl.response!;
 
     // Fetch user profile
     const profile = await db

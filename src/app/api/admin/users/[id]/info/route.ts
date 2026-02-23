@@ -4,6 +4,7 @@ import { auth } from "@/../auth";
 import { db } from "../../../../../../index";
 import { userInfoTable, shoppingLists, mealPlans, userProfiles } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function GET(
   req: NextRequest,
@@ -15,11 +16,14 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
+    if (!rl.success) return rl.response!;
+
     const userProfile = await db.query.userProfiles.findFirst({
       where: eq(userProfiles.userId, session.user.id),
     });
 
-    if (!userProfile || !["admin", "trainer"].includes(userProfile.role ?? "")) {
+    if (!userProfile || !["admin", "coach"].includes(userProfile.role ?? "")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -28,6 +32,15 @@ export async function GET(
     if (!id) {
       return NextResponse.json(
         { error: "User profile ID is required" },
+        { status: 400 },
+      );
+    }
+
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return NextResponse.json(
+        { error: "Invalid user profile ID format" },
         { status: 400 },
       );
     }

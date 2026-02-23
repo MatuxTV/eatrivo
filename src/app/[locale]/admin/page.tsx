@@ -22,7 +22,7 @@ export default async function AdminPage() {
     where: eq(userProfiles.userId, session.user.id),
   });
 
-  if (!userProfile || !["admin", "trainer"].includes(userProfile.role ?? "")) {
+  if (!userProfile || !["admin", "coach"].includes(userProfile.role ?? "")) {
     redirect("/not-authorized");
   }
 

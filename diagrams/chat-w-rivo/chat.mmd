@@ -1,0 +1,114 @@
+graph TD
+    %% ─── UI LAYER ───────────────────────────────────────────────────
+    subgraph UI["📱 Frontend (React / Next.js)"]
+        CHAT_UI["💬 ChatWithRivo Component\n─────────────────────\nZobrazuje správy + stream\nPosiela správu cez fetch POST /api/chat"]
+    end
+
+    %% ─── API ENTRY POINT ─────────────────────────────────────────────
+    subgraph API["⚡ Next.js App Router"]
+        API_ROUTE["🛣️ POST /api/chat/route.ts\n─────────────────────\nAuth check (session)\nSpustí buildChatGraph().stream()\nStreamuje ReadableStream späť do UI"]
+    end
+
+    %% ─── LANGGRAPH AGENT ─────────────────────────────────────────────
+    subgraph GRAPH["🕸️ LangGraph.js — Chat Agent\nsrc/lib/langgraph/chat/index.ts"]
+
+        subgraph SETUP["Príprava kontextu"]
+            N1["fetch_profile\n─────────────────────\n① Redis GET user:{id}\n② Cache HIT → skip DB\n③ Cache MISS → Neon DB\n   + Redis SET TTL 5min\nZapíše: userProfile, userInfo"]
+            N1B["save_user_message\n─────────────────────\nUloží USER správu\ndo chatMessages okamžite\n(pred LLM volaním)"]
+            N2["intent_router\n─────────────────────\n① rule-based pre-filter\n   kľúčové slová? → skip LLM\n② inak: Gemini Flash\n   klasifikuje intent\nZapíše: intent"]
+        end
+
+        subgraph CONTEXT["Lazy-load kontextu (podľa intentu)"]
+            N3A["fetch_plan\n────────────────\nDnešný meal plan\nPre: meal_swap, recipe"]
+            N3B["fetch_macros\n────────────────\nVýpočet BMR/TDEE/makrá\nPre: macros\n(deterministický, bez DB)"]
+            N3C["fetch_pantry\n────────────────\nPoložky zo špajze\nPre: pantry"]
+            N3D["skip_context\n────────────────\nBez extra kontextu\nPre: general / small talk"]
+        end
+
+        subgraph GENERATION["Generovanie odpovede"]
+            N4["build_prompt\n─────────────────────\nZostav systémový prompt\ns Rivo osobnosťou + kontextom\nZapíše: messages (system msg)"]
+            N5["rivo_llm\n─────────────────────\nGemini 3 Flash — streaming\nZapíše: messages (AI odpoveď)"]
+            N6["save_assistant_message\n─────────────────────\nČíta celý messages diff\nUloží ASSISTANT odpoveď\ndo chatMessages\nZapíše: — (side effect len)"]
+        end
+
+        N_ERR["error_handler\n─────────────────────\nFallback správa pre UI\n'Rivo práve odpočíva...'"]
+        END_NODE(["END"])
+    end
+
+    %% ─── EXTERNAL SERVICES ───────────────────────────────────────────
+    subgraph CACHE["⚡ Redis (Upstash)"]
+        REDIS[("user:{id} cache\nTTL: 5 min\nuserProfile + userInfo")]
+    end
+
+    subgraph DB["🗄️ Neon DB (Drizzle ORM)"]
+        DB_PROFILE[("userProfiles\nuserInfoTable")]
+        DB_PLAN[("mealPlans")]
+        DB_PANTRY[("inventoryContext")]
+        DB_CHAT[("chatMessages\n─────────────\nid, userProfileId\nsessionId, role\ncontent, intent\ncreated_at")]
+    end
+
+    %% ─── EDGES ───────────────────────────────────────────────────────
+    CHAT_UI -- "1. POST {messages, sessionId}" --> API_ROUTE
+    API_ROUTE -- "2. Spusti graf" --> N1
+
+    %% fix 3: Redis cache guard
+    N1 <-- "GET / SET" --> REDIS
+    N1 -- "MISS: load" --> DB_PROFILE
+    DB_PROFILE --> N1
+
+    N1 --> N1B
+    N1B -- "Ulož user msg" --> DB_CHAT
+    N1B --> N2
+
+    %% fix 4: rule-based pre-filter → conditional edge
+    N2 -- "meal_swap / recipe" --> N3A
+    N2 -- "macros" --> N3B
+    N2 -- "pantry" --> N3C
+    N2 -- "general / small talk\n(rule-based, bez LLM)" --> N3D
+
+    N3A -- "Load" --> DB_PLAN
+    DB_PLAN --> N3A
+    N3C -- "Load" --> DB_PANTRY
+    DB_PANTRY --> N3C
+
+    N3A --> N4
+    N3B --> N4
+    N3C --> N4
+    N3D --> N4
+
+    N4 --> N5
+    N5 --> N6
+
+    %% fix 2: save_assistant_message číta celý messages diff
+    N6 -- "Ulož assistant msg" --> DB_CHAT
+
+    N5 -. "Stream tokenov" .-> API_ROUTE
+    API_ROUTE -. "ReadableStream" .-> CHAT_UI
+
+    %% fix 1: error_handler → END (nie späť do API_ROUTE)
+    N1 -- "chyba" --> N_ERR
+    N2 -- "chyba" --> N_ERR
+    N5 -- "chyba" --> N_ERR
+    N_ERR --> END_NODE
+    N6 --> END_NODE
+
+    %% ─── STYLING ─────────────────────────────────────────────────────
+    classDef ui fill:#f3e8ff,stroke:#9333ea,stroke-width:2px,color:#1a1a1a;
+    classDef api fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,color:#1a1a1a;
+    classDef node_setup fill:#ecfdf5,stroke:#22c55e,stroke-width:2px,color:#1a1a1a;
+    classDef node_context fill:#f0f9ff,stroke:#0ea5e9,stroke-width:1px,color:#1a1a1a;
+    classDef node_gen fill:#fffbeb,stroke:#f59e0b,stroke-width:2px,color:#1a1a1a;
+    classDef node_err fill:#fef2f2,stroke:#ef4444,stroke-width:2px,color:#1a1a1a;
+    classDef db fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#1a1a1a;
+    classDef cache fill:#fef9c3,stroke:#eab308,stroke-width:2px,color:#1a1a1a;
+    classDef endnode fill:#f1f5f9,stroke:#64748b,stroke-width:2px,color:#1a1a1a;
+
+    class CHAT_UI ui;
+    class API_ROUTE api;
+    class N1,N1B,N2 node_setup;
+    class N3A,N3B,N3C,N3D node_context;
+    class N4,N5,N6 node_gen;
+    class N_ERR node_err;
+    class DB_PROFILE,DB_PLAN,DB_PANTRY,DB_CHAT db;
+    class REDIS cache;
+    class END_NODE endnode;

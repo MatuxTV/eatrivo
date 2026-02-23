@@ -5,6 +5,7 @@ import { createPortalSession } from "@/lib/stripe";
 import { db } from "@/index";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,6 +14,11 @@ export async function POST(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Rate limit: 10 per minute
+    const rateLimitId = getRateLimitIdentifier(req, session.user.id);
+    const rateLimit = await checkRateLimit(rateLimitId, "standard");
+    if (!rateLimit.success) return rateLimit.response!;
 
     // Get locale from request body (optional)
     const body = await req.json().catch(() => ({}));

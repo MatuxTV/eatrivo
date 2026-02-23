@@ -38,8 +38,11 @@ import BodyHealthCircle from "./BodyHealtCircle";
 import WeightTracker from "./WeightTracker";
 import ProfilePageClient from "@/app/profile/components/ProfilePageClient";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
+import FeedbackButton from "@/components/FeedbackButton";
 import { PushNotificationToggle } from "@/components/pwa/PushNotificationToggle";
 import { UpgradePopup } from "@/components/billing/UpgradePopup";
+import ChatWithRivoPage from "@/app/[locale]/chat-with-rivo/ChatWithRivoPage";
+import { FeatureFlag } from "@/components/ui/FeatureFlag";
 
 // PWA utilities
 import {
@@ -119,6 +122,30 @@ export default function DashboardPage() {
   const [activeSection, setActiveSection] = useState<
     "dashboard" | "pantry" | "chatWithRivo" | "profile"
   >("dashboard");
+
+  // Auto-switch section from URL query param (?section=chatWithRivo etc.)
+  useEffect(() => {
+    const sectionParam = searchParams.get("section");
+    const validSections = [
+      "dashboard",
+      "pantry",
+      "chatWithRivo",
+      "profile",
+    ] as const;
+    if (
+      sectionParam &&
+      validSections.includes(sectionParam as (typeof validSections)[number])
+    ) {
+      setActiveSection(sectionParam as (typeof validSections)[number]);
+
+      // Clean up the URL so that if the user clicks another meal, the change is detected again,
+      // and to keep the URL clean. Since Next.js router.replace causes re-renders,
+      // we use native history API to stealthily remove the parameter.
+      const url = new URL(window.location.href);
+      url.searchParams.delete("section");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [searchParams]);
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -553,7 +580,13 @@ export default function DashboardPage() {
       <DashboardHeader onSectionChange={setActiveSection} />
 
       {/* Main Content */}
-      <main className="flex-1 w-full md:max-w-[calc(100vw-256px)] pt-20 md:pt-8 pb-24 md:pb-8 px-4 md:px-8 overflow-y-auto h-screen">
+      <main
+        className={`flex-1 w-full md:max-w-[calc(100vw-256px)] h-screen ${
+          activeSection === "chatWithRivo"
+            ? "overflow-hidden p-0"
+            : "pt-20 md:pt-8 pb-24 md:pb-8 px-4 md:px-8 overflow-y-auto"
+        }`}
+      >
         <AnimatePresence mode="wait">
           {activeSection === "dashboard" ? (
             <motion.div
@@ -580,12 +613,6 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 text-xs font-medium text-gray-600 flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    {t("version", {
-                      version: APP_CONFIG.WELCOME_DIALOG_VERSION,
-                    })}
-                  </div>
                   <Select
                     value={locale}
                     onValueChange={(value) => {
@@ -797,30 +824,58 @@ export default function DashboardPage() {
               transition={{ duration: 0.3 }}
               className="h-full flex items-center justify-center p-4 md:p-8"
             >
-              <ComingSoonPage
-                titleKey="pantry.title"
-                descriptionKey="pantry.description"
-                icon={<CakeSlice className="w-8 h-8 text-eatrivo-purple" />}
-                rivoImage="/rivo/RIVO3-remove.png"
-                gradient="bg-gradient-to-br from-orange-400 to-pink-400"
-                showBackButton={false}
-                className="w-full max-w-2xl"
-                // New props
-                badgeKey="pantry.badge"
-                features={[
-                  t("comingSoon.pantry.tags.tag1"),
-                  t("comingSoon.pantry.tags.tag2"),
-                  t("comingSoon.pantry.tags.tag3"),
-                ]}
-                ctaLabelKey="pantry.cta"
-                secondaryLabelKey="pantry.secondaryAction"
-                onCtaClick={() => {
-                  toast.success(
-                    "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
-                  );
-                }}
-                onSecondaryClick={() => setActiveSection("dashboard")}
-              />
+              <FeatureFlag
+                fallback={
+                  <ComingSoonPage
+                    titleKey="pantry.title"
+                    descriptionKey="pantry.description"
+                    icon={<CakeSlice className="w-8 h-8 text-eatrivo-purple" />}
+                    rivoImage="/rivo/RIVO3-remove.png"
+                    gradient="bg-gradient-to-br from-orange-400 to-pink-400"
+                    showBackButton={false}
+                    className="w-full max-w-2xl"
+                    badgeKey="pantry.badge"
+                    features={[
+                      t("comingSoon.pantry.tags.tag1"),
+                      t("comingSoon.pantry.tags.tag2"),
+                      t("comingSoon.pantry.tags.tag3"),
+                    ]}
+                    ctaLabelKey="pantry.cta"
+                    secondaryLabelKey="pantry.secondaryAction"
+                    onCtaClick={() => {
+                      toast.success(
+                        "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
+                      );
+                    }}
+                    onSecondaryClick={() => setActiveSection("dashboard")}
+                  />
+                }
+              >
+                {/* Real Pantry content goes here once built */}
+                <ComingSoonPage
+                  titleKey="pantry.title"
+                  descriptionKey="pantry.description"
+                  icon={<CakeSlice className="w-8 h-8 text-eatrivo-purple" />}
+                  rivoImage="/rivo/RIVO3-remove.png"
+                  gradient="bg-gradient-to-br from-orange-400 to-pink-400"
+                  showBackButton={false}
+                  className="w-full max-w-2xl"
+                  badgeKey="pantry.badge"
+                  features={[
+                    t("comingSoon.pantry.tags.tag1"),
+                    t("comingSoon.pantry.tags.tag2"),
+                    t("comingSoon.pantry.tags.tag3"),
+                  ]}
+                  ctaLabelKey="pantry.cta"
+                  secondaryLabelKey="pantry.secondaryAction"
+                  onCtaClick={() => {
+                    toast.success(
+                      "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
+                    );
+                  }}
+                  onSecondaryClick={() => setActiveSection("dashboard")}
+                />
+              </FeatureFlag>
             </motion.div>
           ) : activeSection === "profile" ? (
             <motion.div
@@ -840,33 +895,36 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="h-full flex items-center justify-center p-4 md:p-8"
+              className="h-full"
             >
-              <ComingSoonPage
-                titleKey="chatWithRivo.title"
-                descriptionKey="chatWithRivo.description"
-                icon={
-                  <MessageCircleHeart className="w-8 h-8 text-eatrivo-purple" />
+              <FeatureFlag
+                fallback={
+                  <div className="h-full flex items-center justify-center p-4 md:p-8 mx-4 md:mx-8 my-8">
+                    <ComingSoonPage
+                      titleKey="chatWithRivo.title"
+                      descriptionKey="chatWithRivo.description"
+                      icon={
+                        <MessageCircleHeart className="w-8 h-8 text-eatrivo-purple" />
+                      }
+                      rivoImage="/rivo/RIVO3-remove.png"
+                      gradient="bg-gradient-to-br from-purple-400 to-pink-400"
+                      showBackButton={false}
+                      className="w-full max-w-2xl"
+                      badgeKey="chatWithRivo.badge"
+                      ctaLabelKey="chatWithRivo.cta"
+                      secondaryLabelKey="chatWithRivo.secondaryAction"
+                      onCtaClick={() => {
+                        toast.success(
+                          "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
+                        );
+                      }}
+                      onSecondaryClick={() => setActiveSection("dashboard")}
+                    />
+                  </div>
                 }
-                rivoImage="/rivo/RIVO4-remove.png"
-                gradient="bg-gradient-to-br from-purple-400 to-violet-400"
-                showBackButton={false}
-                className="w-full max-w-2xl"
-                badgeKey="chatWithRivo.badge"
-                features={[
-                  t("comingSoon.chatWithRivo.tags.tag1"),
-                  t("comingSoon.chatWithRivo.tags.tag2"),
-                  t("comingSoon.chatWithRivo.tags.tag3"),
-                ]}
-                ctaLabelKey="chatWithRivo.cta"
-                secondaryLabelKey="chatWithRivo.secondaryAction"
-                onCtaClick={() => {
-                  toast.success(
-                    "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
-                  );
-                }}
-                onSecondaryClick={() => setActiveSection("dashboard")}
-              />
+              >
+                <ChatWithRivoPage />
+              </FeatureFlag>
             </motion.div>
           )}
         </AnimatePresence>
@@ -880,6 +938,11 @@ export default function DashboardPage() {
 
       {/* PWA Install Prompt */}
       <PWAInstallPrompt />
+      {activeSection === "dashboard" && (
+        <div className="hidden md:block">
+          <FeedbackButton />
+        </div>
+      )}
     </div>
   );
 }

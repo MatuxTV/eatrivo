@@ -2,8 +2,7 @@
 'use client';
 
 // Public key can be exposed to client (not sensitive)
-// Using environment variable with fallback for development
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BIJKe58tvcY8dYNVegyV1PApzs7UAHiMyDTTp3s-8C-LLSwlodPm_NN-ns-3I6kGFIad6CnAiM0J8sLdoXsVcp0';
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -52,6 +51,11 @@ export async function subscribeUserToPush() {
     const existingSubscription = await registration.pushManager.getSubscription();
     if (existingSubscription) {
       return existingSubscription;
+    }
+
+    if (!VAPID_PUBLIC_KEY) {
+      console.error('NEXT_PUBLIC_VAPID_PUBLIC_KEY is not configured');
+      return null;
     }
 
     const subscription = await registration.pushManager.subscribe({

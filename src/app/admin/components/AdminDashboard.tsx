@@ -47,10 +47,10 @@ export default function AdminDashboard() {
   const [selectedUserForProfile, setSelectedUserForProfile] =
     useState<string>("");
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const [userShoppingLists, setUserShoppingLists] = useState<
+  const [_userShoppingLists, setUserShoppingLists] = useState<
     UserShoppingList[]
   >([]);
-  const [userMealPlans, setUserMealPlans] = useState<UserMealPlan[]>([]);
+  const [_userMealPlans, setUserMealPlans] = useState<UserMealPlan[]>([]);
   const [isLoadingUserInfo, setIsLoadingUserInfo] = useState(false);
 
   // Email form state

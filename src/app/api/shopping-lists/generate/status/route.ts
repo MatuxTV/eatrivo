@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth } from "../../../../../../auth";
 import { RequestLock } from "@/lib/redis";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 /**
  * GET /api/shopping-lists/generate/status
@@ -14,6 +15,9 @@ export async function GET(_request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
+    if (!rl.success) return rl.response!;
 
     const lockKey = `shopping-list-generation:${session.user.id}`;
     const isGenerating = await RequestLock.isLocked(lockKey);

@@ -88,7 +88,6 @@ export default function TemplateForm({
       return;
     }
 
-    console.log("Generating AI template for:", { goal, diet });
     setIsGenerating(true);
     try {
       const response = await fetch("/api/admin/templates/generate", {
@@ -97,8 +96,6 @@ export default function TemplateForm({
         body: JSON.stringify({ goal, diet }),
       });
 
-      console.log("Response status:", response.status, response.statusText);
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("API Error:", errorData);
@@ -106,7 +103,6 @@ export default function TemplateForm({
       }
 
       const data = await response.json();
-      console.log("AI Response:", data);
 
       if (data.markdownContent) {
         setMarkdownContent(data.markdownContent);

@@ -7,7 +7,7 @@ export default function NotFound() {
       <div className="w-full max-w-md text-center">
         <h1 className="mb-3 text-2xl font-semibold text-foreground">Page not found</h1>
         <p className="mb-6 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist.
+          The page you&apos;re looking for doesn&apos;t exist.
         </p>
         <Link
           href={`/${defaultLocale}`}

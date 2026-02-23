@@ -37,6 +37,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.hideInstallPrompt = (
           user as { hideInstallPrompt?: boolean }
         ).hideInstallPrompt;
+        session.user.isBetaTester = (
+          user as { isBetaTester?: boolean }
+        ).isBetaTester ?? false;
 
         // Fetch user's language preference from user_info table
         try {

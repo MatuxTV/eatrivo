@@ -6,6 +6,7 @@ import { shoppingLists, userProfiles } from '@/db/schema'
 import { eq, desc } from 'drizzle-orm'
 import { CacheService } from '@/lib/redis'
 import { apiLogger } from '@/lib/logger'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -14,6 +15,9 @@ export async function GET(_request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, 'standard')
+    if (!rl.success) return rl.response!
 
     const cacheKey = `shopping-lists:${session.user.id}`
     const membership = session.user.membership?.toLowerCase() || 'basic'

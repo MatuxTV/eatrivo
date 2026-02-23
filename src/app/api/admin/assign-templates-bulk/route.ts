@@ -5,6 +5,7 @@ import { users, userProfiles, shoppingLists } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { assignTemplateToUser } from "@/lib/template-assignment";
 import { apiLogger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 /**
  * POST /api/admin/assign-templates-bulk
@@ -16,6 +17,9 @@ export async function POST() {
     const authResult = await requireAdminAuth();
     if (isAuthError(authResult)) return authResult;
     const { session } = authResult;
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "expensive");
+    if (!rl.success) return rl.response!;
 
     apiLogger.info("Starting bulk template assignment", {
       metadata: { adminUserId: session.user.id },
@@ -51,7 +55,6 @@ export async function POST() {
           results.skipped++;
           results.details.push({
             userId: user.id,
-            email: user.email,
             status: "skipped",
             reason: "No profile found",
           });
@@ -68,7 +71,6 @@ export async function POST() {
           results.skipped++;
           results.details.push({
             userId: user.id,
-            email: user.email,
             status: "skipped",
             reason: "Already has shopping lists",
           });
@@ -84,7 +86,6 @@ export async function POST() {
           results.assigned++;
           results.details.push({
             userId: user.id,
-            email: user.email,
             status: "assigned",
             shoppingListId: result.shoppingList.id,
             mealPlanId: result.mealPlan?.id,
@@ -101,7 +102,6 @@ export async function POST() {
           results.failed++;
           results.details.push({
             userId: user.id,
-            email: user.email,
             status: "failed",
             reason: result.fallbackReason || "Unknown",
           });
@@ -110,7 +110,6 @@ export async function POST() {
         results.failed++;
         results.details.push({
           userId: user.id,
-          email: user.email,
           status: "error",
           error: "Template assignment failed",
         });

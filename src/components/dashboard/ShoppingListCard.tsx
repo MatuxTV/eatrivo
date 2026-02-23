@@ -3,17 +3,278 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, Eye, Calendar, FileText, ShoppingCart } from "lucide-react";
-import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Download, Eye, Calendar, FileText, ShoppingCart, Check, Lightbulb } from "lucide-react";
+
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { motion } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import { formatDate } from "@/lib/formatters";
 
-// ak máš util na classNames, použi ho (ináč vynechaj a spoj reťazce ručne)
 const cn = (...a: (string | false | null | undefined)[]) =>
   a.filter(Boolean).join(" ");
+
+// ─── Markdown parser ───────────────────────────────────────────────────────────
+
+interface ParsedItem   { name: string; quantity: string; note: string }
+interface ParsedCategory { name: string; items: ParsedItem[] }
+interface ParsedList {
+  macros: string;
+  categories: ParsedCategory[];
+  tips: string[];
+  footer: string;
+}
+
+function parseShoppingList(markdown: string): ParsedList {
+  const result: ParsedList = { macros: "", categories: [], tips: [], footer: "" };
+  let currentCategory: ParsedCategory | null = null;
+  let inTips = false;
+  let tableHeaderDone = false;
+
+  for (const raw of markdown.split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+
+    // h1 title → skip (already in Dialog header)
+    if (line.startsWith("# ")) continue;
+
+    // Macros summary line
+    if (line.includes("Denný príjem") || line.includes("Daily intake")) {
+      result.macros = line.replace(/\*\*/g, "");
+      continue;
+    }
+
+    // Budget/footer line
+    if (line.startsWith("💰")) {
+      result.footer = line.replace(/\*\*/g, "");
+      continue;
+    }
+
+    // Validation block → skip
+    if (line.match(/^✅ VALIDÁCIA|^\d+\. Množstv/)) continue;
+
+    // Separator line
+    if (line === "---") continue;
+
+    // h2 → new category
+    if (line.startsWith("## ")) {
+      if (currentCategory) result.categories.push(currentCategory);
+      currentCategory = { name: line.slice(3).trim(), items: [] };
+      inTips = false;
+      tableHeaderDone = false;
+      continue;
+    }
+
+    // h3 → tips section start
+    if (line.startsWith("### ")) {
+      if (currentCategory) { result.categories.push(currentCategory); currentCategory = null; }
+      inTips = true;
+      continue;
+    }
+
+    // Table separator row → skip
+    if (line.match(/^\|[\s\-:|]+\|$/)) continue;
+
+    // Table row → shopping item
+    if (currentCategory && line.startsWith("|")) {
+      const cells = line.split("|").map((c) => c.trim()).filter(Boolean);
+      // First row is the header (Potravina | Množstvo | Poznámka)
+      if (!tableHeaderDone) { tableHeaderDone = true; continue; }
+      if (cells.length >= 1) {
+        currentCategory.items.push({
+          name: cells[0] ?? "",
+          quantity: cells[1] ?? "",
+          note: cells[2] ?? "",
+        });
+      }
+      continue;
+    }
+
+    // Tip bullet
+    if (inTips && (line.startsWith("- ") || line.startsWith("* "))) {
+      result.tips.push(line.slice(2).trim());
+    }
+  }
+
+  if (currentCategory && currentCategory.items.length > 0) result.categories.push(currentCategory);
+  return result;
+}
+
+// ─── Shopping List Viewer ──────────────────────────────────────────────────────
+
+interface ViewerProps { markdown: string; id: string }
+
+const STORAGE_KEY = (id: string) => `sl-checked:${id}`;
+
+function ShoppingListViewer({ markdown, id }: ViewerProps) {
+  const [checked, setChecked] = useState<Set<string>>(() => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY(id)) : null;
+      return raw ? new Set<string>(JSON.parse(raw)) : new Set<string>();
+    } catch {
+      return new Set<string>();
+    }
+  });
+
+  const parsed = useMemo(() => parseShoppingList(markdown), [markdown]);
+
+  const totalItems = parsed.categories.reduce((sum, c) => sum + c.items.length, 0);
+  const checkedCount = checked.size;
+
+  const toggle = (key: string) =>
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) { next.delete(key); } else { next.add(key); }
+      try { localStorage.setItem(STORAGE_KEY(id), JSON.stringify([...next])); } catch { /* quota */ }
+      return next;
+    });
+
+  return (
+    <div className="space-y-4 ">
+
+      {/* Progress bar */}
+      {totalItems > 0 && (
+        <div className="flex items-center gap-3 px-1 ">
+          <span className="text-xs text-gray-500 whitespace-nowrap">
+            {checkedCount} / {totalItems}
+          </span>
+          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-eatrivo-purple rounded-full transition-all duration-300"
+              style={{ width: `${totalItems ? (checkedCount / totalItems) * 100 : 0}%` }}
+            />
+          </div>
+          {checkedCount > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setChecked(new Set());
+                try { localStorage.removeItem(STORAGE_KEY(id)); } catch { /* noop */ }
+              }}
+              className="text-xs text-gray-400 hover:text-gray-600 transition-colors whitespace-nowrap"
+            >
+              Resetovať
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Macros summary */}
+      {parsed.macros && (
+        <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2 leading-relaxed">
+          {parsed.macros}
+        </p>
+      )}
+
+      {/* Categories */}
+      {parsed.categories.map((cat, ci) => (
+        <div key={ci}>
+          {/* Category pill */}
+          <div className="flex items-center gap-2 mb-2">
+            <span className="inline-flex items-center gap-1.5 bg-eatrivo-purple/10 text-eatrivo-purple px-3 py-1 rounded-full text-sm font-bold">
+              {cat.name}
+            </span>
+          </div>
+
+          {/* Items */}
+          <ul className="space-y-1">
+            {cat.items.map((item, ii) => {
+              const key = `${ci}-${ii}`;
+              const isDone = checked.has(key);
+              return (
+                <li key={key} className="list-none">
+                  <button
+                    type="button"
+                    onClick={() => toggle(key)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all duration-150 group",
+                      isDone ? "bg-gray-50" : "hover:bg-eatrivo-purple/5",
+                    )}
+                  >
+                    {/* Circle checkbox */}
+                    <span
+                      className={cn(
+                        "flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-150",
+                        isDone
+                          ? "bg-eatrivo-purple border-eatrivo-purple"
+                          : "border-gray-300 group-hover:border-eatrivo-purple/50",
+                      )}
+                    >
+                      {isDone && <Check className="w-3 h-3 text-white stroke-[3]" />}
+                    </span>
+
+                    {/* Food name */}
+                    <span
+                      className={cn(
+                        "flex-1 text-sm font-medium transition-colors",
+                        isDone ? "line-through text-gray-400" : "text-gray-800",
+                      )}
+                    >
+                      {item.name}
+                    </span>
+
+                    {/* Quantity badge */}
+                    {item.quantity && (
+                      <span
+                        className={cn(
+                          "flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium transition-colors",
+                          isDone
+                            ? "bg-gray-100 text-gray-400"
+                            : "bg-eatrivo-purple/10 text-eatrivo-purple",
+                        )}
+                      >
+                        {item.quantity}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Note (smaller, indented) */}
+                  {item.note && !isDone && (
+                    <p className="ml-11 text-xs text-gray-400 pb-1">{item.note}</p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+
+      {/* Tips — plain, no checkboxes */}
+      {parsed.tips.length > 0 && (
+        <div className="mt-2 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+            <span className="text-xs font-bold text-amber-700">Tipy</span>
+          </div>
+          <ul className="space-y-1.5">
+            {parsed.tips.map((tip, i) => (
+              <li key={i} className="flex items-start gap-2 text-xs text-amber-700">
+                <span className="flex-shrink-0 w-1 h-1 rounded-full bg-amber-400 mt-1.5" />
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Footer — estimated price */}
+      {parsed.footer && (
+        <p className="text-xs text-gray-400 text-center pt-1">{parsed.footer}</p>
+      )}
+
+    </div>
+  );
+}
+
+// ─── Card ──────────────────────────────────────────────────────────────────────
+
 
 interface ShoppingListCardProps {
   id: string;
@@ -36,6 +297,8 @@ export default function ShoppingListCard({
   const locale = useLocale();
   const [isViewing, setIsViewing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [markdownContent, setMarkdownContent] = useState<string | null>(null);
 
   const formatDateLocal = (dateString: string) =>
     formatDate(dateString, locale, {
@@ -83,7 +346,6 @@ export default function ShoppingListCard({
     try {
       setIsDownloading(true);
 
-      // Track analytics
       fetch("/api/analytics/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -94,9 +356,8 @@ export default function ShoppingListCard({
         }),
       }).catch(console.error);
 
-      // Open view page with download functionality
-      const url = `/api/shopping-lists/${id}/view`;
-      window.open(url, "_blank", "noopener,noreferrer");
+      // Open print-ready page — browser saves as PDF via system dialog
+      window.open(`/api/shopping-lists/${id}/view?print=1`, "_blank", "noopener,noreferrer");
     } catch (error) {
       logger.error("Download error", error, {
         context: "ShoppingListCard",
@@ -112,7 +373,6 @@ export default function ShoppingListCard({
     try {
       setIsViewing(true);
 
-      // Track analytics
       fetch("/api/analytics/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -123,9 +383,12 @@ export default function ShoppingListCard({
         }),
       }).catch(console.error);
 
-      // View as rendered HTML markdown
-      const url = `/api/shopping-lists/${id}/view`;
-      window.open(url, "_blank", "noopener,noreferrer");
+      // Fetch markdown content and show inline
+      const res = await fetch(`/api/shopping-lists/${id}`);
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setMarkdownContent(data.markdownContent ?? "");
+      setSheetOpen(true);
     } catch (error) {
       logger.error("View error", error, {
         context: "ShoppingListCard",
@@ -138,15 +401,61 @@ export default function ShoppingListCard({
   };
 
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ type: "spring", stiffness: 300 }}
-    >
-      <Card className="group relative overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow duration-300 bg-white h-full flex flex-col">
-        {/* Status Bar */}
-        <div
-          className={`h-1.5 w-full ${status === "active" ? "bg-eatrivo-purple" : "bg-gray-200"}`}
-        />
+    <>
+      {/* ── Inline Viewer Dialog ─────────────────────────── */}
+      <Dialog open={sheetOpen} onOpenChange={setSheetOpen}>
+        <DialogContent className="max-w-lg w-full max-h-[88vh] flex flex-col p-0 gap-0 overflow-hidden bg-eatrivo-white-primary">
+          <DialogHeader className="px-5 pt-5 pb-4 border-b flex-shrink-0 bg-gradient-to-r from-eatrivo-purple/5 to-transparent">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-eatrivo-purple/10 flex items-center justify-center flex-shrink-0">
+                <ShoppingCart className="w-4 h-4 text-eatrivo-purple" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-bold text-gray-900 leading-tight">{title}</DialogTitle>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {formatDateLocal(weekStartDate)} – {formatDateLocal(weekEndDate)}
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+
+          {/* Scrollable markdown content */}
+          <div className="overflow-y-auto flex-1 px-5 py-4 bg-eatrivo-white-primary">
+            {markdownContent !== null ? (
+              <ShoppingListViewer markdown={markdownContent} id={id} />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-40 gap-3 text-gray-400">
+                <ShoppingCart className="w-8 h-8 animate-pulse" />
+                <span className="text-sm">Načítavam zoznam...</span>
+              </div>
+            )}
+          </div>
+
+          {/* Footer actions */}
+          <div className="px-6 py-4 border-t flex-shrink-0 flex justify-between items-center bg-eatrivo-white-primary">
+            <p className="text-xs text-gray-400">Vytvorené pomocou Eatrivo</p>
+            <Button
+              size="sm"
+              onClick={() => window.open(`/api/shopping-lists/${id}/view?print=1`, "_blank", "noopener,noreferrer")}
+              className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white"
+            >
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              Uložiť ako PDF
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Card ─────────────────────────────────────────── */}
+      <motion.div
+        whileHover={{ y: -4 }}
+        transition={{ type: "spring", stiffness: 300 }}
+      >
+        <Card className="group relative overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow duration-300 bg-white h-full flex flex-col">
+          {/* Status Bar */}
+          <div
+            className={`h-1.5 w-full ${status === "active" ? "bg-eatrivo-purple" : "bg-gray-200"}`}
+          />
 
         <div className="p-5 flex flex-col h-full">
           {/* Header */}
@@ -220,5 +529,6 @@ export default function ShoppingListCard({
         </div>
       </Card>
     </motion.div>
+    </>
   );
 }
