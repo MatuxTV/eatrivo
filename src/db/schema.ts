@@ -88,6 +88,8 @@ export const users = pgTable("users", {
   lastSeenWelcomeAt: timestamp("last_seen_welcome_at", { withTimezone: true }),
   // PWA install prompt preference
   hideInstallPrompt: boolean("hide_install_prompt").default(false).notNull(),
+  // Feature flags
+  isBetaTester: boolean("is_beta_tester").default(false).notNull(),
 });
 
 // Your app's main user profile table
@@ -467,6 +469,28 @@ export const badges = pgTable("badges", {
     .references(() => userProfiles.id, { onDelete: "cascade" }),
   type: badgeTypeEnum("type").notNull(),
   grantedAt: timestamp("granted_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+// ─── Chat Messages ────────────────────────────────────────────────────────────
+
+export const chatMessageRoleEnum = pgEnum("chat_message_role", [
+  "user",
+  "assistant",
+]);
+
+export const chatMessages = pgTable("chat_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userProfileId: uuid("user_profile_id")
+    .notNull()
+    .references(() => userProfiles.id, { onDelete: "cascade" }),
+  sessionId: uuid("session_id").notNull(),
+  role: chatMessageRoleEnum("role").notNull(),
+  content: text("content").notNull(),
+  intent: text("intent"), // "meal_swap" | "macros" | "pantry" | "recipe" | "general"
+  metadata: jsonb("metadata"), // { model, latencyMs, tokenCount }
+  createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });

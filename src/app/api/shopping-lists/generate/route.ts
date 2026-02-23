@@ -14,6 +14,7 @@ import { EatrivoAIService } from "@/lib/langchain";
 import { apiLogger } from "@/lib/logger";
 import { CacheService, RequestLock } from "@/lib/redis";
 import { Analytics } from "@/lib/analytics";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 /**
  * POST /api/shopping-lists/generate
@@ -27,6 +28,9 @@ export async function POST(_req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "expensive");
+    if (!rl.success) return rl.response!;
 
     // Check if user has premium membership (premium, pro, or trainer)
     const membership = session.user.membership?.toLowerCase();

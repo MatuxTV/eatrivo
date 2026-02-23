@@ -6,6 +6,7 @@ import {
   sendShoppingListNotification,
 } from "@/lib/emailService";
 import { getUserLanguage } from "@/lib/user-utils";
+import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
 /**
  * Email sending endpoint - PROTECTED
@@ -24,6 +25,11 @@ export async function POST(request: NextRequest) {
         { status: 401 },
       );
     }
+
+    // Rate limit: 3 emails per minute
+    const rateLimitId = getRateLimitIdentifier(request, session.user.id);
+    const rateLimit = await checkRateLimit(rateLimitId, "feedback");
+    if (!rateLimit.success) return rateLimit.response!;
 
     const body = await request.json();
     const { type, to, ...props } = body;

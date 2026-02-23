@@ -88,10 +88,22 @@ export async function checkRateLimit(
 ): Promise<{ success: boolean; response?: NextResponse }> {
   const limiter = rateLimiters[type];
 
-  // If Redis is not configured, allow all requests (dev mode)
+  // If Redis is not configured, fail-closed in production, allow in dev
   if (!limiter) {
+    if (process.env.NODE_ENV === "production") {
+      console.error(
+        "[Rate Limit] Redis not configured in production! Blocking request.",
+      );
+      return {
+        success: false,
+        response: NextResponse.json(
+          { error: "Service temporarily unavailable" },
+          { status: 503 },
+        ),
+      };
+    }
     console.warn(
-      "[Rate Limit] Redis not configured, skipping rate limit check",
+      "[Rate Limit] Redis not configured, skipping rate limit check (dev mode)",
     );
     return { success: true };
   }
@@ -124,8 +136,17 @@ export async function checkRateLimit(
 
     return { success: true };
   } catch (error) {
-    // If rate limiting fails, allow the request (fail open)
+    // If rate limiting fails, fail-closed in production, allow in dev
     console.error("[Rate Limit] Error checking rate limit:", error);
+    if (process.env.NODE_ENV === "production") {
+      return {
+        success: false,
+        response: NextResponse.json(
+          { error: "Service temporarily unavailable" },
+          { status: 503 },
+        ),
+      };
+    }
     return { success: true };
   }
 }

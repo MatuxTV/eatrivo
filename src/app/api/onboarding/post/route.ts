@@ -7,6 +7,7 @@ import { completeOnboardingSchema } from "@/lib/schemas/user";
 import { checkUserProfileExists } from "@/lib/user-utils";
 import { apiLogger } from "@/lib/logger";
 import { Analytics } from "@/lib/analytics";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +16,9 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
+    if (!rl.success) return rl.response!;
 
     // Check if user already has a profile
     const existingProfile = await checkUserProfileExists(session.user.id);

@@ -36,7 +36,7 @@ interface ProfilePageClientProps {
   onBack?: () => void;
 }
 
-export default function ProfilePageClient({ onBack }: ProfilePageClientProps) {
+export default function ProfilePageClient({ onBack: _onBack }: ProfilePageClientProps) {
   const t = useTranslations("profile");
   const [activeTab, setActiveTab] = useState<"personal" | "nutrition">(
     "personal",

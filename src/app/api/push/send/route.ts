@@ -5,12 +5,13 @@ import { db } from '@/index';
 import { pushSubscriptions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import webpush from 'web-push';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 // Set up web-push with VAPID keys
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BIJKe58tvcY8dYNVegyV1PApzs7UAHiMyDTTp3s-8C-LLSwlodPm_NN-ns-3I6kGFIad6CnAiM0J8sLdoXsVcp0';
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 
-if (VAPID_PRIVATE_KEY && process.env.ADMIN_EMAIL) {
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY && process.env.ADMIN_EMAIL) {
   webpush.setVapidDetails(
     `mailto:${process.env.ADMIN_EMAIL}`,
     VAPID_PUBLIC_KEY,
@@ -35,6 +36,9 @@ export async function POST(request: NextRequest) {
 
     const authResult = await requireAdminAuth();
     if (isAuthError(authResult)) return authResult;
+
+    const rl = await checkRateLimit(`user:${authResult.session.user.id}`, 'standard');
+    if (!rl.success) return rl.response!;
 
     const body = await request.json();
     const { userId, payload }: { userId: string; payload: PushPayload } = body;

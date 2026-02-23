@@ -12,7 +12,6 @@ import { useRouter } from "next/navigation";
 
 interface SubscriptionData {
   membership: "basic" | "premium" | "pro" | "trainer";
-  stripeCustomerId: string | null;
   subscription: {
     status: "active" | "canceled" | "past_due" | "gifted";
     currentPeriodEnd: string | null;

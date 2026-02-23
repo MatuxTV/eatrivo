@@ -9,6 +9,7 @@ import { logger } from "@/lib/logger";
 import { getMessages } from "next-intl/server";
 import type { EmailTranslations } from "@/types/email.types";
 import { getUserLanguage } from "@/lib/user-utils";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 interface UpdateItem {
   title: string;
@@ -29,6 +30,9 @@ export async function POST(request: Request) {
   try {
     const authResult = await requireAdminAuth();
     if (isAuthError(authResult)) return authResult;
+
+    const rl = await checkRateLimit(`user:${authResult.session.user.id}`, "expensive");
+    if (!rl.success) return rl.response!;
 
     const body: SendUpdateEmailRequest = await request.json();
     const {

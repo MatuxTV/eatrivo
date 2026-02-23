@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/../auth";
 import { db } from "@/index";
-import { users, subscriptions } from "@/db/schema";
+import { subscriptions } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import {
   validateAndUpdateSubscription,
   getTrialPeriodForUser,
 } from "@/lib/subscription";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function GET() {
   try {
@@ -15,6 +16,9 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
+    if (!rl.success) return rl.response!;
 
     // Validate subscription and auto-downgrade if expired
     const subscriptionStatus = await validateAndUpdateSubscription(
@@ -27,19 +31,12 @@ export async function GET() {
       orderBy: [desc(subscriptions.createdAt)],
     });
 
-    // Get user for stripeCustomerId
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, session.user.id),
-      columns: { stripeCustomerId: true },
-    });
-
     return NextResponse.json({
       membership: subscriptionStatus.membership,
       isActive: subscriptionStatus.isActive,
       isExpired: subscriptionStatus.isExpired,
       expiresAt: subscriptionStatus.expiresAt,
       daysRemaining: subscriptionStatus.daysRemaining,
-      stripeCustomerId: user?.stripeCustomerId || null,
       subscription: subscription
         ? {
             status: subscription.status,

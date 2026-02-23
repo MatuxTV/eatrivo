@@ -40,6 +40,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid eventType" }, { status: 400 });
     }
 
+    // Validate metadata size to prevent abuse
+    if (metadata !== undefined && metadata !== null) {
+      const metadataStr = JSON.stringify(metadata);
+      if (metadataStr.length > 2048) {
+        return NextResponse.json(
+          { error: "Metadata too large (max 2KB)" },
+          { status: 400 },
+        );
+      }
+    }
+
     // Track the event
     await trackEvent({
       userId: session?.user?.id || null,

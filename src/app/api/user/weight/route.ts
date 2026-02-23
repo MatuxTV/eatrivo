@@ -5,6 +5,7 @@ import { db } from "@/index";
 import { userProfiles, userInfoTable, weightHistory } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const weightSchema = z.object({
   weight: z.number().min(20).max(500),
@@ -19,6 +20,9 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
+    if (!rl.success) return rl.response!;
 
     const [userProfile] = await db
       .select()

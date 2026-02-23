@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Link } from "@/i18n/navigation";
 import {
   LayoutDashboard,
   User,
@@ -11,6 +10,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
 import { FeedbackDialog } from "@/components/FeedbackButton";
 
 interface MobileNavigationProps {
@@ -25,6 +25,8 @@ export default function MobileNavigation({
   onSectionChange,
 }: MobileNavigationProps) {
   const t = useTranslations("dashboard");
+  const { data: session } = useSession();
+  const isBeta = session?.user?.isBetaTester ?? false;
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
@@ -50,7 +52,8 @@ export default function MobileNavigation({
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 pb-safe">
-      {/* Floating Feedback Button */}
+      {/* Floating Feedback Button — only on dashboard section */}
+      {activeSection === "dashboard" && (
       <div className="absolute bottom-full mb-4 right-4 z-50 flex flex-row items-center gap-4 pointer-events-none">
         <AnimatePresence>
           {showTooltip && (
@@ -91,6 +94,7 @@ export default function MobileNavigation({
           </FeedbackDialog>
         </div>
       </div>
+      )}
 
       <div className="flex justify-around items-center h-16">
         {navItems.map((item) => {
@@ -108,11 +112,19 @@ export default function MobileNavigation({
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               )}
-              <item.icon
-                className={`w-5 h-5 mb-1 transition-colors duration-200 ${
-                  isActive ? "text-eatrivo-purple" : "text-gray-400"
-                }`}
-              />
+              <div className="relative mb-1">
+                <item.icon
+                  className={`w-5 h-5 transition-colors duration-200 ${
+                    isActive ? "text-eatrivo-purple" : "text-gray-400"
+                  }`}
+                />
+                {isBeta && item.id === "chatWithRivo" && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                  </span>
+                )}
+              </div>
               <span
                 className={`text-[10px] font-medium transition-colors duration-200 ${
                   isActive ? "text-eatrivo-purple" : "text-gray-500"

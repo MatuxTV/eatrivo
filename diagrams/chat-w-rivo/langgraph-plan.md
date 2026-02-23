@@ -33,7 +33,7 @@ src/lib/langgraph/chat/
     fetchMacros.ts      # Deterministický výpočet BMR/TDEE/makrá (bez DB)
     fetchPantry.ts      # Načíta inventoryContext (pre pantry)
     buildPrompt.ts      # Zostaví systémový prompt s Rivo osobnosťou + kontextom
-    rivoLlm.ts          # Gemini 2.5 Flash — streaming LLM volanie
+    rivoLlm.ts          # Gemini 3 Flash — streaming LLM volanie
     saveMessage.ts      # Uloží správu do chatMessages (async side-effect)
     errorHandler.ts     # Graceful fallback správa pre UI
 
@@ -147,7 +147,7 @@ function routeByIntent(state: typeof ChatState.State): string {
 | `fetch_macros` | `userProfile`, `userInfo` | `macroTargets` | Deterministický výpočet (Mifflin-St Jeor) — reuse z `langchain.ts:302-372` |
 | `fetch_pantry` | `userProfileId` | `pantryItems` | DB query: `inventoryContext` (ak existuje) |
 | `build_prompt` | `userProfile`, `userInfo`, `intent`, context keys | `messages` (system msg) | Žiadne |
-| `rivo_llm` | `messages` | `messages` (AI odpoveď) | LLM streaming — `gemini-2.5-flash` |
+| `rivo_llm` | `messages` | `messages` (AI odpoveď) | LLM streaming — `gemini-3-flash-preview` |
 | `save_assistant_message` | `messages` (celý diff), `userProfileId`, `sessionId`, `intent` | — | DB insert: `chatMessages` (role: assistant) — ukladá aj `intent` pre analytics |
 | `error_handler` | `error` | `messages` (fallback) | Žiadne — prechod na **END** (nie späť do API_ROUTE) |
 

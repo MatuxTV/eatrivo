@@ -5,6 +5,7 @@ import { createDiscountCoupon, stripe } from "@/lib/stripe";
 import { db } from "@/index";
 import { userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,6 +14,9 @@ export async function POST(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
+    if (!rl.success) return rl.response!;
 
     // Check if user is admin
     const profile = await db.query.userProfiles.findFirst({
@@ -51,6 +55,32 @@ export async function POST(req: NextRequest) {
     if (!percentOff && !amountOff) {
       return NextResponse.json(
         { error: "Either percentOff or amountOff is required" },
+        { status: 400 },
+      );
+    }
+
+    // Validate discount ranges
+    if (percentOff !== undefined && (typeof percentOff !== "number" || percentOff < 1 || percentOff > 100)) {
+      return NextResponse.json(
+        { error: "percentOff must be a number between 1 and 100" },
+        { status: 400 },
+      );
+    }
+    if (amountOff !== undefined && (typeof amountOff !== "number" || amountOff < 1)) {
+      return NextResponse.json(
+        { error: "amountOff must be a positive number" },
+        { status: 400 },
+      );
+    }
+    if (durationInMonths !== undefined && (!Number.isInteger(durationInMonths) || durationInMonths < 1 || durationInMonths > 36)) {
+      return NextResponse.json(
+        { error: "durationInMonths must be a positive integer (max 36)" },
+        { status: 400 },
+      );
+    }
+    if (maxRedemptions !== undefined && (!Number.isInteger(maxRedemptions) || maxRedemptions < 1)) {
+      return NextResponse.json(
+        { error: "maxRedemptions must be a positive integer" },
         { status: 400 },
       );
     }

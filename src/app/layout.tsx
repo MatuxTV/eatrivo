@@ -5,7 +5,6 @@ import { Quicksand } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Analytics } from "@vercel/analytics/next";
-import FeedbackButton from "@/components/FeedbackButton";
 import { defaultLocale } from "@/i18n/routing";
 
 const quicksand = Quicksand({
@@ -125,9 +124,6 @@ export default async function RootLayout({
         <Providers>
           <NextIntlClientProvider locale={locale} messages={messages}>
             {children}
-            <div className="hidden md:block">
-              <FeedbackButton />
-            </div>
             <Analytics />
           </NextIntlClientProvider>
         </Providers>

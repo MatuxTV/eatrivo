@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Zap, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { getLocaleFromPathname } from "@/i18n/routing";
-import { useFadeInUp, useScaleIn } from "@/hooks/useAnimations";
+import { useFadeInUp } from "@/hooks/useAnimations";
 import type { SectionProps } from "@/types/landing";
 import { trackInteraction } from "@/lib/analytics-client";
 
@@ -17,7 +17,6 @@ export function DownloadCTA({ className = "" }: SectionProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname);
   const fadeInUp = useFadeInUp();
-  const scaleIn = useScaleIn(0.2);
 
   return (
     <section

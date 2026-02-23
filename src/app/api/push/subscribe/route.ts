@@ -5,6 +5,7 @@ import { db } from '@/index';
 import { pushSubscriptions } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { apiLogger } from '@/lib/logger';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +17,9 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, 'standard');
+    if (!rl.success) return rl.response!;
 
     const body = await request.json();
     const { subscription } = body;
