@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Link } from "@/i18n/navigation";
 import {
   LayoutDashboard,
   User,
@@ -50,7 +49,8 @@ export default function MobileNavigation({
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 pb-safe">
-      {/* Floating Feedback Button */}
+      {/* Floating Feedback Button — only on dashboard section */}
+      {activeSection === "dashboard" && (
       <div className="absolute bottom-full mb-4 right-4 z-50 flex flex-row items-center gap-4 pointer-events-none">
         <AnimatePresence>
           {showTooltip && (
@@ -91,6 +91,7 @@ export default function MobileNavigation({
           </FeedbackDialog>
         </div>
       </div>
+      )}
 
       <div className="flex justify-around items-center h-16">
         {navItems.map((item) => {

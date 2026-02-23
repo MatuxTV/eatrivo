@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Award, Crown, Shield } from "lucide-react";
+import { Crown } from "lucide-react";
 import * as Tooltip from "@radix-ui/react-tooltip";
 
 interface UserBadgeProps {

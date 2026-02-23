@@ -5,6 +5,7 @@ import { db } from "../../../../../src/index";
 import { userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { RequestLock } from "@/lib/redis";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -13,6 +14,9 @@ export async function GET(_request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
+    if (!rl.success) return rl.response!;
 
     const [userProfile] = await db
       .select()

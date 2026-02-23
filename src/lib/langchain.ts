@@ -638,7 +638,7 @@ Uisti sa, že vrátiš čistý JSON (začni { a skonči }), bez markdown wrapper
           description: parsed.description || "Automaticky vygenerovaný zoznam",
           markdown: parsed.markdown || contentText,
         };
-      } catch (e) {
+      } catch {
         // Fallback ak parsovanie zlyhá
         return {
           title: "Nákupný zoznam",

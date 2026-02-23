@@ -6,7 +6,8 @@ import { eq } from "drizzle-orm";
 import { unauthorizedError, forbiddenError } from "@/lib/safeError";
 import { NextResponse } from "next/server";
 
-type AdminRole = "admin" | "trainer";
+// Must match actual DB roleEnum values: "user" | "coach" | "admin"
+type AdminRole = "admin" | "coach";
 
 interface AdminAuthResult {
   session: Session;
@@ -14,11 +15,11 @@ interface AdminAuthResult {
 }
 
 /**
- * Verify that the current user has admin or trainer role.
+ * Verify that the current user has admin or coach role (from userProfile.role, NOT membership).
  * Returns the session and userProfile on success, or a NextResponse error.
  */
 export async function requireAdminAuth(
-  allowedRoles: AdminRole[] = ["admin", "trainer"],
+  allowedRoles: AdminRole[] = ["admin", "coach"],
 ): Promise<AdminAuthResult | NextResponse> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -31,7 +32,7 @@ export async function requireAdminAuth(
 
   if (
     !userProfile ||
-    !allowedRoles.includes((session.user.membership as AdminRole) || "user")
+    !allowedRoles.includes(userProfile.role as AdminRole)
   ) {
     return forbiddenError();
   }

@@ -27,7 +27,7 @@ graph TD
 
         subgraph GENERATION["Generovanie odpovede"]
             N4["build_prompt\n─────────────────────\nZostav systémový prompt\ns Rivo osobnosťou + kontextom\nZapíše: messages (system msg)"]
-            N5["rivo_llm\n─────────────────────\nGemini 2.5 Flash — streaming\nZapíše: messages (AI odpoveď)"]
+            N5["rivo_llm\n─────────────────────\nGemini 3 Flash — streaming\nZapíše: messages (AI odpoveď)"]
             N6["save_assistant_message\n─────────────────────\nČíta celý messages diff\nUloží ASSISTANT odpoveď\ndo chatMessages\nZapíše: — (side effect len)"]
         end
 

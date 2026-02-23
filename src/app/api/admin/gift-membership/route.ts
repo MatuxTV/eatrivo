@@ -4,6 +4,7 @@ import { auth } from "@/../auth";
 import { db } from "@/index";
 import { users, subscriptions, userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,6 +13,9 @@ export async function POST(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
+    if (!rl.success) return rl.response!;
 
     // Check if user is admin/trainer
     const profile = await db.query.userProfiles.findFirst({
@@ -36,6 +40,13 @@ export async function POST(req: NextRequest) {
     // Validate input
     if (!targetUserId || !tier || !["premium", "pro"].includes(tier)) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+
+    // Validate durationMonths is a positive integer within reasonable range
+    if (durationMonths !== undefined && durationMonths !== null) {
+      if (!Number.isInteger(durationMonths) || durationMonths < 1 || durationMonths > 24) {
+        return NextResponse.json({ error: "durationMonths must be a positive integer between 1 and 24" }, { status: 400 });
+      }
     }
 
     // Check target user exists

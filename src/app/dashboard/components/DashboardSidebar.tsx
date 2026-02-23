@@ -31,130 +31,181 @@ export default function DashboardSidebar({
   const { data: session } = useSession();
   const t = useTranslations("dashboard");
 
-  const profileHref = "/profile";
   const signOutHref = "/signout";
+
+  const isBeta = session?.user?.isBetaTester ?? false;
 
   const navItems = [
     {
-      id: "dashboard",
+      id: "dashboard" as const,
       label: t("nav.dashboard"),
       icon: LayoutDashboard,
     },
     {
-      id: "pantry",
-      label: t("nav.pantry"),
-      icon: CakeSlice,
-      comingSoon: true,
-    },
-    {
-      id: "chatWithRivo",
+      id: "chatWithRivo" as const,
       label: t("nav.chatWithRivo"),
       icon: MessageCircleHeart,
-      comingSoon: true,
+      comingSoon: !isBeta,
     },
-  ] as const;
+    {
+      id: "pantry" as const,
+      label: t("nav.pantry"),
+      icon: CakeSlice,
+      comingSoon: !isBeta,
+    },
+  ];
+
+  const mobileNavItems = [
+    ...navItems,
+    { id: "profile" as const, label: t("nav.profile"), icon: User },
+  ];
 
   return (
-    <motion.div
-      initial={{ x: -20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      className="hidden md:flex w-64 bg-white border-r bor border-gray-100 flex-col h-screen sticky top-0"
-    >
-      {/* User Profile Section */}
-      <div className="p-6 border-b border-gray-100">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              {session?.user?.image ? (
-                <Image
-                  src={session.user.image}
-                  alt={session?.user?.name || t("userAlt")}
-                  width={48}
-                  height={48}
-                  className="rounded-full ring-2 ring-eatrivo-purple/20"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-eatrivo-purple/10 flex items-center justify-center">
-                  <User className="w-6 h-6 text-eatrivo-purple" />
-                </div>
-              )}
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <h2 className="text-sm font-bold text-gray-900 truncate">
-                  {session?.user?.name}
-                </h2>
-                {session?.user?.badges?.map((badgeStr) => (
-                  <UserBadge key={badgeStr} type={badgeStr} />
-                ))}
+    <>
+      {/* ── Desktop Sidebar ── */}
+      <motion.div
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        className="hidden md:flex w-64 bg-white border-r border-gray-100 flex-col h-screen sticky top-0"
+      >
+        {/* User Profile Section */}
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                {session?.user?.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={session?.user?.name || t("userAlt")}
+                    width={48}
+                    height={48}
+                    className="rounded-full ring-2 ring-eatrivo-purple/20"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-eatrivo-purple/10 flex items-center justify-center">
+                    <User className="w-6 h-6 text-eatrivo-purple" />
+                  </div>
+                )}
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
               </div>
-              <p
-                className={`text-xs capitalize ${getMembershipStatus(
-                  session?.user?.membership,
-                )}`}
-              >
-                {session?.user?.membership || "basic"} {t("membershipSuffix")}
-              </p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h2 className="text-sm font-bold text-gray-900 truncate">
+                    {session?.user?.name}
+                  </h2>
+                  {session?.user?.badges?.map((badgeStr) => (
+                    <UserBadge key={badgeStr} type={badgeStr} />
+                  ))}
+                </div>
+                <p
+                  className={`text-xs capitalize ${getMembershipStatus(
+                    session?.user?.membership,
+                  )}`}
+                >
+                  {session?.user?.membership || "basic"} {t("membershipSuffix")}
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              className={`flex-1 border-2 text-xs h-8 ${activeSection === "profile" ? "bg-eatrivo-purple/10 border-eatrivo-purple/20 text-eatrivo-purple" : "bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700"}`}
-              onClick={() => onSectionChange("profile")}
-            >
-              <User className="w-3 h-3 mr-1.5" />
-              {t("nav.profile")}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 px-2 hover: text-eatrivo-red"
-              asChild
-            >
-              <Link href={signOutHref} aria-label={t("nav.signOut")}>
-                <LogOut className="w-4 h-4" />
-                <span className="sr-only">{t("nav.signOut")}</span>
-              </Link>
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                className={`flex-1 border-2 text-xs h-8 ${activeSection === "profile" ? "bg-eatrivo-purple/10 border-eatrivo-purple/20 text-eatrivo-purple" : "bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700"}`}
+                onClick={() => onSectionChange("profile")}
+              >
+                <User className="w-3 h-3 mr-1.5" />
+                {t("nav.profile")}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-2 text-eatrivo-red"
+                asChild
+              >
+                <Link href={signOutHref} aria-label={t("nav.signOut")}>
+                  <LogOut className="w-4 h-4" />
+                  <span className="sr-only">{t("nav.signOut")}</span>
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <nav className="flex-1 p-4 space-y-1">
-        {navItems.map((item) => {
+        <nav className="flex-1 p-4 space-y-1">
+          {navItems.map((item) => {
+            const isActive = activeSection === item.id;
+            return (
+              <Button
+                key={item.id}
+                variant="ghost"
+                onClick={() => onSectionChange(item.id)}
+                className={`
+                  w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium h-auto
+                  ${
+                    isActive
+                      ? "bg-eatrivo-purple/10 text-eatrivo-purple hover:bg-eatrivo-purple/10 hover:text-eatrivo-purple"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }
+                `}
+              >
+                <item.icon
+                  className={`w-4 h-4 ${isActive ? "text-eatrivo-purple" : "text-gray-400"}`}
+                />
+                {item.label}
+                {"comingSoon" in item && item.comingSoon && (
+                  <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 bg-eatrivo-purple/10 text-eatrivo-purple rounded-full">
+                    {t("comingSoon.badge")}
+                  </span>
+                )}
+              </Button>
+            );
+          })}
+        </nav>
+      </motion.div>
+
+      {/* ── Mobile Bottom Tab Bar ── */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-white/95 backdrop-blur-sm border-t border-gray-100"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        {mobileNavItems.map((item) => {
           const isActive = activeSection === item.id;
+          const isDisabled = "comingSoon" in item && item.comingSoon;
+
           return (
-            <Button
+            <button
               key={item.id}
-              variant="ghost"
-              onClick={() => onSectionChange(item.id)}
+              type="button"
+              disabled={isDisabled}
+              onClick={() => !isDisabled && onSectionChange(item.id)}
               className={`
-                w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium h-auto 
-                ${
-                  isActive
-                    ? "bg-eatrivo-purple/10 text-eatrivo-purple hover:bg-eatrivo-purple/10 hover:text-eatrivo-purple"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }
+                relative flex flex-1 flex-col items-center justify-center gap-1
+                min-h-[56px] py-2 transition-colors
+                ${isDisabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}
+                ${isActive ? "text-eatrivo-purple" : "text-gray-400"}
               `}
             >
-              <item.icon
-                className={`w-4 h-4 ${
-                  isActive ? "text-eatrivo-purple" : "text-gray-400"
-                }`}
-              />
-              {item.label}
-              {"comingSoon" in item && item.comingSoon && (
-                <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 bg-eatrivo-purple/10 text-eatrivo-purple rounded-full">
-                  {t("comingSoon.badge")}
-                </span>
+              {/* Active indicator pill at top */}
+              {isActive && (
+                <motion.span
+                  layoutId="mobile-nav-pill"
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-eatrivo-purple rounded-full"
+                />
               )}
-            </Button>
+
+              {/* Coming-soon dot */}
+              {isDisabled && (
+                <span className="absolute top-2.5 right-[calc(50%-10px)] w-1.5 h-1.5 bg-eatrivo-purple/60 rounded-full" />
+              )}
+
+              <item.icon className="w-5 h-5" />
+              <span className="text-[10px] font-semibold leading-none tracking-wide">
+                {item.label}
+              </span>
+            </button>
           );
         })}
       </nav>
-    </motion.div>
+    </>
   );
 }

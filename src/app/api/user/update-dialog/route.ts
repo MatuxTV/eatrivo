@@ -4,6 +4,7 @@ import { db } from "@/index";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function POST(request: Request) {
   try {
@@ -15,6 +16,9 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
+    if (!rl.success) return rl.response!;
 
     const { version } = await request.json();
 

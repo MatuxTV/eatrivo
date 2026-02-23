@@ -31,8 +31,6 @@ import {
 import type {
   User as UserType,
   UserInfo,
-  UserShoppingList,
-  UserMealPlan,
 } from "../types";
 
 interface ProfilesTabProps {

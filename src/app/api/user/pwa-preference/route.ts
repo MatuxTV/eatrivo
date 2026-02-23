@@ -5,6 +5,7 @@ import { db } from '@/index';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { apiLogger } from '@/lib/logger';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function GET(_request: NextRequest) {
   try {
@@ -16,6 +17,9 @@ export async function GET(_request: NextRequest) {
         { status: 401 }
       );
     }
+
+    const rl = await checkRateLimit(`user:${session.user.id}`, 'standard');
+    if (!rl.success) return rl.response!;
 
     const result = await db
       .select({ hideInstallPrompt: users.hideInstallPrompt })

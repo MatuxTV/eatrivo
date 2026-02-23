@@ -44,7 +44,7 @@ export interface UserMealPlan {
   shoppingListId: string;
   weekStartDate: string;
   weekEndDate: string;
-  meals: any;
+  meals: Record<string, unknown>;
   created_at: string;
 }
 
