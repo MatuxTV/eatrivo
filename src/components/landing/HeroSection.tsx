@@ -106,7 +106,9 @@ export function HeroSection({ className = "" }: SectionProps) {
   }
 
   return (
-    <section className={`relative overflow-hidden bg-eatrivo-white-primary ${className}`}>
+    <section
+      className={`relative overflow-hidden bg-eatrivo-white-primary ${className}`}
+    >
       {/* Mouse-interactive dots background — hidden on mobile, no hover on touch */}
       <div
         className="hidden md:block absolute inset-0 pointer-events-none overflow-hidden"
@@ -117,9 +119,11 @@ export function HeroSection({ className = "" }: SectionProps) {
           const dotY = (dot.y / rows) * 100;
 
           const dotScreenX =
-            (dotX / 100) * (typeof window !== "undefined" ? window.innerWidth : 1920);
+            (dotX / 100) *
+            (typeof window !== "undefined" ? window.innerWidth : 1920);
           const dotScreenY =
-            (dotY / 100) * (typeof window !== "undefined" ? window.innerHeight : 1080);
+            (dotY / 100) *
+            (typeof window !== "undefined" ? window.innerHeight : 1080);
           const distX = mousePosition.x - dotScreenX;
           const distY = mousePosition.y - dotScreenY;
           const distance = Math.sqrt(distX * distX + distY * distY);
@@ -171,9 +175,12 @@ export function HeroSection({ className = "" }: SectionProps) {
         {/* === PHONES === */}
         <div className="flex justify-center items-end gap-4 md:gap-6 relative z-0">
           {/* Left phone — hidden on mobile, one thumb cannot reach it anyway */}
-          <div className="hidden md:block" style={{ transform: "rotate(-8deg)" }}>
+          <div
+            className="hidden md:block"
+            style={{ transform: "rotate(-8deg)" }}
+          >
             <PhoneMockup
-              src={`/images/screenshots/${locale}/health-circle.png`}
+              src={`/images/screenshots/${locale}/health-circle.PNG`}
               alt="Zdravie"
               delay={0.1}
             />
@@ -182,7 +189,7 @@ export function HeroSection({ className = "" }: SectionProps) {
           {/* Center phone — always visible, sole focus on mobile */}
           <div>
             <PhoneMockup
-              src={`/images/screenshots/${locale}/dashboard.png`}
+              src={`/images/screenshots/${locale}/dashboard.PNG`}
               alt="Dashboard"
               delay={0}
               isCenter
@@ -190,9 +197,12 @@ export function HeroSection({ className = "" }: SectionProps) {
           </div>
 
           {/* Right phone — hidden on mobile */}
-          <div className="hidden md:block" style={{ transform: "rotate(8deg)" }}>
+          <div
+            className="hidden md:block"
+            style={{ transform: "rotate(8deg)" }}
+          >
             <PhoneMockup
-              src={`/images/screenshots/${locale}/shopping-list.png`}
+              src={`/images/screenshots/${locale}/shopping-list.PNG`}
               alt="Nákupný zoznam"
               delay={0.15}
             />
@@ -243,11 +253,17 @@ export function HeroSection({ className = "" }: SectionProps) {
           {/* Value props */}
           <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 text-xs sm:text-sm md:text-base text-gray-700 mb-8 sm:mb-10">
             <span className="flex items-center gap-1.5 sm:gap-2">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-eatrivo-purple" aria-hidden="true" />
+              <Sparkles
+                className="w-4 h-4 sm:w-5 sm:h-5 text-eatrivo-purple"
+                aria-hidden="true"
+              />
               {t("valueProp1")}
             </span>
             <span className="flex items-center gap-1.5 sm:gap-2">
-              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-eatrivo-purple" aria-hidden="true" />
+              <ShoppingCart
+                className="w-4 h-4 sm:w-5 sm:h-5 text-eatrivo-purple"
+                aria-hidden="true"
+              />
               {t("valueProp2")}
             </span>
           </div>
@@ -262,7 +278,10 @@ export function HeroSection({ className = "" }: SectionProps) {
             <Link href={`/${locale}/signin`}>
               <Button className="w-full sm:w-auto bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-7 sm:px-9 h-12 sm:h-14 text-sm sm:text-base font-semibold shadow-lg shadow-eatrivo-purple/30 transition-all duration-200">
                 {t("cta")}
-                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+                <ArrowRight
+                  className="ml-2 w-4 h-4 sm:w-5 sm:h-5"
+                  aria-hidden="true"
+                />
               </Button>
             </Link>
           </motion.div>

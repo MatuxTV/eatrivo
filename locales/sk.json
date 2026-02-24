@@ -429,6 +429,7 @@
       "language": "Jazyk"
     },
     "userAlt": "Používateľ",
+    "templateUsage":"Upozornenie: Tento jedálny plán a nákupný zoznam slúžia len ako inšpirácia. Oba sú len príklady na základe vašej úrovne aktivity a cieľa. Nie sú plne prispôsobené vašim preferenciám a stravovacím potrebám. Pre skutočne personalizovaný plán prejdite na Premium.",
     "membershipSuffix": "člen",
     "greeting": {
       "title": "Vitajte späť, {name}! 👋",
@@ -511,15 +512,15 @@
         "description": "Momentálne nemáte žiadny aktívny nákupný zoznam. Zobrazte všetky zoznamy pre dokončené alebo zrušené."
       },
       "premiumCTA": {
-        "title": "Upgradnite na Premium",
-        "description": "Generujte neobmedzené personalizované nákupné zoznamy na požiadanie s AI",
+        "title": "Upgradnite na Premium a splnťe si svoje ciele rýchlejšie! 🚀",
+        "description": "Vygenerujte si personalizovaný nákupný zoznam na tento týžden",
         "button": "Zobraziť plány"
       },
       "createNew": {
         "title": "Nechaj ma variť! 🍳",
         "subtitle": "Vytvorím personalizovaný nákupný zoznam len pre teba",
         "locked": "Odomkni s Premium 🔒",
-        "lockedSubtitle": "Generuj neobmedzené AI nákupné zoznamy",
+        "lockedSubtitle": "Vygeneruj si personalizovaný nákupný zoznam prispôsobený tvojim cieľom",
         "completeActiveError": "Najprv dokončite svoj aktívny nákupný zoznam! 🛒",
         "activeListExists": "Najprv dokonči aktívny zoznam! 🛒",
         "activeListExistsSubtitle": "Môžeš mať iba jeden aktívny nákupný zoznam súčasne",
@@ -1074,10 +1075,9 @@
         "name": "Basic",
         "description": "Inšpirácia - Nápady na recepty pre začiatok",
         "features": [
-          "Šablóny receptov podľa vášho profilu",
+          "Inšpirácie nákupných zoznamov na základe vašej aktivity a cieľu",
           "Základné nápady na jedlá",
-          "Návrhy podľa veku a aktivity",
-          "Jednoduché nákupné zoznamy"
+          "Návrhy podľa vášho cieľu a aktivity"
         ]
       },
       "premium": {
@@ -1087,7 +1087,8 @@
           "Personalizované nákupné zoznamy vytvorené Rivom priamo pre vás",
           "Jedálničky vytvorené z jedál overených našimi odborníkmi a prispôsobené vašim preferenciám",
           "Týždenné výzvy",
-          "Pokročilé sledovanie pokroku"
+          "Pokročilé sledovanie pokroku",
+          "Rivo ako váš osobní asistent"
         ]
       }
     },
