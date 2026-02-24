@@ -4,11 +4,13 @@ import WelcomeEmail from "../components/email-templates/WelcomeEmail";
 import ShoppingListNotificationEmail from "../components/email-templates/ShoppingListNotificationEmail";
 import AdminNotificationEmail from "../components/email-templates/AdminNotificationEmail";
 import FeedbackNotificationEmail from "../components/email-templates/FeedbackNotificationEmail";
+import RenewalReminderEmail from "../components/email-templates/RenewalReminderEmail";
 import type {
   WelcomeEmailProps,
   ShoppingListNotificationEmailProps,
   AdminNotificationEmailProps,
   FeedbackNotificationEmailProps,
+  RenewalReminderEmailProps,
   EmailResponse,
   EmailTranslations,
 } from "@/types/email.types";
@@ -190,6 +192,48 @@ export async function sendFeedbackNotification(
     };
   } catch (error) {
     console.error("Unexpected error sending feedback notification:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
+
+/**
+ * Send a renewal reminder email before subscription auto-renews
+ * Required by EU consumer protection law (§ 4 ods. 6 zákona č. 108/2024 Z.z.)
+ */
+export async function sendRenewalReminderEmail(
+  userEmail: string,
+  props: Omit<RenewalReminderEmailProps, "translations">,
+  locale: string = "sk"
+): Promise<EmailResponse> {
+  try {
+    const messages = await getMessages({ locale });
+    const translations = (messages.emails as unknown) as EmailTranslations;
+    const t = translations?.renewalReminder;
+
+    const { data, error } = await resend.emails.send({
+      from: DEFAULT_FROM_EMAIL,
+      to: userEmail,
+      subject: t?.heading || "Pripomienka obnovenia predplatného 🔔",
+      react: RenewalReminderEmail({ ...props, translations }),
+    });
+
+    if (error) {
+      console.error("Error sending renewal reminder email:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      messageId: data?.id,
+    };
+  } catch (error) {
+    console.error("Unexpected error sending renewal reminder email:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",

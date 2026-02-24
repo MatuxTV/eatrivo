@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { ArrowLeft, Shield } from "lucide-react";
+import { ArrowLeft, Shield, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
@@ -23,7 +23,12 @@ export default function PricingPage() {
 
   const t = useTranslations("pricing");
   const tBilling = useTranslations("billing");
+  const tCheckout = useTranslations("checkout");
   const locale = useLocale();
+
+  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [digitalConsent, setDigitalConsent] = useState(false);
+  const [showConsentError, setShowConsentError] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("canceled") === "true") {
@@ -55,6 +60,13 @@ export default function PricingPage() {
       router.push("/signin?callbackUrl=/pricing");
       return;
     }
+
+    // Check legal consent
+    if (!termsAgreed || !digitalConsent) {
+      setShowConsentError(true);
+      return;
+    }
+    setShowConsentError(false);
 
     try {
       const response = await fetch("/api/stripe/checkout", {
@@ -180,8 +192,83 @@ export default function PricingPage() {
             isCurrentPlan={currentMembership === "premium"}
             onSelect={() => handleUpgrade("premium")}
             trialDays={trialDays}
+            ctaOverride={tCheckout("legalConsent.orderWithPayment")}
           />
         </div>
+
+        {/* Legal consent checkboxes */}
+        {status === "authenticated" && currentMembership === "basic" && (
+          <motion.div
+            className="mx-auto mt-10 max-w-3xl rounded-xl border border-eatrivo-purple/10 bg-eatrivo-white-primary p-5 shadow-sm"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <div className="space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={termsAgreed}
+                  onChange={(e) => {
+                    setTermsAgreed(e.target.checked);
+                    if (e.target.checked) setShowConsentError(false);
+                  }}
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-eatrivo-purple accent-eatrivo-purple flex-shrink-0"
+                />
+                <span className="text-sm text-eatrivo-black-secondary leading-relaxed">
+                  {tCheckout.rich("legalConsent.termsAgree", {
+                    terms: (chunks) => (
+                      <a
+                        href={`/${locale}/terms-of-service`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-eatrivo-purple underline hover:text-eatrivo-purple/80"
+                      >
+                        {chunks}
+                      </a>
+                    ),
+                    privacy: (chunks) => (
+                      <a
+                        href={`/${locale}/privacy-policy`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-eatrivo-purple underline hover:text-eatrivo-purple/80"
+                      >
+                        {chunks}
+                      </a>
+                    ),
+                  })}
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={digitalConsent}
+                  onChange={(e) => {
+                    setDigitalConsent(e.target.checked);
+                    if (e.target.checked) setShowConsentError(false);
+                  }}
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-eatrivo-purple accent-eatrivo-purple flex-shrink-0"
+                />
+                <span className="text-sm text-eatrivo-black-secondary leading-relaxed">
+                  {tCheckout("legalConsent.digitalConsent")}
+                </span>
+              </label>
+            </div>
+
+            {showConsentError && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-3 flex items-center gap-2 text-sm text-eatrivo-red"
+              >
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <span>{tCheckout("legalConsent.mustAgree")}</span>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
 
         {/* Trust footer */}
         <motion.div

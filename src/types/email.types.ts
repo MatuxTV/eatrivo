@@ -87,6 +87,21 @@ export interface EmailTranslations {
     cta: string;
     footer: string;
   };
+  renewalReminder?: {
+    preview: string;
+    heading: string;
+    greeting: string;
+    paragraph: string;
+    details: {
+      plan: string;
+      renewalDate: string;
+      amount: string;
+    };
+    cancelInfo: string;
+    cancelCta: string;
+    keepCta: string;
+    footer: string;
+  };
 }
 
 export interface WelcomeEmailProps {
@@ -133,6 +148,16 @@ export interface UpdateNotificationEmailProps {
     type: "feature" | "improvement" | "fix";
   }>;
   dashboardUrl?: string;
+  translations?: EmailTranslations;
+}
+
+export interface RenewalReminderEmailProps {
+  userName: string;
+  planName: string;
+  renewalDate: string;
+  amount: string;
+  currency: string;
+  manageUrl?: string;
   translations?: EmailTranslations;
 }
 

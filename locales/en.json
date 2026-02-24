@@ -269,6 +269,11 @@
       "terms": "Terms of service",
       "privacy": "Privacy policy",
       "medicalDisclaimer": "Medical disclaimer",
+      "cookiePolicy": "Cookie policy",
+      "cookieSettings": "Cookie settings",
+      "complaints": "Complaints procedure",
+      "companyInfo": "I\u010cO: 56024665 | DI\u010c: 2122162493",
+      "odrInfo": "Online dispute resolution platform (ODR) of the European Commission:",
       "rights": "All rights reserved."
     }
   },
@@ -281,7 +286,9 @@
       "googleButton": "Continue with Google",
       "agreement": {
         "prefix": "By continuing, you agree to our",
-        "terms": "Terms",
+        "checkboxLabel": "I have read and agree to the",
+        "mustAgree": "You must agree to the Terms and Privacy Policy to continue.",
+        "terms": "Terms of Service",
         "and": "and",
         "privacy": "Privacy Policy"
       },
@@ -411,6 +418,24 @@
       "back": "Back",
       "finishing": "Finishing…",
       "finish": "Finish setup"
+    },
+    "consents": {
+      "title": "Legal agreements",
+      "description": "Please review and accept the following before completing your profile.",
+      "termsAndPrivacy": {
+        "label": "I have read and agree to the",
+        "termsLink": "Terms of Service",
+        "and": "and",
+        "privacyLink": "Privacy Policy"
+      },
+      "medicalDisclaimer": {
+        "label": "I acknowledge and accept the",
+        "link": "Medical Disclaimer"
+      },
+      "healthData": {
+        "label": "I consent to the processing of my health-related data (weight, height, dietary restrictions, allergies) for the purpose of generating personalized meal plans, as described in the Privacy Policy."
+      },
+      "mustAgree": "You must accept all agreements to continue."
     }
   },
   "dashboard": {
@@ -962,6 +987,21 @@
       "intro": "We have new improvements for you. Check out what we've prepared.",
       "cta": "OPEN DASHBOARD",
       "footer": "Thank you for being part of Eatrivo."
+    },
+    "renewalReminder": {
+      "preview": "Your Eatrivo subscription will renew on {renewalDate}",
+      "heading": "Subscription Renewal Reminder 🔔",
+      "greeting": "Hi {firstName},",
+      "paragraph": "We want to let you know that your Eatrivo subscription will automatically renew soon. Here are the details.",
+      "details": {
+        "plan": "Plan:",
+        "renewalDate": "Renewal date:",
+        "amount": "Amount:"
+      },
+      "cancelInfo": "If you do not wish to continue, you can cancel your subscription at any time before the renewal date in your profile.",
+      "cancelCta": "Manage subscription",
+      "keepCta": "Continue planning",
+      "footer": "This email was sent because you have an active subscription on Eatrivo."
     }
   },
   "feedback": {
@@ -1180,5 +1220,31 @@
     "maybeLater": "Maybe later",
     "socialProof": "Join 2,400+ members eating smarter",
     "trialDays": "{days} Days Free"
+  },
+  "cookieConsent": {
+    "title": "We use cookies",
+    "description": "We use essential cookies for the site to function. With your consent, we also use analytics cookies to improve our service.",
+    "acceptAll": "Accept all",
+    "rejectAll": "Reject all",
+    "customize": "Customize",
+    "savePreferences": "Save preferences",
+    "learnMore": "Learn more in our",
+    "cookiePolicy": "Cookie Policy",
+    "essential": {
+      "title": "Essential",
+      "description": "Required for the website to function. Cannot be disabled."
+    },
+    "analytics": {
+      "title": "Analytics",
+      "description": "Help us understand how visitors use our website."
+    }
+  },
+  "checkout": {
+    "legalConsent": {
+      "termsAgree": "I have read and agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>",
+      "digitalConsent": "I request immediate access to the digital service and acknowledge that I lose my 14-day right of withdrawal",
+      "mustAgree": "You must agree to the terms before proceeding",
+      "orderWithPayment": "Subscribe with obligation to pay"
+    }
   }
 }

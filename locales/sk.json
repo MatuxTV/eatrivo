@@ -269,6 +269,11 @@
       "terms": "Podmienky používania",
       "privacy": "Ochrana súkromia",
       "medicalDisclaimer": "Zdravotné vylúčenie",
+      "cookiePolicy": "Zásady cookies",
+      "cookieSettings": "Nastavenia cookies",
+      "complaints": "Reklamácie",
+      "companyInfo": "IČO: 56024665 | DIČ: 2122162493",
+      "odrInfo": "Platforma na riešenie sporov online (ODR) Európskej komisie:",
       "rights": "Všetky práva vyhradené."
     }
   },
@@ -281,9 +286,11 @@
       "googleButton": "Pokračovať cez Google",
       "agreement": {
         "prefix": "Pokračovaním súhlasíte s",
-        "terms": "Podmienkami",
+        "checkboxLabel": "Oboznámil/a som sa a súhlasím s",
+        "mustAgree": "Pre pokračovanie musíte súhlasiť s podmienkami a ochranou súkromia.",
+        "terms": "Obchodnými podmienkami",
         "and": "a",
-        "privacy": "Ochranou súkromia"
+        "privacy": "Ochranou osobných údajov"
       },
       "whyTitle": "Prečo sa prihlásiť?",
       "whyBullets": {
@@ -411,6 +418,24 @@
       "back": "Späť",
       "finishing": "Dokončuje sa…",
       "finish": "Dokončiť nastavenie"
+    },
+    "consents": {
+      "title": "Právne súhlasy",
+      "description": "Pred dokončením profilu si prosím prečítajte a odsúhlaste nasledovné.",
+      "termsAndPrivacy": {
+        "label": "Oboznámil/a som sa a súhlasím s",
+        "termsLink": "Všeobecnými obchodnými podmienkami",
+        "and": "a",
+        "privacyLink": "Ochranou osobných údajov"
+      },
+      "medicalDisclaimer": {
+        "label": "Beriem na vedomie a akceptujem",
+        "link": "Medicínske vyhlásenie"
+      },
+      "healthData": {
+        "label": "Súhlasím so spracovaním mojich údajov o zdraví (hmotnosť, výška, diétne obmedzenia, alergie) za účelom generovania personalizovaných jedálnych plánov, ako je opísané v Ochrane osobných údajov."
+      },
+      "mustAgree": "Pre pokračovanie musíte súhlasiť so všetkými podmienkami."
     }
   },
   "dashboard": {
@@ -962,6 +987,21 @@
       "intro": "Máme pre teba nové vylepšenia. Pozri sa, čo sme pripravili.",
       "cta": "OTVORIŤ DASHBOARD",
       "footer": "Ďakujeme, že si súčasťou Eatrivo."
+    },
+    "renewalReminder": {
+      "preview": "Vaše predplatné Eatrivo sa obnoví {renewalDate}",
+      "heading": "Pripomienka obnovenia predplatného 🔔",
+      "greeting": "Ahoj {firstName},",
+      "paragraph": "Chceme vás informovať, že vaše predplatné Eatrivo sa čoskoro automaticky obnoví. Nižšie nájdete podrobnosti.",
+      "details": {
+        "plan": "Plán:",
+        "renewalDate": "Dátum obnovenia:",
+        "amount": "Suma:"
+      },
+      "cancelInfo": "Ak si neželáte pokračovať, môžete predplatné zrušiť kedykoľvek pred dátumom obnovenia vo svojom profile.",
+      "cancelCta": "Spravovať predplatné",
+      "keepCta": "Pokračovať v plánovaní",
+      "footer": "Tento email bol odoslaný, pretože máte aktívne predplatné na Eatrivo."
     }
   },
   "feedback": {
@@ -1167,5 +1207,31 @@
     "maybeLater": "Možno neskôr",
     "socialProof": "Pridaj sa k 2 400+ členom, ktorí jedia múdrejšie",
     "trialDays": "{days} Dní Zadarmo"
+  },
+  "cookieConsent": {
+    "title": "Používame cookies",
+    "description": "Používame nevyhnutné cookies pre fungovanie stránky. S vašim súhlasom používame aj analytické cookies na zlepšenie našej služby.",
+    "acceptAll": "Prijať všetky",
+    "rejectAll": "Odmietnuť všetky",
+    "customize": "Prispôsobiť",
+    "savePreferences": "Uložiť preferencie",
+    "learnMore": "Viac informácií v našich",
+    "cookiePolicy": "Zásadách používania cookies",
+    "essential": {
+      "title": "Nevyhnutné",
+      "description": "Potrebné pre fungovanie webu. Nedá sa vypnúť."
+    },
+    "analytics": {
+      "title": "Analytické",
+      "description": "Pomáhajú nám porozumieť, ako návštevníci používajú našu stránku."
+    }
+  },
+  "checkout": {
+    "legalConsent": {
+      "termsAgree": "Oboznámil som sa s <terms>Všeobecnými obchodnými podmienkami</terms> a <privacy>Zásadami ochrany osobných údajov</privacy>",
+      "digitalConsent": "Žiadam o okamžité začatie poskytovania digitálnej služby a beriem na vedomie, že tým strácam právo na odstúpenie od zmluvy v 14-dňovej lehote",
+      "mustAgree": "Pre pokračovanie musíte súhlasiť s podmienkami",
+      "orderWithPayment": "Záväzne predplatiť"
+    }
   }
 }

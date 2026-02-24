@@ -9,9 +9,11 @@
 
 ### 1.1 Service Provider
 
-Address: Nad plážou 4419/25,97401,Banská Bystrica
-Company ID: 56024665
+Address: Nad plážou 4419/25, 974 01 Banská Bystrica, Slovakia
+Company ID (IČO): 56024665
+Tax ID (DIČ): 2122162493
 Email: info@valorixdigital.com
+Phone: +421 944 488 206
 
 (hereinafter referred to as "EatRivo" or "provider")
 
@@ -95,7 +97,7 @@ You can cancel your subscription at any time:
 
 - Directly in the app in the "Billing" section
 - Through the Stripe customer portal
-- By contacting our support at [INSERT EMAIL]
+- By contacting our support at info@valorixdigital.com
 
 ### 5.2 Effect of Cancellation
 
@@ -119,6 +121,10 @@ When purchasing a subscription, you confirm:
 
 - That you agree to immediate provision of digital content
 - That you acknowledge the loss of the 14-day right of withdrawal
+
+### 6.3 Withdrawal Form
+
+The model withdrawal form is an annex to these Terms and is available at: [Withdrawal Form](/en/withdrawal-form)
 
 ---
 
@@ -147,6 +153,8 @@ When purchasing a subscription, you confirm:
 
 ---
 
+<a id="complaints"></a>
+
 ## 8. Complaints Procedure
 
 ### 8.1 Right to Complain
@@ -162,8 +170,8 @@ Users have the right to file a complaint regarding:
 
 Complaints can be submitted:
 
-- **By email:** [INSERT EMAIL]
-- **In writing:** [INSERT ADDRESS]
+- **By email:** info@valorixdigital.com
+- **In writing:** Nad plážou 4419/25, 974 01 Banská Bystrica, Slovakia
 - **Through the application:** "Support" section
 
 A complaint must include:
@@ -266,13 +274,13 @@ Web: [soi.sk](https://www.soi.sk)
 
 ## 13. Final Provisions
 
-- These Terms take effect on [INSERT DATE]
+- These Terms take effect on 22.2.2026
 - Invalidity of any provision does not affect the validity of other provisions
 
 ---
 
 ## 14. Contact
 
-**Email:** [INSERT EMAIL]  
-**Address:** [INSERT ADDRESS]  
-**Support:** [INSERT CONTACT]
+**Email:** info@valorixdigital.com  
+**Address:** Nad plážou 4419/25, 974 01 Banská Bystrica, Slovakia  
+**Phone:** +421 944 488 206
