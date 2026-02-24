@@ -13,6 +13,7 @@ import {
   ChevronRight,
   CakeSlice,
   MessageCircleHeart,
+  CircleAlert,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -655,60 +656,79 @@ export default function DashboardPage() {
                 }
               >
                 <section className="space-y-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <div className="p-2 bg-blue-50 rounded-lg">
-                        <ReceiptText className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <h2 className="text-xl font-bold text-gray-900">
-                        {t("dailyPlan.title")}
-                      </h2>
-
-                      {/* Day Navigation */}
-                      {isMounted && mealPlanData.length > 0 && (
-                        <div className="flex items-center gap-2 bg-white rounded-full px-2 py-1 shadow-sm border border-gray-100">
-                          <button
-                            onClick={() =>
-                              setSelectedDayIndex((prev) =>
-                                prev === 0 ? 6 : prev - 1,
-                              )
-                            }
-                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                            aria-label="Previous day"
-                          >
-                            <ChevronLeft className="w-4 h-4 text-gray-600" />
-                          </button>
-                          <span className="text-sm font-medium text-gray-700 min-w-[80px] text-center">
-                            {selectedDayIndex === new Date().getDay() ? (
-                              <span className="text-eatrivo-purple capitalize">
-                                {t("dailyPlan.today")}
-                              </span>
-                            ) : (
-                              mealPlanData.find(
-                                (day) =>
-                                  getDayIndex(day.day) === selectedDayIndex,
-                              )?.day || currentDay
-                            )}
-                          </span>
-                          <button
-                            onClick={() =>
-                              setSelectedDayIndex((prev) =>
-                                prev === 6 ? 0 : prev + 1,
-                              )
-                            }
-                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                            aria-label="Next day"
-                          >
-                            <ChevronRight className="w-4 h-4 text-gray-600" />
-                          </button>
+                  <div className="flex flex-col gap-3">
+                    {/* Row 1: icon + title + day navigation + membership banner (desktop inline) */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <div className="p-2 bg-blue-50 rounded-lg">
+                          <ReceiptText className="w-5 h-5 text-blue-600" />
                         </div>
-                      )}
+                        <h2 className="text-xl font-bold text-gray-900">
+                          {t("dailyPlan.title")}
+                        </h2>
+
+                        {/* Day Navigation */}
+                        {isMounted && mealPlanData.length > 0 && (
+                          <div className="flex items-center gap-2 bg-white rounded-full px-2 py-1 shadow-sm border border-gray-100">
+                            <button
+                              onClick={() =>
+                                setSelectedDayIndex((prev) =>
+                                  prev === 0 ? 6 : prev - 1,
+                                )
+                              }
+                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                              aria-label="Previous day"
+                            >
+                              <ChevronLeft className="w-4 h-4 text-gray-600" />
+                            </button>
+                            <span className="text-sm font-medium text-gray-700 min-w-[80px] text-center">
+                              {selectedDayIndex === new Date().getDay() ? (
+                                <span className="text-eatrivo-purple capitalize">
+                                  {t("dailyPlan.today")}
+                                </span>
+                              ) : (
+                                mealPlanData.find(
+                                  (day) =>
+                                    getDayIndex(day.day) === selectedDayIndex,
+                                )?.day || currentDay
+                              )}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setSelectedDayIndex((prev) =>
+                                  prev === 6 ? 0 : prev + 1,
+                                )
+                              }
+                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                              aria-label="Next day"
+                            >
+                              <ChevronRight className="w-4 h-4 text-gray-600" />
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Membership banner — desktop only (inline) */}
+                        {session?.user?.membership === "basic" && (
+                          <div className="hidden md:flex p-4 rounded-2xl border border-eatrivo-black-secondary/20 text-eatrivo-white-primary items-start bg-gradient-to-r from-eatrivo-orange/90 to-eatrivo-orange/85">
+                            <CircleAlert className="w-8 h-8 mr-2 shrink-0 text-eatrivo-white-primary" />
+                            <span className="text-xs">{t("templateUsage")}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Nutrition Summary */}
+                      <div className="w-full md:w-auto">
+                        <DailyNutritionSummary data={todaysNutrition} />
+                      </div>
                     </div>
 
-                    {/* Nutrition Summary */}
-                    <div className="w-full md:w-auto">
-                      <DailyNutritionSummary data={todaysNutrition} />
-                    </div>
+                    {/* Row 2: Membership banner — mobile only (full width, below nutrition) */}
+                    {session?.user?.membership === "basic" && (
+                      <div className="flex md:hidden p-4 rounded-2xl border border-eatrivo-black-secondary/20 text-eatrivo-white-primary items-start bg-gradient-to-r from-eatrivo-orange/90 to-eatrivo-orange/85">
+                        <CircleAlert className="w-8 h-8 mr-2 shrink-0 text-eatrivo-white-primary" />
+                        <span className="text-xs">{t("templateUsage")}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Meals Grid */}

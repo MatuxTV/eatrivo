@@ -429,6 +429,7 @@
       "language": "Language"
     },
     "userAlt": "User",
+    "templateUsage":"Notice: This meal plan and shopping list are just for inspiration. Both are just examples based on your acitivity level and goal. They are not fully personalized to your preferences and dietary needs. For a truly personalized plan, please upgrade to Premium tier.",
     "membershipSuffix": "member",
     "greeting": {
       "title": "Welcome back, {name}! 👋",
@@ -511,15 +512,15 @@
         "description": "You currently don't have any active shopping list. Show all lists to view completed or cancelled ones."
       },
       "premiumCTA": {
-        "title": "Upgrade to Premium",
-        "description": "Generate unlimited personalized shopping lists on-demand with AI",
+        "title": "Upgrade to Premium and reach your goals faster! 🚀",
+        "description": "Generate your personalized shopping list for this week",
         "button": "View Plans"
       },
       "createNew": {
         "title": "Let me cook! 🍳",
         "subtitle": "I'll create a personalized shopping list just for you",
         "locked": "Unlock with Premium 🔒",
-        "lockedSubtitle": "Generate unlimited AI shopping lists",
+        "lockedSubtitle": "Generate personalized shopping lists tailored to your goals",
         "completeActiveError": "Please complete your active shopping list first! 🛒",
         "activeListExists": "Complete active list first! 🛒",
         "activeListExistsSubtitle": "You can only have one active list at a time",
@@ -1072,10 +1073,9 @@
         "name": "Basic",
         "description": "Inspiration - Recipe ideas to get started",
         "features": [
-          "Recipe templates based on your profile",
+          "Inspiration for shopping lists based on your profile",
           "Basic meal ideas",
-          "Age & activity-matched suggestions",
-          "Simple shopping lists"
+          "Ideas for what to cook based on your goals and activity level"
         ]
       },
       "premium": {
@@ -1085,7 +1085,8 @@
           "Personalized shopping lists created by Rivo directly for you",
           "Meal plans made from dishes verified by our experts and tailored to your preferences",
           "Weekly challenges",
-          "Advanced progress tracking"
+          "Advanced progress tracking",
+          "Rivo as your personal nutrition assistant"
         ]
       },
       "pro": {
