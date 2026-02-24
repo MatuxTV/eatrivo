@@ -110,4 +110,4 @@ Používaním aplikácie EatRivo potvrdzujete, že:
 
 ---
 
-_Posledná aktualizácia: [DOPLNIŤ DÁTUM]_
+_Posledná aktualizácia: 22.2.2026_

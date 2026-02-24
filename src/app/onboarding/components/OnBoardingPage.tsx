@@ -4,6 +4,7 @@ import { useState } from "react";
 import ProfileSetup from "./ProfileSetup";
 import FoodPreferences from "./FoodPreferences";
 import type { UserProfileOnboarding, UserFoodPreferences } from "../../../lib/schemas/user";
+import type { OnboardingConsents } from "./FoodPreferences";
 import { logger } from "@/lib/logger";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -26,7 +27,7 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
     setCurrentStep(2);
   };
 
-  const handleFoodPreferencesComplete = async (data: UserFoodPreferences) => {
+  const handleFoodPreferencesComplete = async (data: UserFoodPreferences, consents: OnboardingConsents) => {
     setIsLoading(true);
     
     try {
@@ -39,6 +40,11 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
         body: JSON.stringify({
           profile: profileData,
           foodPreferences: data,
+          consents: {
+            termsAndPrivacy: consents.termsAndPrivacy,
+            medicalDisclaimer: consents.medicalDisclaimer,
+            healthDataProcessing: consents.healthDataProcessing,
+          },
         }),
       });
 

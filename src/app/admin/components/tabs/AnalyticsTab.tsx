@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Crown, Activity, RefreshCw, TrendingUp } from "lucide-react";
+import { Users, Crown, Activity, RefreshCw, TrendingUp, MessageCircle, X, Eye, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import * as Tooltip from "@radix-ui/react-tooltip";
 
 interface AnalyticsData {
   overview: {
@@ -52,13 +51,59 @@ interface AnalyticsData {
   }[];
 }
 
+interface ChatAnalyticsData {
+  overview: {
+    totalMessages: number;
+    totalSessions: number;
+    uniqueUsers: number;
+    messagestoday: number;
+  };
+  dailyMessages: {
+    date: string;
+    messageCount: number;
+    sessionCount: number;
+    uniqueUsers: number;
+  }[];
+  topUsers: {
+    userProfileId: string;
+    fullName: string | null;
+    messageCount: number;
+    sessionCount: number;
+    lastActive: string;
+  }[];
+  recentSessions: {
+    sessionId: string;
+    userProfileId: string;
+    fullName: string | null;
+    messageCount: number;
+    firstMessage: string;
+    lastMessage: string;
+    startedAt: string;
+  }[];
+}
+
+interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  intent: string | null;
+  createdAt: string;
+}
+
 export default function AnalyticsTab() {
   const [data, setData] = useState<AnalyticsData | null>(null);
+  const [chatData, setChatData] = useState<ChatAnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isChatLoading, setIsChatLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedInteraction, setExpandedInteraction] = useState<string | null>(
     null,
   );
+  const [selectedBarIndex, setSelectedBarIndex] = useState<number | null>(null);
+  const [viewingSession, setViewingSession] = useState<string | null>(null);
+  const [sessionMessages, setSessionMessages] = useState<ChatMessage[]>([]);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [chatUsersExpanded, setChatUsersExpanded] = useState(false);
 
   const eventNameTranslations: Record<string, string> = {
     login: "Prihlásenie",
@@ -92,8 +137,39 @@ export default function AnalyticsTab() {
     }
   };
 
+  const fetchChatAnalytics = async () => {
+    setIsChatLoading(true);
+    try {
+      const response = await fetch("/api/admin/chat-analytics");
+      if (!response.ok) throw new Error("Failed to fetch chat analytics");
+      const result = await response.json();
+      setChatData(result);
+    } catch (err) {
+      console.error("Chat analytics error:", err);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
+  const fetchSessionMessages = async (sessionId: string) => {
+    setIsLoadingMessages(true);
+    setViewingSession(sessionId);
+    try {
+      const response = await fetch(`/api/admin/chat-analytics?sessionId=${sessionId}`);
+      if (!response.ok) throw new Error("Failed to fetch messages");
+      const result = await response.json();
+      setSessionMessages(result.messages || []);
+    } catch (err) {
+      console.error("Session messages error:", err);
+      setSessionMessages([]);
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  };
+
   useEffect(() => {
     fetchAnalytics();
+    fetchChatAnalytics();
   }, []);
 
   if (isLoading) {
@@ -285,71 +361,76 @@ export default function AnalyticsTab() {
         {/* Daily Active Users Chart */}
         <div className="rounded-xl border bg-white p-5 shadow-sm">
           <h3 className="mb-4 font-semibold">Denní aktívni používatelia</h3>
-          <Tooltip.Provider delayDuration={100}>
+          <div className="relative">
             <div className="flex h-48 items-end gap-1">
               {data.dailyActiveUsers.slice(-14).map((day, i) => (
-                <Tooltip.Root key={i}>
-                  <Tooltip.Trigger asChild>
-                    <div className="flex flex-1 flex-col items-center gap-1 cursor-help group">
-                      <span className="text-[10px] font-bold text-violet-600 mb-0.5">
-                        {day.count > 0 ? day.count : ""}
-                      </span>
-                      <div
-                        className="w-full rounded-t bg-gradient-to-t from-violet-500 to-violet-400 transition-all group-hover:from-violet-600 group-hover:to-violet-500"
-                        style={{
-                          height: `${(day.count / maxDailyUsers) * 100}%`,
-                          minHeight: day.count > 0 ? "4px" : "0px",
-                        }}
-                      />
-                      <span className="text-[10px] text-muted-foreground">
-                        {new Date(day.date).getDate()}
-                      </span>
-                    </div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      className="z-50 max-w-[220px] px-3 py-2.5 text-sm text-gray-900 rounded-xl shadow-xl bg-white/95 backdrop-blur-md border border-gray-100 animate-in fade-in zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95"
-                      sideOffset={5}
-                      side="top"
-                    >
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between border-b pb-2 gap-4">
-                          <span className="font-semibold">
-                            {new Date(day.date).toLocaleDateString("sk-SK", {
-                              day: "numeric",
-                              month: "short",
-                            })}
-                          </span>
-                          <span className="text-violet-600 font-bold bg-violet-50 px-2 py-0.5 rounded-full text-xs">
-                            {day.count}{" "}
-                            <Users className="inline w-3 h-3 ml-0.5" />
-                          </span>
-                        </div>
-                        {day.activeUsers && day.activeUsers.length > 0 ? (
-                          <ul className="max-h-32 overflow-y-auto space-y-1 pr-2 scrollbar-thin scrollbar-thumb-gray-200">
-                            {day.activeUsers.map((name, idx) => (
-                              <li
-                                key={idx}
-                                className="truncate text-xs text-gray-600 flex items-center gap-1.5"
-                              >
-                                <div className="w-1 h-1 rounded-full bg-green-500" />
-                                {name}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-xs text-gray-500 italic">
-                            Žiadni používatelia
-                          </p>
-                        )}
-                      </div>
-                      <Tooltip.Arrow className="fill-white" />
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
+                <div
+                  key={i}
+                  className={`flex flex-1 flex-col items-center gap-1 cursor-pointer group ${selectedBarIndex === i ? "z-10" : ""}`}
+                  onClick={() => setSelectedBarIndex(selectedBarIndex === i ? null : i)}
+                >
+                  <span className="text-[10px] font-bold text-violet-600 mb-0.5">
+                    {day.count > 0 ? day.count : ""}
+                  </span>
+                  <div
+                    className={`w-full rounded-t transition-all ${selectedBarIndex === i ? "bg-gradient-to-t from-violet-600 to-violet-500 ring-2 ring-violet-300" : "bg-gradient-to-t from-violet-500 to-violet-400 group-hover:from-violet-600 group-hover:to-violet-500"}`}
+                    style={{
+                      height: `${(day.count / maxDailyUsers) * 100}%`,
+                      minHeight: day.count > 0 ? "4px" : "0px",
+                    }}
+                  />
+                  <span className="text-[10px] text-muted-foreground">
+                    {new Date(day.date).getDate()}
+                  </span>
+                </div>
               ))}
             </div>
-          </Tooltip.Provider>
+            {/* Click-based popover for selected bar */}
+            {selectedBarIndex !== null && (() => {
+              const day = data.dailyActiveUsers.slice(-14)[selectedBarIndex];
+              if (!day) return null;
+              return (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-50 w-56 rounded-xl shadow-xl bg-white/95 backdrop-blur-md border border-gray-100 p-3 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between border-b pb-2 mb-2">
+                    <span className="font-semibold text-sm">
+                      {new Date(day.date).toLocaleDateString("sk-SK", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-violet-600 font-bold bg-violet-50 px-2 py-0.5 rounded-full text-xs">
+                        {day.count} <Users className="inline w-3 h-3 ml-0.5" />
+                      </span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedBarIndex(null); }}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  {day.activeUsers && day.activeUsers.length > 0 ? (
+                    <ul className="max-h-32 overflow-y-auto space-y-1 pr-2 scrollbar-thin scrollbar-thumb-gray-200">
+                      {day.activeUsers.map((name, idx) => (
+                        <li
+                          key={idx}
+                          className="truncate text-xs text-gray-600 flex items-center gap-1.5"
+                        >
+                          <div className="w-1 h-1 rounded-full bg-green-500" />
+                          {name}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-gray-500 italic">
+                      Žiadni používatelia
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
         </div>
 
         {/* Subscription Distribution */}
@@ -722,6 +803,248 @@ export default function AnalyticsTab() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+      </div>
+
+      {/* ──── Chat with Rivo Analytics ──── */}
+      <div className="rounded-xl border-2 border-violet-200 bg-gradient-to-br from-violet-50/50 to-white p-5 shadow-sm mt-6">
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="rounded-lg bg-violet-100 p-2">
+              <MessageCircle className="h-5 w-5 text-violet-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Chat s Rivom</h3>
+              <p className="text-xs text-muted-foreground">Beta — posledných 30 dní</p>
+            </div>
+          </div>
+          <Button
+            onClick={fetchChatAnalytics}
+            variant="outline"
+            size="sm"
+            disabled={isChatLoading}
+          >
+            <RefreshCw className={`mr-1 h-3 w-3 ${isChatLoading ? "animate-spin" : ""}`} />
+            Obnoviť
+          </Button>
+        </div>
+
+        {isChatLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : !chatData ? (
+          <p className="text-center text-muted-foreground py-8 italic">
+            Nie je možné načítať dáta chatu.
+          </p>
+        ) : (
+          <div className="space-y-5">
+            {/* Chat overview cards */}
+            <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-lg border bg-white p-3.5">
+                <p className="text-xs text-muted-foreground">Správy dnes</p>
+                <p className="text-xl font-bold text-violet-600">{chatData.overview.messagestoday}</p>
+              </div>
+              <div className="rounded-lg border bg-white p-3.5">
+                <p className="text-xs text-muted-foreground">Správy (30d)</p>
+                <p className="text-xl font-bold">{chatData.overview.totalMessages}</p>
+              </div>
+              <div className="rounded-lg border bg-white p-3.5">
+                <p className="text-xs text-muted-foreground">Sessions (30d)</p>
+                <p className="text-xl font-bold">{chatData.overview.totalSessions}</p>
+              </div>
+              <div className="rounded-lg border bg-white p-3.5">
+                <p className="text-xs text-muted-foreground">Unikátni useri</p>
+                <p className="text-xl font-bold">{chatData.overview.uniqueUsers}</p>
+              </div>
+            </div>
+
+            {/* Daily messages chart */}
+            {chatData.dailyMessages.length > 0 && (
+              <div className="rounded-lg border bg-white p-4">
+                <h4 className="text-sm font-semibold mb-3">Správy za deň</h4>
+                <div className="flex h-36 items-end gap-1">
+                  {chatData.dailyMessages.slice(-14).map((day, i) => {
+                    const maxMsgs = Math.max(...chatData.dailyMessages.slice(-14).map(d => d.messageCount), 1);
+                    return (
+                      <div key={i} className="flex flex-1 flex-col items-center gap-1 group">
+                        <span className="text-[10px] font-bold text-violet-600">
+                          {day.messageCount > 0 ? day.messageCount : ""}
+                        </span>
+                        <div
+                          className="w-full rounded-t bg-gradient-to-t from-violet-500 to-pink-400 transition-all group-hover:from-violet-600 group-hover:to-pink-500"
+                          style={{
+                            height: `${(day.messageCount / maxMsgs) * 100}%`,
+                            minHeight: day.messageCount > 0 ? "4px" : "0px",
+                          }}
+                        />
+                        <span className="text-[9px] text-muted-foreground">
+                          {new Date(day.date).getDate()}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Top users */}
+            {chatData.topUsers.length > 0 && (
+              <div className="rounded-lg border bg-white p-4">
+                <div
+                  className="flex items-center justify-between cursor-pointer"
+                  onClick={() => setChatUsersExpanded(!chatUsersExpanded)}
+                >
+                  <h4 className="text-sm font-semibold">Kto chatoval</h4>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{chatData.topUsers.length} používateľov</span>
+                    {chatUsersExpanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
+                  </div>
+                </div>
+                {chatUsersExpanded && (
+                  <div className="mt-3 max-h-60 overflow-auto">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-white shadow-sm text-xs text-gray-500">
+                        <tr className="border-b text-left">
+                          <th className="pb-2 font-medium">Meno</th>
+                          <th className="pb-2 font-medium text-center">Správy</th>
+                          <th className="pb-2 font-medium text-center">Sessions</th>
+                          <th className="pb-2 font-medium text-right">Posledná aktivita</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {chatData.topUsers.map((user) => (
+                          <tr key={user.userProfileId} className="border-b border-gray-50 hover:bg-gray-50/50">
+                            <td className="py-2 font-medium text-gray-900">{user.fullName || "Neznámy"}</td>
+                            <td className="py-2 text-center">
+                              <span className="bg-violet-50 text-violet-700 font-semibold px-2 py-0.5 rounded-full text-xs">
+                                {user.messageCount}
+                              </span>
+                            </td>
+                            <td className="py-2 text-center text-gray-600">{user.sessionCount}</td>
+                            <td className="py-2 text-right text-xs text-muted-foreground">
+                              {new Date(user.lastActive).toLocaleString("sk-SK", {
+                                day: "numeric",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Recent sessions with view option */}
+            {chatData.recentSessions.length > 0 && (
+              <div className="rounded-lg border bg-white p-4">
+                <h4 className="text-sm font-semibold mb-3">Posledné konverzácie</h4>
+                <div className="max-h-80 overflow-auto space-y-2">
+                  {chatData.recentSessions.map((session) => (
+                    <div key={session.sessionId} className="border rounded-lg p-3 hover:bg-gray-50/50 transition-colors">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-sm text-gray-900">{session.fullName || "Neznámy"}</span>
+                            <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
+                              {session.messageCount} správ
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 truncate">
+                            {session.firstMessage
+                              ? (session.firstMessage.length > 100
+                                ? session.firstMessage.slice(0, 100) + "..."
+                                : session.firstMessage)
+                              : "Žiadna správa"}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground mt-1">
+                            {new Date(session.startedAt).toLocaleString("sk-SK", {
+                              day: "numeric",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-violet-600 hover:bg-violet-50 shrink-0"
+                          onClick={() => fetchSessionMessages(session.sessionId)}
+                        >
+                          <Eye className="h-3.5 w-3.5 mr-1" />
+                          <span className="text-xs">Zobraziť</span>
+                        </Button>
+                      </div>
+
+                      {/* Inline session viewer */}
+                      {viewingSession === session.sessionId && (
+                        <div className="mt-3 border-t pt-3 animate-in slide-in-from-top-2 fade-in">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-semibold text-violet-600">Konverzácia</span>
+                            <button
+                              onClick={() => { setViewingSession(null); setSessionMessages([]); }}
+                              className="text-gray-400 hover:text-gray-600"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          {isLoadingMessages ? (
+                            <div className="flex justify-center py-4">
+                              <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                            </div>
+                          ) : sessionMessages.length === 0 ? (
+                            <p className="text-xs text-gray-500 italic py-2">Žiadne správy</p>
+                          ) : (
+                            <div className="max-h-96 overflow-y-auto space-y-2 pr-1">
+                              {sessionMessages.map((msg) => (
+                                <div
+                                  key={msg.id}
+                                  className={`rounded-lg px-3 py-2 text-sm ${
+                                    msg.role === "user"
+                                      ? "bg-violet-50 text-gray-900 ml-8"
+                                      : "bg-gray-100 text-gray-800 mr-8"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-1.5 mb-1">
+                                    <span className={`text-[10px] font-bold uppercase ${msg.role === "user" ? "text-violet-500" : "text-gray-500"}`}>
+                                      {msg.role === "user" ? "Používateľ" : "Rivo"}
+                                    </span>
+                                    {msg.intent && (
+                                      <span className="text-[9px] bg-white/60 text-gray-500 px-1 py-0.5 rounded">
+                                        {msg.intent}
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] text-gray-400 ml-auto">
+                                      {new Date(msg.createdAt).toLocaleTimeString("sk-SK", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </span>
+                                  </div>
+                                  <p className="whitespace-pre-wrap text-xs leading-relaxed">{msg.content}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {chatData.overview.totalMessages === 0 && (
+              <p className="text-center text-muted-foreground py-8 italic">
+                Zatiaľ žiadne konverzácie s Rivom.
+              </p>
+            )}
           </div>
         )}
       </div>

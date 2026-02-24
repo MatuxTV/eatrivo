@@ -4,7 +4,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { Quicksand } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-import { Analytics } from "@vercel/analytics/next";
+import { ConditionalAnalytics } from "@/components/ConditionalAnalytics";
+import { CookieConsentBanner } from "@/components/CookieConsent";
 import { defaultLocale } from "@/i18n/routing";
 
 const quicksand = Quicksand({
@@ -124,7 +125,8 @@ export default async function RootLayout({
         <Providers>
           <NextIntlClientProvider locale={locale} messages={messages}>
             {children}
-            <Analytics />
+            <ConditionalAnalytics />
+            <CookieConsentBanner />
           </NextIntlClientProvider>
         </Providers>
       </body>

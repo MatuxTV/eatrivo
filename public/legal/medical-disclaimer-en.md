@@ -110,4 +110,4 @@ By using the EatRivo application, you confirm that:
 
 ---
 
-_Last updated: [INSERT DATE]_
+_Last updated: 22.2.2026_

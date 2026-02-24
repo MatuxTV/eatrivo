@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { getLocaleFromPathname } from "@/i18n/routing";
+import { reopenCookieConsent } from "@/components/CookieConsent";
 
 export function Footer() {
   const t = useTranslations("landing");
@@ -27,6 +28,9 @@ export function Footer() {
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
               {t("footer.about")}
+            </p>
+            <p className="text-gray-500 text-xs mt-3">
+              {t("footer.companyInfo")}
             </p>
           </div>
 
@@ -68,28 +72,12 @@ export function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 hover:text-white text-sm transition-colors"
-                >
-                  {t("footer.aboutUs")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 hover:text-white text-sm transition-colors"
-                >
-                  {t("footer.blog")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
+                <a
+                  href="mailto:info@valorixdigital.com"
                   className="text-gray-400 hover:text-white text-sm transition-colors"
                 >
                   {t("footer.contact")}
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -117,14 +105,53 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  href={`/${locale}/cookie-policy`}
+                  className="text-gray-400 hover:text-white text-sm transition-colors"
+                >
+                  {t("footer.cookiePolicy")}
+                </Link>
+              </li>
+              <li>
+                <Link
                   href={`/${locale}/medical-disclaimer`}
                   className="text-gray-400 hover:text-white text-sm transition-colors"
                 >
                   {t("footer.medicalDisclaimer")}
                 </Link>
               </li>
+              <li>
+                <Link
+                  href={`/${locale}/terms-of-service#complaints`}
+                  className="text-gray-400 hover:text-white text-sm transition-colors"
+                >
+                  {t("footer.complaints")}
+                </Link>
+              </li>
+              <li>
+                <button
+                  onClick={reopenCookieConsent}
+                  className="text-gray-400 hover:text-white text-sm transition-colors text-left"
+                >
+                  {t("footer.cookieSettings")}
+                </button>
+              </li>
             </ul>
           </div>
+        </div>
+
+        {/* ODR Platform */}
+        <div className="border-t border-gray-800 pt-6 pb-4">
+          <p className="text-gray-500 text-xs leading-relaxed text-center">
+            {t("footer.odrInfo")}{" "}
+            <a
+              href="https://ec.europa.eu/consumers/odr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white underline"
+            >
+              https://ec.europa.eu/consumers/odr
+            </a>
+          </p>
         </div>
 
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">

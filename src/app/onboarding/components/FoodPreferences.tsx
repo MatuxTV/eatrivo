@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,7 @@ import {
   userFoodPreferencesSchema,
   type UserFoodPreferences,
 } from "@/lib/schemas/user";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Utensils,
   Activity,
@@ -47,11 +48,19 @@ import {
   Scale,
   Ruler,
   ChefHat,
+  ShieldCheck,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import Link from "next/link";
+
+export interface OnboardingConsents {
+  termsAndPrivacy: boolean;
+  medicalDisclaimer: boolean;
+  healthDataProcessing: boolean;
+}
 
 interface FoodPreferencesProps {
-  onComplete: (data: UserFoodPreferences) => void;
+  onComplete: (data: UserFoodPreferences, consents: OnboardingConsents) => void;
   onPrevious: () => void;
   isLoading: boolean;
 }
@@ -62,6 +71,20 @@ export default function FoodPreferences({
   isLoading,
 }: FoodPreferencesProps) {
   const t = useTranslations("onboarding");
+  const locale = useLocale();
+
+  // Consent state
+  const [consents, setConsents] = useState<OnboardingConsents>({
+    termsAndPrivacy: false,
+    medicalDisclaimer: false,
+    healthDataProcessing: false,
+  });
+  const [showConsentError, setShowConsentError] = useState(false);
+
+  const allConsentsGiven =
+    consents.termsAndPrivacy &&
+    consents.medicalDisclaimer &&
+    consents.healthDataProcessing;
 
   const form = useForm<UserFoodPreferences>({
     resolver: zodResolver(userFoodPreferencesSchema),
@@ -85,7 +108,12 @@ export default function FoodPreferences({
   });
 
   const onSubmit = async (data: UserFoodPreferences) => {
-    onComplete(data);
+    if (!allConsentsGiven) {
+      setShowConsentError(true);
+      return;
+    }
+    setShowConsentError(false);
+    onComplete(data, consents);
   };
 
   const inputClasses =
@@ -655,6 +683,111 @@ export default function FoodPreferences({
                     </FormItem>
                   )}
                 />
+              </div>
+
+              {/* Legal Consents */}
+              <div className="border-t border-gray-100 pt-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <ShieldCheck className="w-5 h-5 text-eatrivo-purple" />
+                  <h3 className="text-base font-semibold text-gray-900">
+                    {t("consents.title")}
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  {t("consents.description")}
+                </p>
+
+                <div className="space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl border border-gray-100 hover:border-eatrivo-purple/20 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={consents.termsAndPrivacy}
+                      onChange={(e) => {
+                        setConsents((prev) => ({
+                          ...prev,
+                          termsAndPrivacy: e.target.checked,
+                        }));
+                        if (e.target.checked) setShowConsentError(false);
+                      }}
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-eatrivo-purple flex-shrink-0"
+                    />
+                    <span className="text-sm text-gray-700 leading-relaxed">
+                      {t("consents.termsAndPrivacy.label")}{" "}
+                      <Link
+                        href={`/${locale}/terms-of-service`}
+                        target="_blank"
+                        className="text-eatrivo-purple underline hover:text-eatrivo-purple/80"
+                      >
+                        {t("consents.termsAndPrivacy.termsLink")}
+                      </Link>{" "}
+                      {t("consents.termsAndPrivacy.and")}{" "}
+                      <Link
+                        href={`/${locale}/privacy-policy`}
+                        target="_blank"
+                        className="text-eatrivo-purple underline hover:text-eatrivo-purple/80"
+                      >
+                        {t("consents.termsAndPrivacy.privacyLink")}
+                      </Link>
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl border border-gray-100 hover:border-eatrivo-purple/20 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={consents.medicalDisclaimer}
+                      onChange={(e) => {
+                        setConsents((prev) => ({
+                          ...prev,
+                          medicalDisclaimer: e.target.checked,
+                        }));
+                        if (e.target.checked) setShowConsentError(false);
+                      }}
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-eatrivo-purple flex-shrink-0"
+                    />
+                    <span className="text-sm text-gray-700 leading-relaxed">
+                      {t("consents.medicalDisclaimer.label")}{" "}
+                      <Link
+                        href={`/${locale}/medical-disclaimer`}
+                        target="_blank"
+                        className="text-eatrivo-purple underline hover:text-eatrivo-purple/80"
+                      >
+                        {t("consents.medicalDisclaimer.link")}
+                      </Link>
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl border border-gray-100 hover:border-eatrivo-purple/20 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={consents.healthDataProcessing}
+                      onChange={(e) => {
+                        setConsents((prev) => ({
+                          ...prev,
+                          healthDataProcessing: e.target.checked,
+                        }));
+                        if (e.target.checked) setShowConsentError(false);
+                      }}
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-eatrivo-purple flex-shrink-0"
+                    />
+                    <span className="text-sm text-gray-700 leading-relaxed">
+                      {t("consents.healthData.label")}
+                    </span>
+                  </label>
+                </div>
+
+                <AnimatePresence>
+                  {showConsentError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      className="mt-3 flex items-center gap-2 text-sm text-red-600"
+                    >
+                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                      <span>{t("consents.mustAgree")}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Buttons */}

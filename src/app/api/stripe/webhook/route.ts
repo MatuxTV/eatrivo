@@ -14,6 +14,7 @@ import {
 import { eq } from "drizzle-orm";
 import { Analytics } from "@/lib/analytics";
 import { CacheService } from "@/lib/redis";
+import { sendRenewalReminderEmail } from "@/lib/emailService";
 
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
@@ -74,6 +75,12 @@ export async function POST(req: NextRequest) {
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         await handlePaymentFailed(invoice);
+        break;
+      }
+
+      case "invoice.upcoming": {
+        const invoice = event.data.object as Stripe.Invoice;
+        await handleInvoiceUpcoming(invoice);
         break;
       }
 
@@ -548,5 +555,92 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
           : null,
       })
       .onConflictDoNothing();
+  }
+}
+
+/**
+ * Handle upcoming invoice — send renewal reminder email
+ * EU consumer protection: notify user before auto-renewal
+ * (§ 4 ods. 6 zákona č. 108/2024 Z.z.)
+ */
+async function handleInvoiceUpcoming(invoice: Stripe.Invoice) {
+  const customerId = invoice.customer as string;
+  const rawInvoice = invoice as unknown as { subscription: string | null };
+  const subscriptionId = rawInvoice.subscription;
+
+  if (!subscriptionId) {
+    // One-time invoices don't need renewal reminders
+    return;
+  }
+
+  // Find user by Stripe customer ID
+  const user = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      membership: users.membership,
+    })
+    .from(users)
+    .where(eq(users.stripeCustomerId, customerId))
+    .limit(1);
+
+  if (!user.length || !user[0].email) {
+    console.error("User not found for renewal reminder, customer:", customerId);
+    return;
+  }
+
+  const { name, email, membership } = user[0];
+
+  // Get subscription details for the plan name
+  const planName =
+    membership === "pro"
+      ? "Eatrivo Pro"
+      : membership === "premium"
+        ? "Eatrivo Premium"
+        : "Eatrivo";
+
+  // Format renewal date from the invoice period end
+  const periodEnd = invoice.period_end
+    ? new Date(invoice.period_end * 1000)
+    : null;
+
+  const renewalDate = periodEnd
+    ? periodEnd.toLocaleDateString("sk-SK", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "N/A";
+
+  // Format amount (Stripe amounts are in cents)
+  const amount = (invoice.amount_due / 100).toFixed(2);
+  const currency = invoice.currency || "eur";
+
+  try {
+    const result = await sendRenewalReminderEmail(
+      email,
+      {
+        userName: name || email,
+        planName,
+        renewalDate,
+        amount,
+        currency,
+      },
+      "sk", // Default to SK locale for Slovak B2C users
+    );
+
+    if (result.success) {
+      console.warn(
+        `[Webhook] Renewal reminder sent to ${email} for subscription ${subscriptionId}`,
+      );
+    } else {
+      console.error(
+        `[Webhook] Failed to send renewal reminder: ${result.error}`,
+      );
+    }
+  } catch (error) {
+    console.error("Error sending renewal reminder email:", error);
+    // Don't throw — this is a non-critical notification
   }
 }
