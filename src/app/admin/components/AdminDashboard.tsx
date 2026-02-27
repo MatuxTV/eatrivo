@@ -24,7 +24,7 @@ import UsersTab from "./tabs/UsersTab";
 import ProfilesTab from "./tabs/ProfilesTab";
 import EmailsTab from "./tabs/EmailsTab";
 import ShoppingListTab from "./tabs/ShoppingListTab";
-import TemplatesTab from "./tabs/TemplatesTab";
+// import TemplatesTab from "./tabs/TemplatesTab";
 import AnalyticsTab from "./tabs/AnalyticsTab";
 import NotificationsTab from "./tabs/NotificationsTab";
 
@@ -721,6 +721,7 @@ export default function AdminDashboard() {
             </motion.div>
           )}
 
+          {/* Templates tab - creation disabled
           {activeTab === "templates" && (
             <motion.div
               key="templates"
@@ -733,6 +734,7 @@ export default function AdminDashboard() {
               <TemplatesTab />
             </motion.div>
           )}
+          */}
         </AnimatePresence>
       </div>
     </div>

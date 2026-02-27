@@ -1087,6 +1087,9 @@
       }
     },
     "notifications": {
+      "title": "Stay in the loop",
+      "bannerDescription": "Enable notifications and never miss a new meal plan 🔔",
+      "close": "Close",
       "enable": "Enable notifications",
       "disable": "Disable notifications",
       "loginRequired": "You must be logged in",

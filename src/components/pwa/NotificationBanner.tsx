@@ -87,7 +87,7 @@ export function NotificationBanner() {
                 {t("title")}
               </p>
               <p className="text-xs text-gray-500 mt-0.5 leading-snug line-clamp-2">
-                Zapni notifikácie a nezmeškaj nový jedálniček 🔔
+                {t("bannerDescription")}
               </p>
             </div>
 
@@ -103,7 +103,7 @@ export function NotificationBanner() {
               <button
                 onClick={dismiss}
                 className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Zavrieť"
+                aria-label={t("close")}
               >
                 <X className="w-4 h-4" />
               </button>

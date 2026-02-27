@@ -1089,6 +1089,8 @@
     "notifications": {
       "title": "Push Notifikácie",
       "description": "Zostaňte informovaní o nových nákupných zoznamoch a aktualizáciách",
+      "bannerDescription": "Zapni notifikácie a nezmeškaj nový jedálniček 🔔",
+      "close": "Zavrieť",
       "enable": "Zapnúť notifikácie",
       "disable": "Vypnúť notifikácie",
       "loginRequired": "Musíte byť prihlásený",
