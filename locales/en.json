@@ -1036,6 +1036,7 @@
       "fillAllFields": "Please fill in all fields",
       "submitFailed": "Failed to submit feedback"
     },
+    "contactInfo": "You can also reach us directly at",
     "types": {
       "bug": {
         "label": "Bug / Error",

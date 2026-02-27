@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { ChefHat, ShoppingCart, Sparkles } from "lucide-react";
 import ReceiptCard from "@/components/dashboard/ReceiptCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,6 +8,12 @@ import type { Ingredient } from "@/types/meal-plan";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import Image from "next/image";
+
+const LOADER_KEYS = [
+  "shoppingLists.createNew.loader.scanning",
+  "shoppingLists.createNew.loader.optimizing",
+  "shoppingLists.createNew.loader.finishing",
+] as const;
 
 const fadeIn = {
   initial: { opacity: 0, y: 12 },
@@ -49,6 +56,15 @@ export default function DailyMealPlan({
 }: DailyMealPlanProps) {
   const t = useTranslations("dashboard");
   const shouldReduceMotion = useReducedMotion();
+  const [loaderIndex, setLoaderIndex] = useState(0);
+
+  useEffect(() => {
+    if (!isGeneratingList) { setLoaderIndex(0); return; }
+    const interval = setInterval(() => {
+      setLoaderIndex((prev) => (prev + 1) % LOADER_KEYS.length);
+    }, 2800);
+    return () => clearInterval(interval);
+  }, [isGeneratingList]);
 
   return (
     <AnimatePresence mode="wait">
@@ -188,11 +204,20 @@ export default function DailyMealPlan({
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             />
-            <p className="text-base font-bold text-gray-900 mb-1">
-              {t("shoppingLists.createNew.loader", {
-                defaultValue: "Scanning your pantry 🔍",
-              })}
-            </p>
+            <div className="h-7 overflow-hidden relative w-full mb-1">
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={loaderIndex}
+                  initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -15 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="text-base font-bold text-gray-900 absolute inset-0 flex items-center justify-center"
+                >
+                  {t(LOADER_KEYS[loaderIndex])}
+                </motion.p>
+              </AnimatePresence>
+            </div>
             <p className="text-xs text-gray-500/90 max-w-[260px] mb-5 leading-relaxed font-medium">
               {t("shoppingLists.createNew.sitTight", {
                 defaultValue:

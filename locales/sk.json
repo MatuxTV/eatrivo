@@ -1036,6 +1036,7 @@
       "fillAllFields": "Prosím vyplňte všetky polia",
       "submitFailed": "Nepodarilo sa odoslať feedback"
     },
+    "contactInfo": "Môžete nás tiež kontaktovať priamo na",
     "types": {
       "bug": {
         "label": "Bug / Chyba",
