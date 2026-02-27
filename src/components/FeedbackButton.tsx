@@ -204,6 +204,19 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
             </p>
           </div>
 
+          {/* Contact info */}
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-lg border border-gray-100">
+            <span className="text-xs text-gray-500">
+              {t("contactInfo")}{" "}
+              <a
+                href="mailto:info@valorixdigital.com"
+                className="font-medium text-eatrivo-purple hover:underline"
+              >
+                info@valorixdigital.com
+              </a>
+            </span>
+          </div>
+
           {/* Actions */}
           <div className="flex gap-3 pt-4">
             <Button
