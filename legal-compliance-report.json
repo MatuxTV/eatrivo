@@ -1,0 +1,84 @@
+{
+  "timestamp": "2026-02-24T19:10:18.653Z",
+  "project": "c:\\Users\\matux\\Documents\\GitHub\\eatrivo",
+  "filesScanned": 220,
+  "overallRisk": "CRITICAL",
+  "counts": {
+    "CRITICAL": 4,
+    "HIGH": 2,
+    "MEDIUM": 4
+  },
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "category": "documents",
+      "message": "Chýba právny dokument: Cookie Policy",
+      "file": null,
+      "fix": "Vytvorte stránku s Cookie Policy a pridajte ju do footer-a webu"
+    },
+    {
+      "severity": "CRITICAL",
+      "category": "documents",
+      "message": "Chýba právny dokument: Reklamačný poriadok",
+      "file": null,
+      "fix": "Vytvorte stránku s Reklamačný poriadok a pridajte ju do footer-a webu"
+    },
+    {
+      "severity": "CRITICAL",
+      "category": "cookies",
+      "message": "Google Analytics/GTM sa načítava bez cookie consent kontroly",
+      "file": "next.config.ts",
+      "fix": "Implementujte Google Consent Mode v2 a blokujte GA pred udelením súhlasu"
+    },
+    {
+      "severity": "CRITICAL",
+      "category": "cookies",
+      "message": "Nebola nájdená implementácia cookie consent banneru",
+      "file": null,
+      "fix": "Implementujte cookie consent banner (napr. Cookiebot, OneTrust, CookieYes, alebo vlastný)"
+    },
+    {
+      "severity": "HIGH",
+      "category": "cookies",
+      "message": "Google Consent Mode v2 nebol detekovaný",
+      "file": null,
+      "fix": "Implementujte Google Consent Mode v2 pre compliance s EÚ požiadavkami"
+    },
+    {
+      "severity": "HIGH",
+      "category": "checkout",
+      "message": "Chýba checkbox \"Oboznámil som sa s VOP\" v checkout procese",
+      "file": null,
+      "fix": "Pridajte povinný checkbox s odkazom na VOP pred tlačidlom objednávky"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "gdpr",
+      "message": "Newsletter nemá implementovaný double opt-in",
+      "file": "src\\app\\admin\\components\\tabs\\AnalyticsTab.tsx",
+      "fix": "Implementujte double opt-in pre newsletter (potvrdenie cez e-mail)"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "gdpr",
+      "message": "Newsletter nemá implementovaný double opt-in",
+      "file": "src\\components\\pwa\\PushNotificationToggle.tsx",
+      "fix": "Implementujte double opt-in pre newsletter (potvrdenie cez e-mail)"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "gdpr",
+      "message": "Newsletter nemá implementovaný double opt-in",
+      "file": "src\\lib\\analytics.ts",
+      "fix": "Implementujte double opt-in pre newsletter (potvrdenie cez e-mail)"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "gdpr",
+      "message": "Newsletter nemá implementovaný double opt-in",
+      "file": "src\\lib\\pwa\\pushNotifications.ts",
+      "fix": "Implementujte double opt-in pre newsletter (potvrdenie cez e-mail)"
+    }
+  ],
+  "disclaimer": "Tento report NIE JE právne poradenstvo. Pre finálne dokumenty konzultujte advokáta."
+}

@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '../../../../../auth';
 import { db } from '@/index';
-import { pushSubscriptions } from '@/db/schema';
+import { pushSubscriptions, consentLogs } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { apiLogger } from '@/lib/logger';
 import { checkRateLimit } from '@/lib/rateLimit';
@@ -67,6 +67,21 @@ export async function POST(request: NextRequest) {
       
       apiLogger.info('Created new push subscription', { metadata: { userId: session.user.id } });
     }
+
+    // Log push notification consent for GDPR audit trail
+    const ipAddress =
+      request.headers.get('x-forwarded-for')?.split(',')[0] ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
+
+    await db.insert(consentLogs).values({
+      userId: session.user.id,
+      type: 'push_notifications',
+      agreed: true,
+      ipAddress: ipAddress,
+      userAgent: userAgent || 'unknown',
+      documentVersion: 'v1.0',
+    });
 
     return NextResponse.json(
       { success: true, message: 'Subscription saved successfully' },

@@ -59,6 +59,7 @@ export const consentTypeEnum = pgEnum("consent_type", [
   "terms_and_privacy",
   "medical_disclaimer",
   "health_data_processing",
+  "push_notifications",
 ]);
 
 export const badgeTypeEnum = pgEnum("badge_type", ["legacy"]);

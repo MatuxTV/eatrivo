@@ -9,9 +9,11 @@
 
 ### 1.1 Prevádzkovateľ služby
 
-Sídlo: Nad plážou 4419/25,97401,Banská Bystrica
+Sídlo: Nad plážou 4419/25, 974 01 Banská Bystrica
 IČO: 56024665
+DIČ: 2122162493
 Email: info@valorixdigital.com
+Telefón: +421 944 488 206
 
 (ďalej len „EatRivo" alebo „poskytovateľ")
 
@@ -95,7 +97,7 @@ Predplatné môžete kedykoľvek zrušiť:
 
 - Priamo v aplikácii v sekcii „Fakturácia"
 - Prostredníctvom zákazníckeho portálu Stripe
-- Kontaktovaním našej podpory na [DOPLNIŤ EMAIL]
+- Kontaktovaním našej podpory na info@valorixdigital.com
 
 ### 5.2 Účinok zrušenia
 
@@ -109,7 +111,7 @@ Predplatné môžete kedykoľvek zrušiť:
 
 ### 6.1 Digitálny obsah
 
-Podľa § 7 ods. 6 písm. l) zákona č. 102/2014 Z. z. o ochrane spotrebiteľa pri predaji tovaru alebo poskytovaní služieb na základe zmluvy uzavretej na diaľku:
+Podľa § 19-21 zákona č. 108/2024 Z. z. o ochrane spotrebiteľa:
 
 > **Spotrebiteľ nemôže odstúpiť od zmluvy, ktorej predmetom je poskytovanie elektronického obsahu inak ako na hmotnom nosiči, ak sa jeho poskytovanie začalo s výslovným súhlasom spotrebiteľa a spotrebiteľ vyhlásil, že bol riadne poučený o tom, že vyjadrením tohto súhlasu stráca právo na odstúpenie od zmluvy.**
 
@@ -119,6 +121,10 @@ Pri zakúpení predplatného potvrdzujete:
 
 - Že súhlasíte s okamžitým poskytnutím digitálneho obsahu
 - Že beriete na vedomie stratu práva na odstúpenie od zmluvy do 14 dní
+
+### 6.3 Formulár na odstúpenie od zmluvy
+
+Vzorový formulár na odstúpenie od zmluvy je prílohou týchto VOP a je dostupný na: [Formulár na odstúpenie od zmluvy](/sk/withdrawal-form)
 
 ---
 
@@ -147,6 +153,8 @@ Pri zakúpení predplatného potvrdzujete:
 
 ---
 
+<a id="complaints"></a>
+
 ## 8. Reklamačný poriadok
 
 ### 8.1 Právo na reklamáciu
@@ -162,8 +170,8 @@ Používateľ má právo reklamovať:
 
 Reklamáciu je možné podať:
 
-- **Emailom:** [DOPLNIŤ EMAIL]
-- **Písomne:** [DOPLNIŤ ADRESU]
+- **Emailom:** info@valorixdigital.com
+- **Písomne:** Nad plážou 4419/25, 974 01 Banská Bystrica
 - **Prostredníctvom aplikácie:** Sekcia „Podpora"
 
 Reklamácia musí obsahovať:
@@ -266,13 +274,13 @@ Web: [soi.sk](https://www.soi.sk)
 
 ## 13. Záverečné ustanovenia
 
-- Tieto VOP nadobúdajú účinnosť dňom [DOPLNIŤ DÁTUM]
+- Tieto VOP nadobúdajú účinnosť dňom 22.2.2026
 - Neplatnosť jednotlivého ustanovenia neovplyvňuje platnosť ostatných ustanovení
 
 ---
 
 ## 14. Kontakt
 
-**Email:** [DOPLNIŤ EMAIL]  
-**Adresa:** [DOPLNIŤ ADRESU]  
-**Podpora:** [DOPLNIŤ KONTAKT]
+**Email:** info@valorixdigital.com  
+**Adresa:** Nad plážou 4419/25, 974 01 Banská Bystrica  
+**Telefón:** +421 944 488 206

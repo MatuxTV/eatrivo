@@ -17,6 +17,7 @@ interface PricingCardProps {
   onSelect?: () => void;
   disabled?: boolean;
   trialDays?: number;
+  ctaOverride?: string;
 }
 
 export function PricingCard({
@@ -28,6 +29,7 @@ export function PricingCard({
   onSelect,
   disabled = false,
   trialDays,
+  ctaOverride,
 }: PricingCardProps) {
   const [loading, setLoading] = useState(false);
   const t = useTranslations("pricing");
@@ -238,7 +240,7 @@ export function PricingCard({
             ? t("currentPlan")
             : tier === "basic"
               ? t("getStarted")
-              : `${t("upgrade")} ${tierName}`}
+              : ctaOverride || `${t("upgrade")} ${tierName}`}
         </Button>
       </div>
     </motion.div>

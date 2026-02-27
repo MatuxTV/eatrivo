@@ -9,9 +9,11 @@
 
 The controller of personal data is:
 
-Address: Nad plážou 4419/25,97401,Banská Bystrica
-Company ID: 56024665
+Address: Nad plážou 4419/25, 974 01 Banská Bystrica, Slovakia
+Company ID (IČO): 56024665
+Tax ID (DIČ): 2122162493
 Email: info@valorixdigital.com
+Phone: +421 944 488 206
 
 (hereinafter referred to as "EatRivo", "we", or "controller")
 
@@ -60,7 +62,9 @@ We work with the following service providers:
 
 - **Purpose:** Payment transaction processing
 - **Data transferred:** Payment details (card numbers processed directly by Stripe)
-- **Location:** USA (certified under EU-US Data Privacy Framework)
+- **Location:** USA
+- **Transfer mechanism:** Certified under EU-US Data Privacy Framework (DPF)
+- **DPF Certification:** [dataprivacyframework.gov](https://www.dataprivacyframework.gov/list)
 - **Privacy Policy:** [stripe.com/privacy](https://stripe.com/privacy)
 
 ### 4.2 OpenAI, LLC
@@ -68,17 +72,28 @@ We work with the following service providers:
 - **Purpose:** AI-powered personalized meal plan generation
 - **Data transferred:** Anonymized dietary preferences (not directly linked to your identity)
 - **Location:** USA
+- **Transfer mechanism:** Standard Contractual Clauses (SCC) pursuant to European Commission Decision 2021/914
 - **Privacy Policy:** [openai.com/privacy](https://openai.com/privacy)
 
 ### 4.3 Vercel, Inc.
 
-- **Purpose:** Web application hosting
-- **Location:** USA (certified under EU-US Data Privacy Framework)
+- **Purpose:** Web application hosting and analytics
+- **Location:** USA
+- **Transfer mechanism:** Certified under EU-US Data Privacy Framework (DPF), supplemented by Standard Contractual Clauses (SCC)
+- **DPF Certification:** [dataprivacyframework.gov](https://www.dataprivacyframework.gov/list)
 
 ### 4.4 Railway Corporation
 
 - **Purpose:** Database and backend services hosting
 - **Location:** USA
+- **Transfer mechanism:** Standard Contractual Clauses (SCC) pursuant to European Commission Decision 2021/914
+
+### 4.5 Resend, Inc.
+
+- **Purpose:** Transactional email delivery (welcome emails, notifications)
+- **Data transferred:** Email address, user name
+- **Location:** USA
+- **Transfer mechanism:** Standard Contractual Clauses (SCC)
 
 ---
 
@@ -107,7 +122,7 @@ Under GDPR, you have the following rights:
 
 ### How to Exercise Your Rights
 
-Contact us at: **[INSERT EMAIL]**
+Contact us at: **info@valorixdigital.com**
 
 We will respond to your request within 30 days.
 
@@ -126,10 +141,11 @@ We implement appropriate technical and organizational measures:
 
 ## 8. Data Transfer Outside EU
 
-Some of our service providers are located in the USA. Data transfer is secured by:
+Some of our service providers are located in the USA. We ensure that all data transfers comply with GDPR Chapter V requirements through the following mechanisms:
 
-- EU-US Data Privacy Framework (Stripe, Vercel)
-- Standard Contractual Clauses (SCC)
+- **EU-US Data Privacy Framework (DPF):** Stripe, Inc. and Vercel, Inc. are certified under the EU-US Data Privacy Framework, as recognized by European Commission Adequacy Decision C(2023) 4745 of 10 July 2023.
+- **Standard Contractual Clauses (SCC):** For providers not certified under DPF (OpenAI, Railway, Resend), we rely on Standard Contractual Clauses adopted by the European Commission pursuant to Decision 2021/914.
+- **Additional safeguards:** We implement supplementary measures including data minimization, anonymization where possible, and encryption in transit.
 
 ---
 
@@ -165,5 +181,5 @@ Web: [dataprotection.gov.sk](https://dataprotection.gov.sk)
 
 For questions regarding data protection, contact us:
 
-**Email:** [INSERT EMAIL]  
-**Address:** [INSERT ADDRESS]
+**Email:** info@valorixdigital.com  
+**Address:** Nad plážou 4419/25, 974 01 Banská Bystrica, Slovakia

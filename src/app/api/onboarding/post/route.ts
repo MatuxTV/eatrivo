@@ -8,6 +8,7 @@ import { checkUserProfileExists } from "@/lib/user-utils";
 import { apiLogger } from "@/lib/logger";
 import { Analytics } from "@/lib/analytics";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { getDocumentVersion } from "@/lib/legal-versions";
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { profile, foodPreferences } = validationResult.data;
+    const { profile, foodPreferences, consents } = validationResult.data;
     const userId = session.user.id;
 
     // Insert user profile
@@ -96,69 +97,69 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    // Log GDPR consents (implicit consent given at sign-in)
+    // Log GDPR consents (explicit consent given via checkboxes)
     const ipAddress =
       request.headers.get("x-forwarded-for")?.split(",")[0] ||
       request.headers.get("x-real-ip") ||
       "unknown";
     const userAgent = request.headers.get("user-agent") || "unknown";
 
-    const consentTypes = [
-      "terms_and_privacy",
-      "medical_disclaimer",
-      "health_data_processing",
-    ] as const;
+    const consentEntries = [
+      { type: "terms_and_privacy" as const, agreed: Boolean(consents.termsAndPrivacy) },
+      { type: "medical_disclaimer" as const, agreed: Boolean(consents.medicalDisclaimer) },
+      { type: "health_data_processing" as const, agreed: Boolean(consents.healthDataProcessing) },
+    ];
 
     await db.insert(consentLogs).values(
-      consentTypes.map((type) => ({
+      consentEntries.map((entry) => ({
         userId: userId,
-        type: type,
-        agreed: true,
+        type: entry.type,
+        agreed: entry.agreed,
         ipAddress: ipAddress,
         userAgent: userAgent,
-        documentVersion: "v1.0",
+        documentVersion: getDocumentVersion(entry.type),
       })),
     );
 
-    // Template assignment for basic users during onboarding
-    const userMembership = session.user.membership?.toLowerCase() || "basic";
-    if (userMembership === "basic") {
-      try {
-        const { assignTemplateToUser } = await import(
-          "@/lib/template-assignment"
-        );
-        const assignmentResult = await assignTemplateToUser(userProfile.id);
-
-        if (assignmentResult.shoppingList) {
-          apiLogger.info("Template assigned during onboarding", {
-            metadata: {
-              userId,
-              userProfileId: userProfile.id,
-              shoppingListId: assignmentResult.shoppingList.id,
-              mealPlanId: assignmentResult.mealPlan?.id,
-              templateUsed: assignmentResult.templateUsed,
-            },
-          });
-        } else {
-          apiLogger.warn("No template assigned during onboarding", {
-            metadata: {
-              userId,
-              userProfileId: userProfile.id,
-              fallbackReason: assignmentResult.fallbackReason,
-            },
-          });
-        }
-      } catch (templateError) {
-        apiLogger.error(
-          "Template assignment failed during onboarding",
-          templateError,
-          {
-            metadata: { userId, userProfileId: userProfile.id },
-          },
-        );
-        // Don't fail onboarding - user can still use the app
-      }
-    }
+    // Template assignment for basic users during onboarding — temporarily disabled
+    // const userMembership = session.user.membership?.toLowerCase() || "basic";
+    // if (userMembership === "basic") {
+    //   try {
+    //     const { assignTemplateToUser } = await import(
+    //       "@/lib/template-assignment"
+    //     );
+    //     const assignmentResult = await assignTemplateToUser(userProfile.id);
+    //
+    //     if (assignmentResult.shoppingList) {
+    //       apiLogger.info("Template assigned during onboarding", {
+    //         metadata: {
+    //           userId,
+    //           userProfileId: userProfile.id,
+    //           shoppingListId: assignmentResult.shoppingList.id,
+    //           mealPlanId: assignmentResult.mealPlan?.id,
+    //           templateUsed: assignmentResult.templateUsed,
+    //         },
+    //       });
+    //     } else {
+    //       apiLogger.warn("No template assigned during onboarding", {
+    //         metadata: {
+    //           userId,
+    //           userProfileId: userProfile.id,
+    //           fallbackReason: assignmentResult.fallbackReason,
+    //         },
+    //       });
+    //     }
+    //   } catch (templateError) {
+    //     apiLogger.error(
+    //       "Template assignment failed during onboarding",
+    //       templateError,
+    //       {
+    //         metadata: { userId, userProfileId: userProfile.id },
+    //       },
+    //     );
+    //     // Don't fail onboarding - user can still use the app
+    //   }
+    // }
 
     // Track onboarding completion
     await Analytics.onboardingComplete(userId);

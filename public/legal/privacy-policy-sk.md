@@ -1,7 +1,7 @@
 # Zásady ochrany osobných údajov (Privacy Policy)
 
-**Dátum účinnosti:** [DOPLNIŤ DÁTUM]  
-**Posledná aktualizácia:** [DOPLNIŤ DÁTUM]
+**Dátum účinnosti:** 22.2.2026  
+**Posledná aktualizácia:** 22.2.2026
 
 ---
 
@@ -9,9 +9,11 @@
 
 Prevádzkovateľom osobných údajov je:
 
-Sídlo: Nad plážou 4419/25,97401, Banská Bystrica
+Sídlo: Nad plážou 4419/25, 974 01 Banská Bystrica
 IČO: 56024665
+DIČ: 2122162493
 Email: info@valorixdigital.com
+Telefón: +421 944 488 206
 
 (ďalej len „EatRivo", „my" alebo „prevádzkovateľ")
 
@@ -60,7 +62,9 @@ Pri poskytovaní služieb spolupracujeme s nasledujúcimi spoločnosťami:
 
 - **Účel:** Spracovanie platobných transakcií
 - **Prenos údajov:** Platobné údaje (číslo karty spracúva priamo Stripe)
-- **Sídlo:** USA (certifikovaný pod EU-US Data Privacy Framework)
+- **Sídlo:** USA
+- **Mechanizmus prenosu:** Certifikovaný pod EU-US Data Privacy Framework (DPF)
+- **DPF certifikácia:** [dataprivacyframework.gov](https://www.dataprivacyframework.gov/list)
 - **Zásady ochrany súkromia:** [stripe.com/privacy](https://stripe.com/privacy)
 
 ### 4.2 OpenAI, LLC
@@ -68,17 +72,28 @@ Pri poskytovaní služieb spolupracujeme s nasledujúcimi spoločnosťami:
 - **Účel:** Generovanie personalizovaných jedálnych plánov pomocou AI
 - **Prenos údajov:** Anonymizované stravovacie preferencie (bez priameho prepojenia na Vašu identitu)
 - **Sídlo:** USA
+- **Mechanizmus prenosu:** Štandardné zmluvné doložky (SCC) podľa rozhodnutia Európskej komisie 2021/914
 - **Zásady ochrany súkromia:** [openai.com/privacy](https://openai.com/privacy)
 
 ### 4.3 Vercel, Inc.
 
-- **Účel:** Hosting webovej aplikácie
-- **Sídlo:** USA (certifikovaný pod EU-US Data Privacy Framework)
+- **Účel:** Hosting webovej aplikácie a analytika
+- **Sídlo:** USA
+- **Mechanizmus prenosu:** Certifikovaný pod EU-US Data Privacy Framework (DPF), doplnený Štandardnými zmluvnými doložkami (SCC)
+- **DPF certifikácia:** [dataprivacyframework.gov](https://www.dataprivacyframework.gov/list)
 
 ### 4.4 Railway Corporation
 
 - **Účel:** Hosting databázy a backend služieb
 - **Sídlo:** USA
+- **Mechanizmus prenosu:** Štandardné zmluvné doložky (SCC) podľa rozhodnutia Európskej komisie 2021/914
+
+### 4.5 Resend, Inc.
+
+- **Účel:** Doručovanie transakčných emailov (uvítacie emaily, notifikácie)
+- **Prenos údajov:** Emailová adresa, meno používateľa
+- **Sídlo:** USA
+- **Mechanizmus prenosu:** Štandardné zmluvné doložky (SCC)
 
 ---
 
@@ -107,7 +122,7 @@ Podľa GDPR máte nasledujúce práva:
 
 ### Ako uplatniť svoje práva
 
-Kontaktujte nás na: **[DOPLNIŤ EMAIL]**
+Kontaktujte nás na: **info@valorixdigital.com**
 
 Na Vašu žiadosť odpovieme do 30 dní.
 
@@ -126,10 +141,11 @@ Implementujeme primerané technické a organizačné opatrenia:
 
 ## 8. Prenos údajov mimo EÚ
 
-Niektorí naši poskytovatelia služieb sídlia v USA. Prenos údajov je zabezpečený:
+Niektori naši poskytovatelia služieb sídlia v USA. Zabezpečujeme, aby všetky prenosy údajov boli v súlade s požiadavkami kapitoly V GDPR prostredníctvom nasledujúcich mechanizmov:
 
-- EU-US Data Privacy Framework (Stripe, Vercel)
-- Štandardné zmluvné doložky (SCC)
+- **EU-US Data Privacy Framework (DPF):** Stripe, Inc. a Vercel, Inc. sú certifikované pod EU-US Data Privacy Framework, uznaným rozhodnutím Európskej komisie o primeranosti C(2023) 4745 z 10. júla 2023.
+- **Štandardné zmluvné doložky (SCC):** Pre poskytovateľov, ktorí nie sú certifikovaní pod DPF (OpenAI, Railway, Resend), sa spolieha sa na Štandardné zmluvné doložky prijaté Európskou komisiou podľa rozhodnutia 2021/914.
+- **Dodatočné opatrenia:** Implementujeme doplnkové opatrenia vrátane minimalizacie údajov, anonymizácie kde je to možné a šifrovania počas prenosu.
 
 ---
 
@@ -165,5 +181,5 @@ Web: [dataprotection.gov.sk](https://dataprotection.gov.sk)
 
 S otázkami ohľadom ochrany osobných údajov nás kontaktujte:
 
-**Email:** [DOPLNIŤ EMAIL]  
-**Adresa:** [DOPLNIŤ ADRESU]
+**Email:** info@valorixdigital.com  
+**Adresa:** Nad plážou 4419/25, 974 01 Banská Bystrica

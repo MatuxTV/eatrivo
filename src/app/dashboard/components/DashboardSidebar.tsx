@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   CakeSlice,
   MessageCircleHeart,
+  ChefHat,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
@@ -18,9 +19,9 @@ import { useTranslations } from "next-intl";
 import { UserBadge } from "@/components/ui/UserBadge";
 
 interface DashboardSidebarProps {
-  activeSection: "dashboard" | "pantry" | "chatWithRivo" | "profile";
+  activeSection: "dashboard" | "pantry" | "chatWithRivo" | "mealGallery" | "profile";
   onSectionChange: (
-    section: "dashboard" | "pantry" | "chatWithRivo" | "profile",
+    section: "dashboard" | "pantry" | "chatWithRivo" | "mealGallery" | "profile",
   ) => void;
 }
 
@@ -45,7 +46,6 @@ export default function DashboardSidebar({
       id: "chatWithRivo" as const,
       label: t("nav.chatWithRivo"),
       icon: MessageCircleHeart,
-      comingSoon: !isBeta,
     },
     {
       id: "pantry" as const,
@@ -53,6 +53,12 @@ export default function DashboardSidebar({
       icon: CakeSlice,
       comingSoon: !isBeta,
     },
+    {
+      id: "mealGallery" as const,
+      label: t("nav.mealGallery"),
+      icon: ChefHat,
+      comingSoon: !isBeta,
+    }
   ];
 
   const mobileNavItems = [
@@ -152,7 +158,7 @@ export default function DashboardSidebar({
                   <item.icon
                     className={`w-4 h-4 ${isActive ? "text-eatrivo-purple" : "text-gray-400"}`}
                   />
-                  {isBeta && item.id === "chatWithRivo" && (
+                  {item.id === "chatWithRivo" && (
                     <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
@@ -208,7 +214,7 @@ export default function DashboardSidebar({
 
               <div className="relative">
                 <item.icon className="w-5 h-5" />
-                {isBeta && item.id === "chatWithRivo" && (
+                {item.id === "chatWithRivo" && (
                   <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />

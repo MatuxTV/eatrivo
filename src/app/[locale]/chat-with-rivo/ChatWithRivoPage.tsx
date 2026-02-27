@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sprout, Target, MessageSquarePlus } from "lucide-react";
+import { Send, Sprout, Target, MessageSquarePlus, Crown } from "lucide-react";
 import Image from "next/image";
 import { FeedbackDialog } from "@/components/FeedbackButton";
+import Link from "next/link";
 
 interface Message {
   role: "user" | "assistant";
@@ -23,6 +24,13 @@ const NARRATIVE_LOADER_STEPS = [
 let globalMessagesCache: Message[] = [];
 let globalSessionId: string | null = null;
 
+interface ChatLimit {
+  limited: boolean;
+  limit: number | null;
+  used: number;
+  remaining: number | null;
+}
+
 const MAX_INPUT_CHARS = 600;
 
 export default function ChatWithRivoPage() {
@@ -30,6 +38,19 @@ export default function ChatWithRivoPage() {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [loaderStepIndex, setLoaderStepIndex] = useState(0);
+  const [chatLimit, setChatLimit] = useState<ChatLimit | null>(null);
+
+  const fetchChatLimit = useCallback(async () => {
+    try {
+      const res = await fetch("/api/chat/limit");
+      if (res.ok) {
+        const data = await res.json();
+        setChatLimit(data);
+      }
+    } catch {
+      // silently ignore
+    }
+  }, []);
 
   const sessionId = useRef(globalSessionId || crypto.randomUUID());
   if (!globalSessionId) {
@@ -42,6 +63,11 @@ export default function ChatWithRivoPage() {
   useEffect(() => {
     globalMessagesCache = messages;
   }, [messages]);
+
+  // Fetch daily limit on mount
+  useEffect(() => {
+    fetchChatLimit();
+  }, [fetchChatLimit]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -90,6 +116,7 @@ export default function ChatWithRivoPage() {
     const textToSend = overrideInput ?? input;
     if (!textToSend.trim() || isStreaming) return;
     if (textToSend.length > MAX_INPUT_CHARS) return;
+    if (chatLimit?.limited && chatLimit.remaining === 0) return;
 
     const userMsg: Message = { role: "user", content: textToSend };
     setMessages((prev) => [...prev, userMsg]);
@@ -105,6 +132,35 @@ export default function ChatWithRivoPage() {
           sessionId: sessionId.current,
         }),
       });
+
+      if (!res.ok) {
+        // Handle daily limit reached
+        if (res.status === 429) {
+          try {
+            const errorData = await res.json();
+            if (errorData.error === "daily_limit_reached") {
+              setChatLimit((prev) => prev ? { ...prev, used: errorData.used, remaining: 0 } : prev);
+              setMessages((prev) => {
+                const lastMsg = prev[prev.length - 1];
+                if (lastMsg && lastMsg.role === "assistant" && lastMsg.content === "") {
+                  const updated = [...prev];
+                  updated[updated.length - 1] = {
+                    role: "assistant",
+                    content: "Dosiahol si denný limit správ. Prejdi na Premium pre neobmedzený chat s Rivom! 💜",
+                  };
+                  return updated;
+                }
+                return [
+                  ...prev,
+                  { role: "assistant", content: "Dosiahol si denný limit správ. Prejdi na Premium pre neobmedzený chat s Rivom! 💜" },
+                ];
+              });
+              return;
+            }
+          } catch { /* fall through to generic error */ }
+        }
+        throw new Error("Request failed");
+      }
 
       if (!res.body) throw new Error("No stream");
 
@@ -152,6 +208,8 @@ export default function ChatWithRivoPage() {
       });
     } finally {
       setIsStreaming(false);
+      // Refresh limit after each message
+      fetchChatLimit();
     }
   }
 
@@ -189,6 +247,20 @@ export default function ChatWithRivoPage() {
             </p>
           </div>
         </div>
+        {/* Daily message limit counter */}
+        {chatLimit?.limited && (
+          <div className="flex items-center gap-2">
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+              chatLimit.remaining === 0
+                ? "bg-red-100 text-red-600"
+                : (chatLimit.remaining ?? 0) <= 3
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-eatrivo-purple/10 text-eatrivo-purple"
+            }`}>
+              {chatLimit.remaining}/{chatLimit.limit}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Messages list */}
@@ -396,6 +468,26 @@ export default function ChatWithRivoPage() {
 
       {/* Input bar */}
       <div className="pt-2 pb-2 md:pb-6 mt-auto relative z-20 md:max-w-4xl md:mx-auto md:w-full">
+        {chatLimit?.limited && chatLimit.remaining === 0 ? (
+          /* Limit reached — show upgrade prompt */
+          <div className="flex flex-col items-center gap-3 py-4">
+            <div className="text-center px-4">
+              <p className="text-sm font-semibold text-gray-700">
+                Dosiahol si denný limit {chatLimit.limit} správ
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Prejdi na Premium pre neobmedzený chat s Rivom
+              </p>
+            </div>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink text-white text-sm font-semibold rounded-full shadow-md shadow-eatrivo-purple/25 hover:shadow-lg hover:shadow-eatrivo-purple/40 hover:-translate-y-0.5 transition-all"
+            >
+              <Crown className="w-4 h-4" />
+              Upgradni na Premium
+            </Link>
+          </div>
+        ) : (
         <div className="relative flex items-center bg-white/90 backdrop-blur-xl p-1.5 rounded-[2rem] border border-eatrivo-purple/10 shadow-[0_8px_30px_rgb(123,63,242,0.12)] focus-within:ring-2 focus-within:ring-eatrivo-purple/30 focus-within:border-eatrivo-purple/50 transition-all duration-300">
           <input
             className="flex-1 bg-transparent px-5 py-3 min-h-[44px] text-[15px] text-eatrivo-black-primary focus:outline-none placeholder:text-eatrivo-black-secondary/70"
@@ -418,6 +510,7 @@ export default function ChatWithRivoPage() {
             <Send className="w-5 h-5 ml-0.5" />
           </motion.button>
         </div>
+        )}
         <p className="text-center text-[11px] text-eatrivo-black-secondary mt-3 font-medium opacity-80 hidden md:block">
           Rivo môže robiť chyby. Odporúčame overovať dôležité informácie.
         </p>

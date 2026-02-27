@@ -6,6 +6,7 @@ import {
   Mail,
   BarChart3,
   FileText,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 
@@ -14,6 +15,7 @@ type TabId =
   | "users"
   | "profiles"
   | "emails"
+  | "notifications"
   | "templates"
   | "analytics";
 
@@ -33,6 +35,7 @@ const tabs: Tab[] = [
   { id: "users", label: "Používatelia", icon: Users },
   { id: "profiles", label: "Profily", icon: UserCircle },
   { id: "emails", label: "Emaily", icon: Mail },
+  { id: "notifications", label: "Notifikácie", icon: Bell },
   { id: "templates", label: "Šablóny", icon: FileText },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
 ];

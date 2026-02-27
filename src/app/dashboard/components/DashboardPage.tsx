@@ -13,6 +13,8 @@ import {
   ChevronRight,
   CakeSlice,
   MessageCircleHeart,
+  CircleAlert,
+  ChefHat,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -32,12 +34,13 @@ import DashboardHeader from "./DashboardHeader";
 import MobileNavigation from "./MobileNavigation";
 import DailyNutritionSummary from "./DailyNutritionSummary";
 import DailyMealPlan from "./DailyMealPlan";
-import ShoppingListsOverview, { CreateListCTA } from "./ShoppingListsOverview";
+import ShoppingListsOverview from "./ShoppingListsOverview";
 import ComingSoonPage from "./ComingSoonPage";
 import BodyHealthCircle from "./BodyHealtCircle";
 import WeightTracker from "./WeightTracker";
 import ProfilePageClient from "@/app/profile/components/ProfilePageClient";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
+import { NotificationBanner } from "@/components/pwa/NotificationBanner";
 import FeedbackButton from "@/components/FeedbackButton";
 import { PushNotificationToggle } from "@/components/pwa/PushNotificationToggle";
 import { UpgradePopup } from "@/components/billing/UpgradePopup";
@@ -120,7 +123,7 @@ export default function DashboardPage() {
 
   // ... inside DashboardPage component ...
   const [activeSection, setActiveSection] = useState<
-    "dashboard" | "pantry" | "chatWithRivo" | "profile"
+    "dashboard" | "pantry" | "chatWithRivo" | "profile" | "mealGallery"
   >("dashboard");
 
   // Auto-switch section from URL query param (?section=chatWithRivo etc.)
@@ -169,14 +172,14 @@ export default function DashboardPage() {
     }
   }, [session?.user]);
 
-  // Show upgrade popup for basic users on every dashboard visit
-  useEffect(() => {
-    if (!welcomeCheckDone || !session?.user) return;
-    if (session.user.membership !== "basic") return;
-    if (showWelcomeDialog) return; // handleCloseDialog will show it after welcome dialog closes
-    const timer = setTimeout(() => setShowUpgradePopup(true), 500);
-    return () => clearTimeout(timer);
-  }, [welcomeCheckDone]);
+  // Show upgrade popup for basic users on every dashboard visit — temporarily disabled
+  // useEffect(() => {
+  //   if (!welcomeCheckDone || !session?.user) return;
+  //   if (session.user.membership !== "basic") return;
+  //   if (showWelcomeDialog) return;
+  //   const timer = setTimeout(() => setShowUpgradePopup(true), 500);
+  //   return () => clearTimeout(timer);
+  // }, [welcomeCheckDone]);
 
   const handleCloseDialog = async () => {
     setShowWelcomeDialog(false);
@@ -195,10 +198,10 @@ export default function DashboardPage() {
       });
     }
 
-    // Show upgrade popup for basic users after welcome dialog closes
-    if (session?.user?.membership === "basic") {
-      setTimeout(() => setShowUpgradePopup(true), 500);
-    }
+    // Show upgrade popup for basic users after welcome dialog closes — temporarily disabled
+    // if (session?.user?.membership === "basic") {
+    //   setTimeout(() => setShowUpgradePopup(true), 500);
+    // }
   };
 
   // FETCH SHOPPING LISTS
@@ -309,19 +312,20 @@ export default function DashboardPage() {
     };
   }, [isMounted, session, t]);
 
-  // GENERATE NEW SHOPPING LIST (Premium users only)
+  // GENERATE NEW SHOPPING LIST
   const handleGenerateShoppingList = async () => {
     if (!session?.user) return;
 
-    const membership = session.user.membership?.toLowerCase();
-    if (!["premium", "pro", "trainer"].includes(membership || "")) {
-      toast.error(
-        t("toasts.premiumOnly", {
-          defaultValue: "This feature is only available for premium members",
-        }),
-      );
-      return;
-    }
+    // Premium-only check — temporarily disabled, basic users can also generate
+    // const membership = session.user.membership?.toLowerCase();
+    // if (!["premium", "pro", "trainer"].includes(membership || "")) {
+    //   toast.error(
+    //     t("toasts.premiumOnly", {
+    //       defaultValue: "This feature is only available for premium members",
+    //     }),
+    //   );
+    //   return;
+    // }
 
     try {
       setIsLoading((prev) => ({ ...prev, generatingShoppingList: true }));
@@ -647,94 +651,93 @@ export default function DashboardPage() {
               </div>
 
               {/* Daily Plan Section */}
-              <div
-                className={
-                  !hasActiveShoppingList && !hasActiveMealPlan
-                    ? "hidden md:block"
-                    : ""
-                }
-              >
+              <div>
                 <section className="space-y-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <div className="p-2 bg-blue-50 rounded-lg">
-                        <ReceiptText className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <h2 className="text-xl font-bold text-gray-900">
-                        {t("dailyPlan.title")}
-                      </h2>
-
-                      {/* Day Navigation */}
-                      {isMounted && mealPlanData.length > 0 && (
-                        <div className="flex items-center gap-2 bg-white rounded-full px-2 py-1 shadow-sm border border-gray-100">
-                          <button
-                            onClick={() =>
-                              setSelectedDayIndex((prev) =>
-                                prev === 0 ? 6 : prev - 1,
-                              )
-                            }
-                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                            aria-label="Previous day"
-                          >
-                            <ChevronLeft className="w-4 h-4 text-gray-600" />
-                          </button>
-                          <span className="text-sm font-medium text-gray-700 min-w-[80px] text-center">
-                            {selectedDayIndex === new Date().getDay() ? (
-                              <span className="text-eatrivo-purple capitalize">
-                                {t("dailyPlan.today")}
-                              </span>
-                            ) : (
-                              mealPlanData.find(
-                                (day) =>
-                                  getDayIndex(day.day) === selectedDayIndex,
-                              )?.day || currentDay
-                            )}
-                          </span>
-                          <button
-                            onClick={() =>
-                              setSelectedDayIndex((prev) =>
-                                prev === 6 ? 0 : prev + 1,
-                              )
-                            }
-                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                            aria-label="Next day"
-                          >
-                            <ChevronRight className="w-4 h-4 text-gray-600" />
-                          </button>
+                  <div className="flex flex-col gap-3">
+                    {/* Row 1: icon + title + day navigation + membership banner (desktop inline) */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <div className="p-2 bg-blue-50 rounded-lg">
+                          <ReceiptText className="w-5 h-5 text-blue-600" />
                         </div>
-                      )}
+                        <h2 className="text-xl font-bold text-gray-900">
+                          {t("dailyPlan.title")}
+                        </h2>
+
+                        {/* Day Navigation */}
+                        {isMounted && mealPlanData.length > 0 && (
+                          <div className="flex items-center gap-2 bg-white rounded-full px-2 py-1 shadow-sm border border-gray-100">
+                            <button
+                              onClick={() =>
+                                setSelectedDayIndex((prev) =>
+                                  prev === 0 ? 6 : prev - 1,
+                                )
+                              }
+                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                              aria-label="Previous day"
+                            >
+                              <ChevronLeft className="w-4 h-4 text-gray-600" />
+                            </button>
+                            <span className="text-sm font-medium text-gray-700 min-w-[80px] text-center">
+                              {selectedDayIndex === new Date().getDay() ? (
+                                <span className="text-eatrivo-purple capitalize">
+                                  {t("dailyPlan.today")}
+                                </span>
+                              ) : (
+                                mealPlanData.find(
+                                  (day) =>
+                                    getDayIndex(day.day) === selectedDayIndex,
+                                )?.day || currentDay
+                              )}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setSelectedDayIndex((prev) =>
+                                  prev === 6 ? 0 : prev + 1,
+                                )
+                              }
+                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                              aria-label="Next day"
+                            >
+                              <ChevronRight className="w-4 h-4 text-gray-600" />
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Membership banner — desktop only (inline)
+                        {session?.user?.membership === "basic" && (
+                          <div className="hidden md:flex p-4 rounded-2xl border border-eatrivo-black-secondary/20 text-eatrivo-white-primary items-start bg-gradient-to-r from-eatrivo-orange/90 to-eatrivo-orange/85">
+                            <CircleAlert className="w-8 h-8 mr-2 shrink-0 text-eatrivo-white-primary" />
+                            <span className="text-xs">{t("templateUsage")}</span>
+                          </div>
+                        )} */}
+                      </div>
+
+                      {/* Nutrition Summary */}
+                      <div className="w-full md:w-auto">
+                        <DailyNutritionSummary data={todaysNutrition} />
+                      </div>
                     </div>
 
-                    {/* Nutrition Summary */}
-                    <div className="w-full md:w-auto">
-                      <DailyNutritionSummary data={todaysNutrition} />
-                    </div>
+                    {/* Row 2: Membership banner — mobile only — temporarily disabled */}
+                    {/* {session?.user?.membership === "basic" && (
+                      <div className="flex md:hidden p-4 rounded-2xl border border-eatrivo-black-secondary/20 text-eatrivo-white-primary items-start bg-gradient-to-r from-eatrivo-orange/90 to-eatrivo-orange/85">
+                        <CircleAlert className="w-8 h-8 mr-2 shrink-0 text-eatrivo-white-primary" />
+                        <span className="text-xs">{t("templateUsage")}</span>
+                      </div>
+                    )} */}
                   </div>
 
-                  {/* Meals Grid */}
+                  {/* Meals Grid / Create Shopping List CTA */}
                   <DailyMealPlan
                     meals={todaysMeals}
                     isLoading={isLoading.mealPlans}
+                    hasActiveShoppingList={hasActiveShoppingList}
+                    isGeneratingList={isLoading.generatingShoppingList}
+                    onGenerateList={handleGenerateShoppingList}
                   />
                 </section>
               </div>
-
-              {/* Mobile CTA — always shown for basic users (locked), shown for premium when no active plans */}
-              {(!hasActiveShoppingList && !hasActiveMealPlan) ||
-              session?.user?.membership === "basic" ? (
-                <div className="block md:hidden mb-8 mt-2">
-                  <CreateListCTA
-                    isPremium={["premium", "pro", "trainer"].includes(
-                      session?.user?.membership?.toLowerCase() || "",
-                    )}
-                    isGenerating={isLoading.generatingShoppingList}
-                    hasActiveList={hasActiveShoppingList}
-                    onGenerate={handleGenerateShoppingList}
-                    onLockedCreate={() => setShowUpgradePopup(true)}
-                    className="min-h-[280px]"
-                  />
-                </div>
-              ) : null}
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Shopping Lists - Takes up 2 columns on large screens, last on mobile */}
@@ -802,7 +805,7 @@ export default function DashboardPage() {
                     }}
                   />
 
-                  {/* Push Notification Toggle */}
+                  {/* Push Notification Toggle
                   <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
                       {t("notifications.title")}
@@ -811,7 +814,7 @@ export default function DashboardPage() {
                       {t("notifications.description")}
                     </p>
                     <PushNotificationToggle />
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </motion.div>
@@ -888,7 +891,7 @@ export default function DashboardPage() {
             >
               <ProfilePageClient onBack={() => setActiveSection("dashboard")} />
             </motion.div>
-          ) : (
+          ) : activeSection === "chatWithRivo" ? (
             <motion.div
               key="chatWithRivo"
               initial={{ opacity: 0, y: 10 }}
@@ -897,36 +900,71 @@ export default function DashboardPage() {
               transition={{ duration: 0.3 }}
               className="h-full"
             >
+              <ChatWithRivoPage />
+            </motion.div>
+          ): activeSection === "mealGallery" ? (
+            <motion.div
+              key="mealGallery"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="h-full flex items-center justify-center p-4 md:p-8"
+            >
               <FeatureFlag
                 fallback={
-                  <div className="h-full flex items-center justify-center p-4 md:p-8 mx-4 md:mx-8 my-8">
-                    <ComingSoonPage
-                      titleKey="chatWithRivo.title"
-                      descriptionKey="chatWithRivo.description"
-                      icon={
-                        <MessageCircleHeart className="w-8 h-8 text-eatrivo-purple" />
-                      }
-                      rivoImage="/rivo/RIVO3-remove.png"
-                      gradient="bg-gradient-to-br from-purple-400 to-pink-400"
-                      showBackButton={false}
-                      className="w-full max-w-2xl"
-                      badgeKey="chatWithRivo.badge"
-                      ctaLabelKey="chatWithRivo.cta"
-                      secondaryLabelKey="chatWithRivo.secondaryAction"
-                      onCtaClick={() => {
-                        toast.success(
-                          "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
-                        );
-                      }}
-                      onSecondaryClick={() => setActiveSection("dashboard")}
-                    />
-                  </div>
+                  <ComingSoonPage
+                    titleKey="mealGallery.title"
+                    descriptionKey="mealGallery.description"
+                    icon={<ChefHat className="w-8 h-8 text-eatrivo-purple" />}
+                    rivoImage="/rivo/RIVO3-remove.png"
+                    gradient="bg-gradient-to-br from-orange-400 to-pink-400"
+                    showBackButton={false}
+                    className="w-full max-w-2xl"
+                    badgeKey="mealGallery.badge"
+                    features={[
+                      t("comingSoon.mealGallery.tags.tag1"),
+                      t("comingSoon.mealGallery.tags.tag2"),
+                      t("comingSoon.mealGallery.tags.tag3"),
+                    ]}
+                    ctaLabelKey="mealGallery.cta"
+                    secondaryLabelKey="mealGallery.secondaryAction"
+                    onCtaClick={() => {
+                      toast.success(
+                        "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
+                      );
+                    }}
+                    onSecondaryClick={() => setActiveSection("dashboard")}
+                  />
                 }
               >
-                <ChatWithRivoPage />
+                {/* Real Pantry content goes here once built */}
+                <ComingSoonPage
+                  titleKey="pantry.title"
+                  descriptionKey="pantry.description"
+                  icon={<CakeSlice className="w-8 h-8 text-eatrivo-purple" />}
+                  rivoImage="/rivo/RIVO3-remove.png"
+                  gradient="bg-gradient-to-br from-orange-400 to-pink-400"
+                  showBackButton={false}
+                  className="w-full max-w-2xl"
+                  badgeKey="pantry.badge"
+                  features={[
+                    t("comingSoon.pantry.tags.tag1"),
+                    t("comingSoon.pantry.tags.tag2"),
+                    t("comingSoon.pantry.tags.tag3"),
+                  ]}
+                  ctaLabelKey="pantry.cta"
+                  secondaryLabelKey="pantry.secondaryAction"
+                  onCtaClick={() => {
+                    toast.success(
+                      "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
+                    );
+                  }}
+                  onSecondaryClick={() => setActiveSection("dashboard")}
+                />
               </FeatureFlag>
             </motion.div>
-          )}
+          ): null }
         </AnimatePresence>
       </main>
 
@@ -938,6 +976,9 @@ export default function DashboardPage() {
 
       {/* PWA Install Prompt */}
       <PWAInstallPrompt />
+
+      {/* Push Notification Banner */}
+      <NotificationBanner />
       {activeSection === "dashboard" && (
         <div className="hidden md:block">
           <FeedbackButton />

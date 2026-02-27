@@ -90,6 +90,17 @@ export const userFoodPreferencesSchema = z.object({
 export const completeOnboardingSchema = z.object({
   profile: userProfileOnboardingSchema,
   foodPreferences: userFoodPreferencesSchema,
+  consents: z.object({
+    termsAndPrivacy: z.literal(true, {
+      error: "You must agree to the Terms and Privacy Policy",
+    }),
+    medicalDisclaimer: z.literal(true, {
+      error: "You must acknowledge the Medical Disclaimer",
+    }),
+    healthDataProcessing: z.literal(true, {
+      error: "You must consent to health data processing",
+    }),
+  }),
 });
 
 // Schema for updating user profile

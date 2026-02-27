@@ -80,7 +80,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: https: blob:",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://api.stripe.com https://*.upstash.io https://*.neon.tech https://*.vercel-analytics.com https://*.google-analytics.com",
+      "connect-src 'self' https://api.stripe.com https://*.upstash.io https://*.neon.tech https://*.vercel-analytics.com",
       "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",

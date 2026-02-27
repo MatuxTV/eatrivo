@@ -204,11 +204,11 @@
       "items": {
         "free": {
           "question": "Je Eatrivo zadarmo?",
-          "answer": "Áno! Základná verzia je úplne zadarmo. Môžeš ju používať na inšpiráciu a jednoduchý prehľad. Pre personalizované plány a nákupné zoznamy je tu Premium od 4,99€/mesiac."
+          "answer": "Áno! Základná verzia je úplne zadarmo. Môžeš si vytvoriť profil, získať personalizované jedálne plány a nákupné zoznamy bez akýchkoľvek nákladov. Prémiová verzia ponúka pokročilé funkcie pre plné využitie pri plnení tvojich plánov, ale základné funkcie sú zadarmo pre všetkých."
         },
         "time": {
           "question": "Ako dlho trvá získať jedálny plán?",
-          "answer": "Vyplnenie profilu trvá približne 2 minúty. Po tom AI okamžite vygeneruje tvoj personalizovaný plán."
+          "answer": "Vyplnenie profilu trvá približne 2 minúty. Po tom si môžeš okamžite vygenerovať tvoj personalizovaný plán."
         },
         "cancel": {
           "question": "Môžem zrušiť predplatné kedykoľvek?",
@@ -216,7 +216,7 @@
         },
         "vegan": {
           "question": "Funguje to aj pre vegetariánov a vegánov?",
-          "answer": "Áno! Pri nastavení profilu si vyberieš svoje stravovacie preferencie a AI ich zohľadní v každom pláne."
+          "answer": "Áno! Pri nastavení profilu si vyberieš svoje stravovacie preferencie a Rivo ich zohľadní v každom pláne."
         },
         "allergies": {
           "question": "Čo ak mám alergie alebo intolerancie?",
@@ -269,6 +269,11 @@
       "terms": "Podmienky používania",
       "privacy": "Ochrana súkromia",
       "medicalDisclaimer": "Zdravotné vylúčenie",
+      "cookiePolicy": "Zásady cookies",
+      "cookieSettings": "Nastavenia cookies",
+      "complaints": "Reklamácie",
+      "companyInfo": "IČO: 56024665 | DIČ: 2122162493",
+      "odrInfo": "Platforma na riešenie sporov online (ODR) Európskej komisie:",
       "rights": "Všetky práva vyhradené."
     }
   },
@@ -281,9 +286,11 @@
       "googleButton": "Pokračovať cez Google",
       "agreement": {
         "prefix": "Pokračovaním súhlasíte s",
-        "terms": "Podmienkami",
+        "checkboxLabel": "Oboznámil/a som sa a súhlasím s",
+        "mustAgree": "Pre pokračovanie musíte súhlasiť s podmienkami a ochranou súkromia.",
+        "terms": "Obchodnými podmienkami",
         "and": "a",
-        "privacy": "Ochranou súkromia"
+        "privacy": "Ochranou osobných údajov"
       },
       "whyTitle": "Prečo sa prihlásiť?",
       "whyBullets": {
@@ -411,6 +418,24 @@
       "back": "Späť",
       "finishing": "Dokončuje sa…",
       "finish": "Dokončiť nastavenie"
+    },
+    "consents": {
+      "title": "Právne súhlasy",
+      "description": "Pred dokončením profilu si prosím prečítajte a odsúhlaste nasledovné.",
+      "termsAndPrivacy": {
+        "label": "Oboznámil/a som sa a súhlasím s",
+        "termsLink": "Všeobecnými obchodnými podmienkami",
+        "and": "a",
+        "privacyLink": "Ochranou osobných údajov"
+      },
+      "medicalDisclaimer": {
+        "label": "Beriem na vedomie a akceptujem",
+        "link": "Medicínske vyhlásenie"
+      },
+      "healthData": {
+        "label": "Súhlasím so spracovaním mojich údajov o zdraví (hmotnosť, výška, diétne obmedzenia, alergie) za účelom generovania personalizovaných jedálnych plánov, ako je opísané v Ochrane osobných údajov."
+      },
+      "mustAgree": "Pre pokračovanie musíte súhlasiť so všetkými podmienkami."
     }
   },
   "dashboard": {
@@ -423,12 +448,14 @@
       "profile": "Profil",
       "signOut": "Odhlásiť sa",
       "pantry": "Špajza",
-      "chatWithRivo": "Chat s Rivom"
+      "chatWithRivo": "Chat s Rivom",
+      "mealGallery": "Galerie jedál"
     },
     "navbar": {
       "language": "Jazyk"
     },
     "userAlt": "Používateľ",
+    "templateUsage": "Upozornenie: Tento jedálny plán a nákupný zoznam slúžia len ako inšpirácia. Oba sú len príklady na základe vašej úrovne aktivity a cieľa. Nie sú plne prispôsobené vašim preferenciám a stravovacím potrebám. Pre skutočne personalizovaný plán prejdite na Premium.",
     "membershipSuffix": "člen",
     "greeting": {
       "title": "Vitajte späť, {name}! 👋",
@@ -504,22 +531,22 @@
       "showActiveOnly": "Zobraziť iba aktívny",
       "empty": {
         "title": "Žiadne nákupné zoznamy",
-        "description": "Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Váš tréner alebo AI vám čoskoro pripraví plán na mieru."
+        "description": "Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Kliknite na tlačítko 'Nechaj ma varit' pre vygenerovanie noveho nákupného zoznamu pre tento týžden."
       },
       "noActive": {
         "title": "Žiadne aktívne nákupné zoznamy",
         "description": "Momentálne nemáte žiadny aktívny nákupný zoznam. Zobrazte všetky zoznamy pre dokončené alebo zrušené."
       },
       "premiumCTA": {
-        "title": "Upgradnite na Premium",
-        "description": "Generujte neobmedzené personalizované nákupné zoznamy na požiadanie s AI",
+        "title": "Upgradnite na Premium a splnťe si svoje ciele rýchlejšie! 🚀",
+        "description": "Vygenerujte si personalizovaný nákupný zoznam na tento týžden",
         "button": "Zobraziť plány"
       },
       "createNew": {
         "title": "Nechaj ma variť! 🍳",
-        "subtitle": "Vytvorím personalizovaný nákupný zoznam len pre teba",
+        "subtitle": "Vytvorím personalizovaný plán len pre teba",
         "locked": "Odomkni s Premium 🔒",
-        "lockedSubtitle": "Generuj neobmedzené AI nákupné zoznamy",
+        "lockedSubtitle": "Vygeneruj si personalizovaný nákupný zoznam prispôsobený tvojim cieľom",
         "completeActiveError": "Najprv dokončite svoj aktívny nákupný zoznam! 🛒",
         "activeListExists": "Najprv dokonči aktívny zoznam! 🛒",
         "activeListExistsSubtitle": "Môžeš mať iba jeden aktívny nákupný zoznam súčasne",
@@ -671,6 +698,18 @@
           "tag1": "Automatické",
           "tag2": "Šetrí čas",
           "tag3": "Bez námahy"
+        },
+        "cta": "🔔 Upozorni ma pri spustení",
+        "secondaryAction": "Zatiaľ späť na Dashboard"
+      },
+      "mealGallery": {
+        "title": "Knižnica chutí 📚",
+        "description": "Prehľadávaj stovky nových receptov pre inšpiráciu, alebo sa vráť k svojim obľúbeným jedlám, ktoré ti Rivo už v minulosti vymyslel.",
+        "badge": "● PRIPRAVUJEME",
+        "tags": {
+          "tag1": "Tvoje srdcovky ❤️",
+          "tag2": "Nová inšpirácia 🌍",
+          "tag3": "1-klik do plánu ⚡"
         },
         "cta": "🔔 Upozorni ma pri spustení",
         "secondaryAction": "Zatiaľ späť na Dashboard"
@@ -961,6 +1000,21 @@
       "intro": "Máme pre teba nové vylepšenia. Pozri sa, čo sme pripravili.",
       "cta": "OTVORIŤ DASHBOARD",
       "footer": "Ďakujeme, že si súčasťou Eatrivo."
+    },
+    "renewalReminder": {
+      "preview": "Vaše predplatné Eatrivo sa obnoví {renewalDate}",
+      "heading": "Pripomienka obnovenia predplatného 🔔",
+      "greeting": "Ahoj {firstName},",
+      "paragraph": "Chceme vás informovať, že vaše predplatné Eatrivo sa čoskoro automaticky obnoví. Nižšie nájdete podrobnosti.",
+      "details": {
+        "plan": "Plán:",
+        "renewalDate": "Dátum obnovenia:",
+        "amount": "Suma:"
+      },
+      "cancelInfo": "Ak si neželáte pokračovať, môžete predplatné zrušiť kedykoľvek pred dátumom obnovenia vo svojom profile.",
+      "cancelCta": "Spravovať predplatné",
+      "keepCta": "Pokračovať v plánovaní",
+      "footer": "Tento email bol odoslaný, pretože máte aktívne predplatné na Eatrivo."
     }
   },
   "feedback": {
@@ -982,6 +1036,7 @@
       "fillAllFields": "Prosím vyplňte všetky polia",
       "submitFailed": "Nepodarilo sa odoslať feedback"
     },
+    "contactInfo": "Môžete nás tiež kontaktovať priamo na",
     "types": {
       "bug": {
         "label": "Bug / Chyba",
@@ -1035,6 +1090,8 @@
     "notifications": {
       "title": "Push Notifikácie",
       "description": "Zostaňte informovaní o nových nákupných zoznamoch a aktualizáciách",
+      "bannerDescription": "Zapni notifikácie a nezmeškaj nový jedálniček 🔔",
+      "close": "Zavrieť",
       "enable": "Zapnúť notifikácie",
       "disable": "Vypnúť notifikácie",
       "loginRequired": "Musíte byť prihlásený",
@@ -1072,22 +1129,24 @@
     "tiers": {
       "basic": {
         "name": "Basic",
-        "description": "Inšpirácia - Nápady na recepty pre začiatok",
+        "description": "Plnenie cieľov - Personalizované plány, ktoré fungujú",
         "features": [
-          "Šablóny receptov podľa vášho profilu",
-          "Základné nápady na jedlá",
-          "Návrhy podľa veku a aktivity",
-          "Jednoduché nákupné zoznamy"
+          "Personalizované nákupné zoznamy vytvorené Rivom priamo pre vás",
+          "Návrhy podľa vášho cieľu a aktivity",
+          "Rivo ako váš osobní asistent"
         ]
       },
       "premium": {
         "name": "Premium",
-        "description": "Plnenie cieľov - Personalizované plány, ktoré fungujú",
+        "description": "Všetky funkcie, ktoré vám pomôžu dosiahnuť vaše ciele",
         "features": [
-          "Personalizované nákupné zoznamy vytvorené Rivom priamo pre vás",
+          "Úprava jedál podľa vašich chutí",
+          "Označovanie obľúbených a neoblíbených jedál pre lepšie prispôsobenie",
           "Jedálničky vytvorené z jedál overených našimi odborníkmi a prispôsobené vašim preferenciám",
           "Týždenné výzvy",
-          "Pokročilé sledovanie pokroku"
+          "Pokročilé sledovanie pokroku",
+          "Prednostný prístup k novým funkciam a vylepšeniam",
+          "Rivo ako váš osobní asistent bez obmedzení"
         ]
       }
     },
@@ -1166,5 +1225,31 @@
     "maybeLater": "Možno neskôr",
     "socialProof": "Pridaj sa k 2 400+ členom, ktorí jedia múdrejšie",
     "trialDays": "{days} Dní Zadarmo"
+  },
+  "cookieConsent": {
+    "title": "Používame cookies",
+    "description": "Používame nevyhnutné cookies pre fungovanie stránky. S vašim súhlasom používame aj analytické cookies na zlepšenie našej služby.",
+    "acceptAll": "Prijať všetky",
+    "rejectAll": "Odmietnuť všetky",
+    "customize": "Prispôsobiť",
+    "savePreferences": "Uložiť preferencie",
+    "learnMore": "Viac informácií v našich",
+    "cookiePolicy": "Zásadách používania cookies",
+    "essential": {
+      "title": "Nevyhnutné",
+      "description": "Potrebné pre fungovanie webu. Nedá sa vypnúť."
+    },
+    "analytics": {
+      "title": "Analytické",
+      "description": "Pomáhajú nám porozumieť, ako návštevníci používajú našu stránku."
+    }
+  },
+  "checkout": {
+    "legalConsent": {
+      "termsAgree": "Oboznámil som sa s <terms>Všeobecnými obchodnými podmienkami</terms> a <privacy>Zásadami ochrany osobných údajov</privacy>",
+      "digitalConsent": "Žiadam o okamžité začatie poskytovania digitálnej služby a beriem na vedomie, že tým strácam právo na odstúpenie od zmluvy v 14-dňovej lehote",
+      "mustAgree": "Pre pokračovanie musíte súhlasiť s podmienkami",
+      "orderWithPayment": "Záväzne predplatiť"
+    }
   }
 }
