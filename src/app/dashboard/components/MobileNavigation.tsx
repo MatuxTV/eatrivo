@@ -7,6 +7,7 @@ import {
   CakeSlice,
   MessageCircleHeart,
   MessageSquarePlus,
+  ChefHat,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
@@ -14,9 +15,19 @@ import { useSession } from "next-auth/react";
 import { FeedbackDialog } from "@/components/FeedbackButton";
 
 interface MobileNavigationProps {
-  activeSection: "dashboard" | "pantry" | "chatWithRivo" | "profile";
+  activeSection:
+    | "dashboard"
+    | "pantry"
+    | "chatWithRivo"
+    | "profile"
+    | "mealGallery";
   onSectionChange: (
-    section: "dashboard" | "pantry" | "chatWithRivo" | "profile",
+    section:
+      | "dashboard"
+      | "pantry"
+      | "chatWithRivo"
+      | "profile"
+      | "mealGallery",
   ) => void;
 }
 
@@ -42,58 +53,55 @@ export default function MobileNavigation({
 
   const navItems = [
     { id: "dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+    { id: "chatWithRivo", label: t("nav.chatWithRivo"),icon: MessageCircleHeart,},
     { id: "pantry", label: t("nav.pantry"), icon: CakeSlice },
-    {
-      id: "chatWithRivo",
-      label: t("nav.chatWithRivo"),
-      icon: MessageCircleHeart,
-    },
+    { id: "mealGallery", label: t("nav.mealGallery"),icon: ChefHat,},
   ] as const;
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 pb-safe">
       {/* Floating Feedback Button — only on dashboard section */}
       {activeSection === "dashboard" && (
-      <div className="absolute bottom-full mb-4 right-4 z-50 flex flex-row items-center gap-4 pointer-events-none">
-        <AnimatePresence>
-          {showTooltip && (
-            <motion.div
-              initial={{ opacity: 0, x: 20, scale: 0.8 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 20, scale: 0.8 }}
-              className="bg-eatrivo-purple px-3 py-1.5 rounded-xl shadow-md text-xs font-semibold text-white pointer-events-auto relative"
-            >
-              {"Napíšte nám 👋"}
-              <div className="absolute top-1/2 -right-1 w-2 h-2 bg-eatrivo-purple rotate-45 -translate-y-1/2"></div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="absolute bottom-full mb-4 right-4 z-50 flex flex-row items-center gap-4 pointer-events-none">
+          <AnimatePresence>
+            {showTooltip && (
+              <motion.div
+                initial={{ opacity: 0, x: 20, scale: 0.8 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 20, scale: 0.8 }}
+                className="bg-eatrivo-purple px-3 py-1.5 rounded-xl shadow-md text-xs font-semibold text-white pointer-events-auto relative"
+              >
+                {"Napíšte nám 👋"}
+                <div className="absolute top-1/2 -right-1 w-2 h-2 bg-eatrivo-purple rotate-45 -translate-y-1/2"></div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        <div className="pointer-events-auto">
-          <FeedbackDialog>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              animate={{
-                boxShadow: [
-                  "0 0 0 0px rgba(139, 92, 246, 0.4)",
-                  "0 0 0 10px rgba(139, 92, 246, 0)",
-                ],
-              }}
-              transition={{
-                boxShadow: {
-                  duration: 2,
-                  repeat: Infinity,
-                  repeatType: "loop",
-                },
-              }}
-              className="w-12 h-12 bg-gradient-to-tr from-eatrivo-purple to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg"
-            >
-              <MessageSquarePlus className="w-6 h-6" />
-            </motion.button>
-          </FeedbackDialog>
+          <div className="pointer-events-auto">
+            <FeedbackDialog>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                animate={{
+                  boxShadow: [
+                    "0 0 0 0px rgba(139, 92, 246, 0.4)",
+                    "0 0 0 10px rgba(139, 92, 246, 0)",
+                  ],
+                }}
+                transition={{
+                  boxShadow: {
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "loop",
+                  },
+                }}
+                className="w-12 h-12 bg-gradient-to-tr from-eatrivo-purple to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg"
+              >
+                <MessageSquarePlus className="w-6 h-6" />
+              </motion.button>
+            </FeedbackDialog>
+          </div>
         </div>
-      </div>
       )}
 
       <div className="flex justify-around items-center h-16">

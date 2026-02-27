@@ -26,6 +26,7 @@ import EmailsTab from "./tabs/EmailsTab";
 import ShoppingListTab from "./tabs/ShoppingListTab";
 import TemplatesTab from "./tabs/TemplatesTab";
 import AnalyticsTab from "./tabs/AnalyticsTab";
+import NotificationsTab from "./tabs/NotificationsTab";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabId>("upload");
@@ -704,6 +705,19 @@ export default function AdminDashboard() {
               className="space-y-4 sm:space-y-6"
             >
               <AnalyticsTab />
+            </motion.div>
+          )}
+
+          {activeTab === "notifications" && (
+            <motion.div
+              key="notifications"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4 sm:space-y-6"
+            >
+              <NotificationsTab users={users} />
             </motion.div>
           )}
 

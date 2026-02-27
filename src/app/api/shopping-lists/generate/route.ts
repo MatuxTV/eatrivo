@@ -32,19 +32,20 @@ export async function POST(_req: NextRequest) {
     const rl = await checkRateLimit(`user:${session.user.id}`, "expensive");
     if (!rl.success) return rl.response!;
 
-    // Check if user has premium membership (premium, pro, or trainer)
+    // Check if user has premium membership — temporarily disabled, basic users can also generate
+    // const membership = session.user.membership?.toLowerCase();
+    // if (!["premium", "pro", "trainer"].includes(membership || "")) {
+    //   return NextResponse.json(
+    //     {
+    //       error:
+    //         "This feature is only available for premium members. Please upgrade your subscription.",
+    //     },
+    //     { status: 403 },
+    //   );
+    // }
     const membership = session.user.membership?.toLowerCase();
-    if (!["premium", "pro", "trainer"].includes(membership || "")) {
-      return NextResponse.json(
-        {
-          error:
-            "This feature is only available for premium members. Please upgrade your subscription.",
-        },
-        { status: 403 },
-      );
-    }
 
-    apiLogger.info("Premium user requesting shopping list generation", {
+    apiLogger.info("User requesting shopping list generation", {
       metadata: { userId: session.user.id, membership },
     });
 

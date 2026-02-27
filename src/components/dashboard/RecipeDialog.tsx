@@ -16,12 +16,10 @@ import {
   Wheat,
   Beef,
   MessageSquareText,
-  Lock,
 } from "lucide-react";
 import { getMealTypeColor, roundNumber } from "@/lib/functions";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { FeatureFlag } from "@/components/ui/FeatureFlag";
 
 interface Ingredient {
   name: string;
@@ -125,33 +123,17 @@ export default function RecipeDialog({
         <div className="p-6 sm:p-8 space-y-8">
           {/* Action Button: Chcem Recept */}
           <div className="flex justify-center w-full sm:justify-start">
-            <FeatureFlag
-              fallback={
-                <button
-                  type="button"
-                  disabled
-                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gray-100 text-gray-400 font-medium rounded-2xl cursor-not-allowed"
-                >
-                  <Lock className="w-4 h-4" />
-                  <span>Chcem recept</span>
-                  <span className="ml-1 text-[10px] font-bold px-1.5 py-0.5 bg-eatrivo-purple/10 text-eatrivo-purple rounded-full">
-                    BETA
-                  </span>
-                </button>
-              }
+            <button
+              type="button"
+              onClick={() => {
+                onOpenChange(false);
+                router.push(`/dashboard?section=chatWithRivo&prompt=recept-${encodeURIComponent(title)}`);
+              }}
+              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-eatrivo-purple/90 border-2 hover:from-eatrivo-purple/90 hover:to-eatrivo-pink/90 text-white font-medium rounded-2xl transition-all shadow-md shadow-eatrivo-purple/20 hover:shadow-eatrivo-purple/40 hover:-translate-y-0.5"
             >
-              <button
-                type="button"
-                onClick={() => {
-                  onOpenChange(false);
-                  router.push(`/dashboard?section=chatWithRivo&prompt=recept-${encodeURIComponent(title)}`);
-                }}
-                className="w-full  inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-eatrivo-purple/90 border-2 hover:from-eatrivo-purple/90 hover:to-eatrivo-pink/90 text-white font-medium rounded-2xl transition-all shadow-md shadow-eatrivo-purple/20 hover:shadow-eatrivo-purple/40 hover:-translate-y-0.5"
-              >
-                <MessageSquareText className="w-5 h-5" />
-                <span>Chcem recept</span>
-              </button>
-            </FeatureFlag>
+              <MessageSquareText className="w-5 h-5" />
+              <span>Chcem recept</span>
+            </button>
           </div>
 
           {/* Nutrition Grid */}

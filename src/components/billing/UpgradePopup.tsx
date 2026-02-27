@@ -12,7 +12,7 @@ interface UpgradePopupProps {
   trialDays?: number;
 }
 
-const COUNTDOWN_SECONDS = 5;
+const COUNTDOWN_SECONDS = 0.5;
 
 // ─── Circular countdown ring ────────────────────────────────────────────────
 function CountdownRing({
