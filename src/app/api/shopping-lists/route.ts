@@ -50,52 +50,52 @@ export async function GET(_request: NextRequest) {
       .where(eq(shoppingLists.userProfileId, userProfile.id))
       .orderBy(desc(shoppingLists.created_at))
 
-    // AUTO-ASSIGN TEMPLATE FOR BASIC USERS IF NO SHOPPING LISTS EXIST
-    if (userShoppingLists.length === 0 && membership === 'basic') {
-      apiLogger.info('No shopping lists found for basic user, attempting template assignment', {
-        metadata: { userId: session.user.id, userProfileId: userProfile.id }
-      })
-
-      try {
-        const { assignTemplateToUser } = await import('@/lib/template-assignment')
-        const assignmentResult = await assignTemplateToUser(userProfile.id)
-
-        if (assignmentResult.shoppingList) {
-          apiLogger.info('Template auto-assigned to basic user on-demand', {
-            metadata: {
-              userId: session.user.id,
-              shoppingListId: assignmentResult.shoppingList.id,
-              mealPlanId: assignmentResult.mealPlan?.id,
-            }
-          })
-
-          // Return the newly assigned shopping list
-          const response = {
-            success: true,
-            shoppingLists: [assignmentResult.shoppingList],
-            total: 1,
-            templateAssigned: true
-          }
-
-          // Cache the result
-          await CacheService.set(cacheKey, response, 600)
-
-          return NextResponse.json(response)
-        } else {
-          apiLogger.warn('Template assignment returned no shopping list', {
-            metadata: {
-              userId: session.user.id,
-              fallbackReason: assignmentResult.fallbackReason
-            }
-          })
-        }
-      } catch (assignmentError) {
-        apiLogger.error('Failed to auto-assign template for basic user', assignmentError, {
-          metadata: { userId: session.user.id, userProfileId: userProfile.id }
-        })
-        // Continue to return empty list instead of failing
-      }
-    }
+    // AUTO-ASSIGN TEMPLATE FOR BASIC USERS IF NO SHOPPING LISTS EXIST — temporarily disabled
+    // if (userShoppingLists.length === 0 && membership === 'basic') {
+    //   apiLogger.info('No shopping lists found for basic user, attempting template assignment', {
+    //     metadata: { userId: session.user.id, userProfileId: userProfile.id }
+    //   })
+    //
+    //   try {
+    //     const { assignTemplateToUser } = await import('@/lib/template-assignment')
+    //     const assignmentResult = await assignTemplateToUser(userProfile.id)
+    //
+    //     if (assignmentResult.shoppingList) {
+    //       apiLogger.info('Template auto-assigned to basic user on-demand', {
+    //         metadata: {
+    //           userId: session.user.id,
+    //           shoppingListId: assignmentResult.shoppingList.id,
+    //           mealPlanId: assignmentResult.mealPlan?.id,
+    //         }
+    //       })
+    //
+    //       // Return the newly assigned shopping list
+    //       const response = {
+    //         success: true,
+    //         shoppingLists: [assignmentResult.shoppingList],
+    //         total: 1,
+    //         templateAssigned: true
+    //       }
+    //
+    //       // Cache the result
+    //       await CacheService.set(cacheKey, response, 600)
+    //
+    //       return NextResponse.json(response)
+    //     } else {
+    //       apiLogger.warn('Template assignment returned no shopping list', {
+    //         metadata: {
+    //           userId: session.user.id,
+    //           fallbackReason: assignmentResult.fallbackReason
+    //         }
+    //       })
+    //     }
+    //   } catch (assignmentError) {
+    //     apiLogger.error('Failed to auto-assign template for basic user', assignmentError, {
+    //       metadata: { userId: session.user.id, userProfileId: userProfile.id }
+    //     })
+    //     // Continue to return empty list instead of failing
+    //   }
+    // }
 
     const response = {
       success: true,

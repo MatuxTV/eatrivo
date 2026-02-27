@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 import { auth } from "../../../../auth";
 import { db } from "@/index";
-import { userProfiles } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { userProfiles, users, chatMessages } from "@/db/schema";
+import { eq, and, gte, sql } from "drizzle-orm";
 import {
   HumanMessage,
   AIMessage,
@@ -13,6 +13,7 @@ import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
 const MAX_INPUT_CHARS = 600;  // ~4 vety / ~100 slov
 const MAX_HISTORY = 10;       // posledných 10 správ
+const DAILY_MESSAGE_LIMIT_BASIC = 10; // basic users: 10 messages/day
 
 export async function POST(req: NextRequest) {
   // ① Auth
@@ -25,6 +26,47 @@ export async function POST(req: NextRequest) {
     "expensive",
   );
   if (!rateLimitResult.success) return rateLimitResult.response!;
+
+  // ②b Daily message limit for basic users
+  const [user] = await db
+    .select({ membership: users.membership })
+    .from(users)
+    .where(eq(users.id, session.user.id));
+
+  if (user?.membership === "basic") {
+    const [profile] = await db
+      .select({ id: userProfiles.id })
+      .from(userProfiles)
+      .where(eq(userProfiles.userId, session.user.id));
+
+    if (profile) {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      const [{ count: todayCount }] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(chatMessages)
+        .where(
+          and(
+            eq(chatMessages.userProfileId, profile.id),
+            eq(chatMessages.role, "user"),
+            gte(chatMessages.createdAt, todayStart),
+          ),
+        );
+
+      if (todayCount >= DAILY_MESSAGE_LIMIT_BASIC) {
+        return new Response(
+          JSON.stringify({
+            error: "daily_limit_reached",
+            message: "Dosiahol si denný limit správ. Prejdi na Premium pre neobmedzený chat.",
+            limit: DAILY_MESSAGE_LIMIT_BASIC,
+            used: todayCount,
+          }),
+          { status: 429, headers: { "Content-Type": "application/json" } },
+        );
+      }
+    }
+  }
 
   // ③ Parse body bezpečne
   let messages: { role: string; content: string }[];

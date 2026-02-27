@@ -476,8 +476,8 @@ export default function ShoppingListsOverview({
                 : t("shoppingLists.showAll")}
             </Button>
           )}
-          {/* Locked "Create List" button — visible for basic users */}
-          {!isLoading && !isPremiumUser && (
+          {/* Locked "Create List" button — visible for basic users — temporarily disabled */}
+          {/* {!isLoading && !isPremiumUser && (
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
@@ -492,7 +492,7 @@ export default function ShoppingListsOverview({
                 PRO
               </span>
             </motion.button>
-          )}
+          )} */}
         </div>
       </div>
 
@@ -533,18 +533,6 @@ export default function ShoppingListsOverview({
             transition={{ duration: 0.4, ease: "easeOut" as const }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {/* Create New CTA — always visible; locked for basic users */}
-            {(!hasActiveList || isGenerating || !isPremiumUser) && (
-              <div className="hidden md:block">
-                <CreateListCTA
-                  isPremium={isPremiumUser}
-                  isGenerating={isGenerating}
-                  hasActiveList={hasActiveList}
-                  onGenerate={onGenerateNew}
-                  onLockedCreate={onLockedCreate}
-                />
-              </div>
-            )}
             {displayedLists.map((list) => (
               <ShoppingListCard key={list.id} {...list} />
             ))}
@@ -558,18 +546,6 @@ export default function ShoppingListsOverview({
             transition={{ duration: 0.4, ease: "easeOut" as const }}
             className="space-y-6"
           >
-            {/* CTA card above the empty-active-state message */}
-            {(!hasActiveList || isGenerating || !isPremiumUser) && (
-              <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <CreateListCTA
-                  isPremium={isPremiumUser}
-                  isGenerating={isGenerating}
-                  hasActiveList={hasActiveList}
-                  onGenerate={onGenerateNew}
-                  onLockedCreate={onLockedCreate}
-                />
-              </div>
-            )}
             <Card className="bg-white border-dashed border-2 border-gray-200 shadow-none rounded-3xl overflow-hidden">
               <CardContent className="flex flex-col items-center justify-center py-16 text-center px-4">
                 <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
@@ -600,18 +576,6 @@ export default function ShoppingListsOverview({
             transition={{ duration: 0.4, ease: "easeOut" as const }}
             className="space-y-6"
           >
-            {/* CTA card above the fully-empty-state message */}
-            {(!hasActiveList || isGenerating || !isPremiumUser) && (
-              <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <CreateListCTA
-                  isPremium={isPremiumUser}
-                  isGenerating={isGenerating}
-                  hasActiveList={hasActiveList}
-                  onGenerate={onGenerateNew}
-                  onLockedCreate={onLockedCreate}
-                />
-              </div>
-            )}
             <Card className="bg-white border-dashed border-2 border-gray-200 shadow-none rounded-3xl overflow-hidden">
               <CardContent className="flex flex-col items-center justify-center py-16 text-center px-4">
                 <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 animate-pulse">
@@ -623,37 +587,6 @@ export default function ShoppingListsOverview({
                 <p className="text-gray-500 max-w-md mx-auto leading-relaxed mb-4">
                   {t("shoppingLists.empty.description")}
                 </p>
-
-                {/* Premium CTA for basic users */}
-                {!isPremiumUser && (
-                  <div className="mt-4 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200 max-w-md">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Sparkles className="w-5 h-5 text-purple-600" />
-                      <p className="text-sm font-semibold text-purple-900">
-                        {t("shoppingLists.premiumCTA.title", {
-                          defaultValue: "Upgrade to Premium",
-                        })}
-                      </p>
-                    </div>
-                    <p className="text-xs text-purple-700 mb-3">
-                      {t("shoppingLists.premiumCTA.description", {
-                        defaultValue:
-                          "Generate unlimited personalized shopping lists on-demand with AI",
-                      })}
-                    </p>
-                    <Button
-                      onClick={() =>
-                        (window.location.href = "/profile/billing")
-                      }
-                      size="sm"
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs shadow-md"
-                    >
-                      {t("shoppingLists.premiumCTA.button", {
-                        defaultValue: "View Plans",
-                      })}
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </motion.div>

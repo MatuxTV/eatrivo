@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   CakeSlice,
   MessageCircleHeart,
+  ChefHat,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
@@ -18,9 +19,9 @@ import { useTranslations } from "next-intl";
 import { UserBadge } from "@/components/ui/UserBadge";
 
 interface DashboardSidebarProps {
-  activeSection: "dashboard" | "pantry" | "chatWithRivo" | "profile";
+  activeSection: "dashboard" | "pantry" | "chatWithRivo" | "mealGallery" | "profile";
   onSectionChange: (
-    section: "dashboard" | "pantry" | "chatWithRivo" | "profile",
+    section: "dashboard" | "pantry" | "chatWithRivo" | "mealGallery" | "profile",
   ) => void;
 }
 
@@ -45,7 +46,6 @@ export default function DashboardSidebar({
       id: "chatWithRivo" as const,
       label: t("nav.chatWithRivo"),
       icon: MessageCircleHeart,
-      comingSoon: !isBeta,
     },
     {
       id: "pantry" as const,
@@ -53,6 +53,12 @@ export default function DashboardSidebar({
       icon: CakeSlice,
       comingSoon: !isBeta,
     },
+    {
+      id: "mealGallery" as const,
+      label: t("nav.mealGallery"),
+      icon: ChefHat,
+      comingSoon: !isBeta,
+    }
   ];
 
   const mobileNavItems = [

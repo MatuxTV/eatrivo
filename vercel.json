@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/cleanup-subscriptions",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/notify-users",
+      "schedule": "0 10 */2 * *"
+    },
+    {
+      "path": "/api/cron/meal-plan-reminder",
+      "schedule": "0 10 * * *"
     }
   ]
 }

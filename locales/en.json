@@ -204,7 +204,7 @@
       "items": {
         "free": {
           "question": "Is Eatrivo free?",
-          "answer": "Yes! The basic version is completely free. You can use it for inspiration and a simple overview. For personalized plans and shopping lists, Premium is available from 4.99€/month."
+          "answer": "Yes! The basic version is completely free. You can create a profile, get personalized meal plans and shopping lists without any cost. The premium version offers advanced features for full utilization in achieving your goals, but the basic features are free for everyone."
         },
         "time": {
           "question": "How long does it take to get a meal plan?",
@@ -216,7 +216,7 @@
         },
         "vegan": {
           "question": "Does it work for vegetarians and vegans?",
-          "answer": "Yes! When setting up your profile, you choose your dietary preferences and AI takes them into account in every plan."
+          "answer": "Yes! When setting up your profile, you choose your dietary preferences and Rivo takes them into account in every plan."
         },
         "allergies": {
           "question": "What if I have allergies or intolerances?",
@@ -448,7 +448,8 @@
       "profile": "Profile",
       "signOut": "Sign out",
       "pantry": "Pantry",
-      "chatWithRivo": "Chat with Rivo"
+      "chatWithRivo": "Chat with Rivo",
+      "mealGallery": "Meal Gallery"
     },
     "navbar": {
       "language": "Language"
@@ -700,6 +701,18 @@
         },
         "cta": "🔔 Notify me when it launches",
         "secondaryAction": "Back to Dashboard"
+      },
+      "mealGallery": {
+        "title": "Meal Library 📚",
+        "description": "Browse hundreds of new recipes for inspiration, or return to your favorite meals that Rivo has created for you in the past.",
+        "badge": "● IN PROGRESS",
+        "tags": {
+          "tag1": "Your favorites ❤️",
+          "tag2": "New inspiration 🌍",
+          "tag3": "1-click to plan ⚡"
+        },
+        "cta": "🔔 Notify me when it launches",
+        "secondaryAction": "Back to Dashboard for now"
       },
       "chatWithRivo": {
         "title": "Chat with Rivo",
@@ -1111,22 +1124,24 @@
     "tiers": {
       "basic": {
         "name": "Basic",
-        "description": "Inspiration - Recipe ideas to get started",
+        "description": "Goal Achievement - Personalized plans that work",
         "features": [
-          "Inspiration for shopping lists based on your profile",
-          "Basic meal ideas",
-          "Ideas for what to cook based on your goals and activity level"
+          "Personalized shopping lists created by Rivo directly for you",
+          "Suggestions based on your goal and activity level",
+          "Rivo as your personal assistant"
         ]
       },
       "premium": {
         "name": "Premium",
-        "description": "Goal Achievement - Personalized plans that work",
+        "description": "All features to help you achieve your goals",
         "features": [
-          "Personalized shopping lists created by Rivo directly for you",
-          "Meal plans made from dishes verified by our experts and tailored to your preferences",
+          "Customize meals to your taste",
+          "Mark favorite and disliked meals for better customization",
+          "Meal plans created from dishes verified by our experts and tailored to your preferences",
           "Weekly challenges",
           "Advanced progress tracking",
-          "Rivo as your personal nutrition assistant"
+          "Priority access to new features and improvements",
+          "Rivo as your personal assistant without limitations"
         ]
       },
       "pro": {
