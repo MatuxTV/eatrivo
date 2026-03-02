@@ -19,6 +19,8 @@ export async function saveToDb(
     return { error: "saveToDb: userInfo is null" };
   }
 
+  apiLogger.info("[saveToDb] start", { metadata: { userProfileId, title: aiOutput.title } });
+
   try {
     // ── Week dates ──
     const now = new Date();
@@ -40,7 +42,7 @@ export async function saveToDb(
         markdownContent: aiOutput.markdown,
         weekStartDate: weekStart,
         weekEndDate: weekEnd,
-        status: "active",
+        status: "draft",
       })
       .returning();
 

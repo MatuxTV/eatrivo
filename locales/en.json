@@ -348,30 +348,6 @@
       },
       "sex": "Sex",
       "sexPlaceholder": "Select sex",
-      "sexOptions": {
-        "man": "Man",
-        "woman": "Woman"
-      },
-      "height": "Height (cm)",
-      "heightPlaceholder": "170",
-      "weight": "Weight (kg)",
-      "weightPlaceholder": "70",
-      "activityLevel": "Activity level",
-      "activityPlaceholder": "Select activity level",
-      "activityOptions": {
-        "sedentary": "Sedentary (desk job)",
-        "lightlyActive": "Lightly active (1–2x/week)",
-        "moderatelyActive": "Moderately active (3–5x/week)",
-        "veryActive": "Very active (6–7x/week)",
-        "athlete": "Athlete (multiple times/day)"
-      },
-      "goal": "Goal",
-      "goalPlaceholder": "Select a goal",
-      "goalOptions": {
-        "loseWeight": "Lose weight",
-        "maintainWeight": "Maintain weight",
-        "gainMuscle": "Gain muscle"
-      },
       "mealsPerDay": "Meals per day",
       "mealsPerDayPlaceholder": "3",
       "cookingTime": "Cooking time",
@@ -473,7 +449,11 @@
     },
     "dailyPlan": {
       "title": "Your daily plan",
-      "today": "today"
+      "today": "today",
+      "waitingForApproval": "Plan awaiting approval",
+      "waitingForApprovalDesc": "Review the meal plan and approve it.",
+      "readyForPurchase": "Ready to shop",
+      "readyForPurchaseDesc": "Your meal plan is active — just pick up the ingredients."
     },
     "time": {
       "minutesShort": "min"
@@ -573,7 +553,10 @@
     },
     "shoppingList": {
       "status": {
+        "draft": "Draft",
         "active": "Active",
+        "approved": "Approved",
+        "purchased": "Purchased",
         "completed": "Completed",
         "cancelled": "Cancelled",
         "unknown": "Unknown"
@@ -706,7 +689,7 @@
       "pantry": {
         "title": "Pantry",
         "description": "Track what's in your kitchen. Rivo will suggest meals based on what you already have.",
-        "badge": "● COMING SOON",
+        "badge": "● LIVE",
         "tags": {
           "tag1": "Automatic",
           "tag2": "Saves time",
@@ -1277,6 +1260,44 @@
       "digitalConsent": "I request immediate access to the digital service and acknowledge that I lose my 14-day right of withdrawal",
       "mustAgree": "You must agree to the terms before proceeding",
       "orderWithPayment": "Subscribe with obligation to pay"
+    }
+  },
+  "pantry": {
+    "title": "Pantry",
+    "subtitle_empty": "Your pantry is empty. Add ingredients manually or import them after marking a shopping trip as purchased.",
+    "subtitle_count_one": "{count} item",
+    "subtitle_count_few": "{count} items",
+    "subtitle_count_many": "{count} items",
+    "modal_title": "Add to Pantry",
+    "add_item": "Add item",
+    "refresh": "Refresh",
+    "filter_all": "All",
+    "filter_expiring": "⚠️ Expiring soon",
+    "empty_state_title": "Pantry is empty",
+    "empty_state_description": "Add ingredients manually or import them from a shopping list after marking the purchase as done.",
+    "add_first_item": "Add first item",
+    "no_items_in_category": "No items in this category",
+    "expiry_warning_one": "1 item is expiring soon",
+    "expiry_warning_few": "{count} items are expiring soon",
+    "source_manual": "Manual",
+    "source_shopping_list": "From shopping list",
+    "categories": {
+      "dairy": "🥛 Dairy",
+      "meat_fish": "🥩 Meat & Fish",
+      "fruit": "🍎 Fruit",
+      "vegetables": "🥦 Vegetables",
+      "grains": "🌾 Grains & Bread",
+      "eggs": "🥚 Eggs",
+      "condiments": "🧂 Condiments",
+      "beverages": "🥤 Beverages",
+      "nuts_seeds": "🥜 Nuts & Seeds",
+      "other": "📦 Other"
+    },
+    "push": {
+      "expiry_warning": {
+        "title": "⚠️ Items expiring soon",
+        "body": "Check your pantry — some items expire within 3 days."
+      }
     }
   }
 }

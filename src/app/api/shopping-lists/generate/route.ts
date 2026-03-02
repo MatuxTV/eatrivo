@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "../../../../../auth";
 import { db } from "@/index";
 import { shoppingLists, userProfiles, userInfoTable } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
 import { RequestLock } from "@/lib/redis";
 import { checkRateLimit } from "@/lib/rateLimit";
@@ -81,14 +81,15 @@ export async function POST(_req: NextRequest) {
       }
     }
 
-    // Check if the user already has an active shopping list
+    // Check if the user already has an active/in-progress shopping list
+    // Block if any list is in draft, approved, or purchased state (generation in progress or pending approval)
     const activeLists = await db
-      .select()
+      .select({ id: shoppingLists.id, status: shoppingLists.status })
       .from(shoppingLists)
       .where(
         and(
           eq(shoppingLists.userProfileId, userProfile.id),
-          eq(shoppingLists.status, "active"),
+          inArray(shoppingLists.status, ["active", "draft", "approved", "purchased"]),
         ),
       );
 
@@ -131,7 +132,12 @@ export async function POST(_req: NextRequest) {
 
             for await (const update of stream) {
               const nodeName = Object.keys(update)[0];
-              const nodeState = (update as Record<string, Partial<typeof ShoppingListState.State>>)[nodeName];
+              const nodeState = (
+                update as Record<
+                  string,
+                  Partial<typeof ShoppingListState.State>
+                >
+              )[nodeName];
 
               // Error event
               if (nodeState?.error) {
@@ -170,6 +176,7 @@ export async function POST(_req: NextRequest) {
                       type: "done",
                       shoppingList: nodeState.savedShoppingList,
                       mealPlan: nodeState.savedMealPlan ?? null,
+                      status: "draft",
                     })}\n\n`,
                   ),
                 );

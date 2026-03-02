@@ -6,6 +6,7 @@ import type {
   ShoppingHistoryItem,
   AiShoppingOutput,
 } from "./types";
+import type { PantryItem } from "./nodes/inventoryScan";
 
 export const ShoppingListState = Annotation.Root({
   // Identity
@@ -43,7 +44,7 @@ export const ShoppingListState = Annotation.Root({
     value: (x, y) => (y !== undefined ? y : x),
     default: () => [],
   }),
-  virtualPantry: Annotation<unknown>({
+  virtualPantry: Annotation<PantryItem[] | null>({
     value: (x, y) => (y !== undefined ? y : x),
     default: () => null,
   }),

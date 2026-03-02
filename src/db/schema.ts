@@ -45,7 +45,10 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "gifted",
 ]);
 export const shoppingListStatusEnum = pgEnum("shopping_list_status", [
+  "draft",
   "active",
+  "approved",
+  "purchased",
   "completed",
   "cancelled",
 ]);
@@ -63,6 +66,11 @@ export const consentTypeEnum = pgEnum("consent_type", [
 ]);
 
 export const badgeTypeEnum = pgEnum("badge_type", ["legacy"]);
+
+export const pantryItemSourceEnum = pgEnum("pantry_item_source", [
+  "manual",
+  "shopping_list",
+]);
 
 export const foodItems = pgTable("food_items", {
   id: integer("id").primaryKey().notNull(),
@@ -185,6 +193,28 @@ export const mealPlans = pgTable("meal_plans", {
   weekEndDate: timestamp("weekEndDate").notNull(),
   meals: jsonb("meals").notNull(), // Store meal plan as JSON
   created_at: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const pantryItems = pgTable("pantry_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userProfileId: uuid("userProfileId")
+    .notNull()
+    .references(() => userProfiles.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  quantity: numeric("quantity", { precision: 8, scale: 3 }),
+  unit: text("unit"),
+  category: text("category"),
+  expiryDate: timestamp("expiry_date", { withTimezone: true }),
+  source: pantryItemSourceEnum("source").default("manual").notNull(),
+  shoppingListId: uuid("shopping_list_id").references(() => shoppingLists.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });

@@ -114,6 +114,33 @@ Oprav tieto problémy v novom zozname.
 `;
   }
 
+  // ── Pantry context block ──
+  let pantryBlock = "";
+  if (
+    state.virtualPantry &&
+    Array.isArray(state.virtualPantry) &&
+    state.virtualPantry.length > 0
+  ) {
+    const items = state.virtualPantry as {
+      name: string;
+      quantity: number | null;
+      unit: string | null;
+    }[];
+    const pantryLines = items
+      .map((item) => {
+        const qty = item.quantity
+          ? `${item.quantity}${item.unit ? " " + item.unit : ""}`
+          : "";
+        return `- ${item.name}${qty ? ": " + qty : ""}`;
+      })
+      .join("\n");
+    const pantryHeader =
+      language === "en"
+        ? `## PANTRY INVENTORY (items already at home)\nThe user already has these items at home. Do not add them to the shopping list unless restocking is necessary:`
+        : `## ZÁSOBY V ŠPAJZI (už má doma)\nPoužívateľ už má tieto potraviny doma. Nepridávaj ich do nákupného zoznamu, pokiaľ nie je potrebné doplniť zásoby:`;
+    pantryBlock = `\n${pantryHeader}\n${pantryLines}\n`;
+  }
+
   const today = new Date();
   const birthDate = new Date(userInfo.dateOfBirth!);
   let userAge = today.getFullYear() - birthDate.getFullYear();
@@ -132,7 +159,7 @@ ${userInfo.sex === "man" ? "Muž" : "Žena"}, ${userAge}r, ${userInfo.weight}kg,
 Cieľ: ${userInfo.goal} | Aktivita: ${userInfo.activity_level} | Jedál: ${userInfo.meal_per_day}/deň
 Diéta: ${userInfo.diet_preferences || "žiadna"} | Čas: ${userInfo.cooking_time_pref || "normal"} | Budget: ${userInfo.budget_preference}
 Obľúbené: ${userInfo.likes || "-"} | Neobľúbené: ${userInfo.dislikes || "-"} | Alergie: ${userInfo.allergies || "-"}
-
+${pantryBlock}
 📊 VYPOČÍTANÉ ENERGETICKÉ POTREBY:
 Cieľové kalórie: ${dailyCalories} kcal
 
@@ -302,6 +329,8 @@ Uisti sa, že vrátiš čistý JSON (začni { a skonči }), bez markdown wrapper
       hasHistory: shoppingHistory.length > 0,
       hasFeedback: !!feedbackContext,
       retryCount,
+      pantryItemCount: state.virtualPantry?.length ?? 0,
+      pantryInjected: (state.virtualPantry?.length ?? 0) > 0,
     },
   });
 

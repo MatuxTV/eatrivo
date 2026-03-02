@@ -1,8 +1,13 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HumanMessage } from "@langchain/core/messages";
+import { setMaxListeners } from "events";
 import { apiLogger } from "@/lib/logger";
 import type { ShoppingListState } from "../state";
 import type { AiShoppingOutput } from "../types";
+
+// LangChain/Gemini SDK attaches multiple abort listeners per call to AbortSignal (EventTarget).
+// events.setMaxListeners() without a target sets the default for both EventEmitter and EventTarget.
+setMaxListeners(30);
 
 function extractJSON(content: string): string {
   // Pokus 1: Odstráň markdown wrapper
@@ -44,8 +49,9 @@ export async function aiGenerator(
     return { error: "GOOGLE_AI_API_KEY not configured" };
   }
 
-  // LangChain/Gemini SDK adds multiple abort listeners per call — increase limit to suppress warning
-  process.setMaxListeners(25);
+  apiLogger.info("[aiGenerator] start — calling Gemini", {
+    metadata: { userProfileId: state.userProfileId, model: "gemini-3-flash-preview", promptLength: systemPrompt.length },
+  });
 
   const model = new ChatGoogleGenerativeAI({
     model: "gemini-3-flash-preview",
@@ -89,6 +95,15 @@ export async function aiGenerator(
           carbs: parsed.estimatedMacros?.carbs ?? 0,
         },
       };
+
+      apiLogger.info("[aiGenerator] Gemini response parsed OK", {
+        metadata: {
+          userProfileId: state.userProfileId,
+          title: aiOutput.title,
+          estimatedCalories: aiOutput.estimatedMacros.totalCalories,
+          markdownLength: aiOutput.markdown.length,
+        },
+      });
 
       return { aiOutput };
     } catch (parseErr) {

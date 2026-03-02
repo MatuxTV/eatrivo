@@ -19,9 +19,19 @@ import { useTranslations } from "next-intl";
 import { UserBadge } from "@/components/ui/UserBadge";
 
 interface DashboardSidebarProps {
-  activeSection: "dashboard" | "pantry" | "chatWithRivo" | "mealGallery" | "profile";
+  activeSection:
+    | "dashboard"
+    | "pantry"
+    | "chatWithRivo"
+    | "mealGallery"
+    | "profile";
   onSectionChange: (
-    section: "dashboard" | "pantry" | "chatWithRivo" | "mealGallery" | "profile",
+    section:
+      | "dashboard"
+      | "pantry"
+      | "chatWithRivo"
+      | "mealGallery"
+      | "profile",
   ) => void;
 }
 
@@ -51,14 +61,13 @@ export default function DashboardSidebar({
       id: "pantry" as const,
       label: t("nav.pantry"),
       icon: CakeSlice,
-      comingSoon: !isBeta,
     },
     {
       id: "mealGallery" as const,
       label: t("nav.mealGallery"),
       icon: ChefHat,
       comingSoon: !isBeta,
-    }
+    },
   ];
 
   const mobileNavItems = [

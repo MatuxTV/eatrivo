@@ -19,7 +19,13 @@ interface ShoppingList {
   description?: string;
   weekStartDate: string;
   weekEndDate: string;
-  status: "active" | "completed" | "cancelled";
+  status:
+    | "draft"
+    | "active"
+    | "approved"
+    | "purchased"
+    | "completed"
+    | "cancelled";
   markdownContent?: string;
   createdAt: string;
 }
@@ -31,6 +37,7 @@ interface ShoppingListsOverviewProps {
   onGenerateNew?: () => void;
   isGenerating?: boolean;
   onLockedCreate?: () => void;
+  onStatusChange?: () => void;
 }
 
 // ─── Narrative loader phrases ─────────────────────────────────────────────────
@@ -429,6 +436,7 @@ export default function ShoppingListsOverview({
   membership = "basic",
   onGenerateNew,
   onLockedCreate,
+  onStatusChange,
 }: ShoppingListsOverviewProps) {
   const t = useTranslations("dashboard");
   const [showAll, setShowAll] = useState(false);
@@ -441,14 +449,21 @@ export default function ShoppingListsOverview({
   // Filter lists - show only active by default
   const displayedLists = useMemo(() => {
     if (showAll) return lists;
-    return lists.filter((list) => list.status === "active");
+    return lists.filter((list) =>
+      ["draft", "active", "approved", "purchased"].includes(list.status),
+    );
   }, [lists, showAll]);
 
   const hasActiveList = useMemo(() => {
-    return lists.some((list) => list.status === "active");
+    return lists.some((list) =>
+      ["active", "approved", "purchased"].includes(list.status),
+    );
   }, [lists]);
 
-  const hasInactiveLists = lists.some((list) => list.status !== "active");
+  const hasInactiveLists = lists.some(
+    (list) =>
+      !["draft", "active", "approved", "purchased"].includes(list.status),
+  );
 
   return (
     <div className="space-y-6">
@@ -540,7 +555,11 @@ export default function ShoppingListsOverview({
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {displayedLists.map((list) => (
-              <ShoppingListCard key={list.id} {...list} />
+              <ShoppingListCard
+                key={list.id}
+                {...list}
+                onStatusChange={onStatusChange}
+              />
             ))}
           </motion.div>
         ) : lists.length > 0 ? (

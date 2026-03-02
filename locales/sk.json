@@ -473,7 +473,11 @@
     },
     "dailyPlan": {
       "title": "Váš denný plán",
-      "today": "dnes"
+      "today": "dnes",
+      "waitingForApproval": "Plán čaká na schválenie",
+      "waitingForApprovalDesc": "Prezri si jedálniček a schváľ ho.",
+      "readyForPurchase": "Pripravené na nákup",
+      "readyForPurchaseDesc": "Jedálniček je aktívny, zostáva už len nakovť prísady."
     },
     "time": {
       "minutesShort": "min"
@@ -573,7 +577,10 @@
     },
     "shoppingList": {
       "status": {
+        "draft": "Návrh",
         "active": "Aktívny",
+        "approved": "Schválený",
+        "purchased": "Nakúpené",
         "completed": "Dokončený",
         "cancelled": "Zrušený",
         "unknown": "Neznámy"
@@ -706,7 +713,7 @@
       "pantry": {
         "title": "Inteligentná Špajza",
         "description": "Zabudni na manuálne zapisovanie. Rivo si čoskoro zapamätá tvoje nákupy a sám odpočíta suroviny, keď si jedlo uvaríš.",
-        "badge": "● UŽ ČOSKORO",
+        "badge": "● LIVE",
         "tags": {
           "tag1": "Automatické",
           "tag2": "Šetrí čas",
@@ -1263,6 +1270,44 @@
       "digitalConsent": "Žiadam o okamžité začatie poskytovania digitálnej služby a beriem na vedomie, že tým strácam právo na odstúpenie od zmluvy v 14-dňovej lehote",
       "mustAgree": "Pre pokračovanie musíte súhlasiť s podmienkami",
       "orderWithPayment": "Záväzne predplatiť"
+    }
+  },
+  "pantry": {
+    "title": "Spajza",
+    "subtitle_empty": "Spajza je prázdna. Pridaj ingrediencie manuálne alebo ich importuj po označení nákupu ako nakúpené.",
+    "modal_title": "Pridať do spajzy",
+    "subtitle_count_one": "{count} položka",
+    "subtitle_count_few": "{count} položky",
+    "subtitle_count_many": "{count} položiek",
+    "add_item": "Pridať",
+    "refresh": "Obnoviť",
+    "filter_all": "Všetko",
+    "filter_expiring": "⚠️ Expirácia",
+    "empty_state_title": "Spajza je prázdna",
+    "empty_state_description": "Pridaj ingrediencie manuálne alebo ich importuj z nákupného zoznamu po označení nákupu ako nakúpené.",
+    "add_first_item": "Pridať prvú položku",
+    "no_items_in_category": "Žiadne položky v tejto kategórii",
+    "expiry_warning_one": "1 položka čoskoro expiruje",
+    "expiry_warning_few": "{count} položky čoskoro expirujú",
+    "source_manual": "Manuálne",
+    "source_shopping_list": "Z nákupu",
+    "categories": {
+      "dairy": "🥛 Mliečne výrobky",
+      "meat_fish": "🥩 Mäso a ryby",
+      "fruit": "🍎 Ovocie",
+      "vegetables": "🥦 Zelenina",
+      "grains": "🌾 Obilniny & pečivo",
+      "eggs": "🥚 Vajcia",
+      "condiments": "🧂 Koreniny & omáčky",
+      "beverages": "🥤 Nápoje",
+      "nuts_seeds": "🥜 Orechy & semená",
+      "other": "📦 Ostatné"
+    },
+    "push": {
+      "expiry_warning": {
+        "title": "⚠️ Potraviny čoskoro expirujú",
+        "body": "Skontroluj svoju spajzu — niektoré položky expirujú do 3 dní."
+      }
     }
   }
 }

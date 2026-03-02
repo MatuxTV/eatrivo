@@ -1,4 +1,5 @@
 import type { ShoppingListState } from "../state";
+import { apiLogger } from "@/lib/logger";
 
 /**
  * Validates estimated macros from AI output against computed macro targets.
@@ -9,6 +10,8 @@ export async function macroValidator(
   state: typeof ShoppingListState.State,
 ): Promise<Partial<typeof ShoppingListState.State>> {
   const { aiOutput, macroTargets, retryCount } = state;
+
+  apiLogger.info("[macroValidator] start", { metadata: { userProfileId: state.userProfileId, retryCount, hasAiOutput: !!aiOutput } });
 
   // Ak sme vyčerpali retry a stále nemáme aiOutput, ukonči s jasnou chybou
   if (retryCount >= 3 && !aiOutput) {
@@ -66,11 +69,22 @@ export async function macroValidator(
 
   // Ak všetko OK alebo retryCount >= 3: prepustiť
   if (issues.length === 0 || retryCount >= 3) {
+    if (issues.length === 0) {
+      apiLogger.info("[macroValidator] PASS — macros within range", { metadata: { userProfileId: state.userProfileId } });
+    } else {
+      apiLogger.warn("[macroValidator] max retries reached, accepting output despite issues", {
+        metadata: { userProfileId: state.userProfileId, issues },
+      });
+    }
     return {};
   }
 
   // Ak invalid a retryCount < 3: retry
   const feedbackContext = `Makrá mimo rozsahu:\n${issues.join("\n")}`;
+
+  apiLogger.warn("[macroValidator] RETRY triggered", {
+    metadata: { userProfileId: state.userProfileId, retryCount: retryCount + 1, issues },
+  });
 
   return {
     retryCount: retryCount + 1,

@@ -1,5 +1,6 @@
 import type { ShoppingListState } from "../state";
 import type { MacroTargets } from "../types";
+import { apiLogger } from "@/lib/logger";
 
 const activityMultipliers: Record<string, number> = {
   sedentary: 1.2,
@@ -23,6 +24,8 @@ export async function macroCalc(
 ): Promise<Partial<typeof ShoppingListState.State>> {
   const { userInfo } = state;
   if (!userInfo) return { error: "macroCalc: userInfo is null" };
+
+  apiLogger.info("[macroCalc] start", { metadata: { userProfileId: state.userProfileId, goal: userInfo.goal, activity: userInfo.activity_level } });
 
   // ── Age ──
   const today = new Date();
@@ -82,6 +85,16 @@ export async function macroCalc(
     fat,
     carbs,
   };
+
+  apiLogger.info("[macroCalc] result", {
+    metadata: {
+      userProfileId: state.userProfileId,
+      dailyCalories,
+      protein,
+      fat,
+      carbs,
+    },
+  });
 
   return { macroTargets };
 }

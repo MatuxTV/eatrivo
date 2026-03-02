@@ -26,6 +26,9 @@ export async function notifyUser(
         shoppingListId: (state.savedShoppingList as { id?: string })?.id,
       },
     });
+    apiLogger.info("[notifyUser] push notification sent", {
+      metadata: { userId: state.userId, hasMealPlan },
+    });
   } catch (err) {
     // Push notifikácia nie je kritická — nesmie zabiť graf
     // User videl SSE progress bar a dostane data cez type:"done" event

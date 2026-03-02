@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export interface GenerationState {
   isGenerating: boolean;
@@ -12,6 +12,7 @@ export interface GenerationState {
   result: {
     shoppingList: Record<string, unknown>;
     mealPlan: Record<string, unknown> | null;
+    status: "draft" | "active" | null;
   } | null;
 }
 
@@ -23,6 +24,52 @@ export function useShoppingListGeneration() {
   const [retryCount, setRetryCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<GenerationState["result"]>(null);
+  const resumePollerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  /**
+   * On page load, check if a generation was already in progress (e.g. user refreshed).
+   * If the Redis lock is active, show the generating UI and poll until it clears,
+   * then call onDone() so the caller can refresh shopping lists.
+   */
+  const checkAndResume = useCallback(async (onDone: () => void) => {
+    try {
+      const res = await fetch("/api/shopping-lists/generate/status");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.isGenerating) return;
+
+      console.debug("[Generation] Lock detected on mount — resuming UI", { remainingTime: data.remainingTime });
+      setIsGenerating(true);
+      setCurrentLabel("loader.generatingList");
+      setProgress(10); // indicate something is happening
+
+      // Clear any existing poller
+      if (resumePollerRef.current) clearInterval(resumePollerRef.current);
+
+      resumePollerRef.current = setInterval(async () => {
+        try {
+          const pollRes = await fetch("/api/shopping-lists/generate/status");
+          if (!pollRes.ok) return;
+          const pollData = await pollRes.json();
+          console.debug("[Generation] Poll", { isGenerating: pollData.isGenerating, remaining: pollData.remainingTime });
+
+          if (!pollData.isGenerating) {
+            clearInterval(resumePollerRef.current!);
+            resumePollerRef.current = null;
+            setIsGenerating(false);
+            setProgress(100);
+            setCurrentLabel("loader.done");
+            console.debug("[Generation] Lock released — calling onDone");
+            onDone();
+          }
+        } catch {
+          // ignore transient errors
+        }
+      }, 3000);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const generate = useCallback(async () => {
     // 1. Reset state
@@ -69,6 +116,7 @@ export function useShoppingListGeneration() {
               setResult({
                 shoppingList: json.shoppingList,
                 mealPlan: json.mealPlan ?? null,
+                status: json.status ?? null,
               });
               setProgress(100);
               setCurrentLabel("loader.done");
@@ -111,5 +159,6 @@ export function useShoppingListGeneration() {
     error,
     result,
     generate,
+    checkAndResume,
   };
 }

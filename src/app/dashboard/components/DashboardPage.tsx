@@ -37,6 +37,7 @@ import DailyNutritionSummary from "./DailyNutritionSummary";
 import DailyMealPlan from "./DailyMealPlan";
 import ShoppingListsOverview from "./ShoppingListsOverview";
 import ComingSoonPage from "./ComingSoonPage";
+import PantrySection from "./PantrySection";
 import BodyHealthCircle from "./BodyHealtCircle";
 import WeightTracker from "./WeightTracker";
 import ProfilePageClient from "@/app/profile/components/ProfilePageClient";
@@ -88,7 +89,13 @@ interface ShoppingList {
   description?: string;
   weekStartDate: string;
   weekEndDate: string;
-  status: "active" | "completed" | "cancelled";
+  status:
+    | "draft"
+    | "active"
+    | "approved"
+    | "purchased"
+    | "completed"
+    | "cancelled";
   createdAt: string;
 }
 
@@ -124,6 +131,7 @@ export default function DashboardPage() {
     error: generationError,
     result: generationResult,
     generate: generateShoppingList,
+    checkAndResume,
   } = useShoppingListGeneration();
   const [mealPlanData, setMealPlanData] = useState<DayMealPlan[]>([]);
   const [isMounted, setIsMounted] = useState(false);
@@ -251,7 +259,13 @@ export default function DashboardPage() {
             weekStartDate: offlineList.weekStartDate.toString(),
             weekEndDate: offlineList.weekEndDate.toString(),
             createdAt: offlineList.createdAt.toString(),
-            status: offlineList.status as "active" | "completed" | "cancelled",
+            status: offlineList.status as
+              | "draft"
+              | "active"
+              | "approved"
+              | "purchased"
+              | "completed"
+              | "cancelled",
           };
           setShoppingLists([formattedList]);
           toast.info(t("pwa.offline.showingData"));
@@ -297,6 +311,13 @@ export default function DashboardPage() {
     if (!isMounted || !session?.user) return;
     fetchShoppingLists();
   }, [isMounted, session, t]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // On mount, check if generation was already running (e.g. user refreshed mid-generation)
+  // If the Redis lock is active, restore the generating UI and poll until it completes.
+  useEffect(() => {
+    if (!isMounted || !session?.user) return;
+    checkAndResume(fetchShoppingLists);
+  }, [isMounted, session]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // GENERATE NEW SHOPPING LIST — now handled by useShoppingListGeneration SSE hook
 
@@ -466,7 +487,17 @@ export default function DashboardPage() {
   }, [mealPlanData, isMounted, selectedDayIndex]);
 
   const hasActiveShoppingList = useMemo(() => {
-    return shoppingLists.some((list) => list.status === "active");
+    return shoppingLists.some((list) =>
+      ["active", "approved", "purchased"].includes(list.status),
+    );
+  }, [shoppingLists]);
+
+  const pendingShoppingList = useMemo(() => {
+    return (
+      shoppingLists.find(
+        (list) => list.status === "draft" || list.status === "approved",
+      ) || null
+    );
   }, [shoppingLists]);
 
   const hasActiveMealPlan = useMemo(() => {
@@ -651,11 +682,13 @@ export default function DashboardPage() {
                     meals={todaysMeals}
                     isLoading={isLoading.mealPlans}
                     hasActiveShoppingList={hasActiveShoppingList}
+                    pendingShoppingList={pendingShoppingList}
                     isGeneratingList={isGenerating}
                     onGenerateList={generateShoppingList}
                     generationProgress={generationProgress}
                     generationLabel={generationLabel}
                     retryCount={generationRetryCount}
+                    onStatusChange={fetchShoppingLists}
                   />
                 </section>
               </div>
@@ -664,12 +697,16 @@ export default function DashboardPage() {
                 {/* Shopping Lists - Takes up 2 columns on large screens, last on mobile */}
                 <div className="lg:col-span-2 order-2 lg:order-1">
                   <ShoppingListsOverview
-                    lists={shoppingLists}
+                    lists={shoppingLists.filter(
+                      (list) =>
+                        list.status !== "draft" && list.status !== "approved",
+                    )}
                     isLoading={isLoading.shoppingLists}
                     isGenerating={isGenerating}
                     membership={session?.user?.membership || "basic"}
                     onGenerateNew={generateShoppingList}
                     onLockedCreate={() => setShowUpgradePopup(true)}
+                    onStatusChange={fetchShoppingLists}
                   />
                 </div>
 
@@ -746,60 +783,9 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="h-full flex items-center justify-center p-4 md:p-8"
+              className="max-w-7xl mx-auto"
             >
-              <FeatureFlag
-                fallback={
-                  <ComingSoonPage
-                    titleKey="pantry.title"
-                    descriptionKey="pantry.description"
-                    icon={<CakeSlice className="w-8 h-8 text-eatrivo-purple" />}
-                    rivoImage="/rivo/RIVO3-remove.png"
-                    gradient="bg-gradient-to-br from-orange-400 to-pink-400"
-                    showBackButton={false}
-                    className="w-full max-w-2xl"
-                    badgeKey="pantry.badge"
-                    features={[
-                      t("comingSoon.pantry.tags.tag1"),
-                      t("comingSoon.pantry.tags.tag2"),
-                      t("comingSoon.pantry.tags.tag3"),
-                    ]}
-                    ctaLabelKey="pantry.cta"
-                    secondaryLabelKey="pantry.secondaryAction"
-                    onCtaClick={() => {
-                      toast.success(
-                        "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
-                      );
-                    }}
-                    onSecondaryClick={() => setActiveSection("dashboard")}
-                  />
-                }
-              >
-                {/* Real Pantry content goes here once built */}
-                <ComingSoonPage
-                  titleKey="pantry.title"
-                  descriptionKey="pantry.description"
-                  icon={<CakeSlice className="w-8 h-8 text-eatrivo-purple" />}
-                  rivoImage="/rivo/RIVO3-remove.png"
-                  gradient="bg-gradient-to-br from-orange-400 to-pink-400"
-                  showBackButton={false}
-                  className="w-full max-w-2xl"
-                  badgeKey="pantry.badge"
-                  features={[
-                    t("comingSoon.pantry.tags.tag1"),
-                    t("comingSoon.pantry.tags.tag2"),
-                    t("comingSoon.pantry.tags.tag3"),
-                  ]}
-                  ctaLabelKey="pantry.cta"
-                  secondaryLabelKey="pantry.secondaryAction"
-                  onCtaClick={() => {
-                    toast.success(
-                      "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
-                    );
-                  }}
-                  onSecondaryClick={() => setActiveSection("dashboard")}
-                />
-              </FeatureFlag>
+              <PantrySection />
             </motion.div>
           ) : activeSection === "profile" ? (
             <motion.div
@@ -859,23 +845,22 @@ export default function DashboardPage() {
                   />
                 }
               >
-                {/* Real Pantry content goes here once built */}
                 <ComingSoonPage
-                  titleKey="pantry.title"
-                  descriptionKey="pantry.description"
-                  icon={<CakeSlice className="w-8 h-8 text-eatrivo-purple" />}
+                  titleKey="mealGallery.title"
+                  descriptionKey="mealGallery.description"
+                  icon={<ChefHat className="w-8 h-8 text-eatrivo-purple" />}
                   rivoImage="/rivo/RIVO3-remove.png"
                   gradient="bg-gradient-to-br from-orange-400 to-pink-400"
                   showBackButton={false}
                   className="w-full max-w-2xl"
-                  badgeKey="pantry.badge"
+                  badgeKey="mealGallery.badge"
                   features={[
-                    t("comingSoon.pantry.tags.tag1"),
-                    t("comingSoon.pantry.tags.tag2"),
-                    t("comingSoon.pantry.tags.tag3"),
+                    t("comingSoon.mealGallery.tags.tag1"),
+                    t("comingSoon.mealGallery.tags.tag2"),
+                    t("comingSoon.mealGallery.tags.tag3"),
                   ]}
-                  ctaLabelKey="pantry.cta"
-                  secondaryLabelKey="pantry.secondaryAction"
+                  ctaLabelKey="mealGallery.cta"
+                  secondaryLabelKey="mealGallery.secondaryAction"
                   onCtaClick={() => {
                     toast.success(
                       "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔",
