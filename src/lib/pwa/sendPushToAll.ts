@@ -152,3 +152,65 @@ export async function sendPushToUser(
     cleaned,
   };
 }
+
+/**
+ * Send personalized push notifications to a batch of subscriptions.
+ * Useful for cron jobs and admin broadcasts where the payload might depend on user language or state.
+ * Handles 410 (expired) subscriptions by deleting them.
+ * Processes in chunks of 50 to avoid rate limits.
+ */
+export async function sendPushBatch(
+  messages: {
+    id: string; // Subscription ID
+    subscription: unknown; // PushSubscription object
+    payload: PushNotificationPayload;
+  }[],
+): Promise<SendPushResult> {
+  if (!VAPID_PRIVATE_KEY || !VAPID_PUBLIC_KEY || !process.env.ADMIN_EMAIL) {
+    throw new Error("Missing VAPID keys or ADMIN_EMAIL env variables");
+  }
+
+  if (messages.length === 0) {
+    return { totalSubscriptions: 0, successful: 0, failed: 0, cleaned: 0 };
+  }
+
+  let successful = 0;
+  let failed = 0;
+  let cleaned = 0;
+
+  const BATCH_SIZE = 50;
+  for (let i = 0; i < messages.length; i += BATCH_SIZE) {
+    const batch = messages.slice(i, i + BATCH_SIZE);
+
+    const results = await Promise.allSettled(
+      batch.map(async ({ id, subscription, payload }) => {
+        try {
+          await webpush.sendNotification(
+            subscription as webpush.PushSubscription,
+            JSON.stringify(payload),
+          );
+          return { success: true };
+        } catch (error) {
+          const pushError = error as { statusCode?: number };
+          if (pushError.statusCode === 410) {
+            await db
+              .delete(pushSubscriptions)
+              .where(eq(pushSubscriptions.id, id));
+            cleaned++;
+          }
+          throw error;
+        }
+      }),
+    );
+
+    successful += results.filter((r) => r.status === "fulfilled").length;
+    failed += results.filter((r) => r.status === "rejected").length;
+  }
+
+  return {
+    totalSubscriptions: messages.length,
+    successful,
+    failed,
+    cleaned,
+  };
+}

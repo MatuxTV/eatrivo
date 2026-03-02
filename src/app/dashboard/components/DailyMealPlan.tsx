@@ -9,12 +9,6 @@ import { useTranslations } from "next-intl";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 
-const LOADER_KEYS = [
-  "shoppingLists.createNew.loader.scanning",
-  "shoppingLists.createNew.loader.optimizing",
-  "shoppingLists.createNew.loader.finishing",
-] as const;
-
 const fadeIn = {
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
@@ -45,6 +39,12 @@ interface DailyMealPlanProps {
   isGeneratingList?: boolean;
   /** Callback to generate a new shopping list */
   onGenerateList?: () => void;
+  /** SSE generation progress (0-100) */
+  generationProgress?: number;
+  /** SSE i18n label key, e.g. "loader.generatingList" */
+  generationLabel?: string;
+  /** SSE retry count */
+  retryCount?: number;
 }
 
 export default function DailyMealPlan({
@@ -53,18 +53,12 @@ export default function DailyMealPlan({
   hasActiveShoppingList = true,
   isGeneratingList = false,
   onGenerateList,
+  generationProgress = 0,
+  generationLabel,
+  retryCount = 0,
 }: DailyMealPlanProps) {
   const t = useTranslations("dashboard");
   const shouldReduceMotion = useReducedMotion();
-  const [loaderIndex, setLoaderIndex] = useState(0);
-
-  useEffect(() => {
-    if (!isGeneratingList) { setLoaderIndex(0); return; }
-    const interval = setInterval(() => {
-      setLoaderIndex((prev) => (prev + 1) % LOADER_KEYS.length);
-    }, 2800);
-    return () => clearInterval(interval);
-  }, [isGeneratingList]);
 
   return (
     <AnimatePresence mode="wait">
@@ -88,8 +82,14 @@ export default function DailyMealPlan({
           className="relative group"
         >
           <motion.div
-            whileHover={shouldReduceMotion || isGeneratingList ? {} : { scale: 1.01, y: -2 }}
-            whileTap={shouldReduceMotion || isGeneratingList ? {} : { scale: 0.99 }}
+            whileHover={
+              shouldReduceMotion || isGeneratingList
+                ? {}
+                : { scale: 1.01, y: -2 }
+            }
+            whileTap={
+              shouldReduceMotion || isGeneratingList ? {} : { scale: 0.99 }
+            }
             onClick={() => !isGeneratingList && onGenerateList?.()}
             className="relative overflow-hidden cursor-pointer rounded-2xl border-2 border-dashed border-eatrivo-purple/30 hover:border-eatrivo-purple/60 bg-gradient-to-br from-white via-purple-50/40 to-pink-50/30 transition-all duration-500 shadow-sm hover:shadow-md"
             role="button"
@@ -110,7 +110,7 @@ export default function DailyMealPlan({
               aria-hidden="true"
             />
             <div
-              className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full blur-xl bg-pink-400/5"
+              className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full blur-xl bg-eatrivo-pink/5"
               aria-hidden="true"
             />
 
@@ -138,14 +138,21 @@ export default function DailyMealPlan({
                       })}
                     </p>
                     <motion.div
-                      animate={shouldReduceMotion ? {} : { rotate: [0, 15, -10, 15, 0] }}
+                      animate={
+                        shouldReduceMotion
+                          ? {}
+                          : { rotate: [0, 15, -10, 15, 0] }
+                      }
                       transition={{
                         duration: 1.4,
                         repeat: Infinity,
                         repeatDelay: 4,
                       }}
                     >
-                      <Sparkles className="w-5 h-5 text-eatrivo-purple/60" aria-hidden="true" />
+                      <Sparkles
+                        className="w-5 h-5 text-eatrivo-purple/60"
+                        aria-hidden="true"
+                      />
                     </motion.div>
                   </div>
                   <p className="text-sm text-gray-500 leading-relaxed max-w-md">
@@ -188,12 +195,12 @@ export default function DailyMealPlan({
         >
           {/* Animated background blobs */}
           <motion.div
-            className="absolute w-24 h-24 bg-purple-300/40 rounded-full blur-2xl top-0 left-0"
+            className="absolute w-24 h-24 bg-eatrivo-purple/40 rounded-full blur-2xl top-0 left-0"
             animate={{ x: [0, 60, -20, 0], y: [0, 40, -40, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="absolute w-32 h-32 bg-pink-300/30 rounded-full blur-3xl bottom-[-20%] right-[-10%]"
+            className="absolute w-32 h-32 bg-eatrivo-pink/30 rounded-full blur-3xl bottom-[-20%] right-[-10%]"
             animate={{ x: [0, -50, 20, 0], y: [0, -50, 10, 0] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -204,33 +211,40 @@ export default function DailyMealPlan({
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             />
-            <div className="h-7 overflow-hidden relative w-full mb-1">
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={loaderIndex}
-                  initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -15 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                  className="text-base font-bold text-gray-900 absolute inset-0 flex items-center justify-center"
-                >
-                  {t(LOADER_KEYS[loaderIndex])}
-                </motion.p>
-              </AnimatePresence>
-            </div>
-            <p className="text-xs text-gray-500/90 max-w-[260px] mb-5 leading-relaxed font-medium">
-              {t("shoppingLists.createNew.sitTight", {
-                defaultValue:
-                  "Crafting the perfect meal plan tailored for your body and goals.",
-              })}
-            </p>
-            <div className="w-32 h-1.5 bg-gray-100/80 rounded-full overflow-hidden relative shadow-inner">
-              <motion.div
-                className="absolute inset-0 h-full bg-gradient-to-r from-eatrivo-purple via-pink-400 to-eatrivo-purple rounded-full w-[200%]"
-                animate={shouldReduceMotion ? {} : { x: ["-50%", "0%"] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+
+            <div className="w-full bg-white/20 rounded-full h-2 mb-3 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink h-2 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${generationProgress}%` }}
               />
             </div>
+
+            {/* Label */}
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={generationLabel ?? "loading"}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="text-white/80 text-sm text-center"
+              >
+                {generationLabel
+                  ? t(`shoppingLists.createNew.${generationLabel}`)
+                  : t("shoppingLists.createNew.loader.buildingPrompt")}
+              </motion.p>
+            </AnimatePresence>
+
+            {/* Retry badge */}
+            {retryCount > 0 && (
+              <span className="mt-2 text-xs text-eatrivo-orange/90 bg-eatrivo-orange/10 px-2 py-1 rounded-full">
+                {t("shoppingLists.createNew.loader.retrying", {
+                  count: retryCount,
+                })}
+              </span>
+            )}
+
+            {/* Percentage */}
+            <p className="text-white/40 text-xs mt-1">{generationProgress}%</p>
           </div>
         </motion.div>
       ) : meals.length === 0 ? (

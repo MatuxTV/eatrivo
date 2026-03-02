@@ -129,6 +129,7 @@ export class EatrivoAIService {
     return cleaned;
   }
 
+  /** @deprecated Volané z saveToDb LangGraph nodu. Migrovať do samostatného generateMealPlan nodu keď bude čas. */
   static async generateWeeklyMealPlan(
     userProfile: UserProfile,
     shoppingListData: ShoppingData,
@@ -292,6 +293,7 @@ ${
     }
   }
 
+  /** @deprecated Nahradené LangGraph grafom v src/lib/langgraph/shopping-list/. Zachované ako fallback. */
   static async generateShoppingList(userInfo: ShoppingListUserInfo) {
     try {
       if (!process.env.GOOGLE_AI_API_KEY) {

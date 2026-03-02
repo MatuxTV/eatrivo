@@ -114,7 +114,9 @@ export function CreateListCTA({
       }
       onClick={handleClick}
       className={`relative group select-none flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 rounded-2xl h-full ${
-        isBlockedByActiveList ? "cursor-not-allowed opacity-80" : "cursor-pointer"
+        isBlockedByActiveList
+          ? "cursor-not-allowed opacity-80"
+          : "cursor-pointer"
       } ${className || ""}`}
       role="button"
       tabIndex={0}
@@ -167,7 +169,7 @@ export function CreateListCTA({
             >
               {/* Blurred animated dots */}
               <motion.div
-                className="absolute w-24 h-24 bg-purple-300/40 rounded-full blur-2xl top-0 left-0"
+                className="absolute w-24 h-24 bg-eatrivo-purple/40 rounded-full blur-2xl top-0 left-0"
                 animate={{
                   x: [0, 60, -20, 0],
                   y: [0, 40, -40, 0],
@@ -179,7 +181,7 @@ export function CreateListCTA({
                 }}
               />
               <motion.div
-                className="absolute w-32 h-32 bg-pink-300/30 rounded-full blur-3xl bottom-[-20%] right-[-10%]"
+                className="absolute w-32 h-32 bg-eatrivo-pink/30 rounded-full blur-3xl bottom-[-20%] right-[-10%]"
                 animate={{
                   x: [0, -50, 20, 0],
                   y: [0, -50, 10, 0],
@@ -191,7 +193,7 @@ export function CreateListCTA({
                 }}
               />
               <motion.div
-                className="absolute w-20 h-20 bg-blue-300/30 rounded-full blur-2xl top-[40%] left-[60%]"
+                className="absolute w-20 h-20 bg-eatrivo-blue/30 rounded-full blur-2xl top-[40%] left-[60%]"
                 animate={{
                   x: [0, 30, -30, 0],
                   y: [0, -30, 30, 0],
@@ -274,7 +276,7 @@ export function CreateListCTA({
               {/* Magical Progress pill */}
               <div className="w-32 h-1.5 bg-gray-100/80 rounded-full overflow-hidden relative shadow-inner">
                 <motion.div
-                  className="absolute inset-0 h-full bg-gradient-to-r from-eatrivo-purple via-pink-400 to-eatrivo-purple rounded-full w-[200%]"
+                  className="absolute inset-0 h-full bg-gradient-to-r from-eatrivo-purple via-eatrivo-pink to-eatrivo-purple rounded-full w-[200%]"
                   animate={
                     shouldReduceMotion
                       ? {}
@@ -349,9 +351,11 @@ export function CreateListCTA({
 
                 {/* Text */}
                 <div>
-                  <p className={`text-lg md:text-base font-bold mb-2 md:mb-1 leading-snug ${
-                    isPremium ? "text-gray-900" : "text-amber-800"
-                  }`}>
+                  <p
+                    className={`text-lg md:text-base font-bold mb-2 md:mb-1 leading-snug ${
+                      isPremium ? "text-gray-900" : "text-amber-800"
+                    }`}
+                  >
                     {isPremium
                       ? hasActiveList
                         ? t("shoppingLists.createNew.activeListExists", {
@@ -364,9 +368,11 @@ export function CreateListCTA({
                           defaultValue: "Unlock with Premium 🔒",
                         })}
                   </p>
-                  <p className={`text-base md:text-sm leading-relaxed ${
-                    isPremium ? "text-gray-500" : "text-amber-700/70"
-                  }`}>
+                  <p
+                    className={`text-base md:text-sm leading-relaxed ${
+                      isPremium ? "text-gray-500" : "text-amber-700/70"
+                    }`}
+                  >
                     {isPremium
                       ? hasActiveList
                         ? t(

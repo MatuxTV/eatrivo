@@ -9,6 +9,7 @@ import {
 import { eq, and, gte, lte } from "drizzle-orm";
 import {
   sendPushToUser,
+  sendPushBatch,
   type PushNotificationPayload,
 } from "@/lib/pwa/sendPushToAll";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
@@ -62,7 +63,7 @@ const REMINDER_MESSAGES: Record<string, PushNotificationPayload> = {
  *
  * Protected by CRON_SECRET Bearer token.
  */
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   try {
     // Rate limit
     const identifier = getRateLimitIdentifier(request);
@@ -87,13 +88,22 @@ export async function POST(request: Request) {
       `[Cron] Meal plan reminder — checking week ${weekStart.toISOString()} to ${weekEnd.toISOString()}`,
     );
 
-    // Get all users who have push subscriptions
-    const subscribedUsers = await db
-      .select({ userId: pushSubscriptions.userId })
+    // Fetch all push subscriptions, their user profiles, and language in one go
+    const subscribers = await db
+      .select({
+        id: pushSubscriptions.id,
+        subscription: pushSubscriptions.subscription,
+        profileId: userProfiles.id,
+        language: userInfoTable.language,
+      })
       .from(pushSubscriptions)
-      .groupBy(pushSubscriptions.userId);
+      .leftJoin(userProfiles, eq(pushSubscriptions.userId, userProfiles.userId))
+      .leftJoin(
+        userInfoTable,
+        eq(userProfiles.id, userInfoTable.userProfileId),
+      );
 
-    if (subscribedUsers.length === 0) {
+    if (subscribers.length === 0) {
       return NextResponse.json({
         success: true,
         message: "No subscribed users",
@@ -102,75 +112,66 @@ export async function POST(request: Request) {
       });
     }
 
-    let notified = 0;
-    let skipped = 0;
+    // Now, find out which userProfiles DO NOT have a shopping list for the current week.
+    // We can do this with a single query of all active shopping lists this week.
+    const activeLists = await db
+      .select({ profileId: shoppingLists.userProfileId })
+      .from(shoppingLists)
+      .where(
+        and(
+          gte(shoppingLists.weekStartDate, weekStart),
+          lte(shoppingLists.weekStartDate, weekEnd),
+        ),
+      );
 
-    for (const { userId } of subscribedUsers) {
-      // Find user's profile to check their shopping lists
-      const profile = await db
-        .select({ id: userProfiles.id })
-        .from(userProfiles)
-        .where(eq(userProfiles.userId, userId))
-        .limit(1);
+    const activeProfileIds = new Set(activeLists.map((list) => list.profileId));
 
-      if (profile.length === 0) {
-        skipped++;
-        continue;
-      }
-
-      const profileId = profile[0].id;
-
-      // Get user's language preference from userInfo
-      const userInfo = await db
-        .select({ language: userInfoTable.language })
-        .from(userInfoTable)
-        .where(eq(userInfoTable.userProfileId, profileId))
-        .limit(1);
-
-      const lang = userInfo[0]?.language ?? "sk";
-
-      // Check if user has a shopping list for the current week
-      const currentWeekList = await db
-        .select({ id: shoppingLists.id })
-        .from(shoppingLists)
-        .where(
-          and(
-            eq(shoppingLists.userProfileId, profileId),
-            gte(shoppingLists.weekStartDate, weekStart),
-            lte(shoppingLists.weekStartDate, weekEnd),
-          ),
-        )
-        .limit(1);
-
-      if (currentWeekList.length > 0) {
-        // User already has a plan this week — skip
-        skipped++;
-        continue;
-      }
-
-      // Send reminder notification in user's language
-      try {
+    const messages = subscribers
+      .filter((sub) => {
+        // Skip if no profile (edge case) or if they already have an active list
+        if (!sub.profileId) return false;
+        if (activeProfileIds.has(sub.profileId)) return false;
+        return true;
+      })
+      .map((sub) => {
+        const lang = sub.language ?? "sk";
         const payload = REMINDER_MESSAGES[lang] ?? REMINDER_MESSAGES.sk;
-        await sendPushToUser(userId, payload);
-        notified++;
-      } catch (error) {
-        console.error(
-          `[Cron] Failed to send meal plan reminder to user ${userId}:`,
-          error,
-        );
-      }
+        return {
+          id: sub.id,
+          subscription: sub.subscription,
+          payload,
+        };
+      });
+
+    if (messages.length === 0) {
+      console.warn(
+        `[Cron] Meal plan reminder complete. Notified: 0, Skipped: ${subscribers.length}`,
+      );
+      return NextResponse.json({
+        success: true,
+        message: "Meal plan reminder complete",
+        notified: 0,
+        skipped: subscribers.length,
+        totalSubscribed: subscribers.length,
+        timestamp: new Date().toISOString(),
+      });
     }
 
+    const result = await sendPushBatch(messages);
+    const skipped = subscribers.length - messages.length;
+
     console.warn(
-      `[Cron] Meal plan reminder complete. Notified: ${notified}, Skipped: ${skipped}`,
+      `[Cron] Meal plan reminder complete. Notified: ${result.successful}, Skipped: ${skipped}, Failed: ${result.failed}, Cleaned: ${result.cleaned}`,
     );
 
     return NextResponse.json({
       success: true,
       message: "Meal plan reminder complete",
-      notified,
+      notified: result.successful,
+      failed: result.failed,
       skipped,
-      totalSubscribed: subscribedUsers.length,
+      cleaned: result.cleaned,
+      totalSubscribed: subscribers.length,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

@@ -553,7 +553,20 @@
         "loader": {
           "scanning": "Prehľadávam tvoju špajzu 🔍",
           "optimizing": "Optimalizujem makrá 🧮",
-          "finishing": "Už to bude... ✨"
+          "finishing": "Už to bude... ✨",
+          "fetchingProfile": "Načítavam tvoj profil 👤",
+          "calculatingMacros": "Počítam tvoje makrá 🧮",
+          "checkingPantry": "Kontrolujem špajzu 🏥",
+          "fetchingHistory": "Prehľadávam históriu nákupov 📂",
+          "scanningInventory": "Skenujem zásoby 🔍",
+          "buildingPrompt": "Pripravujem personalizovaný plán 📝",
+          "generatingList": "AI vytvára tvoj nákupný zoznam 🤖",
+          "merging": "Optimalizujem zoznam ➕",
+          "validatingMacros": "Overujem makrá ⚖️",
+          "formatting": "Formátujem výsledok ✨",
+          "saving": "Ukladám zoznam 💾",
+          "done": "Hotovo! 🎉",
+          "retrying": "Opakujem pokus {count}/3 🔄"
         },
         "sitTight": "Pripravujem dokonalý jedálny plán prispôsobený tvojmu telu a cieľom."
       }

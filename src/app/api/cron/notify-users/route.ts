@@ -4,6 +4,7 @@ import { pushSubscriptions, userProfiles, userInfoTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import {
   sendPushToUser,
+  sendPushBatch,
   type PushNotificationPayload,
 } from "@/lib/pwa/sendPushToAll";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
@@ -98,7 +99,7 @@ function pickMessage(lang: string): PushNotificationPayload {
  * Vercel cron calls this every 2 days.
  * Protected by CRON_SECRET Bearer token.
  */
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   try {
     // Rate limit to protect against brute-force
     const identifier = getRateLimitIdentifier(request);
@@ -118,54 +119,43 @@ export async function POST(request: Request) {
 
     console.warn("[Cron] Starting push notification broadcast...");
 
-    // Get all users with push subscriptions
-    const subscribedUsers = await db
-      .select({ userId: pushSubscriptions.userId })
+    // Fetch all push subscriptions with their corresponding user language via JOINs
+    const subscribers = await db
+      .select({
+        id: pushSubscriptions.id,
+        subscription: pushSubscriptions.subscription,
+        language: userInfoTable.language,
+      })
       .from(pushSubscriptions)
-      .groupBy(pushSubscriptions.userId);
+      .leftJoin(userProfiles, eq(pushSubscriptions.userId, userProfiles.userId))
+      .leftJoin(
+        userInfoTable,
+        eq(userProfiles.id, userInfoTable.userProfileId),
+      );
 
-    let totalSent = 0;
-    let totalFailed = 0;
-
-    for (const { userId } of subscribedUsers) {
-      // Get user's language preference via profile → userInfo
-      const profile = await db
-        .select({ id: userProfiles.id })
-        .from(userProfiles)
-        .where(eq(userProfiles.userId, userId))
-        .limit(1);
-
-      let lang = "sk";
-      if (profile[0]) {
-        const userInfo = await db
-          .select({ language: userInfoTable.language })
-          .from(userInfoTable)
-          .where(eq(userInfoTable.userProfileId, profile[0].id))
-          .limit(1);
-        lang = userInfo[0]?.language ?? "sk";
-      }
+    const messages = subscribers.map((sub) => {
+      const lang = sub.language ?? "sk";
       const payload = pickMessage(lang);
+      return {
+        id: sub.id,
+        subscription: sub.subscription,
+        payload,
+      };
+    });
 
-      try {
-        const result = await sendPushToUser(userId, payload);
-        totalSent += result.successful;
-        totalFailed += result.failed;
-      } catch (error) {
-        console.error(`[Cron] Failed to notify user ${userId}:`, error);
-        totalFailed++;
-      }
-    }
+    const result = await sendPushBatch(messages);
 
     console.warn(
-      `[Cron] Push broadcast complete. Sent: ${totalSent}, Failed: ${totalFailed}`,
+      `[Cron] Push broadcast complete. Sent: ${result.successful}, Failed: ${result.failed}, Cleaned: ${result.cleaned}`,
     );
 
     return NextResponse.json({
       success: true,
       message: `Push broadcast complete`,
-      totalUsers: subscribedUsers.length,
-      successful: totalSent,
-      failed: totalFailed,
+      totalUsers: result.totalSubscriptions,
+      successful: result.successful,
+      failed: result.failed,
+      cleaned: result.cleaned,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

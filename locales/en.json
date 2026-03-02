@@ -455,7 +455,7 @@
       "language": "Language"
     },
     "userAlt": "User",
-    "templateUsage":"Notice: This meal plan and shopping list are just for inspiration. Both are just examples based on your acitivity level and goal. They are not fully personalized to your preferences and dietary needs. For a truly personalized plan, please upgrade to Premium tier.",
+    "templateUsage": "Notice: This meal plan and shopping list are just for inspiration. Both are just examples based on your acitivity level and goal. They are not fully personalized to your preferences and dietary needs. For a truly personalized plan, please upgrade to Premium tier.",
     "membershipSuffix": "member",
     "greeting": {
       "title": "Welcome back, {name}! 👋",
@@ -553,7 +553,20 @@
         "loader": {
           "scanning": "Scanning your pantry 🔍",
           "optimizing": "Optimizing macros 🧮",
-          "finishing": "Almost ready... ✨"
+          "finishing": "Almost ready... ✨",
+          "fetchingProfile": "Loading your profile 👤",
+          "calculatingMacros": "Calculating your macros 🧮",
+          "checkingPantry": "Checking pantry 🏥",
+          "fetchingHistory": "Scanning shopping history 📂",
+          "scanningInventory": "Scanning inventory 🔍",
+          "buildingPrompt": "Building your personalized plan 📝",
+          "generatingList": "AI is generating your list 🤖",
+          "merging": "Optimizing the list ➕",
+          "validatingMacros": "Validating macros ⚖️",
+          "formatting": "Formatting result ✨",
+          "saving": "Saving your list 💾",
+          "done": "Done! 🎉",
+          "retrying": "Retrying {count}/3 🔄"
         },
         "sitTight": "Crafting the perfect meal plan tailored for your body and goals."
       }

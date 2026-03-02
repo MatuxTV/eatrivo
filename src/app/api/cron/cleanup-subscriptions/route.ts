@@ -23,7 +23,7 @@ const CRON_SECRET = process.env.CRON_SECRET;
  */
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   try {
     // Apply rate limit against cron endpoint brute-forcing
     const identifier = getRateLimitIdentifier(request);

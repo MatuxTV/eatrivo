@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { getCurrentDay, getDayIndex } from "@/lib/functions";
 import { APP_CONFIG } from "@/app/config/app";
 import { logger } from "@/lib/logger";
+import { useShoppingListGeneration } from "@/hooks/useShoppingListGeneration";
 import {
   ReceiptText,
   ChevronLeft,
@@ -112,8 +113,18 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState({
     shoppingLists: true,
     mealPlans: true,
-    generatingShoppingList: false,
   }); // Always start loading
+
+  // SSE-based shopping list generation
+  const {
+    isGenerating,
+    progress: generationProgress,
+    currentLabel: generationLabel,
+    retryCount: generationRetryCount,
+    error: generationError,
+    result: generationResult,
+    generate: generateShoppingList,
+  } = useShoppingListGeneration();
   const [mealPlanData, setMealPlanData] = useState<DayMealPlan[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [currentDay, setCurrentDay] = useState<string | null>(null);
@@ -257,130 +268,37 @@ export default function DashboardPage() {
     }
   };
 
+  // React to SSE generation result
+  useEffect(() => {
+    if (!generationResult) return;
+    if (generationResult.mealPlan) {
+      toast.success(
+        t("toasts.shoppingListAndMealPlanGenerated", {
+          defaultValue: "Shopping list and meal plan generated! 🎉",
+        }),
+      );
+      window.location.reload();
+    } else {
+      toast.success(
+        t("toasts.shoppingListGenerated", {
+          defaultValue: "Shopping list generated!",
+        }),
+      );
+      fetchShoppingLists();
+    }
+  }, [generationResult]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // React to SSE generation error
+  useEffect(() => {
+    if (generationError) toast.error(generationError);
+  }, [generationError]);
+
   useEffect(() => {
     if (!isMounted || !session?.user) return;
+    fetchShoppingLists();
+  }, [isMounted, session, t]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    let pollInterval: ReturnType<typeof setInterval> | null = null;
-
-    const init = async () => {
-      // 1. Check if generation is in progress FIRST (before rendering lists)
-      try {
-        const statusRes = await fetch("/api/shopping-lists/generate/status");
-        if (statusRes.ok) {
-          const statusData = await statusRes.json();
-
-          if (statusData.isGenerating) {
-            setIsLoading((prev) => ({ ...prev, generatingShoppingList: true }));
-
-            // Start polling until generation finishes
-            pollInterval = setInterval(async () => {
-              try {
-                const pollRes = await fetch(
-                  "/api/shopping-lists/generate/status",
-                );
-                if (!pollRes.ok) return;
-                const pollData = await pollRes.json();
-
-                if (!pollData.isGenerating) {
-                  if (pollInterval) clearInterval(pollInterval);
-                  pollInterval = null;
-                  setIsLoading((prev) => ({
-                    ...prev,
-                    generatingShoppingList: false,
-                  }));
-                  // Reload to get fresh data
-                  window.location.reload();
-                }
-              } catch {
-                // Silently ignore poll errors
-              }
-            }, 5000);
-          }
-        }
-      } catch {
-        // Silently ignore status check errors
-      }
-
-      // 2. Then fetch shopping lists
-      await fetchShoppingLists();
-    };
-
-    init();
-
-    return () => {
-      if (pollInterval) clearInterval(pollInterval);
-    };
-  }, [isMounted, session, t]);
-
-  // GENERATE NEW SHOPPING LIST
-  const handleGenerateShoppingList = async () => {
-    if (!session?.user) return;
-
-    // Premium-only check — temporarily disabled, basic users can also generate
-    // const membership = session.user.membership?.toLowerCase();
-    // if (!["premium", "pro", "trainer"].includes(membership || "")) {
-    //   toast.error(
-    //     t("toasts.premiumOnly", {
-    //       defaultValue: "This feature is only available for premium members",
-    //     }),
-    //   );
-    //   return;
-    // }
-
-    try {
-      setIsLoading((prev) => ({ ...prev, generatingShoppingList: true }));
-
-      const response = await fetch("/api/shopping-lists/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate shopping list");
-      }
-
-      const data = await response.json();
-
-      if (data.mealPlan) {
-        toast.success(
-          t("toasts.shoppingListAndMealPlanGenerated", {
-            defaultValue:
-              "Shopping list and meal plan generated successfully! 🎉",
-          }),
-        );
-      } else {
-        toast.success(
-          t("toasts.shoppingListGenerated", {
-            defaultValue: "Shopping list generated successfully!",
-          }),
-        );
-      }
-
-      // Refresh shopping lists
-      await fetchShoppingLists();
-
-      // Refresh meal plan by reloading the page (meal plan fetches on mount)
-      if (data.mealPlan) {
-        window.location.reload();
-      }
-    } catch (error) {
-      toast.dismiss("generate-shopping-list");
-      logger.error("Error generating shopping list", error, {
-        context: "DashboardPage",
-      });
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t("toasts.shoppingListGenerateError", {
-              defaultValue:
-                "Failed to generate shopping list. Please try again.",
-            }),
-      );
-    } finally {
-      setIsLoading((prev) => ({ ...prev, generatingShoppingList: false }));
-    }
-  };
+  // GENERATE NEW SHOPPING LIST — now handled by useShoppingListGeneration SSE hook
 
   // FETCH USER HEALTH DATA
   useEffect(() => {
@@ -733,8 +651,11 @@ export default function DashboardPage() {
                     meals={todaysMeals}
                     isLoading={isLoading.mealPlans}
                     hasActiveShoppingList={hasActiveShoppingList}
-                    isGeneratingList={isLoading.generatingShoppingList}
-                    onGenerateList={handleGenerateShoppingList}
+                    isGeneratingList={isGenerating}
+                    onGenerateList={generateShoppingList}
+                    generationProgress={generationProgress}
+                    generationLabel={generationLabel}
+                    retryCount={generationRetryCount}
                   />
                 </section>
               </div>
@@ -745,9 +666,9 @@ export default function DashboardPage() {
                   <ShoppingListsOverview
                     lists={shoppingLists}
                     isLoading={isLoading.shoppingLists}
-                    isGenerating={isLoading.generatingShoppingList}
+                    isGenerating={isGenerating}
                     membership={session?.user?.membership || "basic"}
-                    onGenerateNew={handleGenerateShoppingList}
+                    onGenerateNew={generateShoppingList}
                     onLockedCreate={() => setShowUpgradePopup(true)}
                   />
                 </div>
@@ -902,7 +823,7 @@ export default function DashboardPage() {
             >
               <ChatWithRivoPage />
             </motion.div>
-          ): activeSection === "mealGallery" ? (
+          ) : activeSection === "mealGallery" ? (
             <motion.div
               key="mealGallery"
               initial={{ opacity: 0, y: 10 }}
@@ -964,7 +885,7 @@ export default function DashboardPage() {
                 />
               </FeatureFlag>
             </motion.div>
-          ): null }
+          ) : null}
         </AnimatePresence>
       </main>
 
