@@ -133,6 +133,6 @@ export default auth((req) => {
 
 export const config = {
   matcher: [
-    "/((?!api/stripe/webhook|api|_next/static|_next/image|images|rivo|favicon.ico|manifest.json|site.webmanifest|logo/.*).*)",
+    "/((?!api/stripe/webhook|api|_next/static|_next/image|images|rivo|favicon.ico|manifest.json|site.webmanifest|logo/.*|sw\\.js|workbox-.*\\.js|custom-sw\\.js).*)",
   ],
 };
