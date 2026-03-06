@@ -150,36 +150,6 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       return;
     }
 
-    // CLEAN UP TEMPLATE ASSIGNMENTS - User upgraded to premium
-    if (userProfile && (membership === "premium" || membership === "pro")) {
-      try {
-        // Delete all associated meal plans first (due to foreign key constraints)
-        await db
-          .delete(mealPlans)
-          .where(eq(mealPlans.userProfileId, userProfile.id));
-
-        // Delete all shopping lists (completely remove template assignments)
-        await db
-          .delete(shoppingLists)
-          .where(eq(shoppingLists.userProfileId, userProfile.id));
-
-        console.warn(
-          `[Subscription] Deleted all template-based shopping lists and meal plans for upgraded user: ${userId}`,
-        );
-
-        // Invalidate cache so user gets fresh empty state
-        const cacheKey = `shopping-lists:${userId}`;
-        try {
-          await CacheService.delete(cacheKey);
-        } catch (cacheError) {
-          console.warn("Failed to invalidate shopping list cache:", cacheError);
-        }
-      } catch (cleanupError) {
-        console.error("Error cleaning up template assignments:", cleanupError);
-        // Continue anyway - subscription creation is more important
-      }
-    }
-
     // Calculate currentPeriodEnd date - use 30 days from now as fallback
     const periodEndDate = currentPeriodEnd
       ? new Date(currentPeriodEnd * 1000)

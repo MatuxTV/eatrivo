@@ -30,6 +30,15 @@ export const dietEnum = pgEnum("diet", [
   "ketogenic",
   "paleolithic",
 ]);
+export const kitchenEquipmentEnum = pgEnum("kitchen_equipment", [
+  "oven",
+  "stove",
+  "microwave",
+  "blender",
+  "air_fryer",
+  "slow_cooker",
+  "pressure_cooker",
+]);
 export const timePrefEnum = pgEnum("time_pref", ["quick", "normal", "slow"]);
 export const budgetEnum = pgEnum("budget", ["low", "medium", "high"]);
 export const membershipEnum = pgEnum("membership", [
@@ -37,6 +46,11 @@ export const membershipEnum = pgEnum("membership", [
   "premium",
   "pro",
   "trainer",
+]);
+export const cookingSkillLevelEnum = pgEnum("cooking_skill_level", [
+  "beginner",
+  "intermediate",
+  "advanced",
 ]);
 export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "active",
@@ -141,6 +155,8 @@ export const userInfoTable = pgTable("user_info", {
   likes: text("likes"),
   dislikes: text("dislikes"),
   allergies: text("allergies"),
+  cooking_skill_level: cookingSkillLevelEnum("cooking_skill_level").default("intermediate"), 
+  kitchen_equipment: kitchenEquipmentEnum("kitchen_equipment").array(),
   profileSnapshot: jsonb("profile_snapshot"), // Complete user profile in JSON format
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
@@ -215,72 +231,6 @@ export const pantryItems = pgTable("pantry_items", {
     .defaultNow()
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
-
-// Shopping List Templates - for admin to create reusable templates
-export const shoppingListTemplates = pgTable("shopping_list_templates", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  goal: goalEnum("goal").notNull(),
-  diet: dietEnum("diet").notNull(),
-  title: text("title").notNull(),
-  description: text("description"),
-  markdownContent: text("markdownContent").notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdBy: uuid("created_by")
-    .notNull()
-    .references(() => users.id),
-  created_at: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updated_at: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
-
-// Meal Plan Templates - paired with shopping list templates
-export const mealPlanTemplates = pgTable("meal_plan_templates", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  shoppingListTemplateId: uuid("shopping_list_template_id")
-    .notNull()
-    .references(() => shoppingListTemplates.id, { onDelete: "cascade" }),
-  goal: goalEnum("goal").notNull(),
-  diet: dietEnum("diet").notNull(),
-  meals: jsonb("meals").notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdBy: uuid("created_by")
-    .notNull()
-    .references(() => users.id),
-  created_at: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updated_at: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
-
-// Template Assignments - track which templates were assigned to users
-export const templateAssignments = pgTable("template_assignments", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userProfileId: uuid("user_profile_id")
-    .notNull()
-    .references(() => userProfiles.id, { onDelete: "cascade" }),
-  shoppingListTemplateId: uuid("shopping_list_template_id")
-    .notNull()
-    .references(() => shoppingListTemplates.id),
-  mealPlanTemplateId: uuid("meal_plan_template_id").references(
-    () => mealPlanTemplates.id,
-  ),
-  shoppingListId: uuid("shopping_list_id").references(() => shoppingLists.id, {
-    onDelete: "cascade",
-  }),
-  mealPlanId: uuid("meal_plan_id").references(() => mealPlans.id, {
-    onDelete: "cascade",
-  }),
-  goal: goalEnum("goal").notNull(),
-  diet: dietEnum("diet").notNull(),
-  assigned_at: timestamp("assigned_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });

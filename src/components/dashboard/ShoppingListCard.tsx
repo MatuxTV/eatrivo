@@ -8,6 +8,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Download,
@@ -18,12 +21,15 @@ import {
   Check,
   Lightbulb,
   ChefHat,
+  RefreshCw,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import { formatDate } from "@/lib/formatters";
 import { MealPlanViewerModal } from "@/app/dashboard/components/MealPlanViewerModal";
@@ -202,7 +208,9 @@ function ShoppingListViewer({ markdown, id }: ViewerProps) {
             />
           </div>
           {checkedCount > 0 && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               type="button"
               onClick={() => {
                 setChecked(new Set());
@@ -215,7 +223,7 @@ function ShoppingListViewer({ markdown, id }: ViewerProps) {
               className="text-xs text-gray-400 hover:text-gray-600 transition-colors whitespace-nowrap"
             >
               Resetovať
-            </button>
+            </motion.button>
           )}
         </div>
       )}
@@ -351,6 +359,8 @@ interface ShoppingListCardProps {
     | "completed"
     | "cancelled";
   onStatusChange?: () => void;
+  /** Callback to regenerate a new shopping list (cancels current draft first) */
+  onRegenerate?: () => void;
 }
 
 export default function ShoppingListCard({
@@ -361,6 +371,7 @@ export default function ShoppingListCard({
   weekEndDate,
   status,
   onStatusChange,
+  onRegenerate,
 }: ShoppingListCardProps) {
   const t = useTranslations("dashboard.shoppingList");
   const locale = useLocale();
@@ -369,6 +380,8 @@ export default function ShoppingListCard({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [markdownContent, setMarkdownContent] = useState<string | null>(null);
   const [isMealPlanModalOpen, setMealPlanModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSettingStatus, setIsSettingStatus] = useState(false);
 
   const formatDateLocal = (dateString: string) =>
     formatDate(dateString, locale, {
@@ -435,6 +448,7 @@ export default function ShoppingListCard({
 
   const handleStatusChange = async (listId: string, newStatus: string) => {
     try {
+      setIsSettingStatus(true);
       const response = await fetch(`/api/shopping-lists/${listId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -455,6 +469,25 @@ export default function ShoppingListCard({
       onStatusChange?.();
     } catch {
       toast.error("Nepodarilo sa aktualizovať stav");
+    } finally {
+      setIsSettingStatus(false);
+    }
+  };
+
+  const handleDelete = async (listId: string) => {
+    try {
+      const response = await fetch(`/api/shopping-lists/${listId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        toast.error(data.error || "Odstránenie zlyhalo");
+        return;
+      }
+      toast.success("Pôvodný návrh bol odstránený");
+      onStatusChange?.();
+    } catch {
+      toast.error("Nepodarilo sa odstrániť zoznam");
     }
   };
 
@@ -565,6 +598,7 @@ export default function ShoppingListCard({
             <p className="text-xs text-gray-400">Vytvorené pomocou Eatrivo</p>
             <Button
               size="sm"
+              asChild
               onClick={() =>
                 window.open(
                   `/api/shopping-lists/${id}/view?print=1`,
@@ -574,8 +608,13 @@ export default function ShoppingListCard({
               }
               className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white"
             >
-              <Download className="w-3.5 h-3.5 mr-1.5" />
-              Uložiť ako PDF
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Download className="w-3.5 h-3.5 mr-1.5" />
+                Uložiť ako PDF
+              </motion.button>
             </Button>
           </div>
         </DialogContent>
@@ -586,11 +625,35 @@ export default function ShoppingListCard({
         whileHover={{ y: -4 }}
         transition={{ type: "spring", stiffness: 300 }}
       >
-        <Card className={`group relative overflow-hidden ${status === 'draft' ? 'border-2 border-dashed border-eatrivo-orange/50' : ''} shadow-md hover:shadow-xl transition-shadow duration-300 bg-white h-full flex flex-col`}>
+        <Card
+          className={`group relative overflow-hidden ${status === "draft" ? "border-2 border-dashed border-eatrivo-orange/50" : ""} shadow-md hover:shadow-xl transition-shadow duration-300 bg-white h-full flex flex-col`}
+        >
           {/* Status Bar */}
           <div
             className={`h-1.5 w-full ${status === "active" ? "bg-eatrivo-purple" : status === "approved" ? "bg-eatrivo-green" : status === "draft" ? "bg-eatrivo-orange/60" : status === "cancelled" ? "bg-eatrivo-red" : "bg-gray-200"}`}
           />
+
+          {/* Loading Overlay - only for transitions from 'approved' (Purchasing) */}
+          <AnimatePresence>
+            {isSettingStatus && status === "approved" && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-50 bg-eatrivo-green/90 backdrop-blur-sm flex flex-col items-center justify-center text-white"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  <Loader2 className="w-10 h-10 mb-2" />
+                </motion.div>
+                <span className="text-sm font-bold animate-pulse">
+                  Aktualizujem...
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="p-5 flex flex-col h-full">
             {/* Header */}
@@ -642,25 +705,37 @@ export default function ShoppingListCard({
             </div>
 
             {/* Actions */}
-            {status !== "draft" && (
+            {status !== "draft" && status !== "approved" && (
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   size="sm"
+                  asChild
                   onClick={handleView}
                   disabled={isViewing}
                   className="w-full bg-eatrivo-white-secondary border-2 border-gray-200 hover:bg-gray-50 text-gray-700 hover:text-eatrivo-purple hover:border-eatrivo-purple/30 transition-colors"
                 >
-                  <Eye className="w-4 h-4 mr-2" />
-                  {t("view")}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    {t("view")}
+                  </motion.button>
                 </Button>
                 <Button
                   size="sm"
+                  asChild
                   onClick={handleDownload}
                   disabled={isDownloading}
                   className="w-full bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white shadow-sm hover:shadow transition-shadow"
                 >
-                  <Download className="w-4 h-4 mr-2" />
-                  {t("download")}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    {t("download")}
+                  </motion.button>
                 </Button>
               </div>
             )}
@@ -669,43 +744,126 @@ export default function ShoppingListCard({
             {status === "draft" && (
               <div className="mt-3 flex flex-col gap-2">
                 <Button
+                  asChild
                   onClick={() => setMealPlanModalOpen(true)}
                   className="w-full bg-eatrivo-orange hover:bg-eatrivo-orange/90 text-white shadow-sm hover:shadow transition-all"
                 >
-                  <ChefHat className="w-5 h-5 mr-2" />
-                  Zobraziť jedálniček
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <ChefHat className="w-5 h-5 mr-2" />
+                    Zobraziť jedálniček
+                  </motion.button>
                 </Button>
                 <div className="flex gap-2">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => handleStatusChange(id, "approved")}
-                    className="flex-1 py-1.5 px-3 bg-eatrivo-purple text-white text-xs font-semibold rounded-lg hover:bg-eatrivo-purple/90 transition-colors flex items-center justify-center gap-1.5"
+                    disabled={isSettingStatus}
+                    className="flex-1 py-1.5 px-3 bg-eatrivo-purple text-white text-xs font-semibold rounded-lg hover:bg-eatrivo-purple/90 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-70"
                   >
-                    ✓ Schváliť plán
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange(id, "cancelled")}
-                    className="py-1.5 px-3 bg-gray-100 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+                    {isSettingStatus ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      "✓ Schváliť plán"
+                    )}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={async () => {
+                      await handleDelete(id);
+                      onRegenerate?.();
+                    }}
+                    className="py-1.5 px-3 bg-gray-100 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
                   >
-                    Zamietnuť
-                  </button>
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Vygenerovať znovu
+                  </motion.button>
                 </div>
               </div>
             )}
 
             {/* Purchased action */}
             {status === "approved" && (
-              <div className="mt-3">
-                <button
-                  onClick={() => handleStatusChange(id, "purchased")}
-                  className="w-full py-1.5 px-3 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-1.5"
+              <div className="mt-3 flex flex-col gap-2">
+                <Button
+                  size="sm"
+                  asChild
+                  onClick={handleView}
+                  disabled={isViewing}
+                  className="w-full bg-eatrivo-white-secondary border-2 border-gray-200 hover:bg-gray-50 text-gray-700 hover:text-eatrivo-purple hover:border-eatrivo-purple/30 transition-colors"
                 >
-                  🛒 Označiť ako nakúpené
-                </button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    {t("view")}
+                  </motion.button>
+                </Button>
+                <div className=" flex gap-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleStatusChange(id, "purchased")}
+                    disabled={isSettingStatus}
+                    className="w-full py-1.5 px-3 bg-eatrivo-green text-white text-xs font-semibold rounded-lg hover:bg-eatrivo-green/90 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-70"
+                  >
+                    🛒 Označiť ako nakúpené
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    className="w-1/3 py-1.5 px-3 bg-red-50 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </motion.button>
+                </div>
               </div>
             )}
           </div>
         </Card>
       </motion.div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-eatrivo-white-primary">
+          <DialogHeader>
+            <DialogTitle>Naozaj chcete zamietnuť plán?</DialogTitle>
+            <DialogDescription>
+              Zamietnutím sa natrvalo vymaže tento nákupný zoznam aj k nemu
+              priradený jedálniček. Táto akcia sa nedá vrátiť späť a budete
+              musieť vygenerovať nový plán odznova.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 gap-2 flex flex-colsm:gap-0">
+            <Button
+              type="button"
+              className="bg-eatrivo-red/90 hover:bg-red-700 text-white"
+              onClick={async () => {
+                await handleDelete(id);
+                setIsDeleteDialogOpen(false);
+                onRegenerate?.();
+              }}
+            >
+              Áno, zamietnuť
+            </Button>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                className="bg-eatrivo-white-primary border-1 border-eatrivo-black-secondary/50 "
+              >
+                Zrušiť
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

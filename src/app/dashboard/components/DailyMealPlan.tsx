@@ -68,43 +68,32 @@ export default function DailyMealPlan({
   const shouldReduceMotion = useReducedMotion();
   const [displayProgress, setDisplayProgress] = useState(0);
 
-  // Smooth out generation progress and add fake creeping for better UX
+  // Snap displayProgress up whenever real progress jumps ahead
+  useEffect(() => {
+    if (generationProgress >= 100) {
+      setDisplayProgress(100);
+    } else {
+      setDisplayProgress((prev) => Math.max(prev, generationProgress));
+    }
+  }, [generationProgress]);
+
+  // Every 1.5 s add 1–2 % so the bar is always visibly moving, stop at 99 %
   useEffect(() => {
     if (!isGeneratingList) {
       setDisplayProgress(0);
       return;
     }
 
-    let animationFrame: number;
-    let lastTime = performance.now();
-
-    const updateProgress = (time: number) => {
-      const deltaTime = time - lastTime;
-      lastTime = time;
-
+    const interval = setInterval(() => {
       setDisplayProgress((prev) => {
-        // If we reached 100 on the real progress, just snap/stay at 100
-        if (generationProgress >= 100) return 100;
-
-        if (prev < generationProgress) {
-          // Catch up quickly if we're behind the real progress
-          return Math.min(prev + deltaTime * 0.05, generationProgress);
-        } else {
-          // Fake slow creep to keep it moving, up to a visual max bound above real progress
-          const fakeBound = Math.min(generationProgress + 15, 99);
-          if (prev < fakeBound) {
-            return prev + deltaTime * 0.002;
-          }
-          return prev;
-        }
+        if (prev >= 99) return prev; // hold at 99 until real "done" fires
+        const increment = Math.random() < 0.5 ? 1 : 2;
+        return Math.min(prev + increment, 99);
       });
+    }, 1500);
 
-      animationFrame = requestAnimationFrame(updateProgress);
-    };
-
-    animationFrame = requestAnimationFrame(updateProgress);
-    return () => cancelAnimationFrame(animationFrame);
-  }, [generationProgress, isGeneratingList]);
+    return () => clearInterval(interval);
+  }, [isGeneratingList]);
 
   return (
     <AnimatePresence mode="wait">
@@ -151,6 +140,7 @@ export default function DailyMealPlan({
           <ShoppingListCard
             {...pendingShoppingList}
             onStatusChange={onStatusChange}
+            onRegenerate={onGenerateList}
           />
         </motion.div>
       ) : !hasActiveShoppingList && !isGeneratingList ? (
@@ -266,97 +256,70 @@ export default function DailyMealPlan({
           </motion.div>
         </motion.div>
       ) : isGeneratingList ? (
-        /* Shopping list is being generated — show generating state in meals area */
+        /* Shopping list is being generated — clean light loader */
         <motion.div
           key="generating-list"
           {...fadeIn}
-          className="relative overflow-hidden rounded-2xl border-0 flex items-center justify-center p-8 bg-gradient-to-br from-eatrivo-black-primary via-[#1a1525] to-eatrivo-purple/90 shadow-[0_0_40px_-5px_rgba(139,92,246,0.5)]"
+          className="relative overflow-hidden rounded-2xl border border-eatrivo-purple/15 bg-gradient-to-br from-white via-purple-50/50 to-eatrivo-pink/5 shadow-sm"
         >
-          {/* Animated background blobs (vibrant) */}
-          <motion.div
-            className="absolute w-40 h-40 bg-eatrivo-purple/30 rounded-full blur-3xl top-[-20%] left-[-10%]"
-            animate={
-              shouldReduceMotion
-                ? {}
-                : { x: [0, 80, -30, 0], y: [0, 60, -60, 0] }
-            }
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          {/* Soft decorative blobs */}
+          <div
+            className="absolute w-32 h-32 bg-eatrivo-purple/5 rounded-full blur-2xl -top-10 -right-10"
+            aria-hidden="true"
           />
-          <motion.div
-            className="absolute w-56 h-56 bg-eatrivo-pink/20 rounded-full blur-3xl bottom-[-30%] right-[-10%]"
-            animate={
-              shouldReduceMotion
-                ? {}
-                : { x: [0, -70, 40, 0], y: [0, -60, 20, 0] }
-            }
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+          <div
+            className="absolute w-24 h-24 bg-eatrivo-pink/5 rounded-full blur-2xl -bottom-8 -left-8"
+            aria-hidden="true"
           />
 
-          <div className="relative flex flex-col items-center justify-center text-center px-4 py-6 w-full max-w-sm z-10">
-            {/* Spinning ring with icon placeholder */}
-            <div className="relative mb-8">
-              <motion.div
-                className="w-16 h-16 rounded-full border-4 border-white/10 border-t-eatrivo-pink shadow-[0_0_20px_rgba(236,72,153,0.4)]"
-                animate={shouldReduceMotion ? {} : { rotate: 360 }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white drop-shadow-md" />
+          <div className="relative flex flex-col items-center justify-center text-center px-6 py-10 z-10">
+            {/* Spinner */}
+            <motion.div
+              className="w-10 h-10 mb-5 rounded-full border-[3px] border-eatrivo-purple/15 border-t-eatrivo-purple"
+              animate={shouldReduceMotion ? {} : { rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+
+            {/* Progress bar */}
+            <div className="w-full max-w-xs mx-auto mb-2">
+              <div className="w-full bg-eatrivo-purple/10 rounded-full h-2 overflow-hidden relative">
+                <motion.div
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink rounded-full"
+                  animate={{ width: `${displayProgress}%` }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                />
               </div>
             </div>
 
-            {/* Glowing Progress Bar */}
-            <div className="w-full bg-white/10 rounded-full h-2.5 mb-5 overflow-hidden shadow-inner relative">
-              <div
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink rounded-full transition-all duration-75 ease-out shadow-[0_0_12px_rgba(236,72,153,0.8)]"
-                style={{ width: `${displayProgress}%` }}
-              />
-              {/* Shimmer effect over progress */}
-              {!shouldReduceMotion && (
-                <motion.div
-                  className="absolute top-0 bottom-0 left-0 w-ful bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                  style={{ width: "50%" }}
-                  animate={{ x: ["-100%", "250%"] }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                />
-              )}
-            </div>
+            {/* Percentage */}
+            <p className="font-sans text-xs text-eatrivo-purple/50 tabular-nums mb-4">
+              {Math.round(displayProgress)}%
+            </p>
 
             {/* Label */}
             <AnimatePresence mode="wait">
-              <motion.div
+              <motion.p
                 key={generationLabel ?? "loading"}
-                initial={{ opacity: 0, scale: 0.95, y: 5 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col items-center"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.25 }}
+                className="font-heading text-sm font-semibold text-eatrivo-black-primary"
               >
-                <p className="text-white font-medium text-base text-center drop-shadow-md tracking-wide">
-                  {generationLabel
-                    ? t(`shoppingLists.createNew.${generationLabel}`)
-                    : t("shoppingLists.createNew.loader.buildingPrompt")}
-                </p>
-
-                {/* Retry badge */}
-                {retryCount > 0 && (
-                  <span className="mt-3 text-xs font-semibold text-white bg-eatrivo-orange/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg">
-                    {t("shoppingLists.createNew.loader.retrying", {
-                      count: retryCount,
-                    })}
-                  </span>
-                )}
-
-                {/* Floating percentage below */}
-                <p className="text-white/60 text-sm mt-3 font-semibold tracking-widest tabular-nums font-mono">
-                  {Math.round(displayProgress)}%
-                </p>
-              </motion.div>
+                {generationLabel
+                  ? t(`shoppingLists.createNew.${generationLabel}`)
+                  : t("shoppingLists.createNew.loader.buildingPrompt")}
+              </motion.p>
             </AnimatePresence>
+
+            {/* Retry badge */}
+            {retryCount > 0 && (
+              <span className="mt-2 text-xs font-medium text-eatrivo-orange bg-eatrivo-orange/10 px-2.5 py-0.5 rounded-full">
+                {t("shoppingLists.createNew.loader.retrying", {
+                  count: retryCount,
+                })}
+              </span>
+            )}
           </div>
         </motion.div>
       ) : meals.length === 0 ? (

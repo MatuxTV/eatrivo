@@ -71,6 +71,13 @@
       "when": 1772462465286,
       "tag": "0009_dry_sentry",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1772717848899,
+      "tag": "0010_clean_nighthawk",
+      "breakpoints": true
     }
   ]
 }

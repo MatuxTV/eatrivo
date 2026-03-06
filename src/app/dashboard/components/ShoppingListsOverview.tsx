@@ -488,13 +488,19 @@ export default function ShoppingListsOverview({
           )}
           {!isLoading && hasInactiveLists && (
             <Button
+              asChild
               onClick={() => setShowAll(!showAll)}
               size="sm"
               className="text-xs font-medium bg-eatrivo-purple "
             >
-              {showAll
-                ? t("shoppingLists.showActiveOnly")
-                : t("shoppingLists.showAll")}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {showAll
+                  ? t("shoppingLists.showActiveOnly")
+                  : t("shoppingLists.showAll")}
+              </motion.button>
             </Button>
           )}
           {/* Locked "Create List" button — visible for basic users — temporarily disabled */}
@@ -583,11 +589,17 @@ export default function ShoppingListsOverview({
                   {t("shoppingLists.noActive.description")}
                 </p>
                 <Button
+                  asChild
                   onClick={() => setShowAll(true)}
                   size="sm"
                   className="text-xs font-medium bg-eatrivo-purple "
                 >
-                  {t("shoppingLists.showAll")}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {t("shoppingLists.showAll")}
+                  </motion.button>
                 </Button>
               </CardContent>
             </Card>

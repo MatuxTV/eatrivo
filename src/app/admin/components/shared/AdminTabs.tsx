@@ -5,7 +5,6 @@ import {
   UserCircle,
   Mail,
   BarChart3,
-  FileText,
   Bell,
   type LucideIcon,
 } from "lucide-react";
@@ -16,7 +15,6 @@ type TabId =
   | "profiles"
   | "emails"
   | "notifications"
-  | "templates"
   | "analytics";
 
 interface Tab {
@@ -36,7 +34,6 @@ const tabs: Tab[] = [
   { id: "profiles", label: "Profily", icon: UserCircle },
   { id: "emails", label: "Emaily", icon: Mail },
   { id: "notifications", label: "Notifikácie", icon: Bell },
-  { id: "templates", label: "Šablóny", icon: FileText },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
 ];
 

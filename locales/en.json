@@ -431,7 +431,6 @@
       "language": "Language"
     },
     "userAlt": "User",
-    "templateUsage": "Notice: This meal plan and shopping list are just for inspiration. Both are just examples based on your acitivity level and goal. They are not fully personalized to your preferences and dietary needs. For a truly personalized plan, please upgrade to Premium tier.",
     "membershipSuffix": "member",
     "greeting": {
       "title": "Welcome back, {name}! 👋",

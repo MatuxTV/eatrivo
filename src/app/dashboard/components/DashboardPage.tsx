@@ -140,6 +140,9 @@ export default function DashboardPage() {
     new Date().getDay(),
   );
 
+  // Toggle to trigger manual meal-plan re-fetches without reloading the page
+  const [generationIteration, setGenerationIteration] = useState(0);
+
   // ... inside DashboardPage component ...
   const [activeSection, setActiveSection] = useState<
     "dashboard" | "pantry" | "chatWithRivo" | "profile" | "mealGallery"
@@ -282,23 +285,20 @@ export default function DashboardPage() {
     }
   };
 
-  // React to SSE generation result
+  // React to background generation result (polling completed)
   useEffect(() => {
     if (!generationResult) return;
-    if (generationResult.mealPlan) {
+    if (generationResult.done) {
       toast.success(
         t("toasts.shoppingListAndMealPlanGenerated", {
           defaultValue: "Shopping list and meal plan generated! 🎉",
         }),
       );
-      window.location.reload();
-    } else {
-      toast.success(
-        t("toasts.shoppingListGenerated", {
-          defaultValue: "Shopping list generated!",
-        }),
-      );
+      // Seamlessly fetch new data instead of reloading the page
       fetchShoppingLists();
+
+      // Trigger meal plan re-fetch
+      setGenerationIteration((prev) => prev + 1);
     }
   }, [generationResult]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -316,10 +316,15 @@ export default function DashboardPage() {
   // If the Redis lock is active, restore the generating UI and poll until it completes.
   useEffect(() => {
     if (!isMounted || !session?.user) return;
-    checkAndResume(fetchShoppingLists);
+    checkAndResume();
   }, [isMounted, session]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // GENERATE NEW SHOPPING LIST — now handled by useShoppingListGeneration SSE hook
+  // GENERATE NEW SHOPPING LIST — kicks off background job, polling updates progress
+  const handleGenerateShoppingList = useCallback(() => {
+    // No onDone callback needed — the generationResult effect already calls
+    // fetchShoppingLists() when result.done flips, avoiding a double-fetch.
+    generateShoppingList();
+  }, [generateShoppingList]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // FETCH USER HEALTH DATA
   useEffect(() => {
@@ -441,7 +446,7 @@ export default function DashboardPage() {
         clearInterval(statusCheckInterval);
       }
     };
-  }, [isMounted, session, t]);
+  }, [isMounted, session, t, generationIteration]);
 
   const todaysMeals = useMemo(() => {
     if (!isMounted) return [];
@@ -652,14 +657,6 @@ export default function DashboardPage() {
                             </button>
                           </div>
                         )}
-
-                        {/* Membership banner — desktop only (inline)
-                        {session?.user?.membership === "basic" && (
-                          <div className="hidden md:flex p-4 rounded-2xl border border-eatrivo-black-secondary/20 text-eatrivo-white-primary items-start bg-gradient-to-r from-eatrivo-orange/90 to-eatrivo-orange/85">
-                            <CircleAlert className="w-8 h-8 mr-2 shrink-0 text-eatrivo-white-primary" />
-                            <span className="text-xs">{t("templateUsage")}</span>
-                          </div>
-                        )} */}
                       </div>
 
                       {/* Nutrition Summary */}
@@ -667,14 +664,6 @@ export default function DashboardPage() {
                         <DailyNutritionSummary data={todaysNutrition} />
                       </div>
                     </div>
-
-                    {/* Row 2: Membership banner — mobile only — temporarily disabled */}
-                    {/* {session?.user?.membership === "basic" && (
-                      <div className="flex md:hidden p-4 rounded-2xl border border-eatrivo-black-secondary/20 text-eatrivo-white-primary items-start bg-gradient-to-r from-eatrivo-orange/90 to-eatrivo-orange/85">
-                        <CircleAlert className="w-8 h-8 mr-2 shrink-0 text-eatrivo-white-primary" />
-                        <span className="text-xs">{t("templateUsage")}</span>
-                      </div>
-                    )} */}
                   </div>
 
                   {/* Meals Grid / Create Shopping List CTA */}
@@ -684,7 +673,7 @@ export default function DashboardPage() {
                     hasActiveShoppingList={hasActiveShoppingList}
                     pendingShoppingList={pendingShoppingList}
                     isGeneratingList={isGenerating}
-                    onGenerateList={generateShoppingList}
+                    onGenerateList={handleGenerateShoppingList}
                     generationProgress={generationProgress}
                     generationLabel={generationLabel}
                     retryCount={generationRetryCount}
@@ -704,7 +693,7 @@ export default function DashboardPage() {
                     isLoading={isLoading.shoppingLists}
                     isGenerating={isGenerating}
                     membership={session?.user?.membership || "basic"}
-                    onGenerateNew={generateShoppingList}
+                    onGenerateNew={handleGenerateShoppingList}
                     onLockedCreate={() => setShowUpgradePopup(true)}
                     onStatusChange={fetchShoppingLists}
                   />

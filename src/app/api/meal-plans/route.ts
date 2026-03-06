@@ -9,7 +9,7 @@ import {
   userInfoTable,
   mealPlans,
 } from "@/db/schema";
-import { eq, desc, and, gte } from "drizzle-orm";
+import { eq, desc, and, gte, inArray } from "drizzle-orm";
 import { EatrivoAIService } from "../../../lib/langchain";
 import { CacheService } from "@/lib/redis";
 import { logger } from "@/lib/logger";
@@ -148,7 +148,7 @@ export async function POST(_request: NextRequest) {
       .where(
         and(
           eq(shoppingLists.userProfileId, userProfile.id),
-          eq(shoppingLists.status, "active"),
+          inArray(shoppingLists.status, ["active", "approved", "purchased"]),
           gte(shoppingLists.weekStartDate, startOfWeekLocal),
         ),
       )
@@ -172,7 +172,7 @@ export async function POST(_request: NextRequest) {
         .where(
           and(
             eq(shoppingLists.userProfileId, userProfile.id),
-            eq(shoppingLists.status, "active"),
+            inArray(shoppingLists.status, ["active", "approved", "purchased"]),
             gte(shoppingLists.created_at, sevenDaysAgoLocal),
           ),
         )
@@ -190,7 +190,7 @@ export async function POST(_request: NextRequest) {
         .where(
           and(
             eq(shoppingLists.userProfileId, userProfile.id),
-            eq(shoppingLists.status, "active"),
+            inArray(shoppingLists.status, ["active", "approved", "purchased"]),
           ),
         )
         .orderBy(desc(shoppingLists.created_at))

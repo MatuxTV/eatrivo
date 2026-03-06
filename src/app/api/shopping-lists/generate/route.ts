@@ -1,11 +1,11 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { auth } from "../../../../../auth";
 import { db } from "@/index";
 import { shoppingLists, userProfiles, userInfoTable } from "@/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
-import { RequestLock } from "@/lib/redis";
+import { RequestLock, GenerationProgress } from "@/lib/redis";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { buildShoppingListGraph } from "@/lib/langgraph/shopping-list";
 import { NODE_PROGRESS } from "@/lib/langgraph/shopping-list/constants";
@@ -13,8 +13,8 @@ import { ShoppingListState } from "@/lib/langgraph/shopping-list/state";
 
 /**
  * POST /api/shopping-lists/generate
- * Generate a personalized shopping list and meal plan using LangGraph
- * SSE streaming with progress events
+ * Kick off a background shopping-list + meal-plan generation via LangGraph.
+ * Returns 202 immediately; the client polls GET .../status for progress.
  */
 export async function POST(_req: NextRequest) {
   try {
@@ -24,20 +24,22 @@ export async function POST(_req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const rl = await checkRateLimit(`user:${session.user.id}`, "expensive");
+    const userId = session.user.id;
+
+    const rl = await checkRateLimit(`user:${userId}`, "expensive");
     if (!rl.success) return rl.response!;
 
     const membership = session.user.membership?.toLowerCase();
 
     apiLogger.info("User requesting shopping list generation", {
-      metadata: { userId: session.user.id, membership },
+      metadata: { userId, membership },
     });
 
     // Get user profile
     const [userProfile] = await db
       .select()
       .from(userProfiles)
-      .where(eq(userProfiles.userId, session.user.id));
+      .where(eq(userProfiles.userId, userId));
 
     if (!userProfile) {
       return NextResponse.json(
@@ -82,14 +84,18 @@ export async function POST(_req: NextRequest) {
     }
 
     // Check if the user already has an active/in-progress shopping list
-    // Block if any list is in draft, approved, or purchased state (generation in progress or pending approval)
     const activeLists = await db
       .select({ id: shoppingLists.id, status: shoppingLists.status })
       .from(shoppingLists)
       .where(
         and(
           eq(shoppingLists.userProfileId, userProfile.id),
-          inArray(shoppingLists.status, ["active", "draft", "approved", "purchased"]),
+          inArray(shoppingLists.status, [
+            "active",
+            "draft",
+            "approved",
+            "purchased",
+          ]),
         ),
       );
 
@@ -104,7 +110,7 @@ export async function POST(_req: NextRequest) {
     }
 
     // Acquire generation lock (prevents duplicate requests & persists state across reloads)
-    const lockKey = `shopping-list-generation:${session.user.id}`;
+    const lockKey = `shopping-list-generation:${userId}`;
     const lockAcquired = await RequestLock.acquire(lockKey, 300); // 5 min TTL
 
     if (!lockAcquired) {
@@ -117,98 +123,79 @@ export async function POST(_req: NextRequest) {
       );
     }
 
-    // ─── SSE Stream via LangGraph ────────────────────────────────────────────
-    const graph = buildShoppingListGraph();
-    const encoder = new TextEncoder();
+    // Set initial progress
+    await GenerationProgress.set(userId, {
+      progress: 0,
+      label: "loader.fetchingProfile",
+      retryCount: 0,
+    });
 
-    return new Response(
-      new ReadableStream({
-        async start(controller) {
-          try {
-            const stream = await graph.stream(
-              { userId: session.user!.id, userProfileId: userProfile.id },
-              { streamMode: "updates" },
-            );
+    // ─── Fire-and-forget: run LangGraph in the background via after() ──────
+    after(async () => {
+      try {
+        const graph = buildShoppingListGraph();
+        const stream = await graph.stream(
+          { userId, userProfileId: userProfile.id },
+          { streamMode: "updates" },
+        );
 
-            for await (const update of stream) {
-              const nodeName = Object.keys(update)[0];
-              const nodeState = (
-                update as Record<
-                  string,
-                  Partial<typeof ShoppingListState.State>
-                >
-              )[nodeName];
+        for await (const update of stream) {
+          const nodeName = Object.keys(update)[0];
+          const nodeState = (
+            update as Record<string, Partial<typeof ShoppingListState.State>>
+          )[nodeName];
 
-              // Error event
-              if (nodeState?.error) {
-                controller.enqueue(
-                  encoder.encode(
-                    `data: ${JSON.stringify({
-                      type: "error",
-                      message: nodeState.error,
-                    })}\n\n`,
-                  ),
-                );
-                break;
-              }
-
-              // Progress event
-              const progressInfo = NODE_PROGRESS[nodeName];
-              if (progressInfo) {
-                controller.enqueue(
-                  encoder.encode(
-                    `data: ${JSON.stringify({
-                      type: "progress",
-                      node: nodeName,
-                      progress: progressInfo.progress,
-                      label: progressInfo.label,
-                      retryCount: nodeState?.retryCount ?? 0,
-                    })}\n\n`,
-                  ),
-                );
-              }
-
-              // Done event — when save_to_db completes with savedShoppingList
-              if (nodeName === "save_to_db" && nodeState?.savedShoppingList) {
-                controller.enqueue(
-                  encoder.encode(
-                    `data: ${JSON.stringify({
-                      type: "done",
-                      shoppingList: nodeState.savedShoppingList,
-                      mealPlan: nodeState.savedMealPlan ?? null,
-                      status: "draft",
-                    })}\n\n`,
-                  ),
-                );
-              }
-            }
-          } catch (streamError) {
-            apiLogger.error("Shopping list graph stream error", streamError, {
-              metadata: { userId: session.user!.id },
+          // Error in graph node
+          if (nodeState?.error) {
+            apiLogger.error("Shopping list graph node error", {
+              metadata: { userId, node: nodeName, error: nodeState.error },
             });
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  type: "error",
-                  message:
-                    "Failed to generate shopping list. Please try again.",
-                })}\n\n`,
-              ),
-            );
-          } finally {
-            await RequestLock.release(lockKey);
-            controller.close();
+            await GenerationProgress.set(userId, {
+              progress: 0,
+              label: "",
+              retryCount: 0,
+              error: nodeState.error,
+            });
+            break;
           }
-        },
-      }),
-      {
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          "X-Accel-Buffering": "no",
-        },
-      },
-    );
+
+          // Write progress to Redis
+          const progressInfo = NODE_PROGRESS[nodeName];
+          if (progressInfo) {
+            await GenerationProgress.set(userId, {
+              progress: progressInfo.progress,
+              label: progressInfo.label,
+              retryCount: nodeState?.retryCount ?? 0,
+            });
+          }
+
+          // Done — save_to_db completed
+          if (nodeName === "save_to_db" && nodeState?.savedShoppingList) {
+            await GenerationProgress.set(userId, {
+              progress: 100,
+              label: "loader.done",
+              retryCount: 0,
+              done: true,
+            });
+          }
+        }
+      } catch (streamError) {
+        apiLogger.error("Shopping list graph stream error", streamError, {
+          metadata: { userId },
+        });
+        await GenerationProgress.set(userId, {
+          progress: 0,
+          label: "",
+          retryCount: 0,
+          error: "Failed to generate shopping list. Please try again.",
+        });
+      } finally {
+        await RequestLock.release(lockKey);
+      }
+    });
+
+    // Return immediately — client will poll /status
+    return NextResponse.json({ started: true }, { status: 202 });
   } catch (error) {
     apiLogger.error(
       "Failed to generate shopping list for premium user",

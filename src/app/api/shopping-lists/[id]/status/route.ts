@@ -172,9 +172,12 @@ ${markdownContent}`;
   try {
     parsed = JSON.parse(jsonStr);
   } catch {
-    apiLogger.error("importShoppingListToPantry: Gemini returned invalid JSON", {
-      raw: raw.slice(0, 300),
-    });
+    apiLogger.error(
+      "importShoppingListToPantry: Gemini returned invalid JSON",
+      {
+        raw: raw.slice(0, 300),
+      },
+    );
     return; // non-fatal — caller already committed status to "purchased"
   }
 

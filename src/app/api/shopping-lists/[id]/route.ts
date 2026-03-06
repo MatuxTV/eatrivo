@@ -39,14 +39,28 @@ export async function GET(
     const isAdmin = ["admin", "coach"].includes(userProfile.role ?? "");
 
     const rows = isAdmin
-      ? await db.select().from(shoppingLists).where(eq(shoppingLists.id, id)).limit(1)
-      : await db.select().from(shoppingLists).where(
-          and(eq(shoppingLists.id, id), eq(shoppingLists.userProfileId, userProfile.id)),
-        ).limit(1);
+      ? await db
+          .select()
+          .from(shoppingLists)
+          .where(eq(shoppingLists.id, id))
+          .limit(1)
+      : await db
+          .select()
+          .from(shoppingLists)
+          .where(
+            and(
+              eq(shoppingLists.id, id),
+              eq(shoppingLists.userProfileId, userProfile.id),
+            ),
+          )
+          .limit(1);
 
     const item = rows[0];
     if (!item) {
-      return NextResponse.json({ error: "Shopping list not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Shopping list not found" },
+        { status: 404 },
+      );
     }
 
     return NextResponse.json({
@@ -60,7 +74,10 @@ export async function GET(
     });
   } catch (error) {
     apiLogger.error("Error fetching shopping list", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -89,10 +106,20 @@ export async function PATCH(
 
     // Input length validation
     if (typeof title !== "string" || title.length > 200) {
-      return NextResponse.json({ error: "Title must be a string of max 200 characters" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Title must be a string of max 200 characters" },
+        { status: 400 },
+      );
     }
-    if (description !== undefined && description !== null && (typeof description !== "string" || description.length > 5000)) {
-      return NextResponse.json({ error: "Description must be a string of max 5000 characters" }, { status: 400 });
+    if (
+      description !== undefined &&
+      description !== null &&
+      (typeof description !== "string" || description.length > 5000)
+    ) {
+      return NextResponse.json(
+        { error: "Description must be a string of max 5000 characters" },
+        { status: 400 },
+      );
     }
 
     // Verify ownership and existence
@@ -147,6 +174,74 @@ export async function PATCH(
     });
   } catch (error) {
     apiLogger.error("Error updating shopping list", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * DELETE /api/shopping-lists/[id]
+ * Deletes a shopping list and its associated meal plans (via cascade)
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    // Verify ownership
+    const [userProfile] = await db
+      .select({ id: userProfiles.id })
+      .from(userProfiles)
+      .where(eq(userProfiles.userId, session.user.id))
+      .limit(1);
+
+    if (!userProfile) {
+      return NextResponse.json(
+        { error: "User profile not found" },
+        { status: 404 },
+      );
+    }
+
+    const [existingList] = await db
+      .select({ id: shoppingLists.id })
+      .from(shoppingLists)
+      .where(
+        and(
+          eq(shoppingLists.id, id),
+          eq(shoppingLists.userProfileId, userProfile.id),
+        ),
+      )
+      .limit(1);
+
+    if (!existingList) {
+      return NextResponse.json(
+        { error: "Shopping list not found or unauthorized" },
+        { status: 404 },
+      );
+    }
+
+    // Delete the shopping list (cascade handles mealPlans & downloads)
+    await db.delete(shoppingLists).where(eq(shoppingLists.id, id));
+
+    // Invalidate cache for the user's shopping lists
+    await CacheService.del(`shopping-lists:${session.user.id}`);
+
+    return NextResponse.json({
+      success: true,
+      message: "Shopping list deleted successfully",
+    });
+  } catch (error) {
+    apiLogger.error("Error deleting shopping list", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
