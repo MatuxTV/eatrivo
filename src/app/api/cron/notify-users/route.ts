@@ -17,64 +17,64 @@ const NOTIFICATION_MESSAGES: Record<string, PushNotificationPayload[]> = {
     {
       title: "🍽️ Ako vyzerá tvoj dnešný jedálniček?",
       body: "Pozri sa na svoje jedlá a naplánuj si deň plný energie!",
-      url: "/dashboard",
+      url: "/home",
     },
     {
       title: "💪 Nezabudni na svoje ciele!",
       body: "Sleduj svoj pokrok a drž sa plánu. Rivo ti pomôže!",
-      url: "/dashboard",
+      url: "/home",
     },
     {
       title: "🥗 Čas na zdravý návyk!",
       body: "Otvor Eatrivo a pozri si svoje jedlá na dnes.",
-      url: "/dashboard",
+      url: "/home",
     },
     {
       title: "📊 Kontrola výživy",
       body: "Ako sa ti darí s kalorickým príjmom? Skontroluj si to!",
-      url: "/dashboard",
+      url: "/home",
     },
     {
       title: "🔥 Pokračuj v skvelej práci!",
       body: "Každý deň sa počíta. Otvor si Eatrivo a naplánuj si jedlá.",
-      url: "/dashboard",
+      url: "/home",
     },
     {
       title: "🍎 Tvoje telo ti poďakuje!",
       body: "Sledovanie stravy je kľúč k úspechu. Pokračuj!",
-      url: "/dashboard",
+      url: "/home",
     },
   ],
   en: [
     {
       title: "🍽️ What does your menu look like today?",
       body: "Check your meals and plan a day full of energy!",
-      url: "/dashboard",
+      url: "/home",
     },
     {
       title: "💪 Don't forget your goals!",
       body: "Track your progress and stick to the plan. Rivo will help!",
-      url: "/dashboard",
+      url: "/home",
     },
     {
       title: "🥗 Time for a healthy habit!",
       body: "Open Eatrivo and check your meals for today.",
-      url: "/dashboard",
+      url: "/home",
     },
     {
       title: "📊 Nutrition check",
       body: "How's your calorie intake going? Check it out!",
-      url: "/dashboard",
+      url: "/home",
     },
     {
       title: "🔥 Keep up the great work!",
       body: "Every day counts. Open Eatrivo and plan your meals.",
-      url: "/dashboard",
+      url: "/home",
     },
     {
       title: "🍎 Your body will thank you!",
       body: "Tracking your diet is the key to success. Keep going!",
-      url: "/dashboard",
+      url: "/home",
     },
   ],
 };

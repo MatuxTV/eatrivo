@@ -189,8 +189,8 @@ export function HeroSection({ className = "" }: SectionProps) {
           {/* Center phone — always visible, sole focus on mobile */}
           <div>
             <PhoneMockup
-              src={`/images/screenshots/${locale}/dashboard.PNG`}
-              alt="Dashboard"
+              src={`/images/screenshots/${locale}/home.PNG`}
+              alt="Home"
               delay={0}
               isCenter
             />

@@ -1,13 +1,14 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { auth } from "../../../../auth";
 import { db } from "@/index";
-import { pantryItems, userProfiles } from "@/db/schema";
+import { pantryItems, userInfoTable, userProfiles } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
+import { normalizePantryItemsInBackground } from "@/lib/pantry/background-normalization";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import { CacheService } from "@/lib/redis";
-import { guessFoodCategory } from "@/lib/units";
+import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 
 const CACHE_TTL = 300; // 5 minutes
 
@@ -26,9 +27,9 @@ export async function GET(req: NextRequest) {
     req as unknown as Request,
     session.user.id,
   );
-  const rateLimitResult = await checkRateLimit(identifier, "standard");
+  const rateLimitResult = await checkRateLimit(identifier, "pantry");
   if (!rateLimitResult.success) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    return rateLimitResult.response ?? NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
   try {
@@ -75,9 +76,9 @@ export async function POST(req: NextRequest) {
     req as unknown as Request,
     session.user.id,
   );
-  const rateLimitResult = await checkRateLimit(identifier, "standard");
+  const rateLimitResult = await checkRateLimit(identifier, "pantry");
   if (!rateLimitResult.success) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    return rateLimitResult.response ?? NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
   try {
@@ -98,18 +99,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
+    const userInfo = await db.query.userInfoTable.findFirst({
+      where: eq(userInfoTable.userProfileId, userProfile.id),
+    });
+
     const resolvedCategory =
       category && typeof category === "string"
         ? category
         : guessFoodCategory(name.trim());
+    const normalizedName = name.trim();
 
     const [newItem] = await db
       .insert(pantryItems)
       .values({
         userProfileId: userProfile.id,
-        name: name.trim(),
-        quantity: quantity ? String(quantity) : null,
-        unit: unit ? String(unit) : null,
+        name: normalizedName,
+        ingredientName: null,
+        ingredientKey: null,
+        ingredientSpecificKey: null,
+        quantity:
+          quantity !== null && quantity !== undefined ? String(quantity) : null,
+        unit: unit ? normalizeUnit(String(unit)) : null,
         category: resolvedCategory,
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         source: "manual",
@@ -118,7 +128,19 @@ export async function POST(req: NextRequest) {
       .returning();
 
     await CacheService.del(cacheKey(userProfile.id));
-    return NextResponse.json({ item: newItem }, { status: 201 });
+    after(async () => {
+      await normalizePantryItemsInBackground({
+        source: "pantry-manual-add",
+        userProfileId: userProfile.id,
+        locale: userInfo?.language ?? "sk",
+        pantryItemIds: [newItem.id],
+      });
+    });
+
+    return NextResponse.json(
+      { item: newItem, normalizationQueued: true },
+      { status: 201 },
+    );
   } catch (error) {
     apiLogger.error("POST /api/pantry error", { error });
     return NextResponse.json(

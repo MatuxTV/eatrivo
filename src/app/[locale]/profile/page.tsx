@@ -9,5 +9,5 @@ export default async function ProfilePage({ params }: PageProps) {
   const { locale } = await params;
   const safeLocale: Locale = isLocale(locale) ? locale : defaultLocale;
 
-  redirect(`/${safeLocale}/dashboard`);
+  redirect(`/${safeLocale}/home`);
 }

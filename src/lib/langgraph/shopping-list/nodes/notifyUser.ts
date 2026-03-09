@@ -20,7 +20,7 @@ export async function notifyUser(
         : `${title} je pripravený.`,
       icon: "/logo/favicon_io/android-chrome-192x192.png",
       badge: "/logo/favicon_io/favicon-32x32.png",
-      url: "/dashboard",
+      url: "/home",
       data: {
         type: "shopping_list_ready",
         shoppingListId: (state.savedShoppingList as { id?: string })?.id,

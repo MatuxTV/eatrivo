@@ -139,25 +139,38 @@ export default function ChatWithRivoPage() {
           try {
             const errorData = await res.json();
             if (errorData.error === "daily_limit_reached") {
-              setChatLimit((prev) => prev ? { ...prev, used: errorData.used, remaining: 0 } : prev);
+              setChatLimit((prev) =>
+                prev ? { ...prev, used: errorData.used, remaining: 0 } : prev,
+              );
               setMessages((prev) => {
                 const lastMsg = prev[prev.length - 1];
-                if (lastMsg && lastMsg.role === "assistant" && lastMsg.content === "") {
+                if (
+                  lastMsg &&
+                  lastMsg.role === "assistant" &&
+                  lastMsg.content === ""
+                ) {
                   const updated = [...prev];
                   updated[updated.length - 1] = {
                     role: "assistant",
-                    content: "Dosiahol si denný limit správ. Prejdi na Premium pre neobmedzený chat s Rivom! 💜",
+                    content:
+                      "Dosiahol si denný limit správ. Prejdi na Premium pre neobmedzený chat s Rivom! 💜",
                   };
                   return updated;
                 }
                 return [
                   ...prev,
-                  { role: "assistant", content: "Dosiahol si denný limit správ. Prejdi na Premium pre neobmedzený chat s Rivom! 💜" },
+                  {
+                    role: "assistant",
+                    content:
+                      "Dosiahol si denný limit správ. Prejdi na Premium pre neobmedzený chat s Rivom! 💜",
+                  },
                 ];
               });
               return;
             }
-          } catch { /* fall through to generic error */ }
+          } catch {
+            /* fall through to generic error */
+          }
         }
         throw new Error("Request failed");
       }
@@ -214,57 +227,32 @@ export default function ChatWithRivoPage() {
   }
 
   return (
-    <div className="flex flex-col h-full flex-1 w-full mx-auto px-4 md:px-8 bg-eatrivo-white-primary relative overflow-hidden pt-20 pb-16 md:pt-0 md:pb-0">
+    <div className="flex flex-col h-full flex-1 w-full mx-auto px-4 md:px-8 bg-eatrivo-white-primary relative overflow-hidden pt-20 pb-[88px] md:pt-0 md:pb-0">
       {/* Decorative ambient background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-eatrivo-purple/10 blur-[100px] rounded-full opacity-60"></div>
         <div className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] bg-eatrivo-pink/5 blur-[120px] rounded-full opacity-40"></div>
       </div>
 
-      {/* Top Header Placeholder (Optional) */}
-      <div className="flex items-center justify-between pb-4 pt-4 md:pt-6 border-b relative z-10 border-eatrivo-purple/10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-eatrivo-purple/10 to-eatrivo-purple/5 flex items-center justify-center border border-eatrivo-purple/20 shadow-[0_2px_8px_-2px_rgba(123,63,242,0.15)]">
-            <Image
-              src="/rivo/RIVO2-remove.png"
-              alt="Rivo Avatar"
-              className="w-10 h-10 p-0.5 rounded-full border-2 border-eatrivo-purple/20 shadow-md"
-              width={24}
-              height={24}
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h1 className="font-semibold text-eatrivo-black-primary leading-none tracking-tight">
-                Rivo AI
-              </h1>
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-eatrivo-purple/10 text-eatrivo-purple border border-eatrivo-purple/20 leading-none">
-                BETA
-              </span>
-            </div>
-            <p className="text-[13px] text-eatrivo-black-secondary font-medium">
-              Tvoj nutričný asistent
-            </p>
-          </div>
-        </div>
+      {/* Messages list */}
+      <div className="flex-1 overflow-y-auto space-y-6 pt-4 pb-6 scrollbar-hide relative z-10 md:max-w-4xl md:mx-auto md:w-full">
         {/* Daily message limit counter */}
         {chatLimit?.limited && (
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-              chatLimit.remaining === 0
-                ? "bg-red-100 text-red-600"
-                : (chatLimit.remaining ?? 0) <= 3
-                  ? "bg-amber-100 text-amber-700"
-                  : "bg-eatrivo-purple/10 text-eatrivo-purple"
-            }`}>
-              {chatLimit.remaining}/{chatLimit.limit}
+          <div className="absolute top-2 right-2 md:top-4 md:-right-4 z-20">
+            <span
+              className={`text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm ${
+                chatLimit.remaining === 0
+                  ? "bg-red-100 text-red-600 border border-red-200"
+                  : (chatLimit.remaining ?? 0) <= 3
+                    ? "bg-amber-100 text-amber-700 border border-amber-200"
+                    : "bg-white text-eatrivo-purple border border-eatrivo-purple/20"
+              }`}
+            >
+              {chatLimit.remaining}/{chatLimit.limit} správy
             </span>
           </div>
         )}
-      </div>
 
-      {/* Messages list */}
-      <div className="flex-1 overflow-y-auto space-y-6 pt-4 pb-6 scrollbar-hide relative z-10 md:max-w-4xl md:mx-auto md:w-full">
         <AnimatePresence initial={false}>
           {messages.length === 0 && (
             <motion.div
@@ -488,28 +476,31 @@ export default function ChatWithRivoPage() {
             </Link>
           </div>
         ) : (
-        <div className="relative flex items-center bg-white/90 backdrop-blur-xl p-1.5 rounded-[2rem] border border-eatrivo-purple/10 shadow-[0_8px_30px_rgb(123,63,242,0.12)] focus-within:ring-2 focus-within:ring-eatrivo-purple/30 focus-within:border-eatrivo-purple/50 transition-all duration-300">
-          <input
-            className="flex-1 bg-transparent px-5 py-3 min-h-[44px] text-[15px] text-eatrivo-black-primary focus:outline-none placeholder:text-eatrivo-black-secondary/70"
-            placeholder="Opýtaj sa na svoj jedálniček..."
-            value={input}
-            onChange={(e) => {
-              if (e.target.value.length <= MAX_INPUT_CHARS) setInput(e.target.value);
-            }}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-            disabled={isStreaming}
-            maxLength={MAX_INPUT_CHARS}
-          />
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => sendMessage()}
-            disabled={isStreaming || !input.trim()}
-            className="h-11 w-11 shrink-0 bg-gradient-to-tr from-eatrivo-purple to-eatrivo-pink text-white rounded-full shadow-md shadow-eatrivo-purple/30 disabled:opacity-50 disabled:shadow-none hover:shadow-lg hover:shadow-eatrivo-purple/40 transition-all mr-0.5 flex items-center justify-center"
-          >
-            <Send className="w-5 h-5 ml-0.5" />
-          </motion.button>
-        </div>
+          <div className="relative flex items-center bg-white/90 backdrop-blur-xl p-1.5 rounded-[2rem] border border-eatrivo-purple/10 shadow-[0_8px_30px_rgb(123,63,242,0.12)] focus-within:ring-2 focus-within:ring-eatrivo-purple/30 focus-within:border-eatrivo-purple/50 transition-all duration-300">
+            <input
+              className="flex-1 bg-transparent px-5 py-3 min-h-[44px] text-[15px] text-eatrivo-black-primary focus:outline-none placeholder:text-eatrivo-black-secondary/70"
+              placeholder="Opýtaj sa na svoj jedálniček..."
+              value={input}
+              onChange={(e) => {
+                if (e.target.value.length <= MAX_INPUT_CHARS)
+                  setInput(e.target.value);
+              }}
+              onKeyDown={(e) =>
+                e.key === "Enter" && !e.shiftKey && sendMessage()
+              }
+              disabled={isStreaming}
+              maxLength={MAX_INPUT_CHARS}
+            />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => sendMessage()}
+              disabled={isStreaming || !input.trim()}
+              className="h-11 w-11 shrink-0 bg-gradient-to-tr from-eatrivo-purple to-eatrivo-pink text-white rounded-full shadow-md shadow-eatrivo-purple/30 disabled:opacity-50 disabled:shadow-none hover:shadow-lg hover:shadow-eatrivo-purple/40 transition-all mr-0.5 flex items-center justify-center"
+            >
+              <Send className="w-5 h-5 ml-0.5" />
+            </motion.button>
+          </div>
         )}
         <p className="text-center text-[11px] text-eatrivo-black-secondary mt-3 font-medium opacity-80 hidden md:block">
           Rivo môže robiť chyby. Odporúčame overovať dôležité informácie.

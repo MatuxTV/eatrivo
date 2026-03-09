@@ -52,7 +52,7 @@ export default async function SignOutPage({ params }: PageProps) {
                 {t("signOut.confirm")}
               </Button>
             </form>
-            <Link href={`/${locale}/dashboard`}>
+            <Link href={`/${locale}/home`}>
               <Button
                 className="w-full text-eatrivo-black-secondary bg-eatrivo-white-secondary border-1 border-eatrivo-black/50 hover:scale-105 hover:bg-gray-100"
                 size="lg"

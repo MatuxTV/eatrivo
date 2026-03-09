@@ -21,8 +21,8 @@ export default function AdminHeader() {
             </div>
           </div>
           <div>
-            <NextLink href="/dashboard">
-              <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-500 hover:text-eatrivo-purple hover:bg-eatrivo-purple/10 rounded-full transition-colors" title="Späť na Dashboard">
+            <NextLink href="/home">
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-500 hover:text-eatrivo-purple hover:bg-eatrivo-purple/10 rounded-full transition-colors" title="Späť na Domov">
                 <LayoutDashboardIcon className="w-5 h-5" />
               </Button>
             </NextLink>

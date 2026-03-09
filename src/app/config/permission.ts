@@ -5,7 +5,7 @@
 // For API-level admin auth, see requireAdminAuth() which checks userProfile.role.
 export const permissions = {
   admin: ['trainer'],
-  dashboard: ['basic', 'premium', 'pro', 'trainer'],
+  home: ['basic', 'premium', 'pro', 'trainer'],
   onboarding: ['basic', 'premium', 'pro', 'trainer'],
   profile: ['basic', 'premium', 'pro', 'trainer'],
   'chat-with-rivo': ['basic', 'premium', 'pro', 'trainer'],

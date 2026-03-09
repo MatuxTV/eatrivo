@@ -15,5 +15,5 @@ export default async function ChatWithRivoPageWrapper({ params }: PageProps) {
     redirect(`/${safeLocale}/signin`);
   }
 
-  redirect(`/${safeLocale}/dashboard?section=chatWithRivo`);
+  redirect(`/${safeLocale}/home?section=chatWithRivo`);
 }

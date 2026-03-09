@@ -1,13 +1,14 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { auth } from "../../../../../../auth";
 import { db } from "@/index";
-import { shoppingLists, userProfiles, pantryItems } from "@/db/schema";
+import { shoppingLists, userInfoTable, userProfiles, pantryItems } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
 import { CacheService } from "@/lib/redis";
 import { sendPushToUser } from "@/lib/pwa/sendPushToAll";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { normalizePantryItemsInBackground } from "@/lib/pantry/background-normalization";
 import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 
 const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
@@ -50,6 +51,10 @@ export async function PATCH(
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
+    const userInfo = await db.query.userInfoTable.findFirst({
+      where: eq(userInfoTable.userProfileId, userProfile.id),
+    });
+
     const shoppingList = await db.query.shoppingLists.findFirst({
       where: and(
         eq(shoppingLists.id, id),
@@ -90,23 +95,25 @@ export async function PATCH(
 
     // Side effects for "purchased"
     if (newStatus === "purchased") {
-      // Trigger pantry import inline (non-fatal)
-      try {
-        await importShoppingListToPantry(
-          id,
-          userProfile.id,
-          shoppingList.markdownContent,
-        );
-      } catch (err) {
-        apiLogger.error("Pantry import failed (non-fatal)", { err });
-      }
+      after(async () => {
+        try {
+          await importShoppingListToPantry(
+            id,
+            userProfile.id,
+            userInfo?.language ?? "sk",
+            shoppingList.markdownContent,
+          );
+        } catch (err) {
+          apiLogger.error("Pantry import failed (non-fatal)", { err });
+        }
+      });
 
       // Send push notification
       try {
         await sendPushToUser(session.user.id, {
           title: "Nákup dokončený! 🛒",
           body: "Tvoje ingrediencie boli pridané do spajzy.",
-          url: "/dashboard?section=pantry",
+          url: "/home?section=pantry",
         });
       } catch (err) {
         apiLogger.error("Push notification failed after purchased", { err });
@@ -136,6 +143,7 @@ export async function PATCH(
 async function importShoppingListToPantry(
   shoppingListId: string,
   userProfileId: string,
+  locale: string,
   markdownContent: string,
 ): Promise<void> {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
@@ -183,20 +191,36 @@ ${markdownContent}`;
 
   if (!Array.isArray(parsed) || parsed.length === 0) return;
 
-  const toInsert = parsed
-    .filter((item) => item.name && typeof item.name === "string")
-    .map((item) => ({
-      userProfileId,
-      name: item.name.trim(),
-      quantity: item.quantity != null ? String(item.quantity) : null,
-      unit: item.unit ? normalizeUnit(item.unit) : null,
-      category: guessFoodCategory(item.name),
-      source: "shopping_list" as const,
-      shoppingListId,
+  const validParsedItems = parsed.filter(
+    (item) => item.name && typeof item.name === "string",
+  );
+
+  const toInsert = await Promise.all(validParsedItems
+    .map(async (item) => {
+      const normalizedName = item.name.trim();
+
+      return {
+        userProfileId,
+        name: normalizedName,
+        ingredientName: null,
+        ingredientKey: null,
+        ingredientSpecificKey: null,
+        quantity: item.quantity != null ? String(item.quantity) : null,
+        unit: item.unit ? normalizeUnit(item.unit) : null,
+        category: guessFoodCategory(normalizedName),
+        source: "shopping_list" as const,
+        shoppingListId,
+      };
     }));
 
   if (toInsert.length > 0) {
-    await db.insert(pantryItems).values(toInsert);
+    const insertedItems = await db.insert(pantryItems).values(toInsert).returning();
+    await normalizePantryItemsInBackground({
+      source: "shopping-list-status-import",
+      userProfileId,
+      locale,
+      pantryItemIds: insertedItems.map((item) => item.id),
+    });
     await CacheService.del(`pantry:${userProfileId}`);
     apiLogger.info("importShoppingListToPantry: items imported", {
       metadata: { shoppingListId, userProfileId, count: toInsert.length },

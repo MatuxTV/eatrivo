@@ -22,6 +22,15 @@ export const rateLimiters = {
       })
     : null,
 
+  // Pantry interactions are bursty because UI often chains pantry + matches refreshes.
+  pantry: redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(120, "1 m"),
+        prefix: "rl:pantry",
+      })
+    : null,
+
   // Expensive operations (AI, Stripe) - 10 requests per minute
   expensive: redis
     ? new Ratelimit({

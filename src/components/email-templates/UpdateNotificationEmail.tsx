@@ -26,7 +26,7 @@ interface UpdateNotificationEmailProps {
   updateTitle: string;
   updateDescription: string;
   updates: UpdateItem[];
-  dashboardUrl?: string;
+  homeUrl?: string;
   translations?: EmailTranslations;
 }
 
@@ -36,7 +36,7 @@ export function UpdateNotificationEmail({
   updateTitle,
   updateDescription,
   updates,
-  dashboardUrl = "https://eatrivo.sk/dashboard",
+  homeUrl = "https://eatrivo.sk/home",
   translations,
 }: UpdateNotificationEmailProps) {
   const t = translations?.update;
@@ -134,8 +134,8 @@ export function UpdateNotificationEmail({
 
           {/* CTA Section */}
           <Section style={styles.ctaSection}>
-            <Button style={styles.ctaButton} href={dashboardUrl}>
-              {t?.cta || "OTVORIŤ DASHBOARD"}
+            <Button style={styles.ctaButton} href={homeUrl}>
+              {t?.cta || "OTVORIŤ DOMOV"}
             </Button>
           </Section>
 
@@ -159,7 +159,7 @@ export function UpdateNotificationEmail({
                   <Text style={styles.footerLinks}>
                     <a href="https://eatrivo.sk" style={styles.footerLink}>Web</a>
                     <span style={styles.footerDot}>·</span>
-                    <a href="https://eatrivo.sk/dashboard" style={styles.footerLink}>Dashboard</a>
+                    <a href="https://eatrivo.sk/home" style={styles.footerLink}>Home</a>
                     <span style={styles.footerDot}>·</span>
                     <a href="mailto:support@eatrivo.sk" style={styles.footerLink}>Podpora</a>
                   </Text>

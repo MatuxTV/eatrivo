@@ -97,6 +97,101 @@ export const foodItems = pgTable("food_items", {
   fat: numeric(),
 });
 
+export const recipes = pgTable("recipes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: text("slug").notNull().unique(),
+  externalKey: text("external_key").notNull().unique(),
+  name: text("name").notNull(),
+  category: text("category").notNull(),
+  categoryKey: text("category_key").notNull(),
+  defaultLocale: text("default_locale").default("en").notNull(),
+  servings: integer("servings").notNull(),
+  servingUnit: text("serving_unit"),
+  prepTimeMin: integer("prep_time_min").notNull(),
+  totalTimeMin: integer("total_time_min").notNull(),
+  calories: integer("calories").notNull(),
+  proteinG: integer("protein_g").notNull(),
+  carbohydratesG: integer("carbohydrates_g").notNull(),
+  fatG: integer("fat_g").notNull(),
+  dietTags: jsonb("diet_tags").$type<string[]>().default([]).notNull(),
+  restrictionFlags: jsonb("restriction_flags").$type<string[]>().default([]).notNull(),
+  ingredients: jsonb("ingredients").notNull(),
+  instructions: jsonb("instructions").notNull(),
+  notes: text("notes"),
+  mealPrepFriendly: boolean("meal_prep_friendly").default(false).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const recipeIngredients = pgTable("recipe_ingredients", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  recipeId: uuid("recipe_id")
+    .notNull()
+    .references(() => recipes.id, { onDelete: "cascade" }),
+  displayName: text("display_name").notNull(),
+  ingredientName: text("ingredient_name"),
+  ingredientKey: text("ingredient_key"),
+  quantity: numeric("quantity", { precision: 8, scale: 3 }),
+  unit: text("unit"),
+  optional: boolean("optional").default(false).notNull(),
+  sortOrder: integer("sort_order").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const recipeTranslations = pgTable(
+  "recipe_translations",
+  {
+    recipeId: uuid("recipe_id")
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    locale: text("locale").notNull(),
+    name: text("name").notNull(),
+    categoryLabel: text("category_label"),
+    servingUnitLabel: text("serving_unit_label"),
+    instructions: jsonb("instructions").notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    compoundKey: primaryKey({ columns: [table.recipeId, table.locale] }),
+  }),
+);
+
+export const recipeIngredientTranslations = pgTable(
+  "recipe_ingredient_translations",
+  {
+    recipeIngredientId: uuid("recipe_ingredient_id")
+      .notNull()
+      .references(() => recipeIngredients.id, { onDelete: "cascade" }),
+    locale: text("locale").notNull(),
+    displayName: text("display_name").notNull(),
+    ingredientName: text("ingredient_name"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    compoundKey: primaryKey({ columns: [table.recipeIngredientId, table.locale] }),
+  }),
+);
+
 // NextAuth users table (minimal, just for OAuth)
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -219,6 +314,9 @@ export const pantryItems = pgTable("pantry_items", {
     .notNull()
     .references(() => userProfiles.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  ingredientName: text("ingredient_name"),
+  ingredientKey: text("ingredient_key"),
+  ingredientSpecificKey: text("ingredient_specific_key"),
   quantity: numeric("quantity", { precision: 8, scale: 3 }),
   unit: text("unit"),
   category: text("category"),

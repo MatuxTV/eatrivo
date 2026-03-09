@@ -17,7 +17,7 @@ export async function POST() {
   const payload = {
     title: "🔔 Test notifikácia",
     body: "Notifikácie fungujú správne! Eatrivo ✅",
-    url: "/dashboard",
+    url: "/home",
   };
 
   try {
@@ -27,7 +27,7 @@ export async function POST() {
       return NextResponse.json(
         {
           success: false,
-          message: "No push subscriptions found for your account. Subscribe first via the dashboard.",
+          message: "No push subscriptions found for your account. Subscribe first via the home page.",
           result,
         },
         { status: 404 }

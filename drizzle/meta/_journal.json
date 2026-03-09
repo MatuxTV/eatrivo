@@ -78,6 +78,27 @@
       "when": 1772717848899,
       "tag": "0010_clean_nighthawk",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1772897924582,
+      "tag": "0011_curved_norrin_radd",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1772899424267,
+      "tag": "0012_fearless_blade",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1772900391943,
+      "tag": "0013_perpetual_jasper_sitwell",
+      "breakpoints": true
     }
   ]
 }

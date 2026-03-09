@@ -18,7 +18,7 @@ export async function generateMetadata({
 
   const t = await getTranslations({
     locale: safeLocale,
-    namespace: "dashboard.comingSoon",
+    namespace: "home.comingSoon",
   });
   const common = await getTranslations({
     locale: safeLocale,

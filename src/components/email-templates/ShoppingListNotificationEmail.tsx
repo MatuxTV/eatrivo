@@ -17,7 +17,7 @@ export function ShoppingListNotificationEmail({
   clientName,
   shoppingListName,
   shoppingListDate,
-  dashboardUrl = "https://eatrivo.sk/dashboard",
+  homeUrl = "https://eatrivo.sk/home",
   translations,
 }: ShoppingListNotificationEmailProps) {
   const firstName = clientName.split(" ")[0];
@@ -90,7 +90,7 @@ export function ShoppingListNotificationEmail({
           {/* CTA Button */}
           <Section style={styles.ctaSection}>
             <Button
-              href={dashboardUrl}
+              href={homeUrl}
               style={styles.button}
             >
               {t?.cta || "Zobraziť Nákupný Zoznam"}
@@ -99,7 +99,7 @@ export function ShoppingListNotificationEmail({
 
           <Section>
             <Text style={styles.helpText}>
-              <span dangerouslySetInnerHTML={{ __html: (t?.help || "Váš nákupný zoznam nájdete v sekcii <strong>Dashboard</strong> vo vašom Eatrivo účte.").replace("<strong>Dashboard</strong>", "<strong>" + (common?.links.dashboard || "Dashboard") + "</strong>") }} />
+              <span dangerouslySetInnerHTML={{ __html: (t?.help || "Váš nákupný zoznam nájdete v sekcii <strong>Domov</strong> vo vašom Eatrivo účte.").replace("<strong>Domov</strong>", "<strong>" + (common?.links.home || "Domov") + "</strong>") }} />
             </Text>
           </Section>
 

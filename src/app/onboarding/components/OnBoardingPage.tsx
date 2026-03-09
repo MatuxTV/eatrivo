@@ -78,8 +78,8 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
           });
         }
 
-        // Redirect to dashboard
-        router.push(`/${locale}/dashboard`);
+        // Redirect to home
+        router.push(`/${locale}/home`);
       } else {
         throw new Error("Failed to save onboarding data");
       }

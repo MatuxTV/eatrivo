@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
         await sendPushToUser(profile.userId, {
           title: "⚠️ Potraviny čoskoro expirujú",
           body: `${itemList}${more} — skontroluj svoju spajzu.`,
-          url: "/dashboard?section=pantry",
+          url: "/home?section=pantry",
         });
         await CacheService.set(dedupKey, true, 23 * 3600); // 23h TTL
         notified++;

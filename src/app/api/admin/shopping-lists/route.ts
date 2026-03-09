@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
             const payload = JSON.stringify({
               title: 'New Shopping List!',
               body: `A new shopping list "${title}" has been created for you.`,
-              url: '/dashboard/shopping-lists',
+              url: '/home?section=pantry',
               icon: '/logo/icon-192x192.png'
             });
 

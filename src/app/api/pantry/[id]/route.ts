@@ -1,12 +1,14 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { auth } from "../../../../../auth";
 import { db } from "@/index";
-import { pantryItems, userProfiles } from "@/db/schema";
+import { pantryItems, userInfoTable, userProfiles } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
+import { normalizePantryItemsInBackground } from "@/lib/pantry/background-normalization";
 import { CacheService } from "@/lib/redis";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
+import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 
 function cacheKey(userProfileId: string) {
   return `pantry:${userProfileId}`;
@@ -18,6 +20,10 @@ async function getProfileAndItem(userId: string, itemId: string) {
   });
   if (!userProfile) return { error: "Profile not found", status: 404 } as const;
 
+  const userInfo = await db.query.userInfoTable.findFirst({
+    where: eq(userInfoTable.userProfileId, userProfile.id),
+  });
+
   const item = await db.query.pantryItems.findFirst({
     where: and(
       eq(pantryItems.id, itemId),
@@ -26,7 +32,7 @@ async function getProfileAndItem(userId: string, itemId: string) {
   });
   if (!item) return { error: "Item not found", status: 404 } as const;
 
-  return { userProfile, item };
+  return { userProfile, userInfo, item };
 }
 
 // GET /api/pantry/[id] — Get a single pantry item
@@ -65,9 +71,9 @@ export async function PUT(
     req as unknown as Request,
     session.user.id,
   );
-  const rateLimitResult = await checkRateLimit(identifier, "standard");
+  const rateLimitResult = await checkRateLimit(identifier, "pantry");
   if (!rateLimitResult.success) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    return rateLimitResult.response ?? NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
   const { id } = await params;
@@ -93,17 +99,32 @@ export async function PUT(
       );
     }
 
+    const resolvedName =
+      name !== undefined ? name.trim() : result.item.name;
+    const shouldNormalizeInBackground = name !== undefined;
+    const resolvedCategory =
+      category !== undefined ? category : name !== undefined
+        ? guessFoodCategory(resolvedName)
+        : undefined;
+
     const [updatedItem] = await db
       .update(pantryItems)
       .set({
-        ...(name !== undefined ? { name: name.trim() } : {}),
+        ...(name !== undefined ? { name: resolvedName } : {}),
+        ...(shouldNormalizeInBackground
+          ? {
+              ingredientName: null,
+              ingredientKey: null,
+              ingredientSpecificKey: null,
+            }
+          : {}),
         ...(quantity !== undefined
           ? { quantity: quantity !== null ? String(quantity) : null }
           : {}),
         ...(unit !== undefined
-          ? { unit: unit !== null ? String(unit) : null }
+          ? { unit: unit !== null ? normalizeUnit(String(unit)) : null }
           : {}),
-        ...(category !== undefined ? { category } : {}),
+        ...(resolvedCategory !== undefined ? { category: resolvedCategory } : {}),
         ...(expiryDate !== undefined
           ? { expiryDate: expiryDate !== null ? new Date(expiryDate) : null }
           : {}),
@@ -113,7 +134,21 @@ export async function PUT(
       .returning();
 
     await CacheService.del(cacheKey(result.userProfile.id));
-    return NextResponse.json({ item: updatedItem });
+    if (shouldNormalizeInBackground) {
+      after(async () => {
+        await normalizePantryItemsInBackground({
+          source: "pantry-manual-update",
+          userProfileId: result.userProfile.id,
+          locale: result.userInfo?.language ?? "sk",
+          pantryItemIds: [updatedItem.id],
+        });
+      });
+    }
+
+    return NextResponse.json({
+      item: updatedItem,
+      normalizationQueued: shouldNormalizeInBackground,
+    });
   } catch (error) {
     apiLogger.error("PUT /api/pantry/[id] error", { error });
     return NextResponse.json(
@@ -137,9 +172,9 @@ export async function DELETE(
     req as unknown as Request,
     session.user.id,
   );
-  const rateLimitResult = await checkRateLimit(identifier, "standard");
+  const rateLimitResult = await checkRateLimit(identifier, "pantry");
   if (!rateLimitResult.success) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    return rateLimitResult.response ?? NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
   const { id } = await params;

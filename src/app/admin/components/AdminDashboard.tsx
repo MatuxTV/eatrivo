@@ -187,7 +187,7 @@ export default function AdminDashboard() {
               shoppingListDate: new Date(
                 formData.weekStartDate,
               ).toLocaleDateString("sk-SK"),
-              dashboardUrl: "https://eatrivo.sk/dashboard",
+              homeUrl: "https://eatrivo.sk/home",
             }),
           });
         } catch (emailError) {
@@ -213,7 +213,7 @@ export default function AdminDashboard() {
                 icon: "/logo/favicon_io/android-chrome-192x192.png",
                 badge: "/logo/favicon_io/android-chrome-192x192.png",
                 data: {
-                  url: "/dashboard",
+                  url: "/home",
                   type: "shopping-list",
                 },
               },
@@ -372,7 +372,7 @@ export default function AdminDashboard() {
   //         shoppingListName: "Týždenný nákupný zoznam",
   //         shoppingListDate: new Date().toLocaleDateString("sk-SK"),
   //         itemCount: 25,
-  //         dashboardUrl: "https://eatrivo.sk/dashboard",
+  //         homeUrl: "https://eatrivo.sk/home",
   //       }),
   //     });
 

@@ -20,10 +20,10 @@ export default async function NotAuthorized({ params }: PageProps) {
           If you believe this is a mistake, please contact support.
         </p>
         <Link
-          href={`/${locale}/dashboard`}
+          href={`/${locale}/home`}
           className="inline-block px-6 py-2 rounded bg-primary text-primary-foreground font-medium shadow hover:bg-primary/90 transition"
         >
-          Go to Dashboard
+          Go to Home
         </Link>
       </div>
     </main>

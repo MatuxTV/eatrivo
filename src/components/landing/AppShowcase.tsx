@@ -25,11 +25,11 @@ function PhoneMockup({ feature, locale }: { feature: AppShowcaseFeature; locale:
   const colors = colorClassMap[feature.color];
 
   const imagePath = feature.id === "mealPlans" 
-    ? `/images/screenshots/${locale}/dashboard.PNG`
+    ? `/images/screenshots/${locale}/home.PNG`
     : `/images/screenshots/${locale}/shopping-list.PNG`;
 
   const imageAlt = feature.id === "mealPlans" 
-    ? "Meal Plans Dashboard"
+    ? "Meal Plans Home"
     : "Shopping Lists";
 
   return (

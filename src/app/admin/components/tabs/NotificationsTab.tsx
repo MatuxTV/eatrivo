@@ -194,11 +194,11 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
   const getPayload = () => {
     if (notificationType === "meal-plan-reminder") {
       const msg = MEAL_PLAN_MESSAGES[selectedLang];
-      return { title: msg.title, body: msg.body, url: "/dashboard" };
+      return { title: msg.title, body: msg.body, url: "/home" };
     }
     const messages = MOTIVATIONAL_MESSAGES[selectedLang];
     const msg = messages[selectedMessageIndex % messages.length];
-    return { title: msg.title, body: msg.body, url: "/dashboard" };
+    return { title: msg.title, body: msg.body, url: "/home" };
   };
 
   const currentPayload = getPayload();

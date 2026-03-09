@@ -115,7 +115,7 @@ export function RenewalReminderEmail({
 
           <Section style={styles.ctaSection}>
             <Button
-              href="https://eatrivo.sk/dashboard"
+              href="https://eatrivo.sk/home"
               style={styles.keepButton}
             >
               {t?.keepCta || "Pokračovať v plánovaní"}

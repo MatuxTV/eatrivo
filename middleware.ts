@@ -118,14 +118,14 @@ export default auth((req) => {
     return NextResponse.redirect(new URL(`/${locale}/not-authorized`, nextUrl));
   }
 
-  // If user is logged in and trying to access auth routes, redirect to dashboard
+  // If user is logged in and trying to access auth routes, redirect to home
   if (isLoggedIn && isAuthRoute) {
-    return NextResponse.redirect(new URL(`/${locale}/dashboard`, nextUrl));
+    return NextResponse.redirect(new URL(`/${locale}/home`, nextUrl));
   }
 
-  // If user is logged in and accessing root path, redirect to dashboard
+  // If user is logged in and accessing root path, redirect to home
   if (isLoggedIn && pathnameWithoutLocale === "/") {
-    return NextResponse.redirect(new URL(`/${locale}/dashboard`, nextUrl));
+    return NextResponse.redirect(new URL(`/${locale}/home`, nextUrl));
   }
 
   return intlResponse;

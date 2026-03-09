@@ -1,12 +1,12 @@
 "use client";
 
 import { CakeSlice } from "lucide-react";
-import ComingSoonPage from "@/app/dashboard/components/ComingSoonPage";
+import ComingSoonPage from "@/app/home/premium/ComingSoonPage";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 export default function PantryPage() {
-  const t = useTranslations("dashboard.comingSoon");
+  const t = useTranslations("home.comingSoon");
 
   return (
     <ComingSoonPage

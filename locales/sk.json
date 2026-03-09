@@ -438,18 +438,18 @@
       "mustAgree": "Pre pokračovanie musíte súhlasiť so všetkými podmienkami."
     }
   },
-  "dashboard": {
+  "home": {
     "metadata": {
-      "title": "Dashboard",
+      "title": "Domov",
       "description": "Váš denný prehľad, jedálny plán a nákupné zoznamy."
     },
     "nav": {
-      "dashboard": "Dashboard",
+      "home": "Domov",
       "profile": "Profil",
       "signOut": "Odhlásiť sa",
       "pantry": "Špajza",
       "chatWithRivo": "Chat s Rivom",
-      "mealGallery": "Galerie jedál"
+      "kitchenCounter": "Kuchynský pult"
     },
     "navbar": {
       "language": "Jazyk"
@@ -481,6 +481,85 @@
     "time": {
       "minutesShort": "min"
     },
+    "basic": {
+      "recipeTags": {
+        "all": "Všetko",
+        "high-protein": "Veľa proteínov",
+        "vegetarian": "Vegetariánske",
+        "vegan": "Vegánske",
+        "pescatarian": "Pescetariánske",
+        "paleo": "Paleo",
+        "gluten-free": "Bez lepku",
+        "dairy-free": "Bez laktózy",
+        "ketogenic": "Keto",
+        "quick": "Rýchlovka"
+      },
+      "hero": {
+        "badge": "Tip dňa",
+        "mealPrep": "Meal prep"
+      },
+      "pantryDashboard": {
+        "badge": "Tvoja špajza",
+        "itemsUnit": "surovín",
+        "cookablePrefix": "Môžeš z nich uvariť až ",
+        "cookableSuffix": " jedál",
+        "openCta": "Otvor špajzu"
+      },
+      "cookableEmpty": {
+        "title": "Zatiaľ nemáš z čoho variť",
+        "description": "Pridaj viac surovín do špajze a my ti z nich vymyslíme recepty."
+      },
+      "almostCookable": {
+        "title": "Skoro na dosah",
+        "subtitle": "- chýba pár surovín",
+        "scrollLeft": "Posunúť recepty doľava",
+        "scrollRight": "Posunúť recepty doprava"
+      },
+      "recipeDialog": {
+        "mealPrep": "Meal prep",
+        "detail": "Detail receptu",
+        "servings": "{count} porcia",
+        "addToPantry": "Pridať do špajze",
+        "cookThisRecipe": "Chcem variť tento recept",
+        "haveAmountInline": "máme {amount}"
+      },
+      "kitchenCounter": {
+        "selectedRecipeBadge": "Vybraný recept",
+        "selectedRecipeDescription": "Prenesený z prehliadača receptov do Kuchynského pultu.",
+        "emptyTitle": "Nemáš vybraný recept",
+        "emptyDescription": "Otvor recept na domovskej stránke a použi akciu na varenie, aby sa preniesol do Kuchynského pultu.",
+        "backToHome": "Späť na domov",
+        "cancelRecipe": "Zrušiť recept",
+        "cancelShort": "Zrušiť",
+        "ingredientsTab": "Suroviny",
+        "stepsTab": "Postup",
+        "overviewTitle": "Nutričné hodnoty",
+        "ingredientsTitle": "Suroviny",
+        "stepsTitle": "Postup prípravy",
+        "readyAmount": "pripravené",
+        "missingAmount": "dopĺň",
+        "haveAmountInline": "máme {amount}",
+        "finishRecipe": "Dokončiť recept",
+        "progress": "{checked}/{total} surovín pripravených",
+        "step1Title": "Priprav si pracovnú plochu",
+        "step1Text": "Skontroluj ingrediencie pre recept {recipeTitle} a priprav si pracovnú plochu ešte pred varením.",
+        "step2Title": "Začni základom",
+        "step2Text": "Recept patrí do kategórie {category}, preto začni základom, ktorý sa hodí k tomuto typu jedla a sleduj čas prípravy {minutes} min.",
+        "step3Title": "Sleduj makrá",
+        "step3Text": "Počas varenia sa drž plánovaných hodnôt {calories} kcal, {protein} g bielkovín, {carbs} g sacharidov a {fat} g tukov.",
+        "step4Title": "Dokonči a naservíruj",
+        "step4Text": "Na záver dochuť podľa potreby, skontroluj posledné kroky a môžeš servírovať."
+      },
+      "filters": {
+        "title": "Filtre receptov",
+        "empty": "Žiadne recepty pre tento filter"
+      },
+      "toasts": {
+        "pantryDraftReady": "\"{ingredientName}\" je pripravené na potvrdenie v špajzi.",
+        "pantryDraftAddError": "Nepodarilo sa pridať surovinu.",
+        "kitchenCounterNotify": "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔"
+      }
+    },
     "toasts": {
       "mealPlanReady": "Jedálny plán je pripravený!",
       "mealPlanLoadError": "Nepodarilo sa načítať jedálny plán",
@@ -510,6 +589,30 @@
       "nutritionValues": "Nutričné hodnoty",
       "ingredients": "Ingrediencie",
       "noIngredients": "Zoznam ingrediencií nie je k dispozícii"
+    },
+    "pantryMatches": {
+      "title": "Uvar z toho, čo už máš",
+      "subtitle": "Recepty poskladané z ingrediencií, ktoré už máš doma.",
+      "cookableTitle": "Môžeš variť hneď",
+      "almostCookableTitle": "Chýba už len málo",
+      "loadError": "Nepodarilo sa načítať recepty zo špajze.",
+      "emptyPantry": {
+        "title": "Tvoja špajza je prázdna",
+        "description": "Pridaj položky do špajze a ukážeme ti recepty, ktoré vieš uvariť okamžite."
+      },
+      "noMatches": {
+        "title": "Zatiaľ žiadne blízke zhody",
+        "description": "Aktuálne položky v tvojej špajzi sa ešte nezhodujú s celým receptom. Pridaj pár základných ingrediencií a táto sekcia sa začne plniť."
+      },
+      "availableIngredients": "Ingrediencie, ktoré už máš",
+      "missingIngredients": "Chýbajúce ingrediencie",
+      "readyNow": "Všetky potrebné ingrediencie máš doma",
+      "haveCount": "Máš {matched}/{total}",
+      "missingCount": "Chýba {count}",
+      "minutesShort": "min",
+      "proteinShortLabel": "Biel",
+      "carbsShortLabel": "Sach",
+      "fatShortLabel": "Tuky"
     },
     "mealPlan": {
       "loading": {
@@ -703,7 +806,7 @@
     "comingSoon": {
       "sectionTitle": "Čo príde ďalej",
       "badge": "Už čoskoro",
-      "backToDashboard": "Späť na Dashboard",
+      "backToHome": "Späť na Domov",
       "teaser": {
         "feature1": "AI technológia",
         "feature2": "Personalizované",
@@ -719,7 +822,7 @@
           "tag3": "Bez námahy"
         },
         "cta": "🔔 Upozorni ma pri spustení",
-        "secondaryAction": "Zatiaľ späť na Dashboard"
+        "secondaryAction": "Zatiaľ späť na Domov"
       },
       "mealGallery": {
         "title": "Knižnica chutí 📚",
@@ -731,7 +834,7 @@
           "tag3": "1-klik do plánu ⚡"
         },
         "cta": "🔔 Upozorni ma pri spustení",
-        "secondaryAction": "Zatiaľ späť na Dashboard"
+        "secondaryAction": "Zatiaľ späť na Domov"
       },
       "chatWithRivo": {
         "title": "Chat s Rivom",
@@ -743,7 +846,7 @@
           "tag3": "Personalizovaný"
         },
         "cta": "🔔 Upozorni ma pri spustení",
-        "secondaryAction": "Zatiaľ späť na Dashboard"
+        "secondaryAction": "Zatiaľ späť na Domov"
       }
     }
   },
@@ -760,7 +863,7 @@
       "nutrition": "Nutričné preferencie"
     },
     "navigation": {
-      "backToDashboard": "Späť na dashboard"
+      "backToHome": "Späť na domov"
     },
     "header": {
       "title": "Môj profil",
@@ -931,7 +1034,7 @@
       "copyright": "© {year} Eatrivo · Všetky práva vyhradené",
       "links": {
         "web": "Web",
-        "dashboard": "Dashboard",
+        "home": "Domov",
         "support": "Podpora"
       }
     },
@@ -973,7 +1076,7 @@
         "text": "Nákupný zoznam je organizovaný podľa kategórií, aby ste mohli nakupovať rýchlejšie a efektívnejšie. Nezabudnite si ho stiahnuť alebo vytlačiť pred odchodom do obchodu!"
       },
       "cta": "Zobraziť Nákupný Zoznam",
-      "help": "Váš nákupný zoznam nájdete v sekcii <strong>Dashboard</strong> vo vašom Eatrivo účte."
+      "help": "Váš nákupný zoznam nájdete v sekcii <strong>Domov</strong> vo vašom Eatrivo účte."
     },
     "admin": {
       "preview": "Eatrivo - Email odoslaný: {emailTypeLabel}",
@@ -1017,7 +1120,7 @@
       "heroLabel": "!NOVÁ AKTUALIZÁCIA!",
       "greeting": "Ahoj {recipientName},",
       "intro": "Máme pre teba nové vylepšenia. Pozri sa, čo sme pripravili.",
-      "cta": "OTVORIŤ DASHBOARD",
+      "cta": "OTVORIŤ DOMOV",
       "footer": "Ďakujeme, že si súčasťou Eatrivo."
     },
     "renewalReminder": {
@@ -1231,7 +1334,7 @@
       "noNewPlans": "Generovať nové meal plány alebo nákupné zoznamy"
     },
     "tryAgain": "Skúsiť znova",
-    "goToDashboard": "Prejsť na Dashboard",
+    "goToHome": "Prejsť na Domov",
     "autoRefresh": "Po obnovení pripojenia sa stránka automaticky aktualizuje"
   },
   "upgrade": {
@@ -1288,6 +1391,20 @@
     "no_items_in_category": "Žiadne položky v tejto kategórii",
     "expiry_warning_one": "1 položka čoskoro expiruje",
     "expiry_warning_few": "{count} položky čoskoro expirujú",
+    "field_name": "Názov",
+    "field_name_placeholder": "napr. Mlieko, Jablká, Cestoviny...",
+    "field_quantity": "Množstvo",
+    "field_quantity_placeholder": "napr. 500",
+    "field_unit": "Jednotka",
+    "field_category": "Kategória",
+    "field_expiry": "Dátum expirácie",
+    "field_optional": "voliteľné",
+    "submit_single": "Pridať",
+    "submit_batch": "Pridať všetky",
+    "batch_title": "Hromadné pridanie do spajzy",
+    "batch_description": "Pridaj viac položiek naraz. Backend ich spracuje v jednej dávke a použije AI normalizáciu tam, kde to pomôže.",
+    "batch_add_row": "Pridať ďalší riadok",
+    "batch_item_label": "Položka {index}",
     "source_manual": "Manuálne",
     "source_shopping_list": "Z nákupu",
     "categories": {

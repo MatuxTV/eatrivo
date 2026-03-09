@@ -54,9 +54,9 @@ export default function OfflinePage() {
             {t("tryAgain")}
           </Button>
 
-          <Link href={`/${locale}/dashboard`}>
+          <Link href={`/${locale}/home`}>
             <Button variant="outline" className="w-full">
-              {t("goToDashboard")}
+              {t("goToHome")}
             </Button>
           </Link>
         </div>

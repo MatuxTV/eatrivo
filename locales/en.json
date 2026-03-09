@@ -414,18 +414,18 @@
       "mustAgree": "You must accept all agreements to continue."
     }
   },
-  "dashboard": {
+  "home": {
     "metadata": {
-      "title": "Dashboard",
+      "title": "Home",
       "description": "Your daily overview, meal plan, and shopping lists."
     },
     "nav": {
-      "dashboard": "Dashboard",
+      "home": "Home",
       "profile": "Profile",
       "signOut": "Sign out",
       "pantry": "Pantry",
       "chatWithRivo": "Chat with Rivo",
-      "mealGallery": "Meal Gallery"
+      "kitchenCounter": "Kitchen Counter"
     },
     "navbar": {
       "language": "Language"
@@ -457,6 +457,85 @@
     "time": {
       "minutesShort": "min"
     },
+    "basic": {
+      "recipeTags": {
+        "all": "All",
+        "high-protein": "High protein",
+        "vegetarian": "Vegetarian",
+        "vegan": "Vegan",
+        "pescatarian": "Pescatarian",
+        "paleo": "Paleo",
+        "gluten-free": "Gluten free",
+        "dairy-free": "Dairy free",
+        "ketogenic": "Keto",
+        "quick": "Quick"
+      },
+      "hero": {
+        "badge": "Tip of the day",
+        "mealPrep": "Meal prep"
+      },
+      "pantryDashboard": {
+        "badge": "Your Pantry",
+        "itemsUnit": "items",
+        "cookablePrefix": "You can cook up to ",
+        "cookableSuffix": " recipes",
+        "openCta": "Open pantry"
+      },
+      "cookableEmpty": {
+        "title": "Nothing to cook yet",
+        "description": "Add more ingredients to your pantry and we'll find recipes for you."
+      },
+      "almostCookable": {
+        "title": "Almost there",
+        "subtitle": "- missing a few ingredients",
+        "scrollLeft": "Scroll recipes left",
+        "scrollRight": "Scroll recipes right"
+      },
+      "recipeDialog": {
+        "mealPrep": "Meal prep",
+        "detail": "Recipe detail",
+        "servings": "{count} serving",
+        "addToPantry": "Add to pantry",
+        "cookThisRecipe": "I want to cook this recipe",
+        "haveAmountInline": "have {amount}"
+      },
+      "kitchenCounter": {
+        "selectedRecipeBadge": "Selected recipe",
+        "selectedRecipeDescription": "Passed from the recipe browser to Kitchen Counter.",
+        "emptyTitle": "No recipe selected",
+        "emptyDescription": "Open a recipe from home and use the cook action to send it to Kitchen Counter.",
+        "backToHome": "Back to home",
+        "cancelRecipe": "Cancel recipe",
+        "cancelShort": "Cancel",
+        "ingredientsTab": "Ingredients",
+        "stepsTab": "Steps",
+        "overviewTitle": "Nutrition values",
+        "ingredientsTitle": "Ingredients",
+        "stepsTitle": "Cooking steps",
+        "readyAmount": "ready",
+        "missingAmount": "missing",
+        "haveAmountInline": "have {amount}",
+        "finishRecipe": "Finish recipe",
+        "progress": "{checked}/{total} ingredients ready",
+        "step1Title": "Prep your station",
+        "step1Text": "Check the ingredients for {recipeTitle} and set up your workspace before you start cooking.",
+        "step2Title": "Build the base",
+        "step2Text": "Start with a base that matches this {category} recipe and keep an eye on the target cook time of {minutes} min.",
+        "step3Title": "Track the nutrition",
+        "step3Text": "Stay close to the planned values: {calories} kcal, {protein} g protein, {carbs} g carbs, and {fat} g fat.",
+        "step4Title": "Finish and plate",
+        "step4Text": "Taste, adjust the seasoning, and serve while everything is fresh and hot."
+      },
+      "filters": {
+        "title": "Recipe filters",
+        "empty": "No recipes for this filter"
+      },
+      "toasts": {
+        "pantryDraftReady": "\"{ingredientName}\" is ready for confirmation in pantry.",
+        "pantryDraftAddError": "Failed to add ingredient.",
+        "kitchenCounterNotify": "Notification set! We'll let you know as soon as it launches. 🔔"
+      }
+    },
     "toasts": {
       "mealPlanReady": "Meal plan is ready!",
       "mealPlanLoadError": "Couldn't load meal plan",
@@ -486,6 +565,30 @@
       "nutritionValues": "Nutrition Values",
       "ingredients": "Ingredients",
       "noIngredients": "Ingredients list not available"
+    },
+    "pantryMatches": {
+      "title": "Cook from your pantry",
+      "subtitle": "Recipes matched from ingredients you already have at home.",
+      "cookableTitle": "Ready to cook now",
+      "almostCookableTitle": "Almost there",
+      "loadError": "Couldn't load pantry recipe matches right now.",
+      "emptyPantry": {
+        "title": "Your pantry is empty",
+        "description": "Add pantry items and we will show recipes you can cook immediately."
+      },
+      "noMatches": {
+        "title": "No close recipe matches yet",
+        "description": "Your current pantry items do not fully match any recipe yet. Add a few more basics and this section will start filling up."
+      },
+      "availableIngredients": "Available ingredients",
+      "missingIngredients": "Missing ingredients",
+      "readyNow": "All required ingredients available",
+      "haveCount": "You have {matched}/{total}",
+      "missingCount": "Missing {count}",
+      "minutesShort": "min",
+      "proteinShortLabel": "Prot",
+      "carbsShortLabel": "Carbs",
+      "fatShortLabel": "Fat"
     },
     "mealPlan": {
       "loading": {
@@ -679,7 +782,7 @@
     "comingSoon": {
       "sectionTitle": "What's Next",
       "badge": "Coming Soon",
-      "backToDashboard": "Back to Dashboard",
+      "backToHome": "Back to Home",
       "teaser": {
         "feature1": "AI-Powered",
         "feature2": "Personalized",
@@ -695,19 +798,7 @@
           "tag3": "Effortless"
         },
         "cta": "🔔 Notify me when it launches",
-        "secondaryAction": "Back to Dashboard"
-      },
-      "mealGallery": {
-        "title": "Meal Library 📚",
-        "description": "Browse hundreds of new recipes for inspiration, or return to your favorite meals that Rivo has created for you in the past.",
-        "badge": "● IN PROGRESS",
-        "tags": {
-          "tag1": "Your favorites ❤️",
-          "tag2": "New inspiration 🌍",
-          "tag3": "1-click to plan ⚡"
-        },
-        "cta": "🔔 Notify me when it launches",
-        "secondaryAction": "Back to Dashboard for now"
+        "secondaryAction": "Back to Home"
       },
       "chatWithRivo": {
         "title": "Chat with Rivo",
@@ -719,7 +810,7 @@
           "tag3": "Personalized"
         },
         "cta": "🔔 Notify me when it launches",
-        "secondaryAction": "Back to Dashboard"
+        "secondaryAction": "Back to Home"
       }
     }
   },
@@ -736,7 +827,7 @@
       "nutrition": "Nutrition preferences"
     },
     "navigation": {
-      "backToDashboard": "Back to dashboard"
+      "backToHome": "Back to home"
     },
     "header": {
       "title": "My profile",
@@ -907,7 +998,7 @@
       "copyright": "© {year} Eatrivo · All rights reserved",
       "links": {
         "web": "Web",
-        "dashboard": "Dashboard",
+        "home": "Home",
         "support": "Support"
       }
     },
@@ -949,7 +1040,7 @@
         "text": "The shopping list is organized by categories so you can shop faster and more efficiently. Don't forget to download or print it before leaving for the store!"
       },
       "cta": "View Shopping List",
-      "help": "You can find your shopping list in the <strong>Dashboard</strong> section of your Eatrivo account."
+      "help": "You can find your shopping list in the <strong>Home</strong> section of your Eatrivo account."
     },
     "admin": {
       "preview": "Eatrivo - Email sent: {emailTypeLabel}",
@@ -993,7 +1084,7 @@
       "heroLabel": "!NEW UPDATE!",
       "greeting": "Hi {recipientName},",
       "intro": "We have new improvements for you. Check out what we've prepared.",
-      "cta": "OPEN DASHBOARD",
+      "cta": "OPEN HOME",
       "footer": "Thank you for being part of Eatrivo."
     },
     "renewalReminder": {
@@ -1221,7 +1312,7 @@
       "noNewPlans": "Generate new meal plans or shopping lists"
     },
     "tryAgain": "Try Again",
-    "goToDashboard": "Go to Dashboard",
+    "goToHome": "Go to Home",
     "autoRefresh": "The page will automatically update once connection is restored"
   },
   "upgrade": {
@@ -1278,6 +1369,20 @@
     "no_items_in_category": "No items in this category",
     "expiry_warning_one": "1 item is expiring soon",
     "expiry_warning_few": "{count} items are expiring soon",
+    "field_name": "Name",
+    "field_name_placeholder": "e.g. Milk, Apples, Pasta...",
+    "field_quantity": "Quantity",
+    "field_quantity_placeholder": "e.g. 500",
+    "field_unit": "Unit",
+    "field_category": "Category",
+    "field_expiry": "Expiry date",
+    "field_optional": "optional",
+    "submit_single": "Add item",
+    "submit_batch": "Add all items",
+    "batch_title": "Batch add to pantry",
+    "batch_description": "Add multiple items at once. The backend processes them as one batch and uses AI normalization when it helps.",
+    "batch_add_row": "Add another row",
+    "batch_item_label": "Item {index}",
     "source_manual": "Manual",
     "source_shopping_list": "From shopping list",
     "categories": {

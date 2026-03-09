@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
           clientEmail: to,
           shoppingListName: props.shoppingListName,
           shoppingListDate: props.shoppingListDate,
-          dashboardUrl: props.dashboardUrl,
+          homeUrl: props.homeUrl,
         }, userLocale);
         break;
 

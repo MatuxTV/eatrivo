@@ -33,9 +33,15 @@ const UNIT_ALIASES: Record<string, string> = {
   tbsp: "tbsp",
   tablespoon: "tbsp",
   tablespoons: "tbsp",
+  lyzica: "tbsp",
+  lyzice: "tbsp",
+  lyzic: "tbsp",
   tsp: "tsp",
   teaspoon: "tsp",
   teaspoons: "tsp",
+  lyzicka: "tsp",
+  lyzicky: "tsp",
+  lyziciek: "tsp",
   // Count
   piece: "ks",
   pieces: "ks",
@@ -53,6 +59,28 @@ const UNIT_ALIASES: Record<string, string> = {
   bunch: "zväzok",
   zviazok: "zväzok",
   head: "hlávka",
+};
+
+export type CanonicalUnitDimension = "mass" | "volume" | "count";
+
+export interface CanonicalQuantity {
+  value: number;
+  unit: "g" | "ml" | "ks";
+  dimension: CanonicalUnitDimension;
+  sourceUnit: string;
+}
+
+const CANONICAL_UNIT_CONVERSIONS: Record<
+  string,
+  { dimension: CanonicalUnitDimension; targetUnit: "g" | "ml" | "ks"; multiplier: number }
+> = {
+  g: { dimension: "mass", targetUnit: "g", multiplier: 1 },
+  kg: { dimension: "mass", targetUnit: "g", multiplier: 1000 },
+  ml: { dimension: "volume", targetUnit: "ml", multiplier: 1 },
+  dl: { dimension: "volume", targetUnit: "ml", multiplier: 100 },
+  tsp: { dimension: "volume", targetUnit: "ml", multiplier: 5 },
+  tbsp: { dimension: "volume", targetUnit: "ml", multiplier: 15 },
+  ks: { dimension: "count", targetUnit: "ks", multiplier: 1 },
 };
 
 /**
@@ -95,10 +123,33 @@ export function parseQuantity(
   return { value, unit };
 }
 
+export function toCanonicalQuantity(
+  value: number,
+  unit: string,
+): CanonicalQuantity | null {
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+
+  const normalizedUnit = normalizeUnit(unit);
+  const conversion = CANONICAL_UNIT_CONVERSIONS[normalizedUnit];
+
+  if (!conversion) {
+    return null;
+  }
+
+  return {
+    value: value * conversion.multiplier,
+    unit: conversion.targetUnit,
+    dimension: conversion.dimension,
+    sourceUnit: normalizedUnit,
+  };
+}
+
 /**
  * Subtract used quantity from pantry quantity.
  * Returns the remaining quantity (minimum 0).
- * Both must be in the same unit — caller is responsible for unit matching.
+ * Both must be in the same normalized base unit — caller is responsible for conversion.
  */
 export function subtractQuantity(
   pantryAmount: number,

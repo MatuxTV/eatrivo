@@ -44,12 +44,12 @@ const REMINDER_MESSAGES: Record<string, PushNotificationPayload> = {
   sk: {
     title: "📋 Nový týždeň, nový jedálniček!",
     body: "Ešte nemáš jedálny plán na tento týždeň. Nechaj Riva uvariť! 🍳",
-    url: "/dashboard",
+    url: "/home",
   },
   en: {
     title: "📋 New week, new meal plan!",
     body: "You don't have a meal plan for this week yet. Let Rivo cook! 🍳",
-    url: "/dashboard",
+    url: "/home",
   },
 };
 

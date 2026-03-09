@@ -28,7 +28,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function Home() {
+export default async function Home() {
+ 
+
   return (
     <div className="min-h-screen bg-eatrivo-white-primary selection:bg-eatrivo-purple selection:text-white">
       <Navbar />
