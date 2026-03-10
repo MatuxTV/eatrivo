@@ -15,9 +15,9 @@ import { useTranslations } from "next-intl";
 import { FeedbackDialog } from "@/components/FeedbackButton";
 
 interface MobileNavigationProps {
-  activeSection: "home" | "pantry" | "chatWithRivo" | "profile" | "kitchenCounter" ;
+  activeSection: "home" | "pantry" | "chatWithRivo" | "profile" | "kitchenCounter" | "mealGallery";
   onSectionChange: (
-    section: "home" | "pantry" | "chatWithRivo" | "profile" | "kitchenCounter",
+    section: "home" | "pantry" | "chatWithRivo" | "profile" | "kitchenCounter" | "mealGallery",
   ) => void;
 }
 

@@ -46,6 +46,9 @@ import { PushNotificationToggle } from "@/components/pwa/PushNotificationToggle"
 import { UpgradePopup } from "@/components/billing/UpgradePopup";
 import ChatWithRivoPage from "@/app/[locale]/chat-with-rivo/ChatWithRivoPage";
 import { FeatureFlag } from "@/components/ui/FeatureFlag";
+import KitchenCounterPage from "@/app/kitchen-counter/KitchenCounterPage";
+import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
+import { normalizeRecipeInstructions } from "@/lib/recipe-instructions";
 
 // PWA utilities
 import {
@@ -104,6 +107,23 @@ interface UserHealthData {
   goal: "lose_weight" | "maintain_weight" | "gain_muscle";
 }
 
+const KITCHEN_COUNTER_SELECTED_RECIPE_STORAGE_KEY = "kitchenCounter:selectedRecipe";
+
+function readStoredKitchenCounterRecipe(): BasicHomeRecipePreview | null {
+  if (typeof window === "undefined") return null;
+  const stored = window.sessionStorage.getItem(KITCHEN_COUNTER_SELECTED_RECIPE_STORAGE_KEY);
+  if (!stored) return null;
+  try {
+    const parsed = JSON.parse(stored) as Partial<BasicHomeRecipePreview>;
+    if (typeof parsed.id !== "string" || typeof parsed.title !== "string" || typeof parsed.category !== "string") {
+      return null;
+    }
+    return { ...parsed, instructions: normalizeRecipeInstructions(parsed.instructions) } as BasicHomeRecipePreview;
+  } catch {
+    return null;
+  }
+}
+
 export default function HomePagePremium() {
   const t = useTranslations("home");
   const locale = useLocale();
@@ -143,8 +163,23 @@ export default function HomePagePremium() {
 
   // ... inside HomePagePremium component ...
   const [activeSection, setActiveSection] = useState<
-    "home" | "pantry" | "chatWithRivo" | "profile" | "mealGallery"
+    "home" | "pantry" | "chatWithRivo" | "profile" | "mealGallery" | "kitchenCounter"
   >("home");
+
+  const [selectedKitchenCounter, setSelectedKitchenCounter] = useState<BasicHomeRecipePreview | null>(null);
+
+  // Restore selected kitchen counter recipe from sessionStorage (survives page refresh)
+  useEffect(() => {
+    setSelectedKitchenCounter(readStoredKitchenCounterRecipe());
+  }, []);
+
+  const handleKitchenCounterBack = useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.removeItem(KITCHEN_COUNTER_SELECTED_RECIPE_STORAGE_KEY);
+    }
+    setSelectedKitchenCounter(null);
+    setActiveSection("home");
+  }, []);
 
   // Auto-switch section from URL query param (?section=chatWithRivo etc.)
   useEffect(() => {
@@ -154,6 +189,7 @@ export default function HomePagePremium() {
       "pantry",
       "chatWithRivo",
       "profile",
+      "kitchenCounter",
     ] as const;
     if (
       sectionParam &&
@@ -538,7 +574,7 @@ export default function HomePagePremium() {
       {/* Main Content */}
       <main
         className={`flex-1 w-full md:max-w-[calc(100vw-256px)] h-screen ${
-          activeSection === "chatWithRivo"
+          activeSection === "chatWithRivo" || activeSection === "kitchenCounter"
             ? "overflow-hidden p-0"
             : "pt-20 md:pt-8 pb-24 md:pb-8 px-4 md:px-8 overflow-y-auto"
         }`}
@@ -860,6 +896,20 @@ export default function HomePagePremium() {
                   onSecondaryClick={() => setActiveSection("home")}
                 />
               </FeatureFlag>
+            </motion.div>
+          ) : activeSection === "kitchenCounter" ? (
+            <motion.div
+              key="kitchenCounter"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="h-full"
+            >
+              <KitchenCounterPage
+                recipe={selectedKitchenCounter}
+                onBack={handleKitchenCounterBack}
+              />
             </motion.div>
           ) : null}
         </AnimatePresence>

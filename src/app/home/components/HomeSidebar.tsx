@@ -19,9 +19,9 @@ import { useTranslations } from "next-intl";
 import { UserBadge } from "@/components/ui/UserBadge";
 
 interface HomeSidebarProps {
-  activeSection: "home" | "pantry" | "chatWithRivo" | "kitchenCounter" | "profile";
+  activeSection: "home" | "pantry" | "chatWithRivo" | "kitchenCounter" | "profile" | "mealGallery";
   onSectionChange: (
-    section: "home" | "pantry" | "chatWithRivo" | "kitchenCounter" | "profile",
+    section: "home" | "pantry" | "chatWithRivo" | "kitchenCounter" | "profile" | "mealGallery",
   ) => void;
 }
 

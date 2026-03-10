@@ -34,7 +34,7 @@ import type {
   BasicHomePantrySummary,
   BasicHomeRecipePreview,
 } from "@/app/[locale]/home/page";
-import KitchenCounterPage from "./kitchenCounter";
+import KitchenCounterPage from "@/app/kitchen-counter/KitchenCounterPage";
 import { normalizeRecipeInstructions } from "@/lib/recipe-instructions";
 
 const PANTRY_CHANGED_EVENT = "pantry:changed";
@@ -172,7 +172,7 @@ export default function HomePage({
 
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const [activeSection, setActiveSection] = useState<
-    "home" | "pantry" | "chatWithRivo" | "profile" | "kitchenCounter"
+    "home" | "pantry" | "chatWithRivo" | "profile" | "kitchenCounter" | "mealGallery"
   >("home");
 
   const [browserOpen, setBrowserOpen] = useState(false);
@@ -641,13 +641,15 @@ export default function HomePage({
               transition={{ duration: 0.3 }}
               className="max-w-7xl mx-auto space-y-6"
             >
-              <h1 className="text-4xl md:text-5xl font-black text-[#1a1a2e] mb-8 px-1 tracking-tighter mix-blend-multiply">
-                {t("greeting.title", {
-                  name: session?.user?.name?.split(" ")[0] || "Matúš",
-                })}{" "}
-              </h1>
+              <div className="mb-6">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  {t("greeting.title", {
+                    name: session?.user?.name?.split(" ")[0] || "",
+                  })}
+                </h1>
+              </div>
 
-              <div className="relative w-full min-h-[360px] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-eatrivo-purple/10 mb-8 bg-white/50 backdrop-blur-3xl border border-white/40 xl:min-h-[420px] transition-all duration-500 hover:shadow-eatrivo-purple/20">
+              <div className="relative w-full min-h-[360px] rounded-2xl overflow-hidden shadow-sm mb-8 bg-white border border-gray-100 xl:min-h-[420px] transition-all duration-300 hover:border-gray-200 hover:shadow-md">
                 {activeRecipe ? (
                   <div
                     className={`relative h-full bg-gradient-to-br ${getCategoryAccent(activeRecipe.categoryKey)}`}
@@ -670,7 +672,7 @@ export default function HomePage({
                             ) : null}
                           </div>
 
-                          <h2 className="text-4xl sm:text-5xl font-black leading-[1.05] tracking-tighter text-balance drop-shadow-sm">
+                          <h2 className="text-3xl sm:text-4xl font-bold leading-tight">
                             {activeRecipe.title}
                           </h2>
 
@@ -726,9 +728,9 @@ export default function HomePage({
                     </div>
                   </div>
                 ) : (
-                  <div className="h-full min-h-[360px] rounded-[2rem] bg-white border border-gray-100 p-8 flex flex-col justify-center text-center">
+                  <div className="h-full min-h-[360px] rounded-2xl bg-white border border-gray-100 p-8 flex flex-col justify-center text-center">
                     <Sparkles className="w-10 h-10 text-eatrivo-purple mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-[#1a1a2e] mb-2">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
                       {t("mealPlan.empty.title")}
                     </h2>
                     <p className="text-gray-500">
@@ -739,33 +741,30 @@ export default function HomePage({
               </div>
               {/* Middle Section: Pantry & Recent */}
               {/* Unified Pantry Dashboard */}
-              <div className="mb-10 relative overflow-hidden bg-white/80 rounded-[2.5rem] p-6 sm:p-8 shadow-xl shadow-eatrivo-purple/5 border border-white backdrop-blur-2xl group transition-all duration-500 hover:shadow-2xl">
-                {/* Background ambient glow */}
-                <div className="absolute -top-20 -right-20 w-64 h-64 bg-eatrivo-purple/5 rounded-full blur-3xl group-hover:bg-eatrivo-purple/10 transition-colors duration-700 pointer-events-none"></div>
-                <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-eatrivo-pink/5 rounded-full blur-3xl group-hover:bg-eatrivo-pink/10 transition-colors duration-700 pointer-events-none"></div>
+              <div className="mb-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8 group transition-colors hover:border-gray-200 relative overflow-hidden">
 
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 relative z-10">
                   <div>
                     <div className="flex items-center gap-2 text-eatrivo-purple mb-4">
-                      <div className="w-8 h-8 rounded-full bg-eatrivo-purple/10 flex items-center justify-center">
+                      <div className="p-2 bg-eatrivo-purple/10 rounded-lg">
                         <Archive className="w-4 h-4" />
                       </div>
-                      <span className="uppercase tracking-[0.2em] text-[10px] font-bold">
+                      <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
                         {t("basic.pantryDashboard.badge")}
                       </span>
                     </div>
 
-                    <h2 className="text-3xl sm:text-4xl font-black text-[#1a1a2e] tracking-tighter leading-none mb-2">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-none mb-2">
                       {livePantrySummary.itemCount}{" "}
-                      <span className="text-gray-400 font-bold">
+                      <span className="text-gray-400 font-medium">
                         {t("basic.pantryDashboard.itemsUnit")}
                       </span>
                     </h2>
 
-                    <p className="text-[14px] text-gray-500 font-medium">
+                    <p className="text-sm text-gray-500">
                       {t("basic.pantryDashboard.cookablePrefix")}
-                      <strong className="text-eatrivo-purple text-[15px]">
+                      <strong className="text-eatrivo-purple font-semibold">
                         {livePantrySummary.cookableCount}
                       </strong>
                       {t("basic.pantryDashboard.cookableSuffix")}
@@ -777,7 +776,7 @@ export default function HomePage({
                     <button
                       type="button"
                       onClick={() => setActiveSection("pantry")}
-                      className="px-6 py-3 rounded-full bg-[#1a1a2e] text-white text-[13px] font-bold shadow-lg shadow-[#1a1a2e]/20 hover:scale-105 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 ease-out flex items-center gap-2"
+                      className="px-6 py-2.5 rounded-full bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white text-sm font-bold shadow-sm active:scale-95 transition-all duration-200 flex items-center gap-2"
                     >
                       {t("basic.pantryDashboard.openCta")}
                       <span className="text-white/50 text-[10px] ml-1">→</span>
@@ -806,7 +805,7 @@ export default function HomePage({
                             openRecipeBrowser("cookable", idx !== -1 ? idx : 0);
                           }}
                         >
-                          <div className="w-full aspect-[4/5] rounded-[1.5rem] overflow-hidden shadow-lg shadow-eatrivo-purple/5 bg-white p-4 flex flex-col justify-between group-hover/recipe:scale-105 group-hover/recipe:-translate-y-1 transition-all duration-500 ease-out group-hover/recipe:shadow-eatrivo-purple/15 ring-1 ring-gray-100">
+                          <div className="w-full aspect-[4/5] rounded-2xl bg-white border border-gray-100 shadow-sm p-4 flex flex-col justify-between group-hover/recipe:scale-[1.03] group-hover/recipe:-translate-y-1 group-hover/recipe:border-gray-200 group-hover/recipe:shadow-md transition-all duration-300 ease-out">
                             <div className="flex justify-between items-start gap-2">
                               <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-eatrivo-purple bg-eatrivo-purple/10 px-2 py-1 rounded-md">
                                 {recipe.category}
@@ -817,11 +816,11 @@ export default function HomePage({
                               </div>
                             </div>
                             <div className="mt-auto">
-                              <h4 className="text-[13px] font-black text-[#1a1a2e] leading-tight line-clamp-2 mb-3 group-hover/recipe:text-eatrivo-purple transition-colors">
+                              <h4 className="text-[13px] font-bold text-gray-900 leading-tight line-clamp-2 mb-3 group-hover/recipe:text-eatrivo-purple transition-colors">
                                 {recipe.title}
                               </h4>
                               <div className="flex items-baseline gap-1.5">
-                                <p className="text-xl font-black leading-none text-[#1a1a2e] tracking-tight">
+                                <p className="text-xl font-bold leading-none text-gray-900">
                                   {recipe.proteinG}g
                                 </p>
                               </div>
@@ -831,14 +830,14 @@ export default function HomePage({
                       ))}
                     </div>
                   ) : (
-                    <div className="mx-6 sm:mx-8 mb-6 rounded-[1.5rem] bg-white/50 border border-white p-8 flex flex-col items-center justify-center text-center shadow-sm">
+                    <div className="mb-6 rounded-2xl bg-white border border-gray-100 shadow-sm p-8 flex flex-col items-center justify-center text-center">
                       <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                         <Archive className="w-5 h-5 text-gray-400" />
                       </div>
-                      <p className="text-[14px] font-bold text-[#1a1a2e] mb-1">
+                      <p className="text-sm font-semibold text-gray-900 mb-1">
                         {t("basic.cookableEmpty.title")}
                       </p>
-                      <p className="text-[12px] font-medium text-gray-500 max-w-[250px]">
+                      <p className="text-xs text-gray-500 max-w-[250px]">
                         {t("basic.cookableEmpty.description")}
                       </p>
                     </div>
@@ -851,7 +850,7 @@ export default function HomePage({
                     <div className="flex items-center justify-between gap-3 mb-4 px-1">
                       <div className="flex items-center gap-2 min-w-0">
                         <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-                        <h3 className="text-[14px] font-black text-[#1a1a2e] tracking-tight">
+                        <h3 className="text-sm font-bold text-gray-900">
                           {t("basic.almostCookable.title")}
                         </h3>
                         <span className="text-[11px] font-bold text-gray-400 truncate">
@@ -899,7 +898,7 @@ export default function HomePage({
                             openRecipeBrowser("almost", idx !== -1 ? idx : 0);
                           }}
                         >
-                          <div className="w-full aspect-[4/5] rounded-[1.5rem] overflow-hidden shadow-md shadow-amber-500/5 bg-white p-4 flex flex-col justify-between group-hover/almost:scale-105 group-hover/almost:-translate-y-1 transition-all duration-500 ease-out ring-1 ring-amber-200/50 group-hover/almost:ring-amber-300">
+                          <div className="w-full aspect-[4/5] rounded-2xl bg-white border border-amber-100 shadow-sm p-4 flex flex-col justify-between group-hover/almost:scale-[1.03] group-hover/almost:-translate-y-1 group-hover/almost:border-amber-200 transition-all duration-300 ease-out">
                             <div className="flex justify-between items-start gap-2">
                               <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-amber-600 bg-amber-50 px-2 py-1 rounded-md">
                                 {recipe.category}
@@ -910,7 +909,7 @@ export default function HomePage({
                               </div>
                             </div>
                             <div className="mt-auto">
-                              <h4 className="text-[13px] font-black text-[#1a1a2e] leading-tight line-clamp-2 mb-2 group-hover/almost:text-amber-600 transition-colors">
+                              <h4 className="text-[13px] font-bold text-gray-900 leading-tight line-clamp-2 mb-2 group-hover/almost:text-amber-600 transition-colors">
                                 {recipe.title}
                               </h4>
                               {recipe.missingIngredients &&
@@ -946,7 +945,7 @@ export default function HomePage({
                   <button
                     type="button"
                     onClick={() => setActiveSection("pantry")}
-                    className="w-full py-4 rounded-[1.25rem] bg-[#1a1a2e] text-white text-[14px] font-bold shadow-lg shadow-[#1a1a2e]/20 active:scale-95 transition-all duration-300 ease-out flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-full bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white text-sm font-bold shadow-sm active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     {t("basic.pantryDashboard.openCta")}
                   </button>
@@ -955,7 +954,7 @@ export default function HomePage({
 
               {/* Quick Filters */}
               <div className="pb-4">
-                <h3 className="text-[14px] font-bold text-[#1a1a2e] mb-3 px-1 tracking-tight">
+                <h3 className="text-sm font-bold text-gray-900 mb-3 px-1">
                   {t("basic.filters.title")}
                 </h3>
                 <div
@@ -1023,14 +1022,14 @@ export default function HomePage({
                         </div>
 
                         <div className="mt-auto">
-                          <h4 className="text-[16px] font-black text-[#1a1a2e] leading-tight line-clamp-2 mb-4 group-hover:text-eatrivo-purple transition-colors">
+                          <h4 className="text-base font-bold text-gray-900 leading-tight line-clamp-2 mb-4 group-hover:text-eatrivo-purple transition-colors">
                             {recipe.title}
                           </h4>
                           <div className="flex items-baseline gap-1.5">
-                            <p className="text-2xl font-black leading-none text-[#1a1a2e] tracking-tight">
+                            <p className="text-2xl font-bold text-gray-900 leading-none">
                               {recipe.proteinG}g
                             </p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
                               {t("nutrition.protein")}
                             </p>
                           </div>
