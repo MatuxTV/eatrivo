@@ -333,6 +333,28 @@ export const pantryItems = pgTable("pantry_items", {
     .notNull(),
 });
 
+export const pantryRestockItems = pgTable("pantry_restock_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userProfileId: uuid("userProfileId")
+    .notNull()
+    .references(() => userProfiles.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  ingredientName: text("ingredient_name"),
+  ingredientKey: text("ingredient_key"),
+  ingredientSpecificKey: text("ingredient_specific_key"),
+  defaultQuantity: numeric("default_quantity", { precision: 8, scale: 3 }),
+  defaultUnit: text("default_unit"),
+  category: text("category"),
+  isActive: boolean("is_active").default(true).notNull(),
+  lastRestockedAt: timestamp("last_restocked_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 // NextAuth required tables
 export const accounts = pgTable(
   "account",

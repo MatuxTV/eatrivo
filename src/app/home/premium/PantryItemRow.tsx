@@ -1,13 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Trash2, AlertTriangle, Check, X } from "lucide-react";
+import { Pencil, Trash2, AlertTriangle, Check, X, Pin } from "lucide-react";
 import { motion } from "framer-motion";
-import { Input } from "@/components/ui/input";
+import { useTranslations } from "next-intl";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { PantryItem } from "@/hooks/usePantry";
+import { PANTRY_UNIT_OPTIONS } from "@/lib/units";
+import PantryQuantityWheel from "./PantryQuantityWheel";
 
 interface PantryItemRowProps {
   item: PantryItem;
+  isRecurring: boolean;
+  recurringItemId?: string;
   onUpdate: (
     id: string,
     updates: {
@@ -17,6 +28,11 @@ interface PantryItemRowProps {
     },
   ) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
+  onToggleRecurring: (
+    item: PantryItem,
+    enabled: boolean,
+    recurringItemId?: string,
+  ) => Promise<boolean>;
 }
 
 function isExpiringSoon(expiryDate: string | null): boolean {
@@ -34,14 +50,21 @@ function formatExpiry(expiryDate: string | null): string | null {
 
 export default function PantryItemRow({
   item,
+  isRecurring,
+  recurringItemId,
   onUpdate,
   onDelete,
+  onToggleRecurring,
 }: PantryItemRowProps) {
+  const t = useTranslations("pantry");
   const [isEditing, setIsEditing] = useState(false);
-  const [editQty, setEditQty] = useState(item.quantity ?? "");
+  const [editQty, setEditQty] = useState<number | null>(
+    item.quantity ? Number.parseFloat(String(item.quantity)) : null,
+  );
   const [editUnit, setEditUnit] = useState(item.unit ?? "");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRecurringSaving, setIsRecurringSaving] = useState(false);
 
   const expiringSoon = isExpiringSoon(item.expiryDate);
   const expiryLabel = formatExpiry(item.expiryDate);
@@ -49,7 +72,7 @@ export default function PantryItemRow({
   const handleSave = async () => {
     setIsSaving(true);
     const success = await onUpdate(item.id, {
-      quantity: editQty ? parseFloat(String(editQty)) : null,
+      quantity: editQty,
       unit: editUnit || null,
     });
     if (success) setIsEditing(false);
@@ -71,7 +94,7 @@ export default function PantryItemRow({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9, y: 10 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className={`group relative flex flex-col justify-between w-[150px] shrink-0 p-4 rounded-[1.5rem] border transition-all duration-300 snap-center min-h-[160px] ${
+      className={`group relative flex flex-col justify-between w-[176px] shrink-0 p-4 rounded-[1.5rem] border transition-all duration-300 snap-center min-h-[196px] ${
         expiringSoon
           ? "border-amber-200/80 bg-gradient-to-br from-amber-50 to-orange-50/60 shadow-md shadow-amber-500/10 hover:shadow-lg hover:shadow-amber-500/20 hover:-translate-y-1"
           : "border-gray-100 bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-xl hover:shadow-eatrivo-purple/10 hover:border-eatrivo-purple/30 hover:-translate-y-1"
@@ -91,6 +114,27 @@ export default function PantryItemRow({
 
         {/* Badges container */}
         <div className="flex flex-col items-end gap-1">
+          <button
+            type="button"
+            onClick={async () => {
+              setIsRecurringSaving(true);
+              await onToggleRecurring(item, !isRecurring, recurringItemId);
+              setIsRecurringSaving(false);
+            }}
+            className={`flex h-8 w-8 items-center justify-center rounded-full transition-all active:scale-95 ${
+              isRecurring
+                ? "bg-eatrivo-purple text-white"
+                : "bg-gray-100 text-gray-500 hover:bg-eatrivo-purple/10 hover:text-eatrivo-purple"
+            }`}
+            aria-label={isRecurring ? t("restock.removeRecurring") : t("restock.makeRecurring")}
+            title={isRecurring ? t("restock.removeRecurring") : t("restock.makeRecurring")}
+          >
+            {isRecurringSaving ? (
+              <div className="h-3 w-3 rounded-full border border-current/30 border-t-current animate-spin" />
+            ) : (
+              <Pin className="h-3.5 w-3.5" />
+            )}
+          </button>
           {item.source === "shopping_list" && (
             <span
               className="text-[10px] px-1.5 py-0.5 bg-eatrivo-purple/10 text-eatrivo-purple rounded-md font-bold uppercase tracking-wider leading-none"
@@ -122,22 +166,24 @@ export default function PantryItemRow({
       <div className="flex items-end justify-between w-full mt-auto">
         {isEditing ? (
           <div className="flex flex-col gap-2 w-full">
+            <PantryQuantityWheel
+              value={editQty}
+              unit={editUnit || null}
+              onChange={setEditQty}
+            />
             <div className="flex gap-1.5 w-full">
-              <Input
-                type="number"
-                value={editQty}
-                onChange={(e) => setEditQty(e.target.value)}
-                className="w-full h-8 text-xs font-bold px-2 py-1 rounded-lg border-gray-200 focus-visible:ring-eatrivo-purple text-center"
-                min="0"
-                step="0.001"
-              />
-              <Input
-                type="text"
-                value={editUnit}
-                onChange={(e) => setEditUnit(e.target.value)}
-                className="w-12 h-8 text-xs font-bold px-1 py-1 rounded-lg border-gray-200 focus-visible:ring-eatrivo-purple text-center tracking-tight"
-                placeholder="ks"
-              />
+              <Select value={editUnit || "ks"} onValueChange={setEditUnit}>
+                <SelectTrigger className="w-full h-9 rounded-full border-gray-200 bg-white text-xs font-bold uppercase tracking-tight focus:ring-eatrivo-purple">
+                  <SelectValue placeholder="ks" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PANTRY_UNIT_OPTIONS.map((unit) => (
+                    <SelectItem key={unit} value={unit}>
+                      {unit}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center justify-between gap-1.5 w-full">
               <button
@@ -166,7 +212,7 @@ export default function PantryItemRow({
               <span className="text-[17px] font-black tracking-tighter text-[#1a1a2e] group-hover:text-eatrivo-purple transition-colors">
                 {item.quantity
                   ? parseFloat(String(item.quantity)).toLocaleString("sk-SK")
-                  : ""}
+                  : t("restock.quantityMissing")}
                 <span className="text-xs font-bold text-gray-500 group-hover:text-eatrivo-purple/70 ml-0.5">
                   {item.unit ? " " + item.unit : ""}
                 </span>

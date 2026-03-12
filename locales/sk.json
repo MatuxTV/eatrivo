@@ -458,7 +458,11 @@
     "membershipSuffix": "člen",
     "greeting": {
       "title": "Vitajte späť, {name}! 👋",
-      "subtitle": "Tu je váš prehľad na dnes,"
+      "subtitle": "Tu je váš prehľad na dnes,",
+      "actions": {
+        "recipes": "Recepty",
+        "shoppingList": "Nákupný zoznam"
+      }
     },
     "version": "Verzia {version}",
     "days": {
@@ -1405,6 +1409,17 @@
     "batch_description": "Pridaj viac položiek naraz. Backend ich spracuje v jednej dávke a použije AI normalizáciu tam, kde to pomôže.",
     "batch_add_row": "Pridať ďalší riadok",
     "batch_item_label": "Položka {index}",
+    "restock": {
+      "title": "Pravidelné nákupy",
+      "subtitle": "Jedným ťahom doplníš veci, ktoré kupuješ stále dookola.",
+      "cardInstruction": "Zadajte nové množstvo položky",
+      "saveDefault": "Uložiť",
+      "saveBadge": "sledovať",
+      "savedBadge": "sledované",
+      "makeRecurring": "Uložiť medzi pravidelné nákupy",
+      "removeRecurring": "Odstrániť z pravidelných nákupov",
+      "quantityMissing": "nastav"
+    },
     "source_manual": "Manuálne",
     "source_shopping_list": "Z nákupu",
     "categories": {

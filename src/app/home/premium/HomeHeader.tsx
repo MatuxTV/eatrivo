@@ -7,11 +7,10 @@ import { Button } from "@/components/ui/button";
 import { getMembershipStatus } from "@/lib/functions";
 import { useSession } from "next-auth/react";
 import { UserBadge } from "@/components/ui/UserBadge";
+import type { AppHomeSection } from "../types/navigation";
 
 interface HomeHeaderProps {
-  onSectionChange: (
-    section: "home" | "pantry" | "chatWithRivo" | "profile",
-  ) => void;
+  onSectionChange: (section: AppHomeSection) => void;
 }
 
 export default function HomeHeader({

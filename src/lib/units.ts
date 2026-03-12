@@ -61,6 +61,21 @@ const UNIT_ALIASES: Record<string, string> = {
   head: "hlávka",
 };
 
+export const PANTRY_UNIT_OPTIONS = [
+  "g",
+  "kg",
+  "ml",
+  "l",
+  "dl",
+  "ks",
+  "bal",
+  "cup",
+  "tbsp",
+  "tsp",
+] as const;
+
+export type PantryUnitOption = (typeof PANTRY_UNIT_OPTIONS)[number];
+
 export type CanonicalUnitDimension = "mass" | "volume" | "count";
 
 export interface CanonicalQuantity {

@@ -18,7 +18,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import WelcomeDialog from "../premium/WelcomeDialog";
 import HomeSidebar from "../components/HomeSidebar";
 import HomeHeader from "../premium/HomeHeader";
@@ -36,6 +36,13 @@ import type {
 } from "@/app/[locale]/home/page";
 import KitchenCounterPage from "@/app/kitchen-counter/KitchenCounterPage";
 import { normalizeRecipeInstructions } from "@/lib/recipe-instructions";
+import { Button } from "@/components/ui/button";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import {
+  type AppHomeSection,
+  getPrimaryAppHomeSection,
+  isHomeSection,
+} from "../types/navigation";
 
 const PANTRY_CHANGED_EVENT = "pantry:changed";
 const KITCHEN_COUNTER_SELECTED_RECIPE_STORAGE_KEY =
@@ -144,7 +151,6 @@ export default function HomePage({
 }: HomePageProps) {
   const t = useTranslations("home");
   const locale = useLocale();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [livePantrySummary, setLivePantrySummary] =
@@ -171,9 +177,7 @@ export default function HomePage({
   );
 
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
-  const [activeSection, setActiveSection] = useState<
-    "home" | "pantry" | "chatWithRivo" | "profile" | "kitchenCounter" | "mealGallery"
-  >("home");
+  const [activeSection, setActiveSection] = useState<AppHomeSection>("home");
 
   const [browserOpen, setBrowserOpen] = useState(false);
   const [browserSource, setBrowserSource] = useState<
@@ -181,6 +185,18 @@ export default function HomePage({
   >(null);
   const [browserIndex, setBrowserIndex] = useState(0);
   const almostCookableScrollRef = useRef<HTMLDivElement | null>(null);
+  const triggerHaptic = useHapticFeedback();
+  const primaryActiveSection = getPrimaryAppHomeSection(activeSection);
+  const activeHomeSection =
+    activeSection === "home.shoppingList" ? "home.shoppingList" : "home.recipes";
+
+  const handleHomeSectionChange = useCallback(
+    (section: "home.recipes" | "home.shoppingList") => {
+      triggerHaptic(activeHomeSection === section ? "light" : "medium");
+      setActiveSection(section);
+    },
+    [activeHomeSection, triggerHaptic],
+  );
 
   const openRecipeBrowser = useCallback(
     (
@@ -205,6 +221,8 @@ export default function HomePage({
     const sectionParam = searchParams.get("section");
     const validSections = [
       "home",
+      "home.recipes",
+      "home.shoppingList",
       "pantry",
       "chatWithRivo",
       "profile",
@@ -467,7 +485,6 @@ export default function HomePage({
 
     const handlePantryChanged = () => {
       void refreshPantrySummary();
-      router.refresh();
     };
 
     window.addEventListener(PANTRY_CHANGED_EVENT, handlePantryChanged);
@@ -475,7 +492,7 @@ export default function HomePage({
     return () => {
       window.removeEventListener(PANTRY_CHANGED_EVENT, handlePantryChanged);
     };
-  }, [refreshPantrySummary, router]);
+  }, [refreshPantrySummary]);
 
   const availableFilters = useMemo(() => {
     const tagSet = new Set<string>(["all"]);
@@ -626,13 +643,13 @@ export default function HomePage({
       <HomeHeader onSectionChange={setActiveSection} />
       <main
         className={`flex-1 w-full md:max-w-[calc(100vw-256px)] h-screen ${
-          activeSection === "chatWithRivo"
+          primaryActiveSection === "chatWithRivo"
             ? "overflow-hidden p-0"
             : "pt-20 md:pt-8 pb-24 md:pb-8 px-4 md:px-8 overflow-y-auto"
         }`}
       >
         <AnimatePresence mode="wait">
-          {activeSection === "home" ? (
+          {isHomeSection(activeSection) ? (
             <motion.div
               key="home"
               initial={{ opacity: 0, y: 10 }}
@@ -647,7 +664,103 @@ export default function HomePage({
                     name: session?.user?.name?.split(" ")[0] || "",
                   })}
                 </h1>
+                <div className="mt-4 w-full rounded-2xl border border-eatrivo-black-primary/10 bg-white/80 p-1 shadow-sm backdrop-blur-sm">
+                  <div className="grid grid-cols-2 gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="relative h-12 overflow-hidden rounded-xl px-4 text-sm font-semibold active:scale-[0.98]"
+                      onClick={() => handleHomeSectionChange("home.recipes")}
+                    >
+                      {activeHomeSection === "home.recipes" ? (
+                        <motion.span
+                          layoutId="home-section-switch"
+                          className="absolute inset-0 rounded-xl bg-eatrivo-purple shadow-[0_10px_30px_rgba(139,92,246,0.28)]"
+                          transition={{
+                            type: "spring",
+                            stiffness: 380,
+                            damping: 32,
+                            mass: 0.8,
+                          }}
+                        />
+                      ) : null}
+                      <span
+                        className={`relative z-10 transition-colors duration-300 ${
+                          activeHomeSection === "home.recipes"
+                            ? "text-white"
+                            : "text-eatrivo-purple/75"
+                        }`}
+                      >
+                        {t("greeting.actions.recipes")}
+                      </span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="relative h-12 overflow-hidden rounded-xl px-4 text-sm font-semibold active:scale-[0.98]"
+                      onClick={() => handleHomeSectionChange("home.shoppingList")}
+                    >
+                      {activeHomeSection === "home.shoppingList" ? (
+                        <motion.span
+                          layoutId="home-section-switch"
+                          className="absolute inset-0 rounded-xl bg-eatrivo-purple shadow-[0_10px_30px_rgba(139,92,246,0.28)]"
+                          transition={{
+                            type: "spring",
+                            stiffness: 380,
+                            damping: 32,
+                            mass: 0.8,
+                          }}
+                        />
+                      ) : null}
+                      <span
+                        className={`relative z-10 transition-colors duration-300 ${
+                          activeHomeSection === "home.shoppingList"
+                            ? "text-white"
+                            : "text-eatrivo-purple/75"
+                        }`}
+                      >
+                        {t("greeting.actions.shoppingList")}
+                      </span>
+                    </Button>
+                  </div>
+                </div>
               </div>
+
+              <AnimatePresence mode="wait" initial={false}>
+                {activeHomeSection === "home.shoppingList" ? (
+                  <motion.div
+                    key="home-shopping-list"
+                    initial={{ opacity: 0, y: 14, scale: 0.985 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.985 }}
+                    transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                    className="mb-8 rounded-2xl border border-dashed border-eatrivo-purple/20 bg-white p-8 text-center shadow-sm"
+                  >
+                    <motion.h2
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.06, duration: 0.22 }}
+                      className="text-xl font-semibold text-gray-900"
+                    >
+                      {t("greeting.actions.shoppingList")}
+                    </motion.h2>
+                    <motion.p
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1, duration: 0.24 }}
+                      className="mt-2 text-sm text-gray-500"
+                    >
+                      {t("greeting.subtitle")}
+                    </motion.p>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="home-recipes"
+                    initial={{ opacity: 0, y: 16, scale: 0.992 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -12, scale: 0.992 }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  >
 
               <div className="relative w-full min-h-[360px] rounded-2xl overflow-hidden shadow-sm mb-8 bg-white border border-gray-100 xl:min-h-[420px] transition-all duration-300 hover:border-gray-200 hover:shadow-md">
                 {activeRecipe ? (
@@ -1044,8 +1157,11 @@ export default function HomePage({
                   )}
                 </div>
               </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
-          ) : activeSection === "pantry" ? (
+          ) : primaryActiveSection === "pantry" ? (
             <motion.div
               key="pantry"
               initial={{ opacity: 0, y: 10 }}
@@ -1056,7 +1172,7 @@ export default function HomePage({
             >
               <PantrySection onPantryChanged={refreshPantrySummary} />
             </motion.div>
-          ) : activeSection === "profile" ? (
+          ) : primaryActiveSection === "profile" ? (
             <motion.div
               key="profile"
               initial={{ opacity: 0, y: 10 }}
@@ -1067,7 +1183,7 @@ export default function HomePage({
             >
               <ProfilePageClient onBack={() => setActiveSection("home")} />
             </motion.div>
-          ) : activeSection === "chatWithRivo" ? (
+          ) : primaryActiveSection === "chatWithRivo" ? (
             <motion.div
               key="chatWithRivo"
               initial={{ opacity: 0, y: 10 }}
@@ -1078,7 +1194,7 @@ export default function HomePage({
             >
               <ChatWithRivoPage />
             </motion.div>
-          ) : activeSection === "kitchenCounter" ? (
+          ) : primaryActiveSection === "kitchenCounter" ? (
             <motion.div
               key="kitchenCounter"
               initial={{ opacity: 0, y: 10 }}
@@ -1101,7 +1217,7 @@ export default function HomePage({
       />
       <PWAInstallPrompt />
       <NotificationBanner />
-      {activeSection === "home" && (
+      {isHomeSection(activeSection) && (
         <div className="hidden md:block">
           <FeedbackButton />
         </div>

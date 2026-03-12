@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { eq } from "drizzle-orm";
@@ -110,6 +110,26 @@ function readJsonFile(filePath: string): RecipeFile {
   return JSON.parse(readFileSync(filePath, "utf8")) as RecipeFile;
 }
 
+function resolveRecipeFilePath(inputPath: string): string {
+  const directPath = resolve(inputPath);
+  const recipesDirectoryPath = resolve("receipes", inputPath);
+  const resolvedPath = existsSync(directPath)
+    ? directPath
+    : existsSync(recipesDirectoryPath)
+      ? recipesDirectoryPath
+      : null;
+
+  if (!resolvedPath) {
+    throw new Error(`Recipe file not found: ${inputPath}`);
+  }
+
+  if (!resolvedPath.toLowerCase().endsWith(".json")) {
+    throw new Error(`Recipe file must be a .json file: ${resolvedPath}`);
+  }
+
+  return resolvedPath;
+}
+
 function slugify(value: string): string {
   return value
     .normalize("NFKD")
@@ -131,13 +151,8 @@ function buildUniqueSlug(baseSlug: string, seenSlugs: Map<string, number>): stri
   return `${baseSlug}-${currentCount + 1}`;
 }
 
-function loadRecipes(): RecipeJson[] {
-  const recipesDirectory = resolve("receipes");
-  const filePaths = readdirSync(recipesDirectory)
-    .filter((fileName) => fileName.endsWith(".json"))
-    .map((fileName) => resolve(recipesDirectory, fileName));
-
-  return filePaths.flatMap((filePath) => readJsonFile(filePath).recipes);
+function loadRecipes(filePath: string): RecipeJson[] {
+  return readJsonFile(filePath).recipes;
 }
 
 function isMultilingualStructuredIngredient(
@@ -432,9 +447,19 @@ function normalizeRecipeIngredients(
 }
 
 async function main() {
-  const dryRun = process.argv.includes("--dry-run");
+  const args = process.argv.slice(2);
+  const dryRun = args.includes("--dry-run");
+  const positionalArgs = args.filter((arg) => !arg.startsWith("--"));
+
+  if (positionalArgs.length !== 1) {
+    throw new Error(
+      "Usage: npm run db:import:recipes -- <file.json> [--dry-run]",
+    );
+  }
+
+  const recipeFilePath = resolveRecipeFilePath(positionalArgs[0]);
   const seenSlugs = new Map<string, number>();
-  const rawRecipes = loadRecipes();
+  const rawRecipes = loadRecipes(recipeFilePath);
 
   const rows = rawRecipes.map((recipe) => {
     const translations = getRecipeTranslations(recipe);
@@ -512,7 +537,9 @@ async function main() {
   });
 
   if (dryRun) {
-    console.log(`Dry run: prepared ${rows.length} recipes for import.`);
+    console.log(
+      `Dry run: prepared ${rows.length} recipes for import from ${recipeFilePath}.`,
+    );
     console.log(
       JSON.stringify(
         rows.slice(0, 2).map((row) => ({
@@ -614,7 +641,7 @@ async function main() {
     }
   }
 
-  console.log(`Imported ${rows.length} recipes.`);
+  console.log(`Imported ${rows.length} recipes from ${recipeFilePath}.`);
 }
 
 main().catch((error) => {

@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { NewPantryItem } from "@/hooks/usePantry";
+import { PANTRY_UNIT_OPTIONS } from "@/lib/units";
 
 const CATEGORIES = [
   { value: "dairy", label: "🥛 Mliečne výrobky" },
@@ -27,19 +28,6 @@ const CATEGORIES = [
   { value: "beverages", label: "🥤 Nápoje" },
   { value: "nuts_seeds", label: "🥜 Orechy & semená" },
   { value: "other", label: "📦 Ostatné" },
-];
-
-const COMMON_UNITS = [
-  "g",
-  "kg",
-  "ml",
-  "l",
-  "ks",
-  "bal",
-  "dl",
-  "cup",
-  "tbsp",
-  "tsp",
 ];
 
 interface AddPantryItemModalProps {
@@ -258,7 +246,7 @@ export default function AddPantryItemModal({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {COMMON_UNITS.map((u) => (
+                              {PANTRY_UNIT_OPTIONS.map((u) => (
                                 <SelectItem key={u} value={u}>
                                   {u}
                                 </SelectItem>

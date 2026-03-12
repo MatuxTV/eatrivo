@@ -13,12 +13,14 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { FeedbackDialog } from "@/components/FeedbackButton";
+import {
+  type AppHomeSection,
+  getPrimaryAppHomeSection,
+} from "../types/navigation";
 
 interface MobileNavigationProps {
-  activeSection: "home" | "pantry" | "chatWithRivo" | "profile" | "kitchenCounter" | "mealGallery";
-  onSectionChange: (
-    section: "home" | "pantry" | "chatWithRivo" | "profile" | "kitchenCounter" | "mealGallery",
-  ) => void;
+  activeSection: AppHomeSection;
+  onSectionChange: (section: AppHomeSection) => void;
 }
 
 export default function MobileNavigation({
@@ -27,6 +29,7 @@ export default function MobileNavigation({
 }: MobileNavigationProps) {
   const t = useTranslations("home");
   const [showTooltip, setShowTooltip] = useState(false);
+  const primaryActiveSection = getPrimaryAppHomeSection(activeSection);
 
   useEffect(() => {
     // Show tooltip after 3 seconds
@@ -44,7 +47,7 @@ export default function MobileNavigation({
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe pointer-events-none">
       {/* Floating Feedback Button — only on home section */}
-      {activeSection === "home" && (
+      {primaryActiveSection === "home" && (
         <div className="absolute bottom-[90px] mb-2 right-4 z-50 flex flex-row items-center gap-4 pointer-events-none">
           <AnimatePresence>
             {showTooltip && (
@@ -95,14 +98,14 @@ export default function MobileNavigation({
             id="home"
             label={t("nav.home")}
             icon={LayoutDashboard}
-            activeSection={activeSection}
+            activeSection={primaryActiveSection}
             onClick={() => onSectionChange("home")}
           />
           <NavItem
             id="pantry"
             label={t("nav.pantry")}
             icon={CakeSlice}
-            activeSection={activeSection}
+            activeSection={primaryActiveSection}
             onClick={() => onSectionChange("pantry")}
           />
         </div>
@@ -113,14 +116,14 @@ export default function MobileNavigation({
             id="kitchenCounter"
             label={t("nav.kitchenCounter")}
             icon={CookingPot}
-            activeSection={activeSection}
+            activeSection={primaryActiveSection}
             onClick={() => onSectionChange("kitchenCounter")}
           />
           <NavItem
             id="profile"
             label={t("nav.profile")}
             icon={User}
-            activeSection={activeSection}
+            activeSection={primaryActiveSection}
             onClick={() => onSectionChange("profile")}
           />
         </div>
@@ -134,7 +137,7 @@ export default function MobileNavigation({
             <button
               onClick={() => onSectionChange("chatWithRivo")}
               className={`w-14 h-14 rounded-full flex flex-col items-center justify-center shadow-lg transition-transform active:scale-95 duration-200 relative ${
-                activeSection === "chatWithRivo"
+                primaryActiveSection === "chatWithRivo"
                   ? "bg-eatrivo-purple text-white shadow-eatrivo-purple/40 ring-4 ring-eatrivo-purple/20"
                   : "bg-eatrivo-purple/90 text-white hover:bg-eatrivo-purple"
               }`}

@@ -434,7 +434,11 @@
     "membershipSuffix": "member",
     "greeting": {
       "title": "Welcome back, {name}! 👋",
-      "subtitle": "Here's your overview for today,"
+      "subtitle": "Here's your overview for today,",
+      "actions": {
+        "recipes": "Recipes",
+        "shoppingList": "Shopping list"
+      }
     },
     "version": "Version {version}",
     "days": {
@@ -1383,6 +1387,17 @@
     "batch_description": "Add multiple items at once. The backend processes them as one batch and uses AI normalization when it helps.",
     "batch_add_row": "Add another row",
     "batch_item_label": "Item {index}",
+    "restock": {
+      "title": "Repeat buys",
+      "subtitle": "Refill the things you buy all the time without retyping them.",
+      "cardInstruction": "Enter a new item quantity",
+      "saveDefault": "Save",
+      "saveBadge": "track",
+      "savedBadge": "tracked",
+      "makeRecurring": "Save as recurring",
+      "removeRecurring": "Remove from recurring",
+      "quantityMissing": "set"
+    },
     "source_manual": "Manual",
     "source_shopping_list": "From shopping list",
     "categories": {

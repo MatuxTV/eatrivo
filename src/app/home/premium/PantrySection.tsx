@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import {
   Plus,
@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  Archive,
   Milk,
   Beef,
   Apple,
@@ -25,6 +24,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import PantryItemRow from "./PantryItemRow";
+import PantryRestockStrip from "./PantryRestockStrip";
 import AddPantryItemModal from "./AddPantryItemModal";
 import { usePantry } from "@/hooks/usePantry";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -68,21 +68,49 @@ export default function PantrySection({
   const locale = useLocale();
   const {
     items,
+    restockItems,
     pendingDrafts,
     itemsByCategory,
     expiringItems,
     isLoading,
+    isLoadingRestockItems,
     isPreparingDrafts,
     isConfirmingDrafts,
     addItem,
     addItemsBatch,
     updateItem,
     deleteItem,
+    toggleRecurringForItem,
+    updateRestockItem,
+    quickAddRestockItem,
     confirmDrafts,
     discardDrafts,
     refresh,
   } = usePantry();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const recurringLookup = useMemo(() => {
+    return new Map(
+      items.map((item) => {
+        const matchingRestock = restockItems.find((restockItem) => {
+          if (
+            item.ingredientSpecificKey &&
+            restockItem.ingredientSpecificKey === item.ingredientSpecificKey
+          ) {
+            return true;
+          }
+
+          if (item.ingredientKey && restockItem.ingredientKey === item.ingredientKey) {
+            return true;
+          }
+
+          return restockItem.name.trim().toLowerCase() === item.name.trim().toLowerCase();
+        });
+
+        return [item.id, matchingRestock];
+      }),
+    );
+  }, [items, restockItems]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -281,6 +309,16 @@ export default function PantrySection({
 
       {/* Main Content Area */}
       <div className="bg-white/60 backdrop-blur-3xl border border-white/60 rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-2xl shadow-eatrivo-purple/5 min-h-[400px]">
+        {restockItems.length > 0 && !isLoadingRestockItems ? (
+          <div className="mb-8">
+            <PantryRestockStrip
+              items={restockItems}
+              onQuickAdd={quickAddRestockItem}
+              onUpdate={updateRestockItem}
+            />
+          </div>
+        ) : null}
+
         {isLoading ? (
           <div className="space-y-8">
             <div className="space-y-4">
@@ -350,14 +388,21 @@ export default function PantrySection({
                     </span>
                   </h2>
                   <div className="flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-4 -mx-4 px-4 sm:mx-0 sm:px-1">
-                    {expiringItems.map((item) => (
+                    {expiringItems.map((item) => {
+                      const recurringItem = recurringLookup.get(item.id);
+
+                      return (
                       <PantryItemRow
                         key={item.id}
                         item={item}
+                        isRecurring={Boolean(recurringItem?.isActive)}
+                        recurringItemId={recurringItem?.id}
                         onUpdate={updateItem}
                         onDelete={deleteItem}
+                        onToggleRecurring={toggleRecurringForItem}
                       />
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -380,14 +425,21 @@ export default function PantrySection({
                       </span>
                     </h2>
                     <div className="flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-4 -mx-4 px-4 sm:mx-0 sm:px-1">
-                      {catItems.map((item) => (
+                      {catItems.map((item) => {
+                        const recurringItem = recurringLookup.get(item.id);
+
+                        return (
                         <PantryItemRow
                           key={item.id}
                           item={item}
+                          isRecurring={Boolean(recurringItem?.isActive)}
+                          recurringItemId={recurringItem?.id}
                           onUpdate={updateItem}
                           onDelete={deleteItem}
+                          onToggleRecurring={toggleRecurringForItem}
                         />
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 );

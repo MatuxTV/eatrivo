@@ -1,0 +1,719 @@
+
+
+{
+  "recipes": [
+    {
+      "external_key": "breakfast-strawberry-protein-pancakes",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "vegetarian",
+        "gluten-free",
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-eggs"
+      ],
+      "servings": 2,
+      "prep_time_min": 10,
+      "total_time_min": 25,
+      "nutrition_per_serving": {
+        "calories": 276,
+        "protein_g": 24,
+        "carbohydrates_g": 22,
+        "fat_g": 11
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "cottage-cheese",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "1 cup (200g) cottage cheese",
+              "ingredient_name": "cottage cheese"
+            },
+            "sk": {
+              "display_name": "200 g cottage syra",
+              "ingredient_name": "cottage syr"
+            }
+          }
+        },
+        {
+          "ingredient_key": "egg",
+          "quantity": 2,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "2 eggs",
+              "ingredient_name": "egg"
+            },
+            "sk": {
+              "display_name": "2 vajcia",
+              "ingredient_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vanilla-whey-powder",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1 scoop (30g) vanilla whey",
+              "ingredient_name": "vanilla whey powder"
+            },
+            "sk": {
+              "display_name": "30 g vanilkového srvátkového proteínu",
+              "ingredient_name": "vanilkový srvátkový proteín"
+            }
+          }
+        },
+        {
+          "ingredient_key": "coconut-oil",
+          "quantity": 15,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1 tbsp coconut oil",
+              "ingredient_name": "coconut oil"
+            },
+            "sk": {
+              "display_name": "1 PL kokosového oleja",
+              "ingredient_name": "kokosový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "strawberry",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "1 cup (150g) strawberries, chopped",
+              "ingredient_name": "strawberry"
+            },
+            "sk": {
+              "display_name": "150 g jahôd, nakrájaných",
+              "ingredient_name": "jahoda"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Strawberry Protein Pancakes",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Place the cottage cheese and eggs in a blender and blend until smooth. Add in the protein powder and blend again.",
+            "Heat a tsp of oil in a pan on medium-low heat. Pour 2 tbsp. of the batter into the pan. Cook until bubbles start to appear on the surface, then flip and cook for another minute until golden. Repeat until you use all the batter.",
+            "Serve with chopped strawberries."
+          ],
+          "notes": "You can substitute the whey protein for another flavor if you prefer."
+        },
+        "sk": {
+          "name": "Jahodové proteínové lievance",
+          "category_label": "Raňajky",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Cottage syr a vajcia dajte do mixéra a rozmixujte dohladka. Pridajte proteínový prášok a znova rozmixujte.",
+            "Na panvici zohrejte 1 lyžičku oleja na stredne nízkej teplote. Nalejte do panvice časť cesta (asi 2 polievkové lyžice na lievanec). Opekajte, kým sa na povrchu nezačnú tvoriť bublinky, potom otočte a opekajte ďalšiu minútu dozlatista. Opakujte, kým neminiete všetko cesto.",
+            "Podávajte s nakrájanými jahodami."
+          ],
+          "notes": "Ak uprednostňujete inú príchuť, môžete vanilkový srvátkový proteín nahradiť za iný."
+        }
+      },
+      "meal_prep_friendly": false
+    },
+    {
+      "external_key": "breakfast-quick-protein-fruit-cake",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "vegetarian",
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-eggs",
+        "contains-dairy",
+        "contains-gluten"
+      ],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 35,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 35,
+        "carbohydrates_g": 46,
+        "fat_g": 9
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "egg",
+          "quantity": 1,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "1 egg",
+              "ingredient_name": "egg"
+            },
+            "sk": {
+              "display_name": "1 vajce",
+              "ingredient_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "greek-yogurt",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "50g Greek yogurt",
+              "ingredient_name": "Greek yogurt"
+            },
+            "sk": {
+              "display_name": "50 g gréckeho jogurtu",
+              "ingredient_name": "grécky jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spelt-flour",
+          "quantity": 40,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "40g spelt flour",
+              "ingredient_name": "spelt flour"
+            },
+            "sk": {
+              "display_name": "40 g špaldovej múky",
+              "ingredient_name": "špaldová múka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "kefir",
+          "quantity": 80,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "80ml kefir",
+              "ingredient_name": "kefir"
+            },
+            "sk": {
+              "display_name": "80 ml kefíru",
+              "ingredient_name": "kefír"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vanilla-protein",
+          "quantity": 20,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "20g vanilla protein powder",
+              "ingredient_name": "vanilla protein powder"
+            },
+            "sk": {
+              "display_name": "20 g vanilkového proteínu",
+              "ingredient_name": "vanilkový proteín"
+            }
+          }
+        },
+        {
+          "ingredient_key": "baking-powder",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "1/2 tsp baking powder",
+              "ingredient_name": "baking powder"
+            },
+            "sk": {
+              "display_name": "1/2 čl kypriaceho prášku",
+              "ingredient_name": "kypriaci prášok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "1 tsp honey",
+              "ingredient_name": "honey"
+            },
+            "sk": {
+              "display_name": "1 čl medu",
+              "ingredient_name": "med"
+            }
+          }
+        },
+        {
+          "ingredient_key": "fruit",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "fruit of choice (e.g., berries, apple, or peach)",
+              "ingredient_name": "fruit"
+            },
+            "sk": {
+              "display_name": "ovocie podľa chuti (napr. bobuľové ovocie, jablko alebo broskyňa)",
+              "ingredient_name": "ovocie"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Quick Protein Fruit Cake",
+          "category_label": "Breakfast",
+          "serving_unit_label": "cake",
+          "instructions": [
+            "In a suitable bowl, thoroughly mix the egg, Greek yogurt, spelt flour, kefir, vanilla protein, baking powder, and honey. Mix well to create a smooth, lump-free batter.",
+            "Pour the batter into a small baking dish (for one serving) and generously top with your favorite fruit.",
+            "Place the cake in a preheated oven at 350°F (180°C) and bake for approximately 30 minutes."
+          ],
+          "notes": "You can easily double the ingredients to make a double batch."
+        },
+        "sk": {
+          "name": "Rýchly proteínový koláč s ovocím",
+          "category_label": "Raňajky",
+          "serving_unit_label": "koláčik",
+          "instructions": [
+            "Vo vhodnej miske dôkladne zmiešajte vajce, grécky jogurt, špaldovú múku, kefír, vanilkový proteín, kypriaci prášok a med. Poriadne premiešajte, aby vám vzniklo hladké cesto bez hrudiek.",
+            "Cesto prelejte do menšej zapekacej misky a navrch bohato poukladajte obľúbené ovocie.",
+            "Koláč vložte do rúry vyhriatej na 180°C a pečte približne 30 minút."
+          ],
+          "notes": "Môžete si rovno pripraviť dvojitú dávku jednoduchým vynásobením množstiev dvomi."
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-greek-yogurt-blueberry-pancakes",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "vegetarian"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-eggs",
+        "contains-gluten"
+      ],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 15,
+      "nutrition_per_serving": {
+        "calories": 0,
+        "protein_g": 0,
+        "carbohydrates_g": 0,
+        "fat_g": 0
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "greek-yogurt",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "Greek yogurt",
+              "ingredient_name": "Greek yogurt"
+            },
+            "sk": {
+              "display_name": "grécky jogurt",
+              "ingredient_name": "grécky jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "milk",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "milk",
+              "ingredient_name": "milk"
+            },
+            "sk": {
+              "display_name": "mlieko",
+              "ingredient_name": "mlieko"
+            }
+          }
+        },
+        {
+          "ingredient_key": "egg",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "eggs",
+              "ingredient_name": "egg"
+            },
+            "sk": {
+              "display_name": "vajcia",
+              "ingredient_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "honey",
+              "ingredient_name": "honey"
+            },
+            "sk": {
+              "display_name": "med",
+              "ingredient_name": "med"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vanilla",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "vanilla",
+              "ingredient_name": "vanilla"
+            },
+            "sk": {
+              "display_name": "vanilka",
+              "ingredient_name": "vanilka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "wheat-flour",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "flour",
+              "ingredient_name": "flour"
+            },
+            "sk": {
+              "display_name": "múka",
+              "ingredient_name": "múka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "baking-powder",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "baking powder",
+              "ingredient_name": "baking powder"
+            },
+            "sk": {
+              "display_name": "kypriaci prášok",
+              "ingredient_name": "kypriaci prášok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "salt",
+              "ingredient_name": "salt"
+            },
+            "sk": {
+              "display_name": "soľ",
+              "ingredient_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "blueberry",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "fresh blueberries",
+              "ingredient_name": "blueberry"
+            },
+            "sk": {
+              "display_name": "čerstvé čučoriedky",
+              "ingredient_name": "čučoriedka"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Greek Yogurt Blueberry Pancakes",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Whisk Greek yogurt, milk, eggs, honey, and vanilla until smooth.",
+            "Add flour, baking powder, and salt. Whisk gently without over mixing.",
+            "Fold in fresh blueberries, then cook three to four minutes per side on medium heat until golden and cooked through."
+          ],
+          "notes": "Exact quantities and nutritional values were not provided in the source text."
+        },
+        "sk": {
+          "name": "Čučoriedkové lievance s gréckym jogurtom",
+          "category_label": "Raňajky",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Vymiešajte grécky jogurt, mlieko, vajcia, med a vanilku dohladka.",
+            "Pridajte múku, kypriaci prášok a soľ. Jemne premiešajte, aby ste cesto nepremiešali príliš.",
+            "Zľahka vmiešajte čerstvé čučoriedky a opekajte na strednom ohni tri až štyri minúty z každej strany, kým nebudú lievance zlatisté a prepečené."
+          ],
+          "notes": "Presné množstvá ingrediencií a nutričné hodnoty neboli v zdrojovom texte uvedené."
+        }
+      },
+      "meal_prep_friendly": false
+    },
+    {
+      "external_key": "snack-english-rolls-with-bacon-and-cheddar",
+      "default_locale": "sk",
+      "category_key": "snack",
+      "diet_tags": [],
+      "restriction_flags": [
+        "contains-gluten",
+        "contains-dairy"
+      ],
+      "servings": 8,
+      "prep_time_min": 65,
+      "total_time_min": 83,
+      "nutrition_per_serving": {
+        "calories": 350,
+        "protein_g": 12,
+        "carbohydrates_g": 40,
+        "fat_g": 15
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "wheat-flour",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "flour",
+              "ingredient_name": "wheat flour"
+            },
+            "sk": {
+              "display_name": "múka",
+              "ingredient_name": "pšeničná múka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "a little salt",
+              "ingredient_name": "salt"
+            },
+            "sk": {
+              "display_name": "trošku soli",
+              "ingredient_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sugar",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "sugar",
+              "ingredient_name": "sugar"
+            },
+            "sk": {
+              "display_name": "cukor",
+              "ingredient_name": "cukor"
+            }
+          }
+        },
+        {
+          "ingredient_key": "water",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "lukewarm water",
+              "ingredient_name": "water"
+            },
+            "sk": {
+              "display_name": "vlažná voda",
+              "ingredient_name": "voda"
+            }
+          }
+        },
+        {
+          "ingredient_key": "yeast",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "yeast",
+              "ingredient_name": "yeast"
+            },
+            "sk": {
+              "display_name": "droždie",
+              "ingredient_name": "droždie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lard",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "melted lard",
+              "ingredient_name": "lard"
+            },
+            "sk": {
+              "display_name": "rozpustená masť",
+              "ingredient_name": "bravčová masť"
+            }
+          }
+        },
+        {
+          "ingredient_key": "bacon",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "bacon",
+              "ingredient_name": "bacon"
+            },
+            "sk": {
+              "display_name": "slanina",
+              "ingredient_name": "slanina"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cheddar-cheese",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "cheddar",
+              "ingredient_name": "cheddar cheese"
+            },
+            "sk": {
+              "display_name": "čedar",
+              "ingredient_name": "syr čedar"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "English Rolls with Bacon and Cheddar",
+          "category_label": "Snack",
+          "serving_unit_label": "roll",
+          "instructions": [
+            "Start by preparing the yeast dough. Mix a little salt into the flour, then add sugar, lukewarm water, and yeast.",
+            "Once the dough comes together, add melted lard, knead for 10 minutes, and then let it rise for 45 minutes.",
+            "Divide the risen dough into 8 pieces, let rest for another 10 minutes, then roll each into a triangle and roll up into a crescent roll.",
+            "Let the rolls rest for a little while on a baking sheet, and brush them with salted water before baking.",
+            "Bake in the oven for 8 minutes, then remove, top with bacon and cheddar, and bake for another 10 minutes."
+          ],
+          "notes": "Quantities of ingredients are not specified in the source recipe. Prepared to yield 8 rolls."
+        },
+        "sk": {
+          "name": "Anglické rožky so slaninou a čedarom",
+          "category_label": "Snack",
+          "serving_unit_label": "rožok",
+          "instructions": [
+            "Začneme prípravou kysnutého cesta. Do múky vmiešame trochu soli a potom pridáme cukor, vlažnú vodu a droždie.",
+            "Keď sa cesto spojí, pridáme rozpustenú masť, necháme 10 minút prepracovať a potom kysnúť 45 minút.",
+            "Vykysnuté cesto rozdelíme na 8 častí, necháme ešte 10 minút odpočívať a potom z každého vyvaľkáme trojuholník, ktorý zmotáme do rožka.",
+            "Na plechu necháme rožky ešte chvíľku odpočívať a pred pečením ich potrieme vodou so soľou.",
+            "Necháme ich v rúre 8 minút, potom ich vyberieme, pridáme slaninu a čedar a necháme ich dopiecť ďalších 10 minút."
+          ],
+          "notes": "Množstvá ingrediencií nie sú v pôvodnom recepte špecifikované. Odhadovaný výnos je 8 rožkov."
+        }
+      },
+      "meal_prep_friendly": true
+    }
+  ]
+}
+
+
+
+

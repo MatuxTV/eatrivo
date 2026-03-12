@@ -35,6 +35,22 @@ export interface PantryDraftItem {
   expiresAt: string;
 }
 
+export interface PantryRestockItem {
+  id: string;
+  userProfileId: string;
+  name: string;
+  ingredientName: string | null;
+  ingredientKey: string | null;
+  ingredientSpecificKey: string | null;
+  defaultQuantity: string | null;
+  defaultUnit: string | null;
+  category: string | null;
+  isActive: boolean;
+  lastRestockedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface NewPantryItem {
   name: string;
   quantity?: number | null;
@@ -71,6 +87,23 @@ interface PantryMutationResponse {
   error?: string;
 }
 
+interface PantryRestockMutationResponse {
+  item?: PantryRestockItem;
+  error?: string;
+}
+
+interface PantryRestockListResponse {
+  items?: PantryRestockItem[];
+  error?: string;
+}
+
+interface PantryRestockQuickAddResponse {
+  item?: PantryItem;
+  mode?: "merged" | "replaced" | "inserted";
+  restockItem?: PantryRestockItem;
+  error?: string;
+}
+
 interface PantryDraftsResponse {
   drafts?: PantryDraftItem[];
   error?: string;
@@ -84,11 +117,13 @@ const PANTRY_CHANGED_EVENT = "pantry:changed";
 
 export function usePantry() {
   const [items, setItems] = useState<PantryItem[]>([]);
+  const [restockItems, setRestockItems] = useState<PantryRestockItem[]>([]);
   const [pendingDrafts, setPendingDrafts] = useState<PantryDraftItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPreparingDrafts, setIsPreparingDrafts] = useState(false);
   const [isConfirmingDrafts, setIsConfirmingDrafts] = useState(false);
+  const [isLoadingRestockItems, setIsLoadingRestockItems] = useState(true);
 
   const fetchItems = useCallback(async () => {
     try {
@@ -127,9 +162,28 @@ export function usePantry() {
     }
   }, []);
 
+  const fetchRestockItems = useCallback(async () => {
+    try {
+      setIsLoadingRestockItems(true);
+      const response = await fetch("/api/pantry/restock-items", {
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch pantry restock items");
+      }
+
+      const data = (await response.json()) as PantryRestockListResponse;
+      setRestockItems((data.items ?? []).filter((item) => item.isActive));
+    } catch (err) {
+      console.error("[Pantry] fetchRestockItems: error", err);
+    } finally {
+      setIsLoadingRestockItems(false);
+    }
+  }, []);
+
   useEffect(() => {
-    void Promise.all([fetchItems(), fetchDrafts()]);
-  }, [fetchDrafts, fetchItems]);
+    void Promise.all([fetchItems(), fetchDrafts(), fetchRestockItems()]);
+  }, [fetchDrafts, fetchItems, fetchRestockItems]);
 
   const prepareDrafts = useCallback(
     async (itemsToPrepare: NewPantryItem[]): Promise<boolean> => {
@@ -246,6 +300,166 @@ export function usePantry() {
     }
   }, []);
 
+  const toggleRecurringForItem = useCallback(
+    async (
+      item: PantryItem,
+      enabled: boolean,
+      restockItemId?: string,
+    ): Promise<boolean> => {
+      try {
+        if (enabled) {
+          const response = await fetch("/api/pantry/restock-items", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pantryItemId: item.id }),
+          });
+          const data = (await response.json()) as PantryRestockMutationResponse;
+
+          if (!response.ok || !data.item) {
+            toast.error("Nepodarilo sa zapnúť pravidelné dopĺňanie");
+            return false;
+          }
+
+          setRestockItems((current) => {
+            const filtered = current.filter((entry) => entry.id !== data.item?.id);
+            return [...filtered, data.item!];
+          });
+          toast.success("Položka je uložená medzi pravidelné nákupy");
+          return true;
+        }
+
+        if (!restockItemId) {
+          toast.error("Chýba recurring položka na vypnutie");
+          return false;
+        }
+
+        const response = await fetch(`/api/pantry/restock-items/${restockItemId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isActive: false }),
+        });
+        const data = (await response.json()) as PantryRestockMutationResponse;
+
+        if (!response.ok || !data.item) {
+          toast.error("Nepodarilo sa vypnúť pravidelné dopĺňanie");
+          return false;
+        }
+
+        setRestockItems((current) =>
+          current.filter((entry) => entry.id !== data.item?.id),
+        );
+        toast.success("Položka už nie je medzi pravidelnými nákupmi");
+        return true;
+      } catch (err) {
+        console.error("[Pantry] toggleRecurringForItem: exception", err);
+        toast.error("Chyba pri zmene pravidelného dopĺňania");
+        return false;
+      }
+    },
+    [],
+  );
+
+  const updateRestockItem = useCallback(
+    async (
+      id: string,
+      updates: {
+        name?: string;
+        defaultQuantity?: number | null;
+        defaultUnit?: string | null;
+        category?: string | null;
+        isActive?: boolean;
+      },
+    ): Promise<boolean> => {
+      try {
+        const response = await fetch(`/api/pantry/restock-items/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updates),
+        });
+        const data = (await response.json()) as PantryRestockMutationResponse;
+
+        if (!response.ok || !data.item) {
+          toast.error("Nepodarilo sa upraviť pravidelnú položku");
+          return false;
+        }
+
+        setRestockItems((current) => {
+          const filtered = current.filter((entry) => entry.id !== data.item?.id);
+          return data.item?.isActive ? [...filtered, data.item] : filtered;
+        });
+        toast.success("Predvolené množstvo je uložené");
+        return true;
+      } catch (err) {
+        console.error("[Pantry] updateRestockItem: exception", err);
+        toast.error("Chyba pri úprave pravidelnej položky");
+        return false;
+      }
+    },
+    [],
+  );
+
+  const quickAddRestockItem = useCallback(
+    async (
+      id: string,
+      overrides?: {
+        quantity?: number | null;
+        unit?: string | null;
+        mode?: "merge" | "replace";
+      },
+    ): Promise<boolean> => {
+      try {
+        const response = await fetch(`/api/pantry/restock-items/${id}/add`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(overrides ?? {}),
+        });
+        const data = (await response.json()) as PantryRestockQuickAddResponse;
+
+        if (!response.ok || !data.item) {
+          toast.error("Nepodarilo sa doplniť položku do spajze");
+          return false;
+        }
+
+        setItems((current) => {
+          if (data.mode === "inserted") {
+            return [...current, data.item!];
+          }
+
+          return current.map((entry) =>
+            entry.id === data.item?.id ? data.item! : entry,
+          );
+        });
+
+        if (data.restockItem) {
+          setRestockItems((current) => {
+            const filtered = current.filter((entry) => entry.id !== data.restockItem?.id);
+            return data.restockItem?.isActive
+              ? [...filtered, data.restockItem]
+              : filtered;
+          });
+        }
+
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event(PANTRY_CHANGED_EVENT));
+        }
+
+        toast.success(
+          data.mode === "merged"
+            ? "Množstvo v spajzi bolo navýšené"
+            : data.mode === "replaced"
+              ? "Množstvo v spajzi bolo nastavené"
+              : "Položka bola doplnená do spajze",
+        );
+        return true;
+      } catch (err) {
+        console.error("[Pantry] quickAddRestockItem: exception", err);
+        toast.error("Chyba pri dopĺňaní do spajze");
+        return false;
+      }
+    },
+    [],
+  );
+
   // Group items by category
   const itemsByCategory = items.reduce<Record<string, PantryItem[]>>(
     (acc, item) => {
@@ -322,15 +536,17 @@ export function usePantry() {
   }, []);
 
   const refresh = useCallback(async () => {
-    await Promise.all([fetchItems(), fetchDrafts()]);
-  }, [fetchDrafts, fetchItems]);
+    await Promise.all([fetchItems(), fetchDrafts(), fetchRestockItems()]);
+  }, [fetchDrafts, fetchItems, fetchRestockItems]);
 
   return {
     items,
+    restockItems,
     pendingDrafts,
     itemsByCategory,
     expiringItems,
     isLoading,
+    isLoadingRestockItems,
     isPreparingDrafts,
     isConfirmingDrafts,
     error,
@@ -338,6 +554,9 @@ export function usePantry() {
     addItemsBatch,
     updateItem,
     deleteItem,
+    toggleRecurringForItem,
+    updateRestockItem,
+    quickAddRestockItem,
     confirmDrafts,
     discardDrafts,
     refresh,

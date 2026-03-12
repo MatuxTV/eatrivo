@@ -17,14 +17,15 @@ import { getMembershipStatus } from "@/lib/functions";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { UserBadge } from "@/components/ui/UserBadge";
+import {
+  type AppHomeSection,
+  getPrimaryAppHomeSection,
+} from "../types/navigation";
 
 interface HomeSidebarProps {
-  activeSection: "home" | "pantry" | "chatWithRivo" | "kitchenCounter" | "profile" | "mealGallery";
-  onSectionChange: (
-    section: "home" | "pantry" | "chatWithRivo" | "kitchenCounter" | "profile" | "mealGallery",
-  ) => void;
+  activeSection: AppHomeSection;
+  onSectionChange: (section: AppHomeSection) => void;
 }
-
 export default function HomeSidebar({
   activeSection,
   onSectionChange,
@@ -34,7 +35,7 @@ export default function HomeSidebar({
 
   const signOutHref = "/signout";
 
-  const isBeta = session?.user?.isBetaTester ?? false;
+  const primaryActiveSection = getPrimaryAppHomeSection(activeSection);
 
   const navItems = [
     {
@@ -114,7 +115,7 @@ export default function HomeSidebar({
             <div className="flex gap-2">
               <Button
                 size="sm"
-                className={`flex-1 border-2 text-xs h-8 ${activeSection === "profile" ? "bg-eatrivo-purple/10 border-eatrivo-purple/20 text-eatrivo-purple" : "bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700"}`}
+                className={`flex-1 border-2 text-xs h-8 ${primaryActiveSection === "profile" ? "bg-eatrivo-purple/10 border-eatrivo-purple/20 text-eatrivo-purple" : "bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700"}`}
                 onClick={() => onSectionChange("profile")}
               >
                 <User className="w-3 h-3 mr-1.5" />
@@ -137,7 +138,7 @@ export default function HomeSidebar({
 
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => {
-            const isActive = activeSection === item.id;
+            const isActive = primaryActiveSection === item.id;
             return (
               <Button
                 key={item.id}
@@ -176,8 +177,8 @@ export default function HomeSidebar({
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {mobileNavItems.map((item) => {
-          const isActive = activeSection === item.id;
-          const isDisabled = "comingSoon" in item && item.comingSoon;
+          const isActive = primaryActiveSection === item.id;
+          const isDisabled = false;
 
           return (
             <button
