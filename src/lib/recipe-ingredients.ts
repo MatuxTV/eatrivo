@@ -4,6 +4,7 @@ import type { RecipeIngredientPantryComparison } from "@/lib/recipe-quantity-com
 export interface RecipeIngredientItem {
   name: string;
   amount: string | null;
+  category?: string | null;
   quantityValue?: number | null;
   unit?: string | null;
   pantryComparison?: RecipeIngredientPantryComparison | null;

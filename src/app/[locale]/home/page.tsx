@@ -28,6 +28,7 @@ import {
   formatRecipeIngredientAmount,
   type RecipeIngredientItem,
 } from "@/lib/recipe-ingredients";
+import { guessFoodCategory } from "@/lib/units";
 import {
   normalizeRecipeLocale,
   resolveIngredientTranslation,
@@ -216,13 +217,16 @@ async function getBasicHomeData(
     );
 
     const existingItems = ingredientItemsByRecipeId.get(row.recipeId) ?? [];
+    const ingredientName =
+      localizedIngredient?.ingredientName ??
+      localizedIngredient?.displayName ??
+      row.ingredientName ??
+      row.displayName;
+
     existingItems.push({
-      name:
-        localizedIngredient?.ingredientName ??
-        localizedIngredient?.displayName ??
-        row.ingredientName ??
-        row.displayName,
+      name: ingredientName,
       amount: formatRecipeIngredientAmount(row.quantity, row.unit, locale),
+      category: guessFoodCategory(ingredientName),
       quantityValue:
         row.quantity === null ? null : Number.parseFloat(row.quantity),
       unit: row.unit,

@@ -99,6 +99,13 @@
       "when": 1772900391943,
       "tag": "0013_perpetual_jasper_sitwell",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1773326400000,
+      "tag": "0018_normalized_shopping_lists",
+      "breakpoints": true
     }
   ]
 }

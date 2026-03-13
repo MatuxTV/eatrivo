@@ -24,7 +24,6 @@ import {
   Check,
   Plus,
   Minus,
-  RefreshCw,
 } from "lucide-react";
 import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,11 @@ interface RecipeBrowserDialogProps {
   onOpenChange: (open: boolean) => void;
   recipes: BasicHomeRecipePreview[];
   initialIndex?: number;
-  onAddToPantry?: (ingredientName: string) => Promise<void>;
+  onAddToShoppingList?: (
+    ingredientName: string,
+    quantity: string | null,
+    category: string | null,
+  ) => Promise<void>;
   onCookRecipe?: (recipe: BasicHomeRecipePreview) => void;
 }
 
@@ -71,13 +74,13 @@ export default function RecipeBrowserDialog({
   onOpenChange,
   recipes,
   initialIndex = 0,
-  onAddToPantry,
+  onAddToShoppingList,
   onCookRecipe,
 }: RecipeBrowserDialogProps) {
   const t = useTranslations("home");
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [direction, setDirection] = useState(0); // -1 left, 1 right
-  const [addingIngredients, setAddingIngredients] = useState<Set<string>>(
+  const [selectedMissingIngredients, setSelectedMissingIngredients] = useState<Set<string>>(
     new Set(),
   );
 
@@ -85,6 +88,12 @@ export default function RecipeBrowserDialog({
   useEffect(() => {
     if (open) setCurrentIndex(initialIndex);
   }, [open, initialIndex]);
+
+  useEffect(() => {
+    if (!open) {
+      setSelectedMissingIngredients(new Set());
+    }
+  }, [open]);
 
   const recipe = recipes[currentIndex] ?? null;
   const hasNext = currentIndex < recipes.length - 1;
@@ -114,20 +123,26 @@ export default function RecipeBrowserDialog({
     return () => window.removeEventListener("keydown", handler);
   }, [open, goNext, goPrev, onOpenChange]);
 
-  const handleAddIngredient = async (name: string) => {
-    if (!onAddToPantry || addingIngredients.has(name)) return;
+  const handleSelectMissingIngredient = useCallback(
+    async (name: string, quantity: string | null, category: string | null) => {
+      if (!onAddToShoppingList) {
+        return;
+      }
 
-    setAddingIngredients((prev) => new Set(prev).add(name));
-    try {
-      await onAddToPantry(name);
-    } finally {
-      setAddingIngredients((prev) => {
-        const next = new Set(prev);
-        next.delete(name);
-        return next;
-      });
-    }
-  };
+      setSelectedMissingIngredients((prev) => new Set(prev).add(name));
+
+      try {
+        await onAddToShoppingList(name, quantity, category);
+      } catch {
+        setSelectedMissingIngredients((prev) => {
+          const next = new Set(prev);
+          next.delete(name);
+          return next;
+        });
+      }
+    },
+    [onAddToShoppingList],
+  );
 
   const handleCookRecipe = useCallback(() => {
     if (!recipe || !onCookRecipe) {
@@ -405,6 +420,9 @@ export default function RecipeBrowserDialog({
                       key: ing,
                       name: ing,
                       amount: resolveAmountLabel(ing, null),
+                      category:
+                        ingredientByName.get(ing.trim().toLowerCase())?.category ??
+                        null,
                       available: false,
                       matchType: "exact" as const,
                       tone: "red" as const,
@@ -441,7 +459,7 @@ export default function RecipeBrowserDialog({
                               className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
                                 item.tone === "orange"
                                   ? "bg-eatrivo-orange"
-                                  : "bg-green-500"
+                                  : "bg-eatrivo-green"
                               }`}
                             >
                               {item.tone === "orange" ? (
@@ -456,17 +474,27 @@ export default function RecipeBrowserDialog({
                           ) : (
                             <button
                               type="button"
-                              onClick={() => handleAddIngredient(item.name)}
-                              disabled={addingIngredients.has(item.name)}
+                              onClick={() => {
+                                void
+                                handleSelectMissingIngredient(
+                                  item.name,
+                                  item.amount,
+                                  item.category,
+                                );
+                              }}
+                              disabled={selectedMissingIngredients.has(item.name)}
                               className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-90 ${
-                                addingIngredients.has(item.name)
-                                  ? "bg-gray-200 animate-pulse"
+                                selectedMissingIngredients.has(item.name)
+                                  ? "bg-gray-200"
                                   : "bg-red-500 hover:bg-red-600 shadow-sm shadow-red-200"
                               }`}
-                              title={t("basic.recipeDialog.addToPantry")}
+                              title={t("basic.recipeDialog.addToShoppingList")}
                             >
-                              {addingIngredients.has(item.name) ? (
-                                <RefreshCw className="w-3 h-3 text-gray-400 animate-spin" />
+                              {selectedMissingIngredients.has(item.name) ? (
+                                <Check
+                                  className="w-3 h-3 text-gray-500"
+                                  strokeWidth={3}
+                                />
                               ) : (
                                 <Plus
                                   className="w-3 h-3 text-white"

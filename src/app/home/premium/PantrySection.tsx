@@ -149,6 +149,73 @@ export default function PantrySection({
     getCategoryTranslation(a).localeCompare(getCategoryTranslation(b)),
   );
 
+  if (isLoading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="max-w-4xl mx-auto space-y-6 pb-24"
+      >
+        {/* Header Skeleton */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 px-1">
+          <div>
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-14 h-14 rounded-full bg-eatrivo-purple/10 shadow-inner" />
+              <Skeleton className="h-10 w-48 rounded-md bg-eatrivo-purple/10" />
+            </div>
+            <div className="mt-3">
+              <Skeleton className="h-5 w-48 sm:w-64 max-w-[80vw] rounded-md bg-eatrivo-purple/10" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar sm:overflow-visible pb-2 sm:pb-0">
+            <Skeleton className="hidden sm:block h-11 w-28 rounded-full bg-gray-200/50" />
+            <Skeleton className="h-11 w-32 rounded-full bg-[#1a1a2e]/20" />
+          </div>
+        </div>
+
+        {/* Main Content Area Skeleton */}
+        <div className="bg-white/60 backdrop-blur-3xl border border-white/60 rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-2xl shadow-eatrivo-purple/5 min-h-[400px]">
+          <div className="mb-8">
+            <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton
+                  key={i}
+                  className="h-10 w-28 shrink-0 rounded-full bg-eatrivo-purple/10"
+                />
+              ))}
+            </div>
+          </div>
+          
+          <div className="space-y-8">
+             <div className="space-y-4">
+              <Skeleton className="h-6 w-32 rounded-full bg-white/50" />
+              <div className="flex gap-4 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-1">
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    className="h-40 w-[150px] shrink-0 rounded-[1.5rem] bg-white/50"
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-48 rounded-full bg-white/50" />
+              <div className="flex gap-4 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-1">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    className="h-40 w-[150px] shrink-0 rounded-[1.5rem] bg-white/50"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -165,18 +232,20 @@ export default function PantrySection({
             </div>
             {t("title")}
           </h1>
-          <p className="text-gray-500 mt-3 text-sm md:text-base font-medium max-w-lg">
-            {items.length === 0
-              ? t("subtitle_empty")
-              : t(
-                  items.length === 1
-                    ? "subtitle_count_one"
-                    : items.length < 5
-                      ? "subtitle_count_few"
-                      : "subtitle_count_many",
-                  { count: items.length },
-                )}
-          </p>
+          <div className="mt-3">
+            <p className="text-gray-500 text-sm md:text-base font-medium max-w-lg">
+              {items.length === 0
+                ? t("subtitle_empty")
+                : t(
+                    items.length === 1
+                      ? "subtitle_count_one"
+                      : items.length < 5
+                        ? "subtitle_count_few"
+                        : "subtitle_count_many",
+                    { count: items.length },
+                  )}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar sm:overflow-visible pb-2 sm:pb-0">
           {pendingDrafts.length > 0 ? (
@@ -309,7 +378,18 @@ export default function PantrySection({
 
       {/* Main Content Area */}
       <div className="bg-white/60 backdrop-blur-3xl border border-white/60 rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-2xl shadow-eatrivo-purple/5 min-h-[400px]">
-        {restockItems.length > 0 && !isLoadingRestockItems ? (
+        {isLoadingRestockItems ? (
+          <div className="mb-8">
+            <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton
+                  key={i}
+                  className="h-10 w-28 shrink-0 rounded-full bg-eatrivo-purple/10"
+                />
+              ))}
+            </div>
+          </div>
+        ) : restockItems.length > 0 ? (
           <div className="mb-8">
             <PantryRestockStrip
               items={restockItems}
@@ -319,32 +399,7 @@ export default function PantrySection({
           </div>
         ) : null}
 
-        {isLoading ? (
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <Skeleton className="h-6 w-32 rounded-full bg-white/50" />
-              <div className="flex gap-4 overflow-hidden">
-                {[...Array(4)].map((_, i) => (
-                  <Skeleton
-                    key={i}
-                    className="h-40 w-[150px] shrink-0 rounded-[1.5rem] bg-white/50"
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="space-y-4">
-              <Skeleton className="h-6 w-48 rounded-full bg-white/50" />
-              <div className="flex gap-4 overflow-hidden">
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton
-                    key={i}
-                    className="h-40 w-[150px] shrink-0 rounded-[1.5rem] bg-white/50"
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : items.length === 0 ? (
+        {items.length === 0 ? (
           /* Empty state */
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}

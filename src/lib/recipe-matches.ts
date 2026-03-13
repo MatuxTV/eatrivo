@@ -25,6 +25,7 @@ import {
   buildRecipeIngredientPantryComparison,
   type RecipeIngredientPantryComparison,
 } from "@/lib/recipe-quantity-comparison";
+import { guessFoodCategory } from "@/lib/units";
 import {
   isLessSpecificIngredientMatch,
   pantryKeySatisfiesRecipeKey,
@@ -527,6 +528,12 @@ async function analyzeRecipeMatchesForUserProfile(
             localizedIngredient?.displayName ??
             row.ingredientName ??
             row.displayName,
+          category: guessFoodCategory(
+            localizedIngredient?.ingredientName ??
+              localizedIngredient?.displayName ??
+              row.ingredientName ??
+              row.displayName,
+          ),
           recipeIngredientId: row.recipeIngredientId,
           amount: formatRecipeIngredientAmount(
             row.quantity,
@@ -582,6 +589,7 @@ async function analyzeRecipeMatchesForUserProfile(
       ingredientItems.push({
         name: ingredientName,
         amount: ingredientMeta.amount,
+        category: ingredientMeta.category,
         quantityValue:
           ingredientMeta.quantity === null
             ? null

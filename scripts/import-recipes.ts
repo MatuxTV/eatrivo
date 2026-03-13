@@ -20,8 +20,8 @@ interface StructuredRecipeIngredient {
   ingredient_key: string | null;
   quantity: number | null;
   unit: string | null;
-  optional: boolean;
-  sort_order: number;
+  optional?: boolean;
+  sort_order?: number;
 }
 
 interface RecipeTranslationJson {
@@ -41,8 +41,8 @@ interface MultilingualRecipeIngredient {
   ingredient_key: string | null;
   quantity: number | null;
   unit: string | null;
-  optional: boolean;
-  sort_order: number;
+  optional?: boolean;
+  sort_order?: number;
   translations: Record<string, IngredientTranslationJson>;
 }
 
@@ -270,13 +270,19 @@ function assertStructuredIngredient(
     throw new Error(`Recipe \"${recipeName}\" has ingredient with invalid unit.`);
   }
 
-  if (typeof ingredient.optional !== "boolean") {
+  if (
+    ingredient.optional !== undefined &&
+    typeof ingredient.optional !== "boolean"
+  ) {
     throw new Error(
       `Recipe \"${recipeName}\" has ingredient with invalid optional flag.`,
     );
   }
 
-  if (!Number.isInteger(ingredient.sort_order) || ingredient.sort_order < 0) {
+  if (
+    ingredient.sort_order !== undefined &&
+    (!Number.isInteger(ingredient.sort_order) || ingredient.sort_order < 0)
+  ) {
     throw new Error(
       `Recipe \"${recipeName}\" has ingredient with invalid sort_order.`,
     );
@@ -306,13 +312,19 @@ function assertMultilingualIngredient(
     throw new Error(`Recipe \"${recipeKey}\" has ingredient with invalid unit.`);
   }
 
-  if (typeof ingredient.optional !== "boolean") {
+  if (
+    ingredient.optional !== undefined &&
+    typeof ingredient.optional !== "boolean"
+  ) {
     throw new Error(
       `Recipe \"${recipeKey}\" has ingredient with invalid optional flag.`,
     );
   }
 
-  if (!Number.isInteger(ingredient.sort_order) || ingredient.sort_order < 0) {
+  if (
+    ingredient.sort_order !== undefined &&
+    (!Number.isInteger(ingredient.sort_order) || ingredient.sort_order < 0)
+  ) {
     throw new Error(
       `Recipe \"${recipeKey}\" has ingredient with invalid sort_order.`,
     );
@@ -388,8 +400,8 @@ function normalizeRecipeIngredients(
         ingredientKey: ingredient.ingredient_key,
         quantity: ingredient.quantity !== null ? String(ingredient.quantity) : null,
         unit: ingredient.unit,
-        optional: ingredient.optional,
-        sortOrder: ingredient.sort_order,
+        optional: ingredient.optional ?? false,
+        sortOrder: ingredient.sort_order ?? index,
         translations: Object.entries(ingredient.translations).map(
           ([locale, translation]) => ({
             locale,
@@ -410,8 +422,8 @@ function normalizeRecipeIngredients(
         quantity:
           ingredient.quantity !== null ? String(ingredient.quantity) : null,
         unit: ingredient.unit,
-        optional: ingredient.optional,
-        sortOrder: ingredient.sort_order,
+        optional: ingredient.optional ?? false,
+        sortOrder: ingredient.sort_order ?? index,
         translations: [
           {
             locale: defaultLocale,

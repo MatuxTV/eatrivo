@@ -258,7 +258,7 @@ export const userInfoTable = pgTable("user_info", {
     .notNull(),
 });
 
-// Updated shopping lists table for PDF files
+// Shopping list parent record
 export const shoppingLists = pgTable("shopping_lists", {
   id: uuid("id").primaryKey().defaultRandom(),
   userProfileId: uuid("userProfileId")
@@ -268,12 +268,35 @@ export const shoppingLists = pgTable("shopping_lists", {
   description: text("description"),
   weekStartDate: timestamp("weekStartDate").notNull(),
   weekEndDate: timestamp("weekEndDate").notNull(),
-  markdownContent: text("markdownContent").notNull(),
   status: shoppingListStatusEnum("status").default("active").notNull(),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const shoppingListItems = pgTable("shopping_list_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  shoppingListId: uuid("shoppingListId")
+    .notNull()
+    .references(() => shoppingLists.id, { onDelete: "cascade" }),
+  sortOrder: integer("sort_order").notNull(),
+  name: text("name").notNull(),
+  ingredientName: text("ingredient_name"),
+  ingredientKey: text("ingredient_key"),
+  ingredientSpecificKey: text("ingredient_specific_key"),
+  quantity: numeric("quantity", { precision: 8, scale: 3 }),
+  unit: text("unit"),
+  amountLabel: text("amount_label"),
+  category: text("category"),
+  isChecked: boolean("is_checked").default(false).notNull(),
+  checkedAt: timestamp("checked_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });

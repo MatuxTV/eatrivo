@@ -1,28 +1,3159 @@
-
-
 {
   "recipes": [
     {
-      "external_key": "breakfast-strawberry-protein-pancakes",
-      "default_locale": "en",
+      "external_key": "breakfast-scrambled-tofu-turmeric",
+      "default_locale": "sk",
       "category_key": "breakfast",
-      "diet_tags": [
-        "vegetarian",
-        "gluten-free",
-        "high-protein"
+      "diet_tags": ["vegan", "high-protein"],
+      "restriction_flags": ["contains-soy"],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 15,
+      "nutrition_per_serving": { "calories": 280, "protein_g": 22, "carbohydrates_g": 8, "fat_g": 16 },
+      "ingredients": [
+        { "ingredient_key": "tofu-firm", "quantity": 200, "unit": "g", "translations": { "sk": { "display_name": "200g pevného tofu", "ingredient_name": "tofu" } } },
+        { "ingredient_key": "turmeric", "quantity": 0.5, "unit": "tsp", "translations": { "sk": { "display_name": "1/2 čl kurkumy", "ingredient_name": "kurkuma" } } },
+        { "ingredient_key": "black-salt", "quantity": 1, "unit": "pinch", "translations": { "sk": { "display_name": "štipka čiernej soli (Kala Namak)", "ingredient_name": "čierna soľ" } } }
       ],
-      "restriction_flags": [
-        "contains-dairy",
-        "contains-eggs"
-      ],
+      "translations": {
+        "sk": { "name": "Tofu praženica s kurkumou", "instructions": ["Tofu rozdrobte v rukách na panvicu.", "Pridajte kurkumu, čiernu soľ pre vajíčkovú chuť a opekajte 5-10 minút.", "Podávajte s kváskovým chlebom."] }
+      }
+    },
+    {
+      "external_key": "lunch-creamy-chicken-pasta",
+      "default_locale": "sk",
+      "category_key": "lunch",
+      "diet_tags": ["high-protein"],
+      "restriction_flags": ["contains-gluten", "contains-dairy"],
       "servings": 2,
       "prep_time_min": 10,
       "total_time_min": 25,
+      "nutrition_per_serving": { "calories": 520, "protein_g": 45, "carbohydrates_g": 55, "fat_g": 12 },
+      "ingredients": [
+        { "ingredient_key": "chicken-breast", "quantity": 300, "unit": "g", "translations": { "sk": { "display_name": "300g kuracích pŕs", "ingredient_name": "kuracie prsia" } } },
+        { "ingredient_key": "pasta-whole-grain", "quantity": 120, "unit": "g", "translations": { "sk": { "display_name": "120g celozrnných cestovín", "ingredient_name": "cestoviny" } } },
+        { "ingredient_key": "cooking-cream-light", "quantity": 100, "unit": "ml", "translations": { "sk": { "display_name": "100ml smotany na varenie 10%", "ingredient_name": "smotana" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Krémové kuracie cestoviny", "instructions": ["Cestoviny uvarte al dente.", "Kuracie prsia orestujte na panvici, pridajte korenie a podlejte smotanou.", "Zmiešajte s cestovinami a trochou vody z cestovín pre krémovú textúru."] }
+      }
+    },
+    {
+      "external_key": "snack-protein-peanut-butter-bites",
+      "default_locale": "sk",
+      "category_key": "snack",
+      "diet_tags": ["vegetarian"],
+      "restriction_flags": ["contains-nuts"],
+      "servings": 10,
+      "prep_time_min": 15,
+      "total_time_min": 15,
+      "nutrition_per_serving": { "calories": 110, "protein_g": 6, "carbohydrates_g": 8, "fat_g": 7 },
+      "ingredients": [
+        { "ingredient_key": "peanut-butter", "quantity": 100, "unit": "g", "translations": { "sk": { "display_name": "100g arašidového masla", "ingredient_name": "arašidové maslo" } } },
+        { "ingredient_key": "oat-flakes", "quantity": 80, "unit": "g", "translations": { "sk": { "display_name": "80g jemných vločiek", "ingredient_name": "ovsené vločky" } } },
+        { "ingredient_key": "honey", "quantity": 2, "unit": "tbsp", "translations": { "sk": { "display_name": "2 PL medu", "ingredient_name": "med" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Arašidové proteínové guličky", "instructions": ["Všetky ingrediencie zmiešajte v miske.", "Tvarujte malé guličky.", "Nechajte stuhnúť v chladničke."] }
+      }
+    },
+    {
+      "external_key": "dinner-tuna-salad-with-egg",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["low-carb", "high-protein"],
+      "restriction_flags": ["contains-eggs", "contains-fish"],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 10,
+      "nutrition_per_serving": { "calories": 310, "protein_g": 32, "carbohydrates_g": 5, "fat_g": 18 },
+      "ingredients": [
+        { "ingredient_key": "canned-tuna", "quantity": 1, "unit": "ks", "translations": { "sk": { "display_name": "1 konzerva tuniaka vo vlastnej šťave", "ingredient_name": "tuniak" } } },
+        { "ingredient_key": "egg-boiled", "quantity": 2, "unit": "ks", "translations": { "sk": { "display_name": "2 vajcia natvrdo", "ingredient_name": "vajce" } } },
+        { "ingredient_key": "mixed-greens", "quantity": 100, "unit": "g", "translations": { "sk": { "display_name": "100g listového šalátu", "ingredient_name": "šalát" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Tuniakový šalát s vajíčkom", "instructions": ["Šalát umyte a dajte do misy.", "Pridajte tuniaka a nakrájané vajíčka.", "Dochuťte citrónovou šťavou a olivovým olejom."] }
+      }
+    },
+    {
+      "external_key": "breakfast-overnight-chia-pudding",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": ["vegetarian", "high-fiber"],
+      "restriction_flags": ["contains-dairy"],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 480,
+      "nutrition_per_serving": { "calories": 340, "protein_g": 12, "carbohydrates_g": 25, "fat_g": 16 },
+      "ingredients": [
+        { "ingredient_key": "chia-seeds", "quantity": 3, "unit": "tbsp", "translations": { "sk": { "display_name": "3 PL chia semienok", "ingredient_name": "chia semienka" } } },
+        { "ingredient_key": "milk-almond", "quantity": 200, "unit": "ml", "translations": { "sk": { "display_name": "200ml mandľového mlieka", "ingredient_name": "mandľové mlieko" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Chia puding cez noc", "instructions": ["Semienka zmiešajte s mliekom v pohári.", "Poriadne premiešajte, aby nevznikli hrudky.", "Nechajte v chladničke aspoň 8 hodín."] }
+      }
+    },
+    {
+      "external_key": "lunch-beef-stir-fry",
+      "default_locale": "sk",
+      "category_key": "lunch",
+      "diet_tags": ["high-protein"],
+      "restriction_flags": ["contains-soy"],
+      "servings": 2,
+      "prep_time_min": 15,
+      "total_time_min": 25,
+      "nutrition_per_serving": { "calories": 480, "protein_g": 38, "carbohydrates_g": 40, "fat_g": 14 },
+      "ingredients": [
+        { "ingredient_key": "beef-steak", "quantity": 300, "unit": "g", "translations": { "sk": { "display_name": "300g hovädzieho mäsa na rezance", "ingredient_name": "hovädzie mäso" } } },
+        { "ingredient_key": "broccoli", "quantity": 200, "unit": "g", "translations": { "sk": { "display_name": "200g brokolicových ružičiek", "ingredient_name": "brokolica" } } },
+        { "ingredient_key": "rice", "quantity": 100, "unit": "g", "translations": { "sk": { "display_name": "100g ryže v suchom stave", "ingredient_name": "ryža" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Hovädzie Stir-fry s brokolicou", "instructions": ["Ryžu uvarte podľa návodu.", "Mäso sprudka orestujte na panvici, pridajte brokolicu a sójovú omáčku.", "Podávajte spolu v miske."] }
+      }
+    },
+    {
+      "external_key": "snack-greek-yogurt-with-nuts",
+      "default_locale": "sk",
+      "category_key": "snack",
+      "diet_tags": ["vegetarian", "high-protein"],
+      "restriction_flags": ["contains-dairy", "contains-nuts"],
+      "servings": 1,
+      "prep_time_min": 2,
+      "total_time_min": 2,
+      "nutrition_per_serving": { "calories": 250, "protein_g": 18, "carbohydrates_g": 12, "fat_g": 15 },
+      "ingredients": [
+        { "ingredient_key": "greek-yogurt-0", "quantity": 200, "unit": "g", "translations": { "sk": { "display_name": "200g gréckeho jogurtu 0%", "ingredient_name": "grécky jogurt" } } },
+        { "ingredient_key": "walnuts", "quantity": 20, "unit": "g", "translations": { "sk": { "display_name": "20g vlašských orechov", "ingredient_name": "vlašské orechy" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Grécky jogurt s orechmi", "instructions": ["Do misky dajte jogurt.", "Posypte orechmi a podľa chuti pridajte škoricu."] }
+      }
+    },
+    {
+      "external_key": "dinner-baked-salmon-asparagus",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["keto", "high-protein"],
+      "restriction_flags": ["contains-fish"],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": { "calories": 390, "protein_g": 34, "carbohydrates_g": 6, "fat_g": 24 },
+      "ingredients": [
+        { "ingredient_key": "salmon-fillet", "quantity": 180, "unit": "g", "translations": { "sk": { "display_name": "180g fileta z lososa", "ingredient_name": "losos" } } },
+        { "ingredient_key": "asparagus", "quantity": 150, "unit": "g", "translations": { "sk": { "display_name": "150g zelenej špargle", "ingredient_name": "špargľa" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Pečený losos so špargľou", "instructions": ["Lososa a špargľu dajte na plech.", "Pokvapkajte olejom, pridajte soľ a citrón.", "Pečte 12-15 minút na 200°C."] }
+      }
+    },
+    {
+      "external_key": "breakfast-egg-muffins",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": ["vegetarian", "low-carb"],
+      "restriction_flags": ["contains-eggs", "contains-dairy"],
+      "servings": 3,
+      "prep_time_min": 10,
+      "total_time_min": 30,
+      "nutrition_per_serving": { "calories": 210, "protein_g": 16, "carbohydrates_g": 4, "fat_g": 14 },
+      "ingredients": [
+        { "ingredient_key": "egg", "quantity": 6, "unit": "ks", "translations": { "sk": { "display_name": "6 vajec", "ingredient_name": "vajce" } } },
+        { "ingredient_key": "bell-pepper", "quantity": 1, "unit": "ks", "translations": { "sk": { "display_name": "1 paprika", "ingredient_name": "paprika" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Vajíčkové muffiny so zeleninou", "instructions": ["Vajíčka rozšľahajte a primiešajte nakrájanú papriku.", "Zmes nalejte do silikónových foriem na muffiny.", "Pečte 20 minút na 180°C."] }
+      }
+    },
+    {
+      "external_key": "lunch-turkey-wrap-hummus",
+      "default_locale": "sk",
+      "category_key": "lunch",
+      "diet_tags": [],
+      "restriction_flags": ["contains-gluten"],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 5,
+      "nutrition_per_serving": { "calories": 410, "protein_g": 28, "carbohydrates_g": 45, "fat_g": 12 },
+      "ingredients": [
+        { "ingredient_key": "tortilla-whole", "quantity": 1, "unit": "ks", "translations": { "sk": { "display_name": "1 celozrnná tortilla", "ingredient_name": "tortilla" } } },
+        { "ingredient_key": "hummus", "quantity": 2, "unit": "tbsp", "translations": { "sk": { "display_name": "2 PL hummusu", "ingredient_name": "hummus" } } },
+        { "ingredient_key": "turkey-slices", "quantity": 80, "unit": "g", "translations": { "sk": { "display_name": "80g morčacej šunky", "ingredient_name": "morčacia šunka" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Morčací wrap s hummusom", "instructions": ["Tortillu natrite hummusom.", "Pridajte šunku a zeleninu podľa chuti.", "Pevne zaviňte."] }
+      }
+    },
+    {
+      "external_key": "dinner-cottage-cheese-pancakes-salty",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["vegetarian", "high-protein"],
+      "restriction_flags": ["contains-dairy", "contains-eggs"],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 15,
+      "nutrition_per_serving": { "calories": 350, "protein_g": 30, "carbohydrates_g": 15, "fat_g": 18 },
+      "ingredients": [
+        { "ingredient_key": "cottage-cheese", "quantity": 200, "unit": "g", "translations": { "sk": { "display_name": "200g cottage cheese", "ingredient_name": "cottage cheese" } } },
+        { "ingredient_key": "oat-flour", "quantity": 30, "unit": "g", "translations": { "sk": { "display_name": "30g ovsenej múky", "ingredient_name": "ovsená múka" } } },
+        { "ingredient_key": "egg", "quantity": 1, "unit": "ks", "translations": { "sk": { "display_name": "1 vajce", "ingredient_name": "vajce" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Slané cottage lievance", "instructions": ["Všetko zmiešajte a pridajte soľ a bylinky.", "Opekajte na panvici malé lievance.", "Podávajte s čerstvou zeleninou."] }
+      }
+    },
+    {
+      "external_key": "snack-apple-with-almond-butter",
+      "default_locale": "sk",
+      "category_key": "snack",
+      "diet_tags": ["vegan", "vegetarian"],
+      "restriction_flags": ["contains-nuts"],
+      "servings": 1,
+      "prep_time_min": 2,
+      "total_time_min": 2,
+      "nutrition_per_serving": { "calories": 220, "protein_g": 4, "carbohydrates_g": 24, "fat_g": 14 },
+      "ingredients": [
+        { "ingredient_key": "apple", "quantity": 1, "unit": "ks", "translations": { "sk": { "display_name": "1 veľké jablko", "ingredient_name": "jablko" } } },
+        { "ingredient_key": "almond-butter", "quantity": 1, "unit": "tbsp", "translations": { "sk": { "display_name": "1 PL mandľového masla", "ingredient_name": "mandľové maslo" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Jablko s mandľovým maslom", "instructions": ["Jablko nakrájajte na plátky.", "Každý plátok potrite trochou masla."] }
+      }
+    },
+    {
+      "external_key": "lunch-lentil-dahl",
+      "default_locale": "sk",
+      "category_key": "lunch",
+      "diet_tags": ["vegan", "high-fiber"],
+      "restriction_flags": [],
+      "servings": 3,
+      "prep_time_min": 10,
+      "total_time_min": 30,
+      "nutrition_per_serving": { "calories": 320, "protein_g": 18, "carbohydrates_g": 48, "fat_g": 6 },
+      "ingredients": [
+        { "ingredient_key": "red-lentils", "quantity": 200, "unit": "g", "translations": { "sk": { "display_name": "200g červenej šošovice", "ingredient_name": "šošovica" } } },
+        { "ingredient_key": "coconut-milk-light", "quantity": 200, "unit": "ml", "translations": { "sk": { "display_name": "200ml ľahkého kokosového mlieka", "ingredient_name": "kokosové mlieko" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Šošovicový dahl", "instructions": ["Šošovicu varte v mlieku a vode s kari korením.", "Varte do zmäknutia (cca 15 min).", "Podávajte s ryžou alebo naanom."] }
+      }
+    },
+    {
+      "external_key": "dinner-chicken-quesadilla",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": [],
+      "restriction_flags": ["contains-gluten", "contains-dairy"],
+      "servings": 1,
+      "prep_time_min": 10,
+      "total_time_min": 20,
+      "nutrition_per_serving": { "calories": 490, "protein_g": 36, "carbohydrates_g": 35, "fat_g": 22 },
+      "ingredients": [
+        { "ingredient_key": "tortilla", "quantity": 2, "unit": "ks", "translations": { "sk": { "display_name": "2 malé tortilly", "ingredient_name": "tortilla" } } },
+        { "ingredient_key": "cheese-cheddar", "quantity": 40, "unit": "g", "translations": { "sk": { "display_name": "40g čedaru", "ingredient_name": "syr" } } },
+        { "ingredient_key": "chicken-cooked", "quantity": 100, "unit": "g", "translations": { "sk": { "display_name": "100g vareného kuracieho mäsa", "ingredient_name": "kuracie mäso" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Kuracia quesadilla", "instructions": ["Mäso a syr dajte medzi dve tortilly.", "Opekajte na suchej panvici z oboch strán.", "Nakrájajte na trojuholníky."] }
+      }
+    },
+    {
+      "external_key": "breakfast-protein-smoothie-bowl",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": ["vegetarian", "high-protein"],
+      "restriction_flags": ["contains-dairy"],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 5,
+      "nutrition_per_serving": { "calories": 310, "protein_g": 26, "carbohydrates_g": 38, "fat_g": 6 },
+      "ingredients": [
+        { "ingredient_key": "frozen-berries", "quantity": 150, "unit": "g", "translations": { "sk": { "display_name": "150g mrazeného lesného ovocia", "ingredient_name": "ovocie" } } },
+        { "ingredient_key": "whey-protein-vanilla", "quantity": 30, "unit": "g", "translations": { "sk": { "display_name": "1 odmerka proteínu", "ingredient_name": "proteín" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Proteínová smoothie miska", "instructions": ["Všetko rozmixujte s trochou vody na hustý krém.", "Dajte do misky a ozdobte granolou."] }
+      }
+    },
+    {
+      "external_key": "lunch-cod-with-sweet-potatoes",
+      "default_locale": "sk",
+      "category_key": "lunch",
+      "diet_tags": ["high-protein"],
+      "restriction_flags": ["contains-fish"],
+      "servings": 1,
+      "prep_time_min": 10,
+      "total_time_min": 30,
+      "nutrition_per_serving": { "calories": 420, "protein_g": 35, "carbohydrates_g": 48, "fat_g": 8 },
+      "ingredients": [
+        { "ingredient_key": "cod-fillet", "quantity": 200, "unit": "g", "translations": { "sk": { "display_name": "200g tresky", "ingredient_name": "treska" } } },
+        { "ingredient_key": "sweet-potato", "quantity": 250, "unit": "g", "translations": { "sk": { "display_name": "250g sladkých zemiakov", "ingredient_name": "batáty" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Treska s batátmi", "instructions": ["Batáty nakrájajte na kocky a pečte v rúre.", "Tresku orestujte na panvici s bylinkovým maslom."] }
+      }
+    },
+    {
+      "external_key": "snack-cottage-cheese-with-veggies",
+      "default_locale": "sk",
+      "category_key": "snack",
+      "diet_tags": ["vegetarian", "low-carb"],
+      "restriction_flags": ["contains-dairy"],
+      "servings": 1,
+      "prep_time_min": 2,
+      "total_time_min": 2,
+      "nutrition_per_serving": { "calories": 180, "protein_g": 24, "carbohydrates_g": 6, "fat_g": 8 },
+      "ingredients": [
+        { "ingredient_key": "cottage-cheese", "quantity": 200, "unit": "g", "translations": { "sk": { "display_name": "200g cottage cheese", "ingredient_name": "cottage cheese" } } },
+        { "ingredient_key": "cucumber", "quantity": 100, "unit": "g", "translations": { "sk": { "display_name": "100g uhorky", "ingredient_name": "uhorka" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Cottage s uhorkou", "instructions": ["Nakrájajte uhorku a primiešajte ju do cottage cheese.", "Dochuťte čiernym korením."] }
+      }
+    },
+    {
+      "external_key": "dinner-zucchini-noodles-bolognese",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["low-carb", "high-protein"],
+      "restriction_flags": [],
+      "servings": 2,
+      "prep_time_min": 15,
+      "total_time_min": 35,
+      "nutrition_per_serving": { "calories": 380, "protein_g": 32, "carbohydrates_g": 14, "fat_g": 22 },
+      "ingredients": [
+        { "ingredient_key": "zucchini", "quantity": 2, "unit": "ks", "translations": { "sk": { "display_name": "2 cukety", "ingredient_name": "cuketa" } } },
+        { "ingredient_key": "minced-beef", "quantity": 300, "unit": "g", "translations": { "sk": { "display_name": "300g mletého hovädzieho", "ingredient_name": "mäso" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Cuketové rezance Bolognese", "instructions": ["Z cukety urobte škrabkou rezance.", "Mäso uvarte s paradajkovou omáčkou.", "Rezance len krátko prehrejte v omáčke."] }
+      }
+    },
+    {
+      "external_key": "breakfast-pancakes-banana-egg",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": ["vegetarian", "gluten-free"],
+      "restriction_flags": ["contains-eggs"],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 15,
+      "nutrition_per_serving": { "calories": 290, "protein_g": 14, "carbohydrates_g": 28, "fat_g": 11 },
+      "ingredients": [
+        { "ingredient_key": "banana", "quantity": 1, "unit": "ks", "translations": { "sk": { "display_name": "1 zrelý banán", "ingredient_name": "banán" } } },
+        { "ingredient_key": "egg", "quantity": 2, "unit": "ks", "translations": { "sk": { "display_name": "2 vajcia", "ingredient_name": "vajce" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Dvojzložkové banánové lievance", "instructions": ["Banán roztlačte a vyšľahajte s vajíčkami.", "Opekajte malé lievance na nepriľnavej panvici."] }
+      }
+    },
+    {
+      "external_key": "lunch-quinoa-salad-feta",
+      "default_locale": "sk",
+      "category_key": "lunch",
+      "diet_tags": ["vegetarian", "high-fiber"],
+      "restriction_flags": ["contains-dairy"],
+      "servings": 2,
+      "prep_time_min": 10,
+      "total_time_min": 25,
+      "nutrition_per_serving": { "calories": 410, "protein_g": 16, "carbohydrates_g": 52, "fat_g": 18 },
+      "ingredients": [
+        { "ingredient_key": "quinoa", "quantity": 120, "unit": "g", "translations": { "sk": { "display_name": "120g quinoe", "ingredient_name": "quinoa" } } },
+        { "ingredient_key": "feta-cheese", "quantity": 60, "unit": "g", "translations": { "sk": { "display_name": "60g syru feta", "ingredient_name": "feta" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Quinoa šalát s fetou", "instructions": ["Quinou uvarte a nechajte vychladnúť.", "Zmiešajte s nakrájanou zeleninou a fetou."] }
+      }
+    },
+    {
+      "external_key": "snack-edamame-beans-salty",
+      "default_locale": "sk",
+      "category_key": "snack",
+      "diet_tags": ["vegan", "high-protein"],
+      "restriction_flags": ["contains-soy"],
+      "servings": 1,
+      "prep_time_min": 2,
+      "total_time_min": 7,
+      "nutrition_per_serving": { "calories": 160, "protein_g": 14, "carbohydrates_g": 12, "fat_g": 8 },
+      "ingredients": [
+        { "ingredient_key": "edamame-frozen", "quantity": 150, "unit": "g", "translations": { "sk": { "display_name": "150g mrazených edamame strukov", "ingredient_name": "edamame" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Solené edamame struky", "instructions": ["Struky povarte 5 minút vo vriacej vode.", "Sceďte a posypte morskou soľou."] }
+      }
+    },
+    {
+      "external_key": "dinner-shrimp-garlic-pasta",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["high-protein"],
+      "restriction_flags": ["contains-gluten", "contains-crustaceans"],
+      "servings": 1,
+      "prep_time_min": 10,
+      "total_time_min": 20,
+      "nutrition_per_serving": { "calories": 450, "protein_g": 32, "carbohydrates_g": 58, "fat_g": 9 },
+      "ingredients": [
+        { "ingredient_key": "spaghetti", "quantity": 80, "unit": "g", "translations": { "sk": { "display_name": "80g špagiet", "ingredient_name": "špagety" } } },
+        { "ingredient_key": "shrimp", "quantity": 150, "unit": "g", "translations": { "sk": { "display_name": "150g kreviet", "ingredient_name": "krevety" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Cesnakové krevety s cestovinami", "instructions": ["Krevety orestujte na cesnaku a petržlenovej vňati.", "Zmiešajte s uvarenými špagetami."] }
+      }
+    },
+    {
+      "external_key": "breakfast-ricotta-toast-figs",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": ["vegetarian"],
+      "restriction_flags": ["contains-dairy", "contains-gluten"],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 5,
+      "nutrition_per_serving": { "calories": 280, "protein_g": 12, "carbohydrates_g": 35, "fat_g": 10 },
+      "ingredients": [
+        { "ingredient_key": "rye-bread", "quantity": 2, "unit": "slices", "translations": { "sk": { "display_name": "2 plátky ražného chleba", "ingredient_name": "chlieb" } } },
+        { "ingredient_key": "ricotta", "quantity": 60, "unit": "g", "translations": { "sk": { "display_name": "60g ricotty", "ingredient_name": "ricotta" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Ricotta toast s figami", "instructions": ["Chlieb opečte v hriankovači.", "Natrite ricottou a navrch dajte figy alebo med."] }
+      }
+    },
+    {
+      "external_key": "lunch-chicken-burrito-bowl",
+      "default_locale": "sk",
+      "category_key": "lunch",
+      "diet_tags": ["high-protein"],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 15,
+      "total_time_min": 15,
+      "nutrition_per_serving": { "calories": 520, "protein_g": 42, "carbohydrates_g": 48, "fat_g": 18 },
+      "ingredients": [
+        { "ingredient_key": "chicken-breast", "quantity": 150, "unit": "g", "translations": { "sk": { "display_name": "150g kuracích pŕs", "ingredient_name": "kuracie prsia" } } },
+        { "ingredient_key": "black-beans", "quantity": 50, "unit": "g", "translations": { "sk": { "display_name": "50g čiernej fazule", "ingredient_name": "fazuľa" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Kuracie Burrito Bowl", "instructions": ["Do misky dajte ryžu, mäso, fazuľu a kukuricu.", "Pridajte salsu a avokádo."] }
+      }
+    },
+    {
+      "external_key": "snack-protein-jelly",
+      "default_locale": "sk",
+      "category_key": "snack",
+      "diet_tags": ["low-carb", "high-protein"],
+      "restriction_flags": [],
+      "servings": 2,
+      "prep_time_min": 10,
+      "total_time_min": 120,
+      "nutrition_per_serving": { "calories": 120, "protein_g": 25, "carbohydrates_g": 2, "fat_g": 0 },
+      "ingredients": [
+        { "ingredient_key": "gelatin-powder", "quantity": 20, "unit": "g", "translations": { "sk": { "display_name": "20g želatíny", "ingredient_name": "želatína" } } },
+        { "ingredient_key": "syrup-zero", "quantity": 50, "unit": "ml", "translations": { "sk": { "display_name": "50ml zero sirupu", "ingredient_name": "sirup" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Domáce proteínové želé", "instructions": ["Želatínu pripravte podľa návodu s vodou a sirupom.", "Nechajte stuhnúť v chladničke."] }
+      }
+    },
+    {
+      "external_key": "dinner-grilled-halloumi-salad",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["vegetarian"],
+      "restriction_flags": ["contains-dairy"],
+      "servings": 1,
+      "prep_time_min": 10,
+      "total_time_min": 20,
+      "nutrition_per_serving": { "calories": 440, "protein_g": 22, "carbohydrates_g": 12, "fat_g": 34 },
+      "ingredients": [
+        { "ingredient_key": "halloumi", "quantity": 100, "unit": "g", "translations": { "sk": { "display_name": "100g syru Halloumi", "ingredient_name": "halloumi" } } },
+        { "ingredient_key": "cherry-tomatoes", "quantity": 100, "unit": "g", "translations": { "sk": { "display_name": "100g cherry paradajok", "ingredient_name": "paradajky" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Šalát s grilovaným Halloumi", "instructions": ["Halloumi opečte na panvici dozlatista.", "Podávajte na šaláte s paradajkami a dresingom."] }
+      }
+    },
+    {
+      "external_key": "breakfast-protein-french-toast",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": ["high-protein"],
+      "restriction_flags": ["contains-gluten", "contains-eggs"],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 15,
+      "nutrition_per_serving": { "calories": 380, "protein_g": 32, "carbohydrates_g": 42, "fat_g": 8 },
+      "ingredients": [
+        { "ingredient_key": "toast-bread", "quantity": 3, "unit": "slices", "translations": { "sk": { "display_name": "3 plátky toustového chleba", "ingredient_name": "chlieb" } } },
+        { "ingredient_key": "egg-whites", "quantity": 150, "unit": "ml", "translations": { "sk": { "display_name": "150ml vaječných bielkov", "ingredient_name": "bielka" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Fitness francúzsky toust", "instructions": ["Chlieb namočte v bielkach s proteínom a škoricou.", "Opekajte na panvici dozlatista."] }
+      }
+    },
+    {
+      "external_key": "lunch-salmon-poke-bowl",
+      "default_locale": "sk",
+      "category_key": "lunch",
+      "diet_tags": ["high-protein"],
+      "restriction_flags": ["contains-fish"],
+      "servings": 1,
+      "prep_time_min": 20,
+      "total_time_min": 20,
+      "nutrition_per_serving": { "calories": 510, "protein_g": 30, "carbohydrates_g": 55, "fat_g": 19 },
+      "ingredients": [
+        { "ingredient_key": "fresh-salmon", "quantity": 120, "unit": "g", "translations": { "sk": { "display_name": "120g čerstvého lososa", "ingredient_name": "losos" } } },
+        { "ingredient_key": "sushi-rice", "quantity": 150, "unit": "g", "translations": { "sk": { "display_name": "150g uvarenej ryže", "ingredient_name": "ryža" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Lososové Poke Bowl", "instructions": ["Ryžu dajte do misky.", "Pridajte lososa, edamame, mango a avokádo.", "Polejte sójovou omáčkou."] }
+      }
+    },
+    {
+      "external_key": "snack-roasted-chickpeas",
+      "default_locale": "sk",
+      "category_key": "snack",
+      "diet_tags": ["vegan"],
+      "restriction_flags": [],
+      "servings": 2,
+      "prep_time_min": 5,
+      "total_time_min": 40,
+      "nutrition_per_serving": { "calories": 210, "protein_g": 10, "carbohydrates_g": 30, "fat_g": 6 },
+      "ingredients": [
+        { "ingredient_key": "canned-chickpeas", "quantity": 1, "unit": "ks", "translations": { "sk": { "display_name": "1 konzerva cíceru", "ingredient_name": "cícer" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Chrumkavý pečený cícer", "instructions": ["Cícer sceďte, osušte a okoreňte paprikou.", "Pečte v rúre 30 minút na 200°C do chrumkava."] }
+      }
+    },
+    {
+      "external_key": "dinner-stuffed-bell-peppers-turkey",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["low-carb"],
+      "restriction_flags": [],
+      "servings": 2,
+      "prep_time_min": 15,
+      "total_time_min": 45,
+      "nutrition_per_serving": { "calories": 360, "protein_g": 34, "carbohydrates_g": 18, "fat_g": 15 },
+      "ingredients": [
+        { "ingredient_key": "bell-pepper-large", "quantity": 2, "unit": "ks", "translations": { "sk": { "display_name": "2 veľké papriky", "ingredient_name": "paprika" } } },
+        { "ingredient_key": "ground-turkey", "quantity": 300, "unit": "g", "translations": { "sk": { "display_name": "300g mletého morčacieho mäsa", "ingredient_name": "mäso" } } }
+      ],
+      "translations": {
+        "sk": { "name": "Plnená paprika s mletým mäsom", "instructions": ["Mäso orestujte a naplňte ním papriky.", "Pečte v rúre zalate paradajkovým pretlakom 30 minút."] }
+      }
+    },
+    {
+      "external_key": "breakfast-protein-oats-1",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
       "nutrition_per_serving": {
-        "calories": 276,
-        "protein_g": 24,
-        "carbohydrates_g": 22,
-        "fat_g": 11
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "oats",
+          "quantity": 60,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "60g oats",
+              "ingredient_name": "60g oats"
+            },
+            "sk": {
+              "display_name": "60 g ovsené vločky",
+              "ingredient_name": "60 g ovsené vločky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "milk",
+          "quantity": 200,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "200ml milk",
+              "ingredient_name": "200ml milk"
+            },
+            "sk": {
+              "display_name": "200 ml mlieko",
+              "ingredient_name": "200 ml mlieko"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vanilla-protein",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "30g vanilla protein",
+              "ingredient_name": "30g vanilla protein"
+            },
+            "sk": {
+              "display_name": "30 g vanilkový proteín",
+              "ingredient_name": "30 g vanilkový proteín"
+            }
+          }
+        },
+        {
+          "ingredient_key": "banana",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1 banana",
+              "ingredient_name": "1 banana"
+            },
+            "sk": {
+              "display_name": "1 banán",
+              "ingredient_name": "1 banán"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Breakfast Protein Oats",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Cook oats in milk.",
+            "Stir in protein powder.",
+            "Top with sliced banana."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Breakfast Protein Oats",
+          "category_label": "breakfast",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Uvar vločky v mlieku.",
+            "Primiešaj proteín.",
+            "Pridaj nakrájaný banán."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-protein-oats-2",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "oats",
+          "quantity": 60,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "60g oats",
+              "ingredient_name": "60g oats"
+            },
+            "sk": {
+              "display_name": "60 g ovsené vločky",
+              "ingredient_name": "60 g ovsené vločky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "milk",
+          "quantity": 200,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "200ml milk",
+              "ingredient_name": "200ml milk"
+            },
+            "sk": {
+              "display_name": "200 ml mlieko",
+              "ingredient_name": "200 ml mlieko"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vanilla-protein",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "30g vanilla protein",
+              "ingredient_name": "30g vanilla protein"
+            },
+            "sk": {
+              "display_name": "30 g vanilkový proteín",
+              "ingredient_name": "30 g vanilkový proteín"
+            }
+          }
+        },
+        {
+          "ingredient_key": "banana",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1 banana",
+              "ingredient_name": "1 banana"
+            },
+            "sk": {
+              "display_name": "1 banán",
+              "ingredient_name": "1 banán"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Breakfast Protein Oats",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Cook oats in milk.",
+            "Stir in protein powder.",
+            "Top with sliced banana."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Breakfast Protein Oats",
+          "category_label": "breakfast",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Uvar vločky v mlieku.",
+            "Primiešaj proteín.",
+            "Pridaj nakrájaný banán."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-protein-oats-3",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "oats",
+          "quantity": 60,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "60g oats",
+              "ingredient_name": "60g oats"
+            },
+            "sk": {
+              "display_name": "60 g ovsené vločky",
+              "ingredient_name": "60 g ovsené vločky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "milk",
+          "quantity": 200,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "200ml milk",
+              "ingredient_name": "200ml milk"
+            },
+            "sk": {
+              "display_name": "200 ml mlieko",
+              "ingredient_name": "200 ml mlieko"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vanilla-protein",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "30g vanilla protein",
+              "ingredient_name": "30g vanilla protein"
+            },
+            "sk": {
+              "display_name": "30 g vanilkový proteín",
+              "ingredient_name": "30 g vanilkový proteín"
+            }
+          }
+        },
+        {
+          "ingredient_key": "banana",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1 banana",
+              "ingredient_name": "1 banana"
+            },
+            "sk": {
+              "display_name": "1 banán",
+              "ingredient_name": "1 banán"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Breakfast Protein Oats",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Cook oats in milk.",
+            "Stir in protein powder.",
+            "Top with sliced banana."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Breakfast Protein Oats",
+          "category_label": "breakfast",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Uvar vločky v mlieku.",
+            "Primiešaj proteín.",
+            "Pridaj nakrájaný banán."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-egg-avocado-toast-4",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "egg",
+          "quantity": 2,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "2 eggs",
+              "ingredient_name": "2 eggs"
+            },
+            "sk": {
+              "display_name": "2 vajcia",
+              "ingredient_name": "2 vajcia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "wholegrain-bread",
+          "quantity": 2,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "2 slices wholegrain bread",
+              "ingredient_name": "2 slices wholegrain bread"
+            },
+            "sk": {
+              "display_name": "2 krajce celozrnného chleba",
+              "ingredient_name": "2 krajce celozrnného chleba"
+            }
+          }
+        },
+        {
+          "ingredient_key": "avocado",
+          "quantity": 0.5,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1/2 avocado",
+              "ingredient_name": "1/2 avocado"
+            },
+            "sk": {
+              "display_name": "1/2 avokáda",
+              "ingredient_name": "1/2 avokáda"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Breakfast Egg Avocado Toast",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Toast the bread.",
+            "Cook eggs on a pan.",
+            "Serve with sliced avocado."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Breakfast Egg Avocado Toast",
+          "category_label": "breakfast",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Opeč chlieb.",
+            "Urob vajcia na panvici.",
+            "Podávaj s avokádom."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-egg-avocado-toast-5",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "egg",
+          "quantity": 2,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "2 eggs",
+              "ingredient_name": "2 eggs"
+            },
+            "sk": {
+              "display_name": "2 vajcia",
+              "ingredient_name": "2 vajcia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "wholegrain-bread",
+          "quantity": 2,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "2 slices wholegrain bread",
+              "ingredient_name": "2 slices wholegrain bread"
+            },
+            "sk": {
+              "display_name": "2 krajce celozrnného chleba",
+              "ingredient_name": "2 krajce celozrnného chleba"
+            }
+          }
+        },
+        {
+          "ingredient_key": "avocado",
+          "quantity": 0.5,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1/2 avocado",
+              "ingredient_name": "1/2 avocado"
+            },
+            "sk": {
+              "display_name": "1/2 avokáda",
+              "ingredient_name": "1/2 avokáda"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Breakfast Egg Avocado Toast",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Toast the bread.",
+            "Cook eggs on a pan.",
+            "Serve with sliced avocado."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Breakfast Egg Avocado Toast",
+          "category_label": "breakfast",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Opeč chlieb.",
+            "Urob vajcia na panvici.",
+            "Podávaj s avokádom."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-egg-avocado-toast-6",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "egg",
+          "quantity": 2,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "2 eggs",
+              "ingredient_name": "2 eggs"
+            },
+            "sk": {
+              "display_name": "2 vajcia",
+              "ingredient_name": "2 vajcia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "wholegrain-bread",
+          "quantity": 2,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "2 slices wholegrain bread",
+              "ingredient_name": "2 slices wholegrain bread"
+            },
+            "sk": {
+              "display_name": "2 krajce celozrnného chleba",
+              "ingredient_name": "2 krajce celozrnného chleba"
+            }
+          }
+        },
+        {
+          "ingredient_key": "avocado",
+          "quantity": 0.5,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1/2 avocado",
+              "ingredient_name": "1/2 avocado"
+            },
+            "sk": {
+              "display_name": "1/2 avokáda",
+              "ingredient_name": "1/2 avokáda"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Breakfast Egg Avocado Toast",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Toast the bread.",
+            "Cook eggs on a pan.",
+            "Serve with sliced avocado."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Breakfast Egg Avocado Toast",
+          "category_label": "breakfast",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Opeč chlieb.",
+            "Urob vajcia na panvici.",
+            "Podávaj s avokádom."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-yogurt-fruit-bowl-7",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "greek-yogurt",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "200g Greek yogurt",
+              "ingredient_name": "200g Greek yogurt"
+            },
+            "sk": {
+              "display_name": "200 g grécky jogurt",
+              "ingredient_name": "200 g grécky jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "berries",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "100g berries",
+              "ingredient_name": "100g berries"
+            },
+            "sk": {
+              "display_name": "100 g bobuľové ovocie",
+              "ingredient_name": "100 g bobuľové ovocie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1 tbsp honey",
+              "ingredient_name": "1 tbsp honey"
+            },
+            "sk": {
+              "display_name": "1 PL med",
+              "ingredient_name": "1 PL med"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Breakfast Yogurt Fruit Bowl",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Add yogurt to bowl.",
+            "Top with berries.",
+            "Drizzle with honey."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Breakfast Yogurt Fruit Bowl",
+          "category_label": "breakfast",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Daj jogurt do misky.",
+            "Pridaj ovocie.",
+            "Polej medom."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-yogurt-fruit-bowl-8",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "greek-yogurt",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "200g Greek yogurt",
+              "ingredient_name": "200g Greek yogurt"
+            },
+            "sk": {
+              "display_name": "200 g grécky jogurt",
+              "ingredient_name": "200 g grécky jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "berries",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "100g berries",
+              "ingredient_name": "100g berries"
+            },
+            "sk": {
+              "display_name": "100 g bobuľové ovocie",
+              "ingredient_name": "100 g bobuľové ovocie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1 tbsp honey",
+              "ingredient_name": "1 tbsp honey"
+            },
+            "sk": {
+              "display_name": "1 PL med",
+              "ingredient_name": "1 PL med"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Breakfast Yogurt Fruit Bowl",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Add yogurt to bowl.",
+            "Top with berries.",
+            "Drizzle with honey."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Breakfast Yogurt Fruit Bowl",
+          "category_label": "breakfast",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Daj jogurt do misky.",
+            "Pridaj ovocie.",
+            "Polej medom."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-yogurt-fruit-bowl-9",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "greek-yogurt",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "200g Greek yogurt",
+              "ingredient_name": "200g Greek yogurt"
+            },
+            "sk": {
+              "display_name": "200 g grécky jogurt",
+              "ingredient_name": "200 g grécky jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "berries",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "100g berries",
+              "ingredient_name": "100g berries"
+            },
+            "sk": {
+              "display_name": "100 g bobuľové ovocie",
+              "ingredient_name": "100 g bobuľové ovocie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1 tbsp honey",
+              "ingredient_name": "1 tbsp honey"
+            },
+            "sk": {
+              "display_name": "1 PL med",
+              "ingredient_name": "1 PL med"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Breakfast Yogurt Fruit Bowl",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Add yogurt to bowl.",
+            "Top with berries.",
+            "Drizzle with honey."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Breakfast Yogurt Fruit Bowl",
+          "category_label": "breakfast",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Daj jogurt do misky.",
+            "Pridaj ovocie.",
+            "Polej medom."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-chicken-rice-10",
+      "default_locale": "en",
+      "category_key": "lunch",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "chicken-breast",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "150g chicken breast",
+              "ingredient_name": "150g chicken breast"
+            },
+            "sk": {
+              "display_name": "150 g kuracie prsia",
+              "ingredient_name": "150 g kuracie prsia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rice",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "120g cooked rice",
+              "ingredient_name": "120g cooked rice"
+            },
+            "sk": {
+              "display_name": "120 g ryža",
+              "ingredient_name": "120 g ryža"
+            }
+          }
+        },
+        {
+          "ingredient_key": "broccoli",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "100g broccoli",
+              "ingredient_name": "100g broccoli"
+            },
+            "sk": {
+              "display_name": "100 g brokolica",
+              "ingredient_name": "100 g brokolica"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Lunch Chicken Rice",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Cook rice.",
+            "Grill chicken.",
+            "Steam broccoli and serve together."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Lunch Chicken Rice",
+          "category_label": "lunch",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Uvar ryžu.",
+            "Opeč kuracie mäso.",
+            "Pridaj brokolicu."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-chicken-rice-11",
+      "default_locale": "en",
+      "category_key": "lunch",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "chicken-breast",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "150g chicken breast",
+              "ingredient_name": "150g chicken breast"
+            },
+            "sk": {
+              "display_name": "150 g kuracie prsia",
+              "ingredient_name": "150 g kuracie prsia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rice",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "120g cooked rice",
+              "ingredient_name": "120g cooked rice"
+            },
+            "sk": {
+              "display_name": "120 g ryža",
+              "ingredient_name": "120 g ryža"
+            }
+          }
+        },
+        {
+          "ingredient_key": "broccoli",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "100g broccoli",
+              "ingredient_name": "100g broccoli"
+            },
+            "sk": {
+              "display_name": "100 g brokolica",
+              "ingredient_name": "100 g brokolica"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Lunch Chicken Rice",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Cook rice.",
+            "Grill chicken.",
+            "Steam broccoli and serve together."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Lunch Chicken Rice",
+          "category_label": "lunch",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Uvar ryžu.",
+            "Opeč kuracie mäso.",
+            "Pridaj brokolicu."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-chicken-rice-12",
+      "default_locale": "en",
+      "category_key": "lunch",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "chicken-breast",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "150g chicken breast",
+              "ingredient_name": "150g chicken breast"
+            },
+            "sk": {
+              "display_name": "150 g kuracie prsia",
+              "ingredient_name": "150 g kuracie prsia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rice",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "120g cooked rice",
+              "ingredient_name": "120g cooked rice"
+            },
+            "sk": {
+              "display_name": "120 g ryža",
+              "ingredient_name": "120 g ryža"
+            }
+          }
+        },
+        {
+          "ingredient_key": "broccoli",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "100g broccoli",
+              "ingredient_name": "100g broccoli"
+            },
+            "sk": {
+              "display_name": "100 g brokolica",
+              "ingredient_name": "100 g brokolica"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Lunch Chicken Rice",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Cook rice.",
+            "Grill chicken.",
+            "Steam broccoli and serve together."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Lunch Chicken Rice",
+          "category_label": "lunch",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Uvar ryžu.",
+            "Opeč kuracie mäso.",
+            "Pridaj brokolicu."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-tuna-salad-13",
+      "default_locale": "en",
+      "category_key": "lunch",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "tuna",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "120g tuna",
+              "ingredient_name": "120g tuna"
+            },
+            "sk": {
+              "display_name": "120 g tuniak",
+              "ingredient_name": "120 g tuniak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lettuce",
+          "quantity": 80,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "lettuce",
+              "ingredient_name": "lettuce"
+            },
+            "sk": {
+              "display_name": "šalát",
+              "ingredient_name": "šalát"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1 tomato",
+              "ingredient_name": "1 tomato"
+            },
+            "sk": {
+              "display_name": "1 paradajka",
+              "ingredient_name": "1 paradajka"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Lunch Tuna Salad",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Mix tuna with vegetables.",
+            "Season to taste.",
+            "Serve fresh."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Lunch Tuna Salad",
+          "category_label": "lunch",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Zmiešaj tuniaka so zeleninou.",
+            "Osoľ podľa chuti.",
+            "Podávaj čerstvé."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-tuna-salad-14",
+      "default_locale": "en",
+      "category_key": "lunch",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "tuna",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "120g tuna",
+              "ingredient_name": "120g tuna"
+            },
+            "sk": {
+              "display_name": "120 g tuniak",
+              "ingredient_name": "120 g tuniak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lettuce",
+          "quantity": 80,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "lettuce",
+              "ingredient_name": "lettuce"
+            },
+            "sk": {
+              "display_name": "šalát",
+              "ingredient_name": "šalát"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1 tomato",
+              "ingredient_name": "1 tomato"
+            },
+            "sk": {
+              "display_name": "1 paradajka",
+              "ingredient_name": "1 paradajka"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Lunch Tuna Salad",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Mix tuna with vegetables.",
+            "Season to taste.",
+            "Serve fresh."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Lunch Tuna Salad",
+          "category_label": "lunch",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Zmiešaj tuniaka so zeleninou.",
+            "Osoľ podľa chuti.",
+            "Podávaj čerstvé."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-tuna-salad-15",
+      "default_locale": "en",
+      "category_key": "lunch",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "tuna",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "120g tuna",
+              "ingredient_name": "120g tuna"
+            },
+            "sk": {
+              "display_name": "120 g tuniak",
+              "ingredient_name": "120 g tuniak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lettuce",
+          "quantity": 80,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "lettuce",
+              "ingredient_name": "lettuce"
+            },
+            "sk": {
+              "display_name": "šalát",
+              "ingredient_name": "šalát"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1 tomato",
+              "ingredient_name": "1 tomato"
+            },
+            "sk": {
+              "display_name": "1 paradajka",
+              "ingredient_name": "1 paradajka"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Lunch Tuna Salad",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Mix tuna with vegetables.",
+            "Season to taste.",
+            "Serve fresh."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Lunch Tuna Salad",
+          "category_label": "lunch",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Zmiešaj tuniaka so zeleninou.",
+            "Osoľ podľa chuti.",
+            "Podávaj čerstvé."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-turkey-wrap-16",
+      "default_locale": "en",
+      "category_key": "lunch",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "tortilla",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "1 tortilla",
+              "ingredient_name": "1 tortilla"
+            },
+            "sk": {
+              "display_name": "1 tortilla",
+              "ingredient_name": "1 tortilla"
+            }
+          }
+        },
+        {
+          "ingredient_key": "turkey",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "120g turkey breast",
+              "ingredient_name": "120g turkey breast"
+            },
+            "sk": {
+              "display_name": "120 g morčacie mäso",
+              "ingredient_name": "120 g morčacie mäso"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lettuce",
+          "quantity": 40,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "lettuce",
+              "ingredient_name": "lettuce"
+            },
+            "sk": {
+              "display_name": "šalát",
+              "ingredient_name": "šalát"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Lunch Turkey Wrap",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Place ingredients on tortilla.",
+            "Roll wrap.",
+            "Serve."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Lunch Turkey Wrap",
+          "category_label": "lunch",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Daj suroviny na tortillu.",
+            "Zroluj wrap.",
+            "Podávaj."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-turkey-wrap-17",
+      "default_locale": "en",
+      "category_key": "lunch",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "tortilla",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "1 tortilla",
+              "ingredient_name": "1 tortilla"
+            },
+            "sk": {
+              "display_name": "1 tortilla",
+              "ingredient_name": "1 tortilla"
+            }
+          }
+        },
+        {
+          "ingredient_key": "turkey",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "120g turkey breast",
+              "ingredient_name": "120g turkey breast"
+            },
+            "sk": {
+              "display_name": "120 g morčacie mäso",
+              "ingredient_name": "120 g morčacie mäso"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lettuce",
+          "quantity": 40,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "lettuce",
+              "ingredient_name": "lettuce"
+            },
+            "sk": {
+              "display_name": "šalát",
+              "ingredient_name": "šalát"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Lunch Turkey Wrap",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Place ingredients on tortilla.",
+            "Roll wrap.",
+            "Serve."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Lunch Turkey Wrap",
+          "category_label": "lunch",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Daj suroviny na tortillu.",
+            "Zroluj wrap.",
+            "Podávaj."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-turkey-wrap-18",
+      "default_locale": "en",
+      "category_key": "lunch",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "tortilla",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "1 tortilla",
+              "ingredient_name": "1 tortilla"
+            },
+            "sk": {
+              "display_name": "1 tortilla",
+              "ingredient_name": "1 tortilla"
+            }
+          }
+        },
+        {
+          "ingredient_key": "turkey",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "120g turkey breast",
+              "ingredient_name": "120g turkey breast"
+            },
+            "sk": {
+              "display_name": "120 g morčacie mäso",
+              "ingredient_name": "120 g morčacie mäso"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lettuce",
+          "quantity": 40,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "lettuce",
+              "ingredient_name": "lettuce"
+            },
+            "sk": {
+              "display_name": "šalát",
+              "ingredient_name": "šalát"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Lunch Turkey Wrap",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Place ingredients on tortilla.",
+            "Roll wrap.",
+            "Serve."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Lunch Turkey Wrap",
+          "category_label": "lunch",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Daj suroviny na tortillu.",
+            "Zroluj wrap.",
+            "Podávaj."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-salmon-potatoes-19",
+      "default_locale": "en",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "salmon",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "150g salmon",
+              "ingredient_name": "150g salmon"
+            },
+            "sk": {
+              "display_name": "150 g losos",
+              "ingredient_name": "150 g losos"
+            }
+          }
+        },
+        {
+          "ingredient_key": "potato",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "200g potatoes",
+              "ingredient_name": "200g potatoes"
+            },
+            "sk": {
+              "display_name": "200 g zemiaky",
+              "ingredient_name": "200 g zemiaky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spinach",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "spinach",
+              "ingredient_name": "spinach"
+            },
+            "sk": {
+              "display_name": "špenát",
+              "ingredient_name": "špenát"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Dinner Salmon Potatoes",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Bake salmon.",
+            "Roast potatoes.",
+            "Serve with spinach."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Dinner Salmon Potatoes",
+          "category_label": "dinner",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Upeč lososa.",
+            "Upeč zemiaky.",
+            "Podávaj so špenátom."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-salmon-potatoes-20",
+      "default_locale": "en",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "salmon",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "150g salmon",
+              "ingredient_name": "150g salmon"
+            },
+            "sk": {
+              "display_name": "150 g losos",
+              "ingredient_name": "150 g losos"
+            }
+          }
+        },
+        {
+          "ingredient_key": "potato",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "200g potatoes",
+              "ingredient_name": "200g potatoes"
+            },
+            "sk": {
+              "display_name": "200 g zemiaky",
+              "ingredient_name": "200 g zemiaky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spinach",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "spinach",
+              "ingredient_name": "spinach"
+            },
+            "sk": {
+              "display_name": "špenát",
+              "ingredient_name": "špenát"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Dinner Salmon Potatoes",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Bake salmon.",
+            "Roast potatoes.",
+            "Serve with spinach."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Dinner Salmon Potatoes",
+          "category_label": "dinner",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Upeč lososa.",
+            "Upeč zemiaky.",
+            "Podávaj so špenátom."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-salmon-potatoes-21",
+      "default_locale": "en",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "salmon",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "150g salmon",
+              "ingredient_name": "150g salmon"
+            },
+            "sk": {
+              "display_name": "150 g losos",
+              "ingredient_name": "150 g losos"
+            }
+          }
+        },
+        {
+          "ingredient_key": "potato",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "200g potatoes",
+              "ingredient_name": "200g potatoes"
+            },
+            "sk": {
+              "display_name": "200 g zemiaky",
+              "ingredient_name": "200 g zemiaky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spinach",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "spinach",
+              "ingredient_name": "spinach"
+            },
+            "sk": {
+              "display_name": "špenát",
+              "ingredient_name": "špenát"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Dinner Salmon Potatoes",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Bake salmon.",
+            "Roast potatoes.",
+            "Serve with spinach."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Dinner Salmon Potatoes",
+          "category_label": "dinner",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Upeč lososa.",
+            "Upeč zemiaky.",
+            "Podávaj so špenátom."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-beef-rice-bowl-22",
+      "default_locale": "en",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "beef",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "150g beef",
+              "ingredient_name": "150g beef"
+            },
+            "sk": {
+              "display_name": "150 g hovädzie mäso",
+              "ingredient_name": "150 g hovädzie mäso"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rice",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "100g rice",
+              "ingredient_name": "100g rice"
+            },
+            "sk": {
+              "display_name": "100 g ryža",
+              "ingredient_name": "100 g ryža"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pepper",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "bell pepper",
+              "ingredient_name": "bell pepper"
+            },
+            "sk": {
+              "display_name": "paprika",
+              "ingredient_name": "paprika"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Dinner Beef Rice Bowl",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Cook rice.",
+            "Fry beef with pepper.",
+            "Combine and serve."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Dinner Beef Rice Bowl",
+          "category_label": "dinner",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Uvar ryžu.",
+            "Opeč mäso s paprikou.",
+            "Podávaj spolu."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-beef-rice-bowl-23",
+      "default_locale": "en",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "beef",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "150g beef",
+              "ingredient_name": "150g beef"
+            },
+            "sk": {
+              "display_name": "150 g hovädzie mäso",
+              "ingredient_name": "150 g hovädzie mäso"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rice",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "100g rice",
+              "ingredient_name": "100g rice"
+            },
+            "sk": {
+              "display_name": "100 g ryža",
+              "ingredient_name": "100 g ryža"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pepper",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "bell pepper",
+              "ingredient_name": "bell pepper"
+            },
+            "sk": {
+              "display_name": "paprika",
+              "ingredient_name": "paprika"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Dinner Beef Rice Bowl",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Cook rice.",
+            "Fry beef with pepper.",
+            "Combine and serve."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Dinner Beef Rice Bowl",
+          "category_label": "dinner",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Uvar ryžu.",
+            "Opeč mäso s paprikou.",
+            "Podávaj spolu."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-beef-rice-bowl-24",
+      "default_locale": "en",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "beef",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "150g beef",
+              "ingredient_name": "150g beef"
+            },
+            "sk": {
+              "display_name": "150 g hovädzie mäso",
+              "ingredient_name": "150 g hovädzie mäso"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rice",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "100g rice",
+              "ingredient_name": "100g rice"
+            },
+            "sk": {
+              "display_name": "100 g ryža",
+              "ingredient_name": "100 g ryža"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pepper",
+          "quantity": 1,
+          "unit": "pcs",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "bell pepper",
+              "ingredient_name": "bell pepper"
+            },
+            "sk": {
+              "display_name": "paprika",
+              "ingredient_name": "paprika"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Dinner Beef Rice Bowl",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Cook rice.",
+            "Fry beef with pepper.",
+            "Combine and serve."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Dinner Beef Rice Bowl",
+          "category_label": "dinner",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Uvar ryžu.",
+            "Opeč mäso s paprikou.",
+            "Podávaj spolu."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "snack-protein-shake-25",
+      "default_locale": "en",
+      "category_key": "snack",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "protein-powder",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "30g protein powder",
+              "ingredient_name": "30g protein powder"
+            },
+            "sk": {
+              "display_name": "30 g proteín",
+              "ingredient_name": "30 g proteín"
+            }
+          }
+        },
+        {
+          "ingredient_key": "milk",
+          "quantity": 250,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "250ml milk",
+              "ingredient_name": "250ml milk"
+            },
+            "sk": {
+              "display_name": "250 ml mlieko",
+              "ingredient_name": "250 ml mlieko"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Snack Protein Shake",
+          "category_label": "Snack",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Add ingredients to shaker.",
+            "Shake well.",
+            "Drink."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Snack Protein Shake",
+          "category_label": "snack",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Daj do shakeru.",
+            "Pretrep.",
+            "Vypi."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "snack-protein-shake-26",
+      "default_locale": "en",
+      "category_key": "snack",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "protein-powder",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "30g protein powder",
+              "ingredient_name": "30g protein powder"
+            },
+            "sk": {
+              "display_name": "30 g proteín",
+              "ingredient_name": "30 g proteín"
+            }
+          }
+        },
+        {
+          "ingredient_key": "milk",
+          "quantity": 250,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "250ml milk",
+              "ingredient_name": "250ml milk"
+            },
+            "sk": {
+              "display_name": "250 ml mlieko",
+              "ingredient_name": "250 ml mlieko"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Snack Protein Shake",
+          "category_label": "Snack",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Add ingredients to shaker.",
+            "Shake well.",
+            "Drink."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Snack Protein Shake",
+          "category_label": "snack",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Daj do shakeru.",
+            "Pretrep.",
+            "Vypi."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "snack-protein-shake-27",
+      "default_locale": "en",
+      "category_key": "snack",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "protein-powder",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "30g protein powder",
+              "ingredient_name": "30g protein powder"
+            },
+            "sk": {
+              "display_name": "30 g proteín",
+              "ingredient_name": "30 g proteín"
+            }
+          }
+        },
+        {
+          "ingredient_key": "milk",
+          "quantity": 250,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "250ml milk",
+              "ingredient_name": "250ml milk"
+            },
+            "sk": {
+              "display_name": "250 ml mlieko",
+              "ingredient_name": "250 ml mlieko"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Snack Protein Shake",
+          "category_label": "Snack",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Add ingredients to shaker.",
+            "Shake well.",
+            "Drink."
+          ],
+          "notes": ""
+        },
+        "sk": {
+          "name": "Snack Protein Shake",
+          "category_label": "snack",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Daj do shakeru.",
+            "Pretrep.",
+            "Vypi."
+          ],
+          "notes": ""
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "snack-cottage-bowl-28",
+      "default_locale": "en",
+      "category_key": "snack",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
       },
       "ingredients": [
         {
@@ -33,687 +3164,216 @@
           "sort_order": 0,
           "translations": {
             "en": {
-              "display_name": "1 cup (200g) cottage cheese",
-              "ingredient_name": "cottage cheese"
+              "display_name": "200g cottage cheese",
+              "ingredient_name": "200g cottage cheese"
             },
             "sk": {
-              "display_name": "200 g cottage syra",
-              "ingredient_name": "cottage syr"
+              "display_name": "200 g cottage syr",
+              "ingredient_name": "200 g cottage syr"
             }
           }
         },
         {
-          "ingredient_key": "egg",
-          "quantity": 2,
-          "unit": "ks",
+          "ingredient_key": "tomato",
+          "quantity": 1,
+          "unit": "pcs",
           "optional": false,
           "sort_order": 1,
           "translations": {
             "en": {
-              "display_name": "2 eggs",
-              "ingredient_name": "egg"
+              "display_name": "1 tomato",
+              "ingredient_name": "1 tomato"
             },
             "sk": {
-              "display_name": "2 vajcia",
-              "ingredient_name": "vajce"
-            }
-          }
-        },
-        {
-          "ingredient_key": "vanilla-whey-powder",
-          "quantity": 30,
-          "unit": "g",
-          "optional": false,
-          "sort_order": 2,
-          "translations": {
-            "en": {
-              "display_name": "1 scoop (30g) vanilla whey",
-              "ingredient_name": "vanilla whey powder"
-            },
-            "sk": {
-              "display_name": "30 g vanilkového srvátkového proteínu",
-              "ingredient_name": "vanilkový srvátkový proteín"
-            }
-          }
-        },
-        {
-          "ingredient_key": "coconut-oil",
-          "quantity": 15,
-          "unit": "ml",
-          "optional": false,
-          "sort_order": 3,
-          "translations": {
-            "en": {
-              "display_name": "1 tbsp coconut oil",
-              "ingredient_name": "coconut oil"
-            },
-            "sk": {
-              "display_name": "1 PL kokosového oleja",
-              "ingredient_name": "kokosový olej"
-            }
-          }
-        },
-        {
-          "ingredient_key": "strawberry",
-          "quantity": 150,
-          "unit": "g",
-          "optional": false,
-          "sort_order": 4,
-          "translations": {
-            "en": {
-              "display_name": "1 cup (150g) strawberries, chopped",
-              "ingredient_name": "strawberry"
-            },
-            "sk": {
-              "display_name": "150 g jahôd, nakrájaných",
-              "ingredient_name": "jahoda"
+              "display_name": "1 paradajka",
+              "ingredient_name": "1 paradajka"
             }
           }
         }
       ],
       "translations": {
         "en": {
-          "name": "Strawberry Protein Pancakes",
-          "category_label": "Breakfast",
+          "name": "Snack Cottage Bowl",
+          "category_label": "Snack",
           "serving_unit_label": "serving",
           "instructions": [
-            "Place the cottage cheese and eggs in a blender and blend until smooth. Add in the protein powder and blend again.",
-            "Heat a tsp of oil in a pan on medium-low heat. Pour 2 tbsp. of the batter into the pan. Cook until bubbles start to appear on the surface, then flip and cook for another minute until golden. Repeat until you use all the batter.",
-            "Serve with chopped strawberries."
+            "Place cottage cheese in bowl.",
+            "Add chopped tomato.",
+            "Season."
           ],
-          "notes": "You can substitute the whey protein for another flavor if you prefer."
+          "notes": ""
         },
         "sk": {
-          "name": "Jahodové proteínové lievance",
-          "category_label": "Raňajky",
+          "name": "Snack Cottage Bowl",
+          "category_label": "snack",
           "serving_unit_label": "porcia",
           "instructions": [
-            "Cottage syr a vajcia dajte do mixéra a rozmixujte dohladka. Pridajte proteínový prášok a znova rozmixujte.",
-            "Na panvici zohrejte 1 lyžičku oleja na stredne nízkej teplote. Nalejte do panvice časť cesta (asi 2 polievkové lyžice na lievanec). Opekajte, kým sa na povrchu nezačnú tvoriť bublinky, potom otočte a opekajte ďalšiu minútu dozlatista. Opakujte, kým neminiete všetko cesto.",
-            "Podávajte s nakrájanými jahodami."
+            "Daj cottage do misky.",
+            "Pridaj paradajku.",
+            "Dochut."
           ],
-          "notes": "Ak uprednostňujete inú príchuť, môžete vanilkový srvátkový proteín nahradiť za iný."
-        }
-      },
-      "meal_prep_friendly": false
-    },
-    {
-      "external_key": "breakfast-quick-protein-fruit-cake",
-      "default_locale": "sk",
-      "category_key": "breakfast",
-      "diet_tags": [
-        "vegetarian",
-        "high-protein"
-      ],
-      "restriction_flags": [
-        "contains-eggs",
-        "contains-dairy",
-        "contains-gluten"
-      ],
-      "servings": 1,
-      "prep_time_min": 5,
-      "total_time_min": 35,
-      "nutrition_per_serving": {
-        "calories": 400,
-        "protein_g": 35,
-        "carbohydrates_g": 46,
-        "fat_g": 9
-      },
-      "ingredients": [
-        {
-          "ingredient_key": "egg",
-          "quantity": 1,
-          "unit": "ks",
-          "optional": false,
-          "sort_order": 0,
-          "translations": {
-            "en": {
-              "display_name": "1 egg",
-              "ingredient_name": "egg"
-            },
-            "sk": {
-              "display_name": "1 vajce",
-              "ingredient_name": "vajce"
-            }
-          }
-        },
-        {
-          "ingredient_key": "greek-yogurt",
-          "quantity": 50,
-          "unit": "g",
-          "optional": false,
-          "sort_order": 1,
-          "translations": {
-            "en": {
-              "display_name": "50g Greek yogurt",
-              "ingredient_name": "Greek yogurt"
-            },
-            "sk": {
-              "display_name": "50 g gréckeho jogurtu",
-              "ingredient_name": "grécky jogurt"
-            }
-          }
-        },
-        {
-          "ingredient_key": "spelt-flour",
-          "quantity": 40,
-          "unit": "g",
-          "optional": false,
-          "sort_order": 2,
-          "translations": {
-            "en": {
-              "display_name": "40g spelt flour",
-              "ingredient_name": "spelt flour"
-            },
-            "sk": {
-              "display_name": "40 g špaldovej múky",
-              "ingredient_name": "špaldová múka"
-            }
-          }
-        },
-        {
-          "ingredient_key": "kefir",
-          "quantity": 80,
-          "unit": "ml",
-          "optional": false,
-          "sort_order": 3,
-          "translations": {
-            "en": {
-              "display_name": "80ml kefir",
-              "ingredient_name": "kefir"
-            },
-            "sk": {
-              "display_name": "80 ml kefíru",
-              "ingredient_name": "kefír"
-            }
-          }
-        },
-        {
-          "ingredient_key": "vanilla-protein",
-          "quantity": 20,
-          "unit": "g",
-          "optional": false,
-          "sort_order": 4,
-          "translations": {
-            "en": {
-              "display_name": "20g vanilla protein powder",
-              "ingredient_name": "vanilla protein powder"
-            },
-            "sk": {
-              "display_name": "20 g vanilkového proteínu",
-              "ingredient_name": "vanilkový proteín"
-            }
-          }
-        },
-        {
-          "ingredient_key": "baking-powder",
-          "quantity": 0.5,
-          "unit": "tsp",
-          "optional": false,
-          "sort_order": 5,
-          "translations": {
-            "en": {
-              "display_name": "1/2 tsp baking powder",
-              "ingredient_name": "baking powder"
-            },
-            "sk": {
-              "display_name": "1/2 čl kypriaceho prášku",
-              "ingredient_name": "kypriaci prášok"
-            }
-          }
-        },
-        {
-          "ingredient_key": "honey",
-          "quantity": 1,
-          "unit": "tsp",
-          "optional": false,
-          "sort_order": 6,
-          "translations": {
-            "en": {
-              "display_name": "1 tsp honey",
-              "ingredient_name": "honey"
-            },
-            "sk": {
-              "display_name": "1 čl medu",
-              "ingredient_name": "med"
-            }
-          }
-        },
-        {
-          "ingredient_key": "fruit",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 7,
-          "translations": {
-            "en": {
-              "display_name": "fruit of choice (e.g., berries, apple, or peach)",
-              "ingredient_name": "fruit"
-            },
-            "sk": {
-              "display_name": "ovocie podľa chuti (napr. bobuľové ovocie, jablko alebo broskyňa)",
-              "ingredient_name": "ovocie"
-            }
-          }
-        }
-      ],
-      "translations": {
-        "en": {
-          "name": "Quick Protein Fruit Cake",
-          "category_label": "Breakfast",
-          "serving_unit_label": "cake",
-          "instructions": [
-            "In a suitable bowl, thoroughly mix the egg, Greek yogurt, spelt flour, kefir, vanilla protein, baking powder, and honey. Mix well to create a smooth, lump-free batter.",
-            "Pour the batter into a small baking dish (for one serving) and generously top with your favorite fruit.",
-            "Place the cake in a preheated oven at 350°F (180°C) and bake for approximately 30 minutes."
-          ],
-          "notes": "You can easily double the ingredients to make a double batch."
-        },
-        "sk": {
-          "name": "Rýchly proteínový koláč s ovocím",
-          "category_label": "Raňajky",
-          "serving_unit_label": "koláčik",
-          "instructions": [
-            "Vo vhodnej miske dôkladne zmiešajte vajce, grécky jogurt, špaldovú múku, kefír, vanilkový proteín, kypriaci prášok a med. Poriadne premiešajte, aby vám vzniklo hladké cesto bez hrudiek.",
-            "Cesto prelejte do menšej zapekacej misky a navrch bohato poukladajte obľúbené ovocie.",
-            "Koláč vložte do rúry vyhriatej na 180°C a pečte približne 30 minút."
-          ],
-          "notes": "Môžete si rovno pripraviť dvojitú dávku jednoduchým vynásobením množstiev dvomi."
+          "notes": ""
         }
       },
       "meal_prep_friendly": true
     },
     {
-      "external_key": "breakfast-greek-yogurt-blueberry-pancakes",
+      "external_key": "snack-cottage-bowl-29",
       "default_locale": "en",
-      "category_key": "breakfast",
+      "category_key": "snack",
       "diet_tags": [
-        "vegetarian"
+        "high-protein"
       ],
-      "restriction_flags": [
-        "contains-dairy",
-        "contains-eggs",
-        "contains-gluten"
-      ],
+      "restriction_flags": [],
       "servings": 1,
       "prep_time_min": 5,
-      "total_time_min": 15,
+      "total_time_min": 20,
       "nutrition_per_serving": {
-        "calories": 0,
-        "protein_g": 0,
-        "carbohydrates_g": 0,
-        "fat_g": 0
+        "calories": 400,
+        "protein_g": 30,
+        "carbohydrates_g": 40,
+        "fat_g": 10
       },
       "ingredients": [
         {
-          "ingredient_key": "greek-yogurt",
-          "quantity": null,
-          "unit": null,
+          "ingredient_key": "cottage-cheese",
+          "quantity": 200,
+          "unit": "g",
           "optional": false,
           "sort_order": 0,
           "translations": {
             "en": {
-              "display_name": "Greek yogurt",
-              "ingredient_name": "Greek yogurt"
+              "display_name": "200g cottage cheese",
+              "ingredient_name": "200g cottage cheese"
             },
             "sk": {
-              "display_name": "grécky jogurt",
-              "ingredient_name": "grécky jogurt"
+              "display_name": "200 g cottage syr",
+              "ingredient_name": "200 g cottage syr"
             }
           }
         },
         {
-          "ingredient_key": "milk",
-          "quantity": null,
-          "unit": null,
+          "ingredient_key": "tomato",
+          "quantity": 1,
+          "unit": "pcs",
           "optional": false,
           "sort_order": 1,
           "translations": {
             "en": {
-              "display_name": "milk",
-              "ingredient_name": "milk"
+              "display_name": "1 tomato",
+              "ingredient_name": "1 tomato"
             },
             "sk": {
-              "display_name": "mlieko",
-              "ingredient_name": "mlieko"
-            }
-          }
-        },
-        {
-          "ingredient_key": "egg",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 2,
-          "translations": {
-            "en": {
-              "display_name": "eggs",
-              "ingredient_name": "egg"
-            },
-            "sk": {
-              "display_name": "vajcia",
-              "ingredient_name": "vajce"
-            }
-          }
-        },
-        {
-          "ingredient_key": "honey",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 3,
-          "translations": {
-            "en": {
-              "display_name": "honey",
-              "ingredient_name": "honey"
-            },
-            "sk": {
-              "display_name": "med",
-              "ingredient_name": "med"
-            }
-          }
-        },
-        {
-          "ingredient_key": "vanilla",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 4,
-          "translations": {
-            "en": {
-              "display_name": "vanilla",
-              "ingredient_name": "vanilla"
-            },
-            "sk": {
-              "display_name": "vanilka",
-              "ingredient_name": "vanilka"
-            }
-          }
-        },
-        {
-          "ingredient_key": "wheat-flour",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 5,
-          "translations": {
-            "en": {
-              "display_name": "flour",
-              "ingredient_name": "flour"
-            },
-            "sk": {
-              "display_name": "múka",
-              "ingredient_name": "múka"
-            }
-          }
-        },
-        {
-          "ingredient_key": "baking-powder",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 6,
-          "translations": {
-            "en": {
-              "display_name": "baking powder",
-              "ingredient_name": "baking powder"
-            },
-            "sk": {
-              "display_name": "kypriaci prášok",
-              "ingredient_name": "kypriaci prášok"
-            }
-          }
-        },
-        {
-          "ingredient_key": "salt",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 7,
-          "translations": {
-            "en": {
-              "display_name": "salt",
-              "ingredient_name": "salt"
-            },
-            "sk": {
-              "display_name": "soľ",
-              "ingredient_name": "soľ"
-            }
-          }
-        },
-        {
-          "ingredient_key": "blueberry",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 8,
-          "translations": {
-            "en": {
-              "display_name": "fresh blueberries",
-              "ingredient_name": "blueberry"
-            },
-            "sk": {
-              "display_name": "čerstvé čučoriedky",
-              "ingredient_name": "čučoriedka"
+              "display_name": "1 paradajka",
+              "ingredient_name": "1 paradajka"
             }
           }
         }
       ],
       "translations": {
         "en": {
-          "name": "Greek Yogurt Blueberry Pancakes",
-          "category_label": "Breakfast",
+          "name": "Snack Cottage Bowl",
+          "category_label": "Snack",
           "serving_unit_label": "serving",
           "instructions": [
-            "Whisk Greek yogurt, milk, eggs, honey, and vanilla until smooth.",
-            "Add flour, baking powder, and salt. Whisk gently without over mixing.",
-            "Fold in fresh blueberries, then cook three to four minutes per side on medium heat until golden and cooked through."
+            "Place cottage cheese in bowl.",
+            "Add chopped tomato.",
+            "Season."
           ],
-          "notes": "Exact quantities and nutritional values were not provided in the source text."
+          "notes": ""
         },
         "sk": {
-          "name": "Čučoriedkové lievance s gréckym jogurtom",
-          "category_label": "Raňajky",
+          "name": "Snack Cottage Bowl",
+          "category_label": "snack",
           "serving_unit_label": "porcia",
           "instructions": [
-            "Vymiešajte grécky jogurt, mlieko, vajcia, med a vanilku dohladka.",
-            "Pridajte múku, kypriaci prášok a soľ. Jemne premiešajte, aby ste cesto nepremiešali príliš.",
-            "Zľahka vmiešajte čerstvé čučoriedky a opekajte na strednom ohni tri až štyri minúty z každej strany, kým nebudú lievance zlatisté a prepečené."
+            "Daj cottage do misky.",
+            "Pridaj paradajku.",
+            "Dochut."
           ],
-          "notes": "Presné množstvá ingrediencií a nutričné hodnoty neboli v zdrojovom texte uvedené."
+          "notes": ""
         }
       },
-      "meal_prep_friendly": false
+      "meal_prep_friendly": true
     },
     {
-      "external_key": "snack-english-rolls-with-bacon-and-cheddar",
-      "default_locale": "sk",
+      "external_key": "snack-cottage-bowl-30",
+      "default_locale": "en",
       "category_key": "snack",
-      "diet_tags": [],
-      "restriction_flags": [
-        "contains-gluten",
-        "contains-dairy"
+      "diet_tags": [
+        "high-protein"
       ],
-      "servings": 8,
-      "prep_time_min": 65,
-      "total_time_min": 83,
+      "restriction_flags": [],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 20,
       "nutrition_per_serving": {
-        "calories": 350,
-        "protein_g": 12,
+        "calories": 400,
+        "protein_g": 30,
         "carbohydrates_g": 40,
-        "fat_g": 15
+        "fat_g": 10
       },
       "ingredients": [
         {
-          "ingredient_key": "wheat-flour",
-          "quantity": null,
-          "unit": null,
+          "ingredient_key": "cottage-cheese",
+          "quantity": 200,
+          "unit": "g",
           "optional": false,
           "sort_order": 0,
           "translations": {
             "en": {
-              "display_name": "flour",
-              "ingredient_name": "wheat flour"
+              "display_name": "200g cottage cheese",
+              "ingredient_name": "200g cottage cheese"
             },
             "sk": {
-              "display_name": "múka",
-              "ingredient_name": "pšeničná múka"
+              "display_name": "200 g cottage syr",
+              "ingredient_name": "200 g cottage syr"
             }
           }
         },
         {
-          "ingredient_key": "salt",
-          "quantity": null,
-          "unit": null,
+          "ingredient_key": "tomato",
+          "quantity": 1,
+          "unit": "pcs",
           "optional": false,
           "sort_order": 1,
           "translations": {
             "en": {
-              "display_name": "a little salt",
-              "ingredient_name": "salt"
+              "display_name": "1 tomato",
+              "ingredient_name": "1 tomato"
             },
             "sk": {
-              "display_name": "trošku soli",
-              "ingredient_name": "soľ"
-            }
-          }
-        },
-        {
-          "ingredient_key": "sugar",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 2,
-          "translations": {
-            "en": {
-              "display_name": "sugar",
-              "ingredient_name": "sugar"
-            },
-            "sk": {
-              "display_name": "cukor",
-              "ingredient_name": "cukor"
-            }
-          }
-        },
-        {
-          "ingredient_key": "water",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 3,
-          "translations": {
-            "en": {
-              "display_name": "lukewarm water",
-              "ingredient_name": "water"
-            },
-            "sk": {
-              "display_name": "vlažná voda",
-              "ingredient_name": "voda"
-            }
-          }
-        },
-        {
-          "ingredient_key": "yeast",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 4,
-          "translations": {
-            "en": {
-              "display_name": "yeast",
-              "ingredient_name": "yeast"
-            },
-            "sk": {
-              "display_name": "droždie",
-              "ingredient_name": "droždie"
-            }
-          }
-        },
-        {
-          "ingredient_key": "lard",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 5,
-          "translations": {
-            "en": {
-              "display_name": "melted lard",
-              "ingredient_name": "lard"
-            },
-            "sk": {
-              "display_name": "rozpustená masť",
-              "ingredient_name": "bravčová masť"
-            }
-          }
-        },
-        {
-          "ingredient_key": "bacon",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 6,
-          "translations": {
-            "en": {
-              "display_name": "bacon",
-              "ingredient_name": "bacon"
-            },
-            "sk": {
-              "display_name": "slanina",
-              "ingredient_name": "slanina"
-            }
-          }
-        },
-        {
-          "ingredient_key": "cheddar-cheese",
-          "quantity": null,
-          "unit": null,
-          "optional": false,
-          "sort_order": 7,
-          "translations": {
-            "en": {
-              "display_name": "cheddar",
-              "ingredient_name": "cheddar cheese"
-            },
-            "sk": {
-              "display_name": "čedar",
-              "ingredient_name": "syr čedar"
+              "display_name": "1 paradajka",
+              "ingredient_name": "1 paradajka"
             }
           }
         }
       ],
       "translations": {
         "en": {
-          "name": "English Rolls with Bacon and Cheddar",
+          "name": "Snack Cottage Bowl",
           "category_label": "Snack",
-          "serving_unit_label": "roll",
+          "serving_unit_label": "serving",
           "instructions": [
-            "Start by preparing the yeast dough. Mix a little salt into the flour, then add sugar, lukewarm water, and yeast.",
-            "Once the dough comes together, add melted lard, knead for 10 minutes, and then let it rise for 45 minutes.",
-            "Divide the risen dough into 8 pieces, let rest for another 10 minutes, then roll each into a triangle and roll up into a crescent roll.",
-            "Let the rolls rest for a little while on a baking sheet, and brush them with salted water before baking.",
-            "Bake in the oven for 8 minutes, then remove, top with bacon and cheddar, and bake for another 10 minutes."
+            "Place cottage cheese in bowl.",
+            "Add chopped tomato.",
+            "Season."
           ],
-          "notes": "Quantities of ingredients are not specified in the source recipe. Prepared to yield 8 rolls."
+          "notes": ""
         },
         "sk": {
-          "name": "Anglické rožky so slaninou a čedarom",
-          "category_label": "Snack",
-          "serving_unit_label": "rožok",
+          "name": "Snack Cottage Bowl",
+          "category_label": "snack",
+          "serving_unit_label": "porcia",
           "instructions": [
-            "Začneme prípravou kysnutého cesta. Do múky vmiešame trochu soli a potom pridáme cukor, vlažnú vodu a droždie.",
-            "Keď sa cesto spojí, pridáme rozpustenú masť, necháme 10 minút prepracovať a potom kysnúť 45 minút.",
-            "Vykysnuté cesto rozdelíme na 8 častí, necháme ešte 10 minút odpočívať a potom z každého vyvaľkáme trojuholník, ktorý zmotáme do rožka.",
-            "Na plechu necháme rožky ešte chvíľku odpočívať a pred pečením ich potrieme vodou so soľou.",
-            "Necháme ich v rúre 8 minút, potom ich vyberieme, pridáme slaninu a čedar a necháme ich dopiecť ďalších 10 minút."
+            "Daj cottage do misky.",
+            "Pridaj paradajku.",
+            "Dochut."
           ],
-          "notes": "Množstvá ingrediencií nie sú v pôvodnom recepte špecifikované. Odhadovaný výnos je 8 rožkov."
+          "notes": ""
         }
       },
       "meal_prep_friendly": true
     }
   ]
 }
-
-
-
-
