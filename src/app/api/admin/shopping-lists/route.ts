@@ -33,21 +33,13 @@ export async function POST(request: NextRequest) {
       weekStartDate,
       weekEndDate,
       status,
-      userProfileId,
-      markdownContent
+      userProfileId
     } = body;
 
     // Validate required fields
     if (!title || !weekStartDate || !weekEndDate || !userProfileId) {
       return NextResponse.json(
         { error: 'Missing required fields: title, weekStartDate, weekEndDate, userProfileId' },
-        { status: 400 }
-      );
-    }
-
-    if (!markdownContent || !markdownContent.trim()) {
-      return NextResponse.json(
-        { error: 'markdownContent is required' },
         { status: 400 }
       );
     }
@@ -69,7 +61,6 @@ export async function POST(request: NextRequest) {
         description: description || null,
         weekStartDate: new Date(weekStartDate),
         weekEndDate: new Date(weekEndDate),
-        markdownContent,
         status: status || 'active',
       })
       .returning();

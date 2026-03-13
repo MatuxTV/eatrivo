@@ -7,13 +7,11 @@ import {
   users,
   subscriptions,
   invoices,
-  shoppingLists,
   userProfiles,
-  mealPlans,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Analytics } from "@/lib/analytics";
-import { CacheService } from "@/lib/redis";
+
 import { sendRenewalReminderEmail } from "@/lib/emailService";
 
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
@@ -130,6 +128,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       | undefined;
 
     // Get user's profile before updating
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [userProfile] = await db
       .select()
       .from(userProfiles)

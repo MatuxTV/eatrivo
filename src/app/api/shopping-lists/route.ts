@@ -20,6 +20,7 @@ export async function GET(_request: NextRequest) {
     if (!rl.success) return rl.response!
 
     const cacheKey = `shopping-lists:${session.user.id}`
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const membership = session.user.membership?.toLowerCase() || 'basic'
 
     // Try Redis cache first (10 minute TTL for shopping lists)

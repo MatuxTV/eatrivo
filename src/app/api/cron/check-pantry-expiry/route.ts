@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { db } from "@/index";
-import { pantryItems, userProfiles, users } from "@/db/schema";
+import { pantryItems, userProfiles } from "@/db/schema";
 import { lt, gte, and, eq } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
 import { sendPushToUser } from "@/lib/pwa/sendPushToAll";

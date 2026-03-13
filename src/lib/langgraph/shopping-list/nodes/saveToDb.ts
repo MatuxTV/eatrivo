@@ -1,9 +1,11 @@
 import { db } from "@/index";
-import { shoppingLists, mealPlans, aiInsights } from "@/db/schema";
+import { shoppingLists, shoppingListItems, mealPlans, aiInsights } from "@/db/schema";
 import { apiLogger } from "@/lib/logger";
 import { CacheService } from "@/lib/redis";
 import { Analytics } from "@/lib/analytics";
 import { EatrivoAIService } from "@/lib/langchain";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 import type { ShoppingListState } from "../state";
 
 export async function saveToDb(
@@ -39,12 +41,55 @@ export async function saveToDb(
         userProfileId,
         title: aiOutput.title,
         description: aiOutput.description,
-        markdownContent: aiOutput.markdown,
         weekStartDate: weekStart,
         weekEndDate: weekEnd,
         status: "draft",
       })
       .returning();
+
+    // ── Parse markdown to items and Insert ──
+    try {
+      const apiKey = process.env.GOOGLE_AI_API_KEY;
+      if (apiKey) {
+        const model = new ChatGoogleGenerativeAI({
+          model: "gemini-2.5-flash",
+          apiKey,
+          maxOutputTokens: 2048,
+          temperature: 0,
+        });
+
+        const prompt = `You are a structured data extractor. Parse this shopping list markdown and extract all items.
+Return ONLY valid JSON array. Each item: { "name": string, "quantity": number | null, "unit": string | null, "category": string | null }
+SHOPPING LIST MARKDOWN:
+${aiOutput.markdown}
+Return JSON array only, no explanation, no markdown:`;
+
+        const response = await model.invoke([{ role: "user", content: prompt }]);
+        const raw = typeof response.content === "string" ? response.content : JSON.stringify(response.content);
+        const jsonStr = raw.replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/i, "").trim();
+        const parsed = JSON.parse(jsonStr);
+
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const validParsedItems = parsed.filter((item) => item.name && typeof item.name === "string");
+          if (validParsedItems.length > 0) {
+            const toInsertItems = validParsedItems.map((item, index) => {
+              const normalizedName = item.name.trim();
+              return {
+                shoppingListId: newShoppingList.id,
+                sortOrder: index,
+                name: normalizedName,
+                quantity: item.quantity !== null && item.quantity !== undefined ? String(item.quantity) : null,
+                unit: item.unit ? normalizeUnit(item.unit) : null,
+                category: item.category || guessFoodCategory(normalizedName),
+              };
+            });
+            await db.insert(shoppingListItems).values(toInsertItems);
+          }
+        }
+      }
+    } catch (parseErr) {
+      apiLogger.error("saveToDb: Failed to extract items from AI output", parseErr);
+    }
 
     apiLogger.info("Shopping list generated and saved", {
       metadata: {

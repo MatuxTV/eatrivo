@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
         .insert(pantryItems)
         .values(
           selectedDrafts.map((draft) => ({
-            userProfileId,
+            userProfileId: userProfileId as string,
             name: draft.name,
             ingredientName: draft.ingredientName,
             ingredientKey: draft.ingredientKey,

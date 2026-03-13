@@ -2,16 +2,15 @@ import type { NextRequest } from "next/server";
 import { NextResponse, after } from "next/server";
 import { auth } from "../../../../../../auth";
 import { db } from "@/index";
-import { pantryItems, shoppingLists, userInfoTable, userProfiles } from "@/db/schema";
+import { pantryItems, shoppingLists, shoppingListItems, userInfoTable, userProfiles } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
 import { CacheService } from "@/lib/redis";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { normalizePantryItemsInBackground } from "@/lib/pantry/background-normalization";
 import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 
 // POST /api/pantry/import/[shoppingListId]
-// Parses shopping list markdown → inserts pantry items with source: "shopping_list"
+// Reads shopping list items → inserts pantry items with source: "shopping_list"
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ shoppingListId: string }> },
@@ -49,80 +48,37 @@ export async function POST(
       );
     }
 
-    // Use Gemini to parse shopping list markdown into structured items
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "AI unavailable" }, { status: 503 });
-    }
-
-    const model = new ChatGoogleGenerativeAI({
-      model: "gemini-2.5-flash",
-      apiKey,
-      maxOutputTokens: 4096,
-      temperature: 0,
+    // Fetch shopping list items from the database
+    const items = await db.query.shoppingListItems.findMany({
+      where: eq(shoppingListItems.shoppingListId, shoppingListId),
     });
 
-    const prompt = `You are a structured data extractor. Parse this shopping list markdown and extract all items.
-
-Return ONLY valid JSON array. Each item: { "name": string, "quantity": number | null, "unit": string | null }
-
-SHOPPING LIST MARKDOWN:
-${shoppingList.markdownContent}
-
-Return JSON array only, no explanation, no markdown:`;
-
-    const response = await model.invoke([{ role: "user", content: prompt }]);
-    const raw =
-      typeof response.content === "string"
-        ? response.content
-        : JSON.stringify(response.content);
-
-    // Parse JSON from response, strip possible markdown code fences
-    const jsonStr = raw
-      .replace(/^```[a-z]*\n?/i, "")
-      .replace(/\n?```$/i, "")
-      .trim();
-    let parsed: {
-      name: string;
-      quantity: number | null;
-      unit: string | null;
-    }[];
-    try {
-      parsed = JSON.parse(jsonStr);
-    } catch {
-      apiLogger.error("Failed to parse AI import response", { raw });
-      return NextResponse.json(
-        { error: "Failed to parse items from shopping list" },
-        { status: 422 },
-      );
-    }
-
-    if (!Array.isArray(parsed) || parsed.length === 0) {
+    if (items.length === 0) {
       return NextResponse.json({ imported: 0, items: [] });
     }
 
     const locale = userInfo?.language ?? "sk";
-    const validParsedItems = parsed.filter(
+    const validItems = items.filter(
       (item) => item.name && typeof item.name === "string",
     );
 
     // Insert all items
-    const toInsert = await Promise.all(validParsedItems
+    const toInsert = await Promise.all(validItems
       .map(async (item) => {
         const normalizedName = item.name.trim();
 
         return {
           userProfileId: userProfile.id,
           name: normalizedName,
-          ingredientName: null,
-          ingredientKey: null,
-          ingredientSpecificKey: null,
+          ingredientName: item.ingredientName,
+          ingredientKey: item.ingredientKey,
+          ingredientSpecificKey: item.ingredientSpecificKey,
           quantity:
             item.quantity !== null && item.quantity !== undefined
               ? String(item.quantity)
               : null,
           unit: item.unit ? normalizeUnit(item.unit) : null,
-          category: guessFoodCategory(normalizedName),
+          category: item.category || guessFoodCategory(normalizedName),
           source: "shopping_list" as const,
           shoppingListId,
         };

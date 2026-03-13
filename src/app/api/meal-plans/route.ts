@@ -5,6 +5,7 @@ import { db } from "@/index";
 import {
   userProfiles,
   shoppingLists,
+  shoppingListItems,
   aiInsights,
   userInfoTable,
   mealPlans,
@@ -332,8 +333,15 @@ export async function POST(_request: NextRequest) {
       let mealPlan;
       let fallbackUsed = "none";
 
+      // Fetch actual items
+      const slItems = await db.query.shoppingListItems.findMany({
+        where: eq(shoppingListItems.shoppingListId, latestShoppingList.id),
+        orderBy: shoppingListItems.sortOrder
+      });
+      const itemsText = slItems.map(i => `- ${i.name} ${i.quantity || ''} ${i.unit || ''}`).join("\n");
+
       const shoppingData = {
-        markdown: latestShoppingList.markdownContent,
+        markdown: `# ${latestShoppingList.title}\n${latestShoppingList.description || ""}\n\n${itemsText}`,
       };
 
       try {

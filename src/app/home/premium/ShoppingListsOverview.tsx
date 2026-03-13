@@ -432,16 +432,19 @@ export function CreateListCTA({
 export default function ShoppingListsOverview({
   lists,
   isLoading,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isGenerating = false,
   membership = "basic",
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onGenerateNew,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onLockedCreate,
   onStatusChange,
 }: ShoppingListsOverviewProps) {
   const t = useTranslations("home");
   const [showAll, setShowAll] = useState(false);
 
-  // Check if user is premium (premium, pro, or trainer)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isPremiumUser = ["premium", "pro", "trainer"].includes(
     membership.toLowerCase(),
   );
@@ -454,6 +457,7 @@ export default function ShoppingListsOverview({
     );
   }, [lists, showAll]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const hasActiveList = useMemo(() => {
     return lists.some((list) =>
       ["active", "approved", "purchased"].includes(list.status),

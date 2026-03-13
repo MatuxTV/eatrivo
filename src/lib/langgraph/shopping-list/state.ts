@@ -1,6 +1,6 @@
 import { Annotation } from "@langchain/langgraph";
 import type { InferSelectModel } from "drizzle-orm";
-import { userProfiles, userInfoTable } from "@/db/schema";
+import type { userProfiles, userInfoTable } from "@/db/schema";
 import type {
   MacroTargets,
   ShoppingHistoryItem,

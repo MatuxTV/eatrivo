@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { ChefHat, ShoppingCart, Sparkles } from "lucide-react";
 import ReceiptCard from "@/app/home/components/ReceiptCard";
 import ShoppingListCard from "@/app/home/components/ShoppingListCard";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { Ingredient } from "@/types/meal-plan";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
@@ -37,6 +36,7 @@ interface DailyMealPlanProps {
   /** Whether the user has an active shopping list */
   hasActiveShoppingList?: boolean;
   /** The pending shopping list object (draft or approved) if it exists */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pendingShoppingList?: any; // Replace with proper type or any if imported from elsewhere
   /** Callback when shopping list status changes */
   onStatusChange?: () => void;

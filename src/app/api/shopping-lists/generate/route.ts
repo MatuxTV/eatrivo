@@ -9,7 +9,7 @@ import { RequestLock, GenerationProgress } from "@/lib/redis";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { buildShoppingListGraph } from "@/lib/langgraph/shopping-list";
 import { NODE_PROGRESS } from "@/lib/langgraph/shopping-list/constants";
-import { ShoppingListState } from "@/lib/langgraph/shopping-list/state";
+import type { ShoppingListState } from "@/lib/langgraph/shopping-list/state";
 
 /**
  * POST /api/shopping-lists/generate

@@ -3,7 +3,6 @@ import { db } from "@/index";
 import { pushSubscriptions, userProfiles, userInfoTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import {
-  sendPushToUser,
   sendPushBatch,
   type PushNotificationPayload,
 } from "@/lib/pwa/sendPushToAll";

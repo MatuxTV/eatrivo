@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion, type Variants } from "framer-motion";
 import { useTranslations } from "next-intl";
 import {
   Check,
@@ -9,15 +8,6 @@ import {
   Flame,
   Clock,
   ChefHat,
-  Droplets,
-  Beef,
-  Wheat,
-  CheckCircle2,
-  Circle,
-  ArrowRight,
-  HeartPulse,
-  Layers3,
-  ListChecks,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
@@ -127,20 +117,6 @@ function buildKitchenCounterSteps(
   }));
 }
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300 } },
-};
 
 export default function KitchenCounterPage({
   recipe,
@@ -148,9 +124,6 @@ export default function KitchenCounterPage({
 }: KitchenCounterPageProps) {
   const t = useTranslations("home");
   const activeRecipe = useMemo(() => recipe ?? null, [recipe]);
-  const [activeMobileTab, setActiveMobileTab] = useState<
-    "ingredients" | "steps"
-  >("ingredients");
   const [ingredients, setIngredients] = useState<KitchenCounterIngredient[]>(
     [],
   );

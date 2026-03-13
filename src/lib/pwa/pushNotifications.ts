@@ -175,6 +175,7 @@ export async function subscribeUserToPush(): Promise<PushSubscription | null> {
   try {
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       applicationServerKey: applicationServerKey as any,
     });
     console.log("[Push] Subscription created successfully");
@@ -198,6 +199,7 @@ export async function subscribeUserToPush(): Promise<PushSubscription | null> {
         if (staleSub) await staleSub.unsubscribe();
         const fresh = await registration.pushManager.subscribe({
           userVisibleOnly: true,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as any,
         });
         console.log(

@@ -3,16 +3,6 @@ export interface RecipeInstruction {
   text: string;
 }
 
-type RecipeInstructionCandidate =
-  | string
-  | {
-      title?: unknown;
-      text?: unknown;
-      description?: unknown;
-      body?: unknown;
-      step?: unknown;
-      content?: unknown;
-    };
 
 function toTrimmedString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -35,7 +25,7 @@ export function normalizeRecipeInstructions(
       return [];
     }
 
-    const candidate = instruction as RecipeInstructionCandidate;
+    const candidate = instruction as Record<string, unknown>;
     const title = toTrimmedString(candidate.title);
     const text =
       toTrimmedString(candidate.text) ||

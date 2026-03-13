@@ -148,7 +148,7 @@ export default function PantryRecipeMatches() {
           | { error?: string };
 
         if (!response.ok) {
-          throw new Error(payload.error || "Failed to load recipe matches");
+          throw new Error((payload as { error?: string }).error || "Failed to load recipe matches");
         }
 
         if (isActive) {

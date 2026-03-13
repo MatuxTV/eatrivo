@@ -5,7 +5,8 @@ export type AppHomeSection =
   | "pantry"
   | "chatWithRivo"
   | "profile"
-  | "kitchenCounter";
+  | "kitchenCounter"
+  | "mealGallery";
 
 export type PrimaryAppHomeSection = Exclude<AppHomeSection, HomeSection> | "home";
 

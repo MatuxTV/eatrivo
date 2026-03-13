@@ -67,7 +67,6 @@ export async function GET(
       id: item.id,
       title: item.title,
       description: item.description,
-      markdownContent: item.markdownContent,
       weekStartDate: item.weekStartDate,
       weekEndDate: item.weekEndDate,
       status: item.status,

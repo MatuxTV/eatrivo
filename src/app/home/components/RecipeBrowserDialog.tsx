@@ -392,6 +392,7 @@ export default function RecipeBrowserDialog({
                         ingredient.recipeIngredientName,
                         ingredient.amount,
                       ),
+                      category: null,
                       available: true,
                       matchType: ingredient.matchType,
                       tone: resolveTone(
@@ -410,6 +411,7 @@ export default function RecipeBrowserDialog({
                             ingredient.name,
                             ingredient.amount,
                           ),
+                          category: null,
                           available: true,
                           matchType: "exact" as const,
                           tone: resolveTone(ingredient.name, true, "exact"),

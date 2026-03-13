@@ -8,7 +8,6 @@ import {
 } from "@/db/schema";
 import { eq, and, gte, lte } from "drizzle-orm";
 import {
-  sendPushToUser,
   sendPushBatch,
   type PushNotificationPayload,
 } from "@/lib/pwa/sendPushToAll";
