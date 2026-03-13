@@ -2,16 +2,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth } from "@/../auth";
 import { db } from "@/index";
-import { shoppingLists, userProfiles } from "@/db/schema";
+import { shoppingLists, shoppingListItems, userProfiles } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import MarkdownIt from "markdown-it";
 import { checkRateLimit } from "@/lib/rateLimit";
-
-const md = new MarkdownIt({
-  html: false,
-  breaks: true,
-  linkify: true,
-});
 
 function escapeHtml(str: string): string {
   return str
@@ -63,8 +56,37 @@ export async function GET(
       );
     }
 
-    // Convert markdown to HTML
-    const htmlContent = md.render(item.markdownContent);
+    // Fetch items
+    const items = await db.select()
+      .from(shoppingListItems)
+      .where(eq(shoppingListItems.shoppingListId, id))
+      .orderBy(shoppingListItems.sortOrder);
+
+    // Group items by category
+    const groupedItems: Record<string, typeof items> = {};
+    for (const item of items) {
+      const cat = item.category || "Ostatné";
+      if (!groupedItems[cat]) groupedItems[cat] = [];
+      groupedItems[cat].push(item);
+    }
+    
+    const categories = Object.keys(groupedItems).sort();
+    
+    let htmlContent = "";
+    if (categories.length === 0) {
+      htmlContent = "<p>Nákupný zoznam je prázdny.</p>";
+    } else {
+      categories.forEach(cat => {
+        htmlContent += `<h2>${escapeHtml(cat)}</h2>\n<ul>\n`;
+        groupedItems[cat].forEach(i => {
+          const qty = i.quantity ? `${i.quantity} ` : "";
+          const unit = i.unit ? `${i.unit} ` : "";
+          const check = i.isChecked ? "✅ " : "";
+          htmlContent += `  <li>${check}<strong>${escapeHtml(i.name)}</strong>: ${qty}${unit}</li>\n`;
+        });
+        htmlContent += `</ul>\n`;
+      });
+    }
 
     // Create formatted dates using Intl.DateTimeFormat
     const dateFormatter = new Intl.DateTimeFormat("sk-SK", {

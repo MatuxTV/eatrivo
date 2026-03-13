@@ -89,7 +89,7 @@ export interface RecipeAvailabilityOptions {
 interface RecipeBucket {
   recipe: Omit<MatchedRecipe, "totalRequiredIngredients" | "matchedRequiredIngredients" | "missingRequiredIngredients" | "matchRatio" | "matchedIngredients" | "matchedIngredientNames" | "missingIngredientNames">;
   defaultLocale: string;
-  requiredIngredients: Map<string, { fallbackName: string; recipeIngredientId: string; amount: string | null; quantity: string | null; unit: string | null; sortOrder: number }>;
+  requiredIngredients: Map<string, { fallbackName: string; category: string | null; recipeIngredientId: string; amount: string | null; quantity: string | null; unit: string | null; sortOrder: number }>;
 }
 
 interface PantryIngredientMatchCandidate {

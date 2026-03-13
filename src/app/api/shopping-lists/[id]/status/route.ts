@@ -2,12 +2,11 @@ import type { NextRequest } from "next/server";
 import { NextResponse, after } from "next/server";
 import { auth } from "../../../../../../auth";
 import { db } from "@/index";
-import { shoppingLists, userInfoTable, userProfiles, pantryItems } from "@/db/schema";
+import { shoppingLists, shoppingListItems, userInfoTable, userProfiles, pantryItems } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
 import { CacheService } from "@/lib/redis";
 import { sendPushToUser } from "@/lib/pwa/sendPushToAll";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { normalizePantryItemsInBackground } from "@/lib/pantry/background-normalization";
 import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 
@@ -100,8 +99,7 @@ export async function PATCH(
           await importShoppingListToPantry(
             id,
             userProfile.id,
-            userInfo?.language ?? "sk",
-            shoppingList.markdownContent,
+            userInfo?.language ?? "sk"
           );
         } catch (err) {
           apiLogger.error("Pantry import failed (non-fatal)", { err });
@@ -144,54 +142,15 @@ async function importShoppingListToPantry(
   shoppingListId: string,
   userProfileId: string,
   locale: string,
-  markdownContent: string,
 ): Promise<void> {
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) {
-    apiLogger.error("importShoppingListToPantry: GOOGLE_AI_API_KEY not set");
-    return;
-  }
-
-  const model = new ChatGoogleGenerativeAI({
-    model: "gemini-2.5-flash",
-    apiKey,
-    maxOutputTokens: 4096,
-    temperature: 0,
+  // Fetch the items from the shopping list directly
+  const items = await db.query.shoppingListItems.findMany({
+    where: eq(shoppingListItems.shoppingListId, shoppingListId),
   });
 
-  const prompt = `Extract all food items from this shopping list as JSON array.
-Each item: { "name": string, "quantity": number | null, "unit": string | null }
-Return ONLY the JSON array, no markdown:
+  if (items.length === 0) return;
 
-${markdownContent}`;
-
-  const response = await model.invoke([{ role: "user", content: prompt }]);
-  const raw =
-    typeof response.content === "string"
-      ? response.content
-      : JSON.stringify(response.content);
-
-  const jsonStr = raw
-    .replace(/^```[a-z]*\n?/i, "")
-    .replace(/\n?```$/i, "")
-    .trim();
-
-  let parsed: { name: string; quantity: number | null; unit: string | null }[];
-  try {
-    parsed = JSON.parse(jsonStr);
-  } catch {
-    apiLogger.error(
-      "importShoppingListToPantry: Gemini returned invalid JSON",
-      {
-        raw: raw.slice(0, 300),
-      },
-    );
-    return; // non-fatal — caller already committed status to "purchased"
-  }
-
-  if (!Array.isArray(parsed) || parsed.length === 0) return;
-
-  const validParsedItems = parsed.filter(
+  const validParsedItems = items.filter(
     (item) => item.name && typeof item.name === "string",
   );
 
@@ -202,12 +161,12 @@ ${markdownContent}`;
       return {
         userProfileId,
         name: normalizedName,
-        ingredientName: null,
-        ingredientKey: null,
-        ingredientSpecificKey: null,
+        ingredientName: item.ingredientName,
+        ingredientKey: item.ingredientKey,
+        ingredientSpecificKey: item.ingredientSpecificKey,
         quantity: item.quantity != null ? String(item.quantity) : null,
         unit: item.unit ? normalizeUnit(item.unit) : null,
-        category: guessFoodCategory(normalizedName),
+        category: item.category || guessFoodCategory(normalizedName),
         source: "shopping_list" as const,
         shoppingListId,
       };
@@ -227,7 +186,7 @@ ${markdownContent}`;
     });
   } else {
     apiLogger.warn("importShoppingListToPantry: no valid items to insert", {
-      metadata: { shoppingListId, parsedCount: parsed.length },
+      metadata: { shoppingListId, parsedCount: items.length },
     });
   }
 }

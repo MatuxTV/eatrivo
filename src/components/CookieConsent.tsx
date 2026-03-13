@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cookie, Settings, Check, X } from "lucide-react";
+import Link from "next/link";
 
 export type CookiePreferences = {
   essential: true; // always true
@@ -228,12 +229,12 @@ export function CookieConsentBanner() {
               {/* Cookie policy link */}
               <p className="mt-3 text-center text-xs text-eatrivo-black-secondary/60">
                 {t("learnMore")}{" "}
-                <a
+                <Link
                   href="/cookie-policy"
                   className="text-eatrivo-purple hover:underline font-medium"
                 >
                   {t("cookiePolicy")}
-                </a>
+                </Link>
               </p>
             </div>
           </div>

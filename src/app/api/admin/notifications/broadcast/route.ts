@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
 import {
-  sendPushToAll,
   sendPushBatch,
   type PushNotificationPayload,
 } from "@/lib/pwa/sendPushToAll";
@@ -119,20 +118,7 @@ function pickMotivational(lang: string): PushNotificationPayload {
   return messages[dayOfYear % messages.length];
 }
 
-async function getUserLang(userId: string): Promise<string> {
-  const profile = await db
-    .select({ id: userProfiles.id })
-    .from(userProfiles)
-    .where(eq(userProfiles.userId, userId))
-    .limit(1);
-  if (!profile[0]) return "sk";
-  const info = await db
-    .select({ language: userInfoTable.language })
-    .from(userInfoTable)
-    .where(eq(userInfoTable.userProfileId, profile[0].id))
-    .limit(1);
-  return info[0]?.language ?? "sk";
-}
+
 
 /**
  * POST /api/admin/notifications/broadcast

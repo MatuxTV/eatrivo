@@ -42,12 +42,13 @@ import ProfilePageClient from "@/app/profile/components/ProfilePageClient";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
 import { NotificationBanner } from "@/components/pwa/NotificationBanner";
 import FeedbackButton from "@/components/FeedbackButton";
-import { PushNotificationToggle } from "@/components/pwa/PushNotificationToggle";
+
 import { UpgradePopup } from "@/components/billing/UpgradePopup";
 import ChatWithRivoPage from "@/app/[locale]/chat-with-rivo/ChatWithRivoPage";
 import { FeatureFlag } from "@/components/ui/FeatureFlag";
 import KitchenCounterPage from "@/app/kitchen-counter/KitchenCounterPage";
 import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
+import type { AppHomeSection } from "@/app/home/types/navigation";
 import { normalizeRecipeInstructions } from "@/lib/recipe-instructions";
 
 // PWA utilities
@@ -162,9 +163,7 @@ export default function HomePagePremium() {
   const [generationIteration, setGenerationIteration] = useState(0);
 
   // ... inside HomePagePremium component ...
-  const [activeSection, setActiveSection] = useState<
-    "home" | "pantry" | "chatWithRivo" | "profile" | "mealGallery" | "kitchenCounter"
-  >("home");
+  const [activeSection, setActiveSection] = useState<AppHomeSection>("home");
 
   const [selectedKitchenCounter, setSelectedKitchenCounter] = useState<BasicHomeRecipePreview | null>(null);
 
@@ -215,6 +214,7 @@ export default function HomePagePremium() {
 
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [welcomeCheckDone, setWelcomeCheckDone] = useState(false);
 
   // Check welcome dialog visibility after session loads (prevents hydration mismatch)
@@ -358,7 +358,7 @@ export default function HomePagePremium() {
     // No onDone callback needed — the generationResult effect already calls
     // fetchShoppingLists() when result.done flips, avoiding a double-fetch.
     generateShoppingList();
-  }, [generateShoppingList]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [generateShoppingList]);  
 
   // FETCH USER HEALTH DATA
   useEffect(() => {
@@ -539,6 +539,7 @@ export default function HomePagePremium() {
     );
   }, [shoppingLists]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const hasActiveMealPlan = useMemo(() => {
     return mealPlanData && mealPlanData.length > 0;
   }, [mealPlanData]);

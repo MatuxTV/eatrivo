@@ -13,6 +13,8 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     ignores: [
+      ".agents/**",
+      ".claude/**",
       "node_modules/**",
       ".next/**",
       "out/**",
