@@ -178,14 +178,6 @@ interface ShoppingListApiMeta {
   status: string;
 }
 
-interface ShoppingListHistoryItem {
-  id: string;
-  title: string | null;
-  status: string;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
-
 function readStoredKitchenCounterRecipe(): BasicHomeRecipePreview | null {
   if (typeof window === "undefined") {
     return null;
@@ -244,9 +236,6 @@ export default function HomePage({
   >([]);
   const [currentShoppingList, setCurrentShoppingList] =
     useState<ShoppingListApiMeta | null>(null);
-  const [shoppingListHistory, setShoppingListHistory] = useState<
-    ShoppingListHistoryItem[]
-  >([]);
   const [isCompletingShoppingList, setIsCompletingShoppingList] =
     useState(false);
   const [checkedItemIds, setCheckedItemIds] = useState<Set<string>>(new Set());
@@ -642,46 +631,6 @@ export default function HomePage({
     return [...orderedCategories, ...remainingCategories];
   }, [getShoppingCategoryLabel, shoppingListItemsByCategory]);
 
-  const formatShoppingListDate = useCallback(
-    (value: string | null) => {
-      if (!value) {
-        return null;
-      }
-
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) {
-        return null;
-      }
-
-      return new Intl.DateTimeFormat(locale, {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }).format(date);
-    },
-    [locale],
-  );
-
-  const getShoppingListStatusLabel = useCallback(
-    (status: string) => {
-      switch (status) {
-        case "completed":
-          return t("basic.shoppingList.historyStatusCompleted");
-        case "cancelled":
-          return t("basic.shoppingList.historyStatusCancelled");
-        case "purchased":
-          return t("basic.shoppingList.historyStatusPurchased");
-        case "approved":
-          return t("basic.shoppingList.historyStatusApproved");
-        case "draft":
-          return t("basic.shoppingList.historyStatusDraft");
-        default:
-          return status;
-      }
-    },
-    [t],
-  );
-
   const loadCurrentShoppingList = useCallback(async () => {
     if (!session?.user?.id) {
       setShoppingListItems([]);
@@ -720,58 +669,6 @@ export default function HomePage({
       });
     }
   }, [mapShoppingListItems, session?.user?.id]);
-
-  const loadShoppingListHistory = useCallback(async () => {
-    if (!session?.user?.id) {
-      setShoppingListHistory([]);
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/shopping-lists", {
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        logger.warn("Failed to load shopping list history", {
-          context: "HomePage",
-          metadata: { status: response.status },
-        });
-        return;
-      }
-
-      const payload = (await response.json()) as {
-        shoppingLists?: Array<{
-          id: string;
-          title: string | null;
-          status: string;
-          created_at?: string | null;
-          updated_at?: string | null;
-        }>;
-      };
-
-      const history = Array.isArray(payload.shoppingLists)
-        ? payload.shoppingLists
-            .filter((list) => list.status !== "active")
-            .map((list) => ({
-              id: list.id,
-              title: list.title,
-              status: list.status,
-              createdAt: list.created_at ?? null,
-              updatedAt: list.updated_at ?? null,
-            }))
-        : [];
-
-      setShoppingListHistory(history);
-    } catch (error) {
-      logger.warn("Failed to fetch shopping list history", {
-        context: "HomePage",
-        metadata: {
-          error: error instanceof Error ? error.message : String(error),
-        },
-      });
-    }
-  }, [session?.user?.id]);
 
   const refreshPantrySummary = useCallback(async () => {
     try {
@@ -974,8 +871,7 @@ export default function HomePage({
 
   useEffect(() => {
     void loadCurrentShoppingList();
-    void loadShoppingListHistory();
-  }, [loadCurrentShoppingList, loadShoppingListHistory]);
+  }, [loadCurrentShoppingList]);
 
   const handleCloseDialog = async () => {
     setShowWelcomeDialog(false);
@@ -1067,11 +963,9 @@ export default function HomePage({
             },
         );
       }
-
-      await loadShoppingListHistory();
       await loadCurrentShoppingList();
     },
-    [loadCurrentShoppingList, loadShoppingListHistory, mapShoppingListItems, t],
+    [loadCurrentShoppingList, mapShoppingListItems, t],
   );
 
   const handleCompleteShoppingList = useCallback(async () => {
@@ -1111,7 +1005,7 @@ export default function HomePage({
       }
       setCheckedItemIds(new Set());
 
-      await Promise.all([loadCurrentShoppingList(), loadShoppingListHistory()]);
+      await loadCurrentShoppingList();
     } catch (error) {
       logger.warn("Failed to complete shopping list", {
         context: "HomePage",
@@ -1127,7 +1021,6 @@ export default function HomePage({
     currentShoppingList?.id,
     isCompletingShoppingList,
     loadCurrentShoppingList,
-    loadShoppingListHistory,
   ]);
 
   const handleKitchenCounterBack = useCallback(() => {
@@ -1157,10 +1050,10 @@ export default function HomePage({
       />
       <HomeHeader onSectionChange={setActiveSection} />
       <main
-        className={`flex-1 w-full md:max-w-[calc(100vw-256px)] h-screen ${
+        className={`flex-1 w-full md:max-w-[calc(100vw-256px)] h-[100dvh] ${
           primaryActiveSection === "chatWithRivo"
             ? "overflow-hidden p-0"
-            : "pt-20 md:pt-8 pb-24 md:pb-8 px-4 md:px-8 overflow-y-auto"
+            : "pt-20 md:pt-8 pb-[calc(100px+env(safe-area-inset-bottom))] md:pb-8 px-4 md:px-8 overflow-y-auto"
         }`}
       >
         <AnimatePresence mode="wait">
@@ -1614,53 +1507,6 @@ export default function HomePage({
                       </motion.div>
                     )}
 
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.14, duration: 0.24 }}
-                      className="mt-8 border-t border-gray-100 pt-5 sm:pt-6"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <h3 className="text-sm font-black tracking-tight text-[#1a1a2e]">
-                          {t("basic.shoppingList.historyTitle")}
-                        </h3>
-                        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-gray-500">
-                          {shoppingListHistory.length}
-                        </span>
-                      </div>
-
-                      {shoppingListHistory.length > 0 ? (
-                        <div className="mt-4 grid gap-3">
-                          {shoppingListHistory.map((list) => (
-                            <div
-                              key={list.id}
-                              className="rounded-2xl border border-gray-100 bg-gray-50 px-3 py-3 sm:px-4"
-                            >
-                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                                <div className="min-w-0">
-                                  <p className="break-words text-sm font-semibold text-gray-900 sm:truncate">
-                                    {list.title ||
-                                      t("greeting.actions.shoppingList")}
-                                  </p>
-                                  <p className="mt-1 text-xs text-gray-500">
-                                    {formatShoppingListDate(
-                                      list.updatedAt ?? list.createdAt,
-                                    ) ?? t("basic.shoppingList.historyNoDate")}
-                                  </p>
-                                </div>
-                                <span className="inline-flex w-fit max-w-full shrink-0 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-gray-500 ring-1 ring-gray-200 break-words whitespace-normal sm:whitespace-nowrap">
-                                  {getShoppingListStatusLabel(list.status)}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="mt-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">
-                          {t("basic.shoppingList.historyEmpty")}
-                        </div>
-                      )}
-                    </motion.div>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -2110,7 +1956,7 @@ export default function HomePage({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="h-full -mx-4 md:-mx-8 -my-8"
+              className="h-full -mx-4 md:-mx-8 md:-my-8"
             >
               <ProfilePageClient onBack={() => setActiveSection("home")} />
             </motion.div>

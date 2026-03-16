@@ -164,10 +164,10 @@ export default function RecipeBrowserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto bg-white p-0 gap-0 border-none shadow-2xl rounded-[2rem] sm:rounded-[2.5rem]"
+        className="max-w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto bg-eatrivo-white-primary p-0 gap-0 border-none shadow-2xl rounded-[2rem] sm:rounded-[2.5rem]"
       >
         {/* Navigation Arrows + Close */}
-        <div className="sticky top-0 z-30 flex items-center justify-between px-4 pt-4 pb-2">
+        <div className="sticky bg-eatrivo-white-primary/98 top-0 z-30 flex items-center justify-between px-4 pt-4 pb-2">
           <button
             type="button"
             disabled={!hasPrev}

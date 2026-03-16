@@ -75,7 +75,7 @@ export default function ProfilePageClient({ onBack: _onBack }: ProfilePageClient
   ] as const;
 
   return (
-    <div className="bg-eatrivo-white-primary h-full">
+    <div className="bg-eatrivo-white-primary min-h-full">
       <div className="max-w-5xl mx-auto p-6">
         {/* Navigation Tabs */}
         <div className="mb-8">

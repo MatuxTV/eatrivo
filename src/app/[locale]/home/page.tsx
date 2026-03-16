@@ -410,9 +410,9 @@ export default async function HomePageWrapper({ params }: PageProps) {
     redirect(`/${safeLocale}/signin`);
   }
 
-  if (session?.user?.membership === "premium") {
-    return <HomePagePremium />;
-  } else {
+  // if (session?.user?.membership === "premium") {
+  //   return <HomePagePremium />;
+  // } else {
     const basicHomeData = await getBasicHomeData(session.user.id, safeLocale);
 
     return (
@@ -425,4 +425,4 @@ export default async function HomePageWrapper({ params }: PageProps) {
       />
     );
   }
-}
+// }
