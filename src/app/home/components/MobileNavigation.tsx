@@ -45,7 +45,7 @@ export default function MobileNavigation({
   // navItems removed
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe pointer-events-none">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 pointer-events-none h-[calc(100px+env(safe-area-inset-bottom))]">
       {/* Floating Feedback Button — only on home section */}
       {primaryActiveSection === "home" && (
         <div className="absolute bottom-[90px] mb-2 right-4 z-50 flex flex-row items-center gap-4 pointer-events-none">
@@ -130,23 +130,23 @@ export default function MobileNavigation({
       </div>
 
       {/* CENTER FLOATING ACTION BUTTON */}
-      <div className="absolute bottom-[36px] left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-auto">
+      <div className="absolute bottom-[30px] left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-auto">
         {/* Outer white halo to cut into the background (simulated clipping) */}
-        <div className="bg-[#f0f0f0] p-1.5 rounded-full drop-shadow-sm flex items-center justify-center">
-          <div className="bg-white p-1 rounded-full flex items-center justify-center">
+        <div className="bg-eatrivo-white-secondary p-1 rounded-full drop-shadow-sm flex items-center justify-center">
+          <div className="bg-eatrivo-white-primary p-1 rounded-full flex items-center justify-center">
             <button
               onClick={() => onSectionChange("chatWithRivo")}
-              className={`w-14 h-14 rounded-full flex flex-col items-center justify-center shadow-lg transition-transform active:scale-95 duration-200 relative ${
+              className={`w-11 h-11 rounded-full flex flex-col items-center justify-center shadow-lg transition-transform active:scale-95 duration-200 relative ${
                 primaryActiveSection === "chatWithRivo"
                   ? "bg-eatrivo-purple text-white shadow-eatrivo-purple/40 ring-4 ring-eatrivo-purple/20"
                   : "bg-eatrivo-purple/90 text-white hover:bg-eatrivo-purple"
               }`}
             >
-              <MessageCircleHeart className="w-7 h-7" strokeWidth={2} />
+              <MessageCircleHeart className="w-6 h-6" strokeWidth={2} />
 
               <span className="absolute top-[2px] right-[2px] flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-eatrivo-green opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-eatrivo-green" />
               </span>
             </button>
           </div>
