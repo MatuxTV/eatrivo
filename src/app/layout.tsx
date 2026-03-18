@@ -6,6 +6,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ConditionalAnalytics } from "@/components/ConditionalAnalytics";
 import { CookieConsentBanner } from "@/components/CookieConsent";
+import { GoogleConsentMode } from "@/components/GoogleConsentMode";
 import { defaultLocale } from "@/i18n/routing";
 
 const quicksand = Quicksand({
@@ -124,6 +125,7 @@ export default async function RootLayout({
       <body className={`${quicksand.variable} antialiased`}>
         <Providers>
           <NextIntlClientProvider locale={locale} messages={messages}>
+            <GoogleConsentMode />
             {children}
             <ConditionalAnalytics />
             <CookieConsentBanner />

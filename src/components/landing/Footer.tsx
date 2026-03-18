@@ -121,7 +121,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href={`/${locale}/terms-of-service#complaints`}
+                  href={`/${locale}/complaints-policy`}
                   className="text-gray-400 hover:text-white text-sm transition-colors"
                 >
                   {t("footer.complaints")}

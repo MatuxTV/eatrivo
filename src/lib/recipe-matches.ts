@@ -7,7 +7,9 @@ import {
   recipeIngredientTranslations,
   recipes,
   recipeTranslations,
+  userInfoTable,
 } from "@/db/schema";
+import { getDietFilterCondition } from "@/lib/recipe-filters";
 import {
   normalizeRecipeLocale,
   resolveIngredientTranslation,
@@ -342,6 +344,12 @@ async function analyzeRecipeMatchesForUserProfile(
   const recipeIds = options.recipeIds?.filter(Boolean) ?? [];
   const shouldFilterRecipes = recipeIds.length > 0;
 
+  const userInfo = await db.query.userInfoTable.findFirst({
+    where: eq(userInfoTable.userProfileId, userProfileId),
+  });
+
+  const dietFilterCondition = getDietFilterCondition(userInfo?.diet_preferences);
+
   const [pantryRows, recipeRows, recipeTranslationRows, ingredientTranslationRows] =
     await Promise.all([
       db
@@ -394,12 +402,11 @@ async function analyzeRecipeMatchesForUserProfile(
         .from(recipeIngredients)
         .innerJoin(recipes, eq(recipeIngredients.recipeId, recipes.id))
         .where(
-          shouldFilterRecipes
-            ? and(
-                isNotNull(recipeIngredients.ingredientKey),
-                inArray(recipes.id, recipeIds),
-              )
-            : isNotNull(recipeIngredients.ingredientKey),
+          and(
+            isNotNull(recipeIngredients.ingredientKey),
+            shouldFilterRecipes ? inArray(recipes.id, recipeIds) : undefined,
+            dietFilterCondition ? dietFilterCondition : undefined,
+          )
         ),
       db
         .select({

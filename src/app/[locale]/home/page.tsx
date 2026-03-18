@@ -5,7 +5,6 @@ import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 
 import { auth } from "../../../../auth";
 import HomePage from "@/app/home/basic/HomePage";
-import HomePagePremium from "@/app/home/premium/HomePagePremium";
 import { defaultLocale, isLocale, type Locale } from "@/i18n/routing";
 import { db } from "@/index";
 import {
@@ -15,7 +14,9 @@ import {
   recipes,
   recipeTranslations,
   userProfiles,
+  userInfoTable,
 } from "@/db/schema";
+import { getDietFilterCondition } from "@/lib/recipe-filters";
 import {
   getRecipeAvailabilityForUserProfile,
   getRecipeMatchesForUserProfile,
@@ -116,45 +117,53 @@ async function getBasicHomeData(
   almostCookableRecipes: BasicHomeRecipePreview[];
   pantryNames: string[];
 }> {
-  const [userProfile, featuredRecipeRows] = await Promise.all([
-    db.query.userProfiles.findFirst({
-      where: eq(userProfiles.userId, userId),
-    }),
-    db
-      .select({
-        id: recipes.id,
-        slug: recipes.slug,
-        fallbackName: recipes.name,
-        fallbackCategory: recipes.category,
-        categoryKey: recipes.categoryKey,
-        totalTimeMin: recipes.totalTimeMin,
-        calories: recipes.calories,
-        proteinG: recipes.proteinG,
-        carbsG: recipes.carbohydratesG,
-        fatG: recipes.fatG,
-        dietTags: recipes.dietTags,
-        ingredients: recipes.ingredients,
-        fallbackInstructions: recipes.instructions,
-        mealPrepFriendly: recipes.mealPrepFriendly,
-        localizedName: recipeTranslations.name,
-        localizedCategory: recipeTranslations.categoryLabel,
-        localizedInstructions: recipeTranslations.instructions,
+  const userProfile = await db.query.userProfiles.findFirst({
+    where: eq(userProfiles.userId, userId),
+  });
+
+  const userInfo = userProfile
+    ? await db.query.userInfoTable.findFirst({
+        where: eq(userInfoTable.userProfileId, userProfile.id),
       })
-      .from(recipes)
-      .leftJoin(
-        recipeTranslations,
-        and(
-          eq(recipeTranslations.recipeId, recipes.id),
-          eq(recipeTranslations.locale, locale),
-        ),
-      )
-      .orderBy(
-        desc(recipes.proteinG),
-        asc(recipes.totalTimeMin),
-        asc(recipes.name),
-      )
-      .limit(8),
-  ]);
+    : null;
+
+  const dietFilterCondition = getDietFilterCondition(userInfo?.diet_preferences);
+
+  const featuredRecipeRows = await db
+    .select({
+      id: recipes.id,
+      slug: recipes.slug,
+      fallbackName: recipes.name,
+      fallbackCategory: recipes.category,
+      categoryKey: recipes.categoryKey,
+      totalTimeMin: recipes.totalTimeMin,
+      calories: recipes.calories,
+      proteinG: recipes.proteinG,
+      carbsG: recipes.carbohydratesG,
+      fatG: recipes.fatG,
+      dietTags: recipes.dietTags,
+      ingredients: recipes.ingredients,
+      fallbackInstructions: recipes.instructions,
+      mealPrepFriendly: recipes.mealPrepFriendly,
+      localizedName: recipeTranslations.name,
+      localizedCategory: recipeTranslations.categoryLabel,
+      localizedInstructions: recipeTranslations.instructions,
+    })
+    .from(recipes)
+    .leftJoin(
+      recipeTranslations,
+      and(
+        eq(recipeTranslations.recipeId, recipes.id),
+        eq(recipeTranslations.locale, locale),
+      ),
+    )
+    .where(dietFilterCondition ? dietFilterCondition : undefined)
+    .orderBy(
+      desc(recipes.proteinG),
+      asc(recipes.totalTimeMin),
+      asc(recipes.name),
+    )
+    .limit(8);
 
   const featuredRecipeIds = featuredRecipeRows.map((row) => row.id);
   const [featuredIngredientRows, featuredIngredientTranslationRows] =

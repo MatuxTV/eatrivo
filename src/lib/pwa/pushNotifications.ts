@@ -219,9 +219,10 @@ export async function subscribeUserToPush(): Promise<PushSubscription | null> {
 
 export async function savePushSubscription(
   subscription: PushSubscription,
-): Promise<void> {
+): Promise<{ status: "pending" | "confirmed"; message: string }> {
   console.log("[Push] Saving subscription to DB...");
   const payload = subscription.toJSON();
+  const locale = typeof document !== "undefined" ? document.documentElement.lang : "sk";
   console.log(
     "[Push] Payload endpoint:",
     (payload.endpoint ?? "").slice(0, 60) + "...",
@@ -234,7 +235,7 @@ export async function savePushSubscription(
   const response = await fetch("/api/push/subscribe", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ subscription: payload }),
+    body: JSON.stringify({ subscription: payload, locale }),
   });
 
   const data = await response.json();
@@ -245,6 +246,10 @@ export async function savePushSubscription(
   }
 
   console.log("[Push] ? Saved to DB:", data.message);
+  return {
+    status: data.status === "confirmed" ? "confirmed" : "pending",
+    message: typeof data.message === "string" ? data.message : "OK",
+  };
 }
 
 /**

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { X, Plus, Trash2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,20 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { NewPantryItem } from "@/hooks/usePantry";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { PANTRY_UNIT_OPTIONS } from "@/lib/units";
-
-const CATEGORIES = [
-  { value: "dairy", label: "🥛 Mliečne výrobky" },
-  { value: "meat_fish", label: "🥩 Mäso a ryby" },
-  { value: "fruit", label: "🍎 Ovocie" },
-  { value: "vegetables", label: "🥦 Zelenina" },
-  { value: "grains", label: "🌾 Obilniny & pečivo" },
-  { value: "eggs", label: "🥚 Vajcia" },
-  { value: "condiments", label: "🧂 Koreniny & omáčky" },
-  { value: "beverages", label: "🥤 Nápoje" },
-  { value: "nuts_seeds", label: "🥜 Orechy & semená" },
-  { value: "other", label: "📦 Ostatné" },
-];
 
 interface AddPantryItemModalProps {
   isOpen: boolean;
@@ -62,10 +50,27 @@ export default function AddPantryItemModal({
   onAddItems,
 }: AddPantryItemModalProps) {
   const t = useTranslations("pantry");
+  const shouldReduceMotion = useReducedMotion();
+  const triggerHaptic = useHapticFeedback();
   const [batchItems, setBatchItems] = useState<BatchDraftItem[]>([
     createBatchDraftItem(),
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const categories = useMemo(
+    () => [
+      { value: "dairy", label: t("categories.dairy") },
+      { value: "meat_fish", label: t("categories.meat_fish") },
+      { value: "fruit", label: t("categories.fruit") },
+      { value: "vegetables", label: t("categories.vegetables") },
+      { value: "grains", label: t("categories.grains") },
+      { value: "eggs", label: t("categories.eggs") },
+      { value: "condiments", label: t("categories.condiments") },
+      { value: "beverages", label: t("categories.beverages") },
+      { value: "nuts_seeds", label: t("categories.nuts_seeds") },
+      { value: "other", label: t("categories.other") },
+    ],
+    [t],
+  );
 
   const reset = () => {
     setBatchItems([createBatchDraftItem()]);
@@ -121,6 +126,7 @@ export default function AddPantryItemModal({
         return;
       }
 
+      triggerHaptic("success");
       reset();
       onClose();
     } finally {
@@ -136,23 +142,27 @@ export default function AddPantryItemModal({
     filledItemCount > 2 ? t("submit_batch") : t("submit_single");
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isOpen && (
         <>
           {/* Backdrop */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={shouldReduceMotion ? undefined : { opacity: 0 }}
+            animate={shouldReduceMotion ? undefined : { opacity: 1 }}
+            exit={shouldReduceMotion ? undefined : { opacity: 0 }}
             className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
             onClick={onClose}
           />
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95, y: 20 }}
+            animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1, y: 0 }}
+            exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95, y: 20 }}
+            transition={
+              shouldReduceMotion
+                ? undefined
+                : { type: "spring", stiffness: 400, damping: 30 }
+            }
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-2xl shadow-2xl p-6"
           >
             <div className="flex items-center justify-between mb-5">
@@ -162,7 +172,7 @@ export default function AddPantryItemModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
               >
                 <X className="w-4 h-4 text-gray-500" />
               </button>
@@ -270,7 +280,7 @@ export default function AddPantryItemModal({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {CATEGORIES.map((cat) => (
+                            {categories.map((cat) => (
                               <SelectItem key={cat.value} value={cat.value}>
                                 {cat.label}
                               </SelectItem>
@@ -317,7 +327,7 @@ export default function AddPantryItemModal({
                   onClick={onClose}
                   className="flex-1"
                 >
-                  Zrušiť
+                  {t("quick_add_cancel")}
                 </Button>
                 <Button
                   type="submit"

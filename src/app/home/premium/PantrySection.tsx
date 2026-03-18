@@ -1,36 +1,55 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useLocale } from "next-intl";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
-  Plus,
-  RefreshCw,
-  Package,
   AlertTriangle,
   CakeSlice,
   CheckCircle2,
-  XCircle,
+  ChevronDown,
   Loader2,
-  Milk,
-  Beef,
-  Apple,
-  Carrot,
-  Wheat,
-  Egg,
-  Droplets,
-  CupSoda,
-  Nut,
+  Package,
+  Plus,
+  RefreshCw,
+  Search,
+  Sparkles,
+  XCircle,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  usePantry,
+  type PantryItem,
+  type PantryRestockItem,
+} from "@/hooks/usePantry";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { guessFoodCategory } from "@/lib/units";
+import { cn } from "@/lib/utils";
+import AddPantryItemModal from "./AddPantryItemModal";
 import PantryItemRow from "./PantryItemRow";
 import PantryRestockStrip from "./PantryRestockStrip";
-import AddPantryItemModal from "./AddPantryItemModal";
-import { usePantry } from "@/hooks/usePantry";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslations } from "next-intl";
 
-// Category key → i18n sub-key mapping
+type FilterKey = "all" | "restock" | "expiring" | "manual" | "shopping_list";
+
+const FILTERS: FilterKey[] = [
+  "all",
+  "restock",
+  "expiring",
+  "manual",
+  "shopping_list",
+];
+
 const CATEGORY_KEYS: Record<string, string> = {
   dairy: "dairy",
   meat_fish: "meat_fish",
@@ -44,18 +63,221 @@ const CATEGORY_KEYS: Record<string, string> = {
   other: "other",
 };
 
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  dairy: Milk,
-  meat_fish: Beef,
-  fruit: Apple,
-  vegetables: Carrot,
-  grains: Wheat,
-  eggs: Egg,
-  condiments: Droplets,
-  beverages: CupSoda,
-  nuts_seeds: Nut,
-  other: Package,
+const fadeIn = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.4, ease: "easeOut" as const },
 };
+
+function getLocaleTag(locale: string): string {
+  return locale === "sk" ? "sk-SK" : "en-US";
+}
+
+function normalizeLookupValue(value: string | null | undefined): string {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function formatCategoryFallback(value: string): string {
+  return value
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatExpiry(expiryDate: string | null, locale: string): string | null {
+  if (!expiryDate) {
+    return null;
+  }
+
+  return new Date(expiryDate).toLocaleDateString(getLocaleTag(locale), {
+    day: "numeric",
+    month: "short",
+  });
+}
+
+function isExpiringSoon(expiryDate: string | null): boolean {
+  if (!expiryDate) {
+    return false;
+  }
+
+  return new Date(expiryDate).getTime() <= Date.now() + 3 * 24 * 60 * 60 * 1000;
+}
+
+function matchesSearch(
+  query: string,
+  itemName: string,
+  itemCategory: string | null,
+  categoryLabel: string,
+): boolean {
+  if (!query) {
+    return true;
+  }
+
+  const normalizedQuery = normalizeLookupValue(query);
+  return [
+    normalizeLookupValue(itemName),
+    normalizeLookupValue(itemCategory),
+    normalizeLookupValue(categoryLabel),
+  ].some((value) => value.includes(normalizedQuery));
+}
+
+function matchesRestockIdentity(restockItem: PantryRestockItem, pantryItem: PantryItem): boolean {
+  if (
+    restockItem.ingredientSpecificKey &&
+    restockItem.ingredientSpecificKey === pantryItem.ingredientSpecificKey
+  ) {
+    return true;
+  }
+
+  if (restockItem.ingredientKey && restockItem.ingredientKey === pantryItem.ingredientKey) {
+    return true;
+  }
+
+  return normalizeLookupValue(restockItem.name) === normalizeLookupValue(pantryItem.name);
+}
+
+function getQuantityDeltaForUnit(unit: string | null): number {
+  switch ((unit ?? "").toLowerCase()) {
+    case "g":
+    case "ml":
+      return 50;
+    case "kg":
+    case "l":
+      return 0.1;
+    case "dl":
+    case "tsp":
+    case "tbsp":
+      return 0.5;
+    case "ks":
+    default:
+      return 1;
+  }
+}
+
+function PantryLoadingState() {
+  return (
+    <div className="max-w-5xl mx-auto space-y-6 pb-24">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-3">
+            <Skeleton className="h-9 w-48 rounded-xl bg-eatrivo-purple/10" />
+            <div className="flex gap-2">
+              <Skeleton className="h-7 w-20 rounded-full bg-gray-200" />
+              <Skeleton className="h-7 w-24 rounded-full bg-gray-200" />
+            </div>
+            <Skeleton className="h-4 w-72 rounded-full bg-gray-200" />
+          </div>
+
+          <div className="flex gap-2">
+            <Skeleton className="h-11 w-28 rounded-full bg-gray-200" />
+            <Skeleton className="h-11 w-32 rounded-full bg-eatrivo-purple/10" />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 space-y-3">
+        <Skeleton className="h-6 w-36 rounded-full bg-gray-200" />
+        {[...Array(2)].map((_, index) => (
+          <Skeleton key={index} className="h-24 rounded-2xl bg-gray-100" />
+        ))}
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 space-y-4">
+        <Skeleton className="h-11 rounded-2xl bg-gray-100" />
+        <div className="flex gap-2 overflow-hidden">
+          {[...Array(4)].map((_, index) => (
+            <Skeleton key={index} className="h-10 w-24 rounded-full bg-gray-100" />
+          ))}
+        </div>
+        {[...Array(4)].map((_, index) => (
+          <Skeleton key={index} className="h-28 rounded-2xl bg-gray-100" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StatChip({
+  label,
+  value,
+  tone = "purple",
+}: {
+  label: string;
+  value: string;
+  tone?: "purple" | "red";
+}) {
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full border px-3 py-1.5",
+        tone === "red"
+          ? "border-eatrivo-red/20 bg-eatrivo-red/10"
+          : "border-eatrivo-purple/20 bg-eatrivo-purple/10",
+      )}
+    >
+      <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500">
+        {label}
+      </span>
+      <span
+        className={cn(
+          "text-sm font-bold",
+          tone === "red" ? "text-eatrivo-red" : "text-eatrivo-purple",
+        )}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function FilterChip({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full border px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2",
+        active
+          ? "border-eatrivo-purple bg-eatrivo-purple text-white"
+          : "border-gray-200 bg-white text-gray-600 hover:bg-eatrivo-purple/10 hover:text-eatrivo-purple",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function SectionStateCard({
+  title,
+  description,
+  action,
+  icon,
+}: {
+  title: string;
+  description: string;
+  action?: ReactNode;
+  icon: ReactNode;
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8 text-center">
+      <div className="mx-auto w-fit p-2 bg-eatrivo-blue/10 rounded-lg text-eatrivo-blue">
+        {icon}
+      </div>
+
+      <h3 className="mt-4 text-lg font-semibold text-gray-900">{title}</h3>
+      <p className="mt-2 text-sm text-gray-600 max-w-md mx-auto">{description}</p>
+      {action ? <div className="mt-5 flex justify-center">{action}</div> : null}
+    </div>
+  );
+}
 
 interface PantrySectionProps {
   onPantryChanged?: () => void;
@@ -66,19 +288,22 @@ export default function PantrySection({
 }: PantrySectionProps = {}) {
   const t = useTranslations("pantry");
   const locale = useLocale();
+  const shouldReduceMotion = useReducedMotion();
+  const triggerHaptic = useHapticFeedback();
   const {
     items,
     restockItems,
     pendingDrafts,
-    itemsByCategory,
     expiringItems,
     isLoading,
     isLoadingRestockItems,
     isPreparingDrafts,
     isConfirmingDrafts,
+    error,
     addItem,
     addItemsBatch,
     updateItem,
+    stepItemQuantity,
     deleteItem,
     toggleRecurringForItem,
     updateRestockItem,
@@ -87,435 +312,707 @@ export default function PantrySection({
     discardDrafts,
     refresh,
   } = usePantry();
+
+  const [isMounted, setIsMounted] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [pendingQuantityId, setPendingQuantityId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [pendingRecurringId, setPendingRecurringId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted && !isLoading) {
+      onPantryChanged?.();
+    }
+  }, [expiringItems.length, isLoading, isMounted, items.length, onPantryChanged]);
+
+  const filterLabels = useMemo(
+    () => ({
+      all: t("filter_all"),
+      restock: t("filter_restock"),
+      expiring: t("filter_expiring"),
+      manual: t("filter_manual"),
+      shopping_list: t("filter_shopping_list"),
+    }),
+    [t],
+  );
+
+  const categoryLabels = useMemo(
+    () => ({
+      dairy: t("categories.dairy"),
+      meat_fish: t("categories.meat_fish"),
+      fruit: t("categories.fruit"),
+      vegetables: t("categories.vegetables"),
+      grains: t("categories.grains"),
+      eggs: t("categories.eggs"),
+      condiments: t("categories.condiments"),
+      beverages: t("categories.beverages"),
+      nuts_seeds: t("categories.nuts_seeds"),
+      other: t("categories.other"),
+    }),
+    [t],
+  );
 
   const recurringLookup = useMemo(() => {
     return new Map(
       items.map((item) => {
-        const matchingRestock = restockItems.find((restockItem) => {
-          if (
-            item.ingredientSpecificKey &&
-            restockItem.ingredientSpecificKey === item.ingredientSpecificKey
-          ) {
-            return true;
-          }
-
-          if (item.ingredientKey && restockItem.ingredientKey === item.ingredientKey) {
-            return true;
-          }
-
-          return restockItem.name.trim().toLowerCase() === item.name.trim().toLowerCase();
-        });
+        const matchingRestock = restockItems.find((restockItem) =>
+          matchesRestockIdentity(restockItem, item),
+        );
 
         return [item.id, matchingRestock];
       }),
     );
   }, [items, restockItems]);
 
-  useEffect(() => {
-    if (!isLoading) {
-      console.debug("[PantrySection] notifying parent pantry summary refresh", {
-        itemCount: items.length,
-        expiringCount: expiringItems.length,
-      });
-      onPantryChanged?.();
-    }
-  }, [expiringItems.length, isLoading, items, onPantryChanged]);
+  const availableCategories = useMemo(() => {
+    const categorySet = new Set<string>(Object.keys(CATEGORY_KEYS));
 
-  // Debug: log whenever items or loading state changes
-  if (typeof window !== "undefined") {
-    if (!isLoading) {
-      console.debug("[Pantry] items loaded", {
-        total: items.length,
-        expiring: expiringItems.length,
-        categories: Object.keys(itemsByCategory),
-      });
+    for (const item of items) {
+      categorySet.add(item.category ?? guessFoodCategory(item.name));
+    }
+
+    for (const restockItem of restockItems) {
+      categorySet.add(restockItem.category ?? guessFoodCategory(restockItem.name));
+    }
+
+    return [...categorySet].sort((left, right) => {
+      const leftLabel =
+        categoryLabels[left as keyof typeof categoryLabels] ?? formatCategoryFallback(left);
+      const rightLabel =
+        categoryLabels[right as keyof typeof categoryLabels] ?? formatCategoryFallback(right);
+
+      return leftLabel.localeCompare(rightLabel, locale);
+    });
+  }, [categoryLabels, items, locale, restockItems]);
+
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      const category = item.category ?? guessFoodCategory(item.name);
+      const categoryLabel =
+        categoryLabels[category as keyof typeof categoryLabels] ??
+        formatCategoryFallback(category);
+
+      const matchesCategory = categoryFilter === "all" || category === categoryFilter;
+      const matchesText = matchesSearch(searchQuery, item.name, category, categoryLabel);
+      const matchesFilter =
+        activeFilter === "all" ||
+        (activeFilter === "restock" && item.lowStock) ||
+        (activeFilter === "expiring" && isExpiringSoon(item.expiryDate)) ||
+        (activeFilter === "manual" && item.source === "manual") ||
+        (activeFilter === "shopping_list" && item.source === "shopping_list");
+
+      return matchesCategory && matchesText && matchesFilter;
+    });
+  }, [activeFilter, categoryFilter, categoryLabels, items, searchQuery]);
+
+  const groupedItems = useMemo(() => {
+    const groups = filteredItems.reduce<Record<string, PantryItem[]>>((accumulator, item) => {
+      const category = item.category ?? guessFoodCategory(item.name);
+      if (!accumulator[category]) {
+        accumulator[category] = [];
+      }
+
+      accumulator[category].push(item);
+      return accumulator;
+    }, {});
+
+    return Object.entries(groups).sort(([leftKey], [rightKey]) => {
+      const leftLabel =
+        categoryLabels[leftKey as keyof typeof categoryLabels] ??
+        formatCategoryFallback(leftKey);
+      const rightLabel =
+        categoryLabels[rightKey as keyof typeof categoryLabels] ??
+        formatCategoryFallback(rightKey);
+
+      return leftLabel.localeCompare(rightLabel, locale);
+    });
+  }, [categoryLabels, filteredItems, locale]);
+
+  useEffect(() => {
+    setExpandedCategories((current) => {
+      const next = { ...current };
+
+      for (const [category] of groupedItems) {
+        if (!(category in next)) {
+          next[category] = false;
+        }
+      }
+
+      for (const category of Object.keys(next)) {
+        if (!groupedItems.some(([groupCategory]) => groupCategory === category)) {
+          delete next[category];
+        }
+      }
+
+      return next;
+    });
+  }, [groupedItems]);
+
+  const headerSubtitle =
+    items.length === 0
+      ? t("subtitle_empty")
+      : t(
+          items.length === 1
+            ? "subtitle_count_one"
+            : items.length < 5
+              ? "subtitle_count_few"
+              : "subtitle_count_many",
+          { count: items.length },
+        );
+
+  async function handleRefresh() {
+    await refresh();
+    triggerHaptic("light");
+  }
+
+  async function handleConfirmDrafts() {
+    const success = await confirmDrafts();
+    if (success) {
+      triggerHaptic("success");
     }
   }
 
-  const getCategoryTranslation = (cat: string): string => {
-    const key = CATEGORY_KEYS[cat];
-    if (key) {
-      try {
-        return t(`categories.${key}` as Parameters<typeof t>[0]);
-      } catch {
-        return cat;
-      }
+  async function handleDiscardDrafts() {
+    const success = await discardDrafts();
+    if (success) {
+      triggerHaptic("light");
     }
-    return cat;
-  };
+  }
 
-  const categories = Object.keys(itemsByCategory).sort((a, b) =>
-    getCategoryTranslation(a).localeCompare(getCategoryTranslation(b)),
-  );
+  async function handleQuantityChange(
+    item: PantryItem,
+    operation: "increment" | "decrement",
+  ) {
+    if (pendingQuantityId) {
+      return;
+    }
 
-  if (isLoading) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="max-w-4xl mx-auto space-y-6 pb-24"
-      >
-        {/* Header Skeleton */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 px-1">
-          <div>
-            <div className="flex items-center gap-3">
-              <Skeleton className="w-14 h-14 rounded-full bg-eatrivo-purple/10 shadow-inner" />
-              <Skeleton className="h-10 w-48 rounded-md bg-eatrivo-purple/10" />
-            </div>
-            <div className="mt-3">
-              <Skeleton className="h-5 w-48 sm:w-64 max-w-[80vw] rounded-md bg-eatrivo-purple/10" />
-            </div>
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar sm:overflow-visible pb-2 sm:pb-0">
-            <Skeleton className="hidden sm:block h-11 w-28 rounded-full bg-gray-200/50" />
-            <Skeleton className="h-11 w-32 rounded-full bg-[#1a1a2e]/20" />
-          </div>
-        </div>
+    setPendingQuantityId(item.id);
+    try {
+      const success = await stepItemQuantity(
+        item.id,
+        operation,
+        getQuantityDeltaForUnit(item.unit),
+      );
 
-        {/* Main Content Area Skeleton */}
-        <div className="bg-white/60 backdrop-blur-3xl border border-white/60 rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-2xl shadow-eatrivo-purple/5 min-h-[400px]">
-          <div className="mb-8">
-            <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton
-                  key={i}
-                  className="h-10 w-28 shrink-0 rounded-full bg-eatrivo-purple/10"
-                />
-              ))}
-            </div>
-          </div>
-          
-          <div className="space-y-8">
-             <div className="space-y-4">
-              <Skeleton className="h-6 w-32 rounded-full bg-white/50" />
-              <div className="flex gap-4 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-1">
-                {[...Array(4)].map((_, i) => (
-                  <Skeleton
-                    key={i}
-                    className="h-40 w-[150px] shrink-0 rounded-[1.5rem] bg-white/50"
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="space-y-4">
-              <Skeleton className="h-6 w-48 rounded-full bg-white/50" />
-              <div className="flex gap-4 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-1">
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton
-                    key={i}
-                    className="h-40 w-[150px] shrink-0 rounded-[1.5rem] bg-white/50"
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    );
+      if (success) {
+        triggerHaptic("light");
+      }
+    } finally {
+      setPendingQuantityId(null);
+    }
+  }
+
+  async function handleDeleteItem(itemId: string) {
+    setPendingDeleteId(itemId);
+    try {
+      const success = await deleteItem(itemId);
+      if (success) {
+        triggerHaptic("medium");
+      }
+    } finally {
+      setPendingDeleteId(null);
+    }
+  }
+
+  async function handleToggleRecurring(
+    item: PantryItem,
+    enabled: boolean,
+    restockItemId?: string,
+  ) {
+    setPendingRecurringId(item.id);
+    try {
+      const success = await toggleRecurringForItem(item, enabled, restockItemId);
+      if (success) {
+        triggerHaptic("medium");
+      }
+    } finally {
+      setPendingRecurringId(null);
+    }
+  }
+
+  async function handleItemEdit(
+    itemId: string,
+    updates: { quantity: number | null; unit: string | null },
+  ): Promise<boolean> {
+    const success = await updateItem(itemId, updates);
+    if (success) {
+      triggerHaptic("medium");
+    }
+
+    return success;
+  }
+
+  function clearFilters() {
+    setSearchQuery("");
+    setCategoryFilter("all");
+    setActiveFilter("all");
+    triggerHaptic("light");
+  }
+
+  function toggleCategory(category: string) {
+    setExpandedCategories((current) => ({
+      ...current,
+      [category]: !current[category],
+    }));
+    triggerHaptic("light");
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="max-w-4xl mx-auto space-y-6 pb-24"
-    >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 px-1">
-        <div>
-          <h1 className="text-3xl md:text-5xl font-black text-[#1a1a2e] flex items-center gap-3 tracking-tighter mix-blend-multiply">
-            <div className="w-14 h-14 rounded-full bg-eatrivo-purple/10 flex items-center justify-center shrink-0 shadow-inner">
-              <CakeSlice className="w-7 h-7 text-eatrivo-purple" />
-            </div>
-            {t("title")}
-          </h1>
-          <div className="mt-3">
-            <p className="text-gray-500 text-sm md:text-base font-medium max-w-lg">
-              {items.length === 0
-                ? t("subtitle_empty")
-                : t(
-                    items.length === 1
-                      ? "subtitle_count_one"
-                      : items.length < 5
-                        ? "subtitle_count_few"
-                        : "subtitle_count_many",
-                    { count: items.length },
-                  )}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar sm:overflow-visible pb-2 sm:pb-0">
-          {pendingDrafts.length > 0 ? (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => void discardDrafts()}
-                disabled={isPreparingDrafts || isConfirmingDrafts}
-                className="rounded-full border-amber-200 text-amber-700 hover:bg-amber-50 h-11 px-4 whitespace-nowrap active:scale-95 transition-transform"
-              >
-                <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                {locale === "sk" ? "Zrušiť zmeny" : "Discard changes"}
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => void confirmDrafts()}
-                disabled={isPreparingDrafts || isConfirmingDrafts}
-                className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700 h-11 px-5 shadow-lg shadow-emerald-500/20 whitespace-nowrap active:scale-95 transition-all"
-              >
-                {isPreparingDrafts || isConfirmingDrafts ? (
-                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="w-4 h-4 mr-1.5" strokeWidth={3} />
-                )}
-                <span className="font-bold">
-                  {locale === "sk" ? "Potvrdiť" : "Confirm"}
-                </span>
-              </Button>
-            </>
-          ) : null}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={refresh}
-            className="hidden sm:flex rounded-full border-gray-200 text-gray-600 hover:text-eatrivo-purple hover:bg-eatrivo-purple/5 h-11 px-4 shadow-sm active:scale-95 transition-all"
-          >
-            <RefreshCw className="w-4 h-4 mr-1.5" />
-            <span className="font-bold">{t("refresh")}</span>
-          </Button>
-          <Button
-            onClick={() => setIsAddModalOpen(true)}
-            className="rounded-full bg-[#1a1a2e] text-white hover:bg-[#1a1a2e]/90 h-11 px-6 shadow-lg shadow-[#1a1a2e]/20 hover:scale-105 active:scale-95 transition-all duration-300 ease-out whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4 mr-1.5" strokeWidth={3} />
-            <span className="font-bold">{t("add_item")}</span>
-          </Button>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {pendingDrafts.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, height: 0 }}
-            className="rounded-[1.5rem] mt-2 border border-amber-200/60 bg-gradient-to-r from-amber-50 to-orange-50/50 p-5 shadow-sm shadow-amber-500/5 mx-1"
-          >
-            <div className="flex items-center gap-2 text-amber-800 mb-4">
-              <div className="w-8 h-8 rounded-full bg-amber-100/50 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-4 h-4" />
-              </div>
-              <p className="text-sm font-bold tracking-tight">
-                {locale === "sk"
-                  ? "Čakajúce položky na potvrdenie"
-                  : "Pending items waiting for confirmation"}
-              </p>
-            </div>
-            <div className="space-y-2">
-              {pendingDrafts.map((draft) => (
-                <div
-                  key={draft.token}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[1.25rem] border border-amber-200/40 bg-white/80 backdrop-blur-md px-4 py-3 shadow-sm hover:border-amber-300/60 transition-colors"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[15px] font-bold text-amber-950 truncate">
-                        {draft.name}
-                      </span>
-                      <span className="rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.2em] text-amber-700">
-                        Draft
-                      </span>
+    <AnimatePresence mode="wait">
+      {!isMounted || isLoading ? (
+        <motion.div
+          key="loading"
+          {...(shouldReduceMotion ? {} : fadeIn)}
+        >
+          <PantryLoadingState />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="content"
+          {...(shouldReduceMotion ? {} : fadeIn)}
+          className="max-w-5xl mx-auto space-y-6 pb-24"
+        >
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="p-2 bg-eatrivo-purple/10 rounded-lg">
+                      <CakeSlice className="w-5 h-5 text-eatrivo-purple" />
                     </div>
-                    <p className="text-xs font-medium text-amber-700/70 mt-1">
-                      {(draft.quantity
-                        ? `${Number.parseFloat(draft.quantity).toLocaleString("sk-SK")} `
-                        : "") + (draft.unit ?? "")}
+
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                      {t("title")}
+                    </h1>
+
+                    <StatChip label={t("summary_inventory")} value={String(items.length)} />
+                    {expiringItems.length > 0 ? (
+                      <StatChip
+                        label={t("summary_expiring")}
+                        value={String(expiringItems.length)}
+                        tone="red"
+                      />
+                    ) : null}
+                  </div>
+
+                  <p className="text-sm text-gray-600 max-w-2xl">{headerSubtitle}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  onClick={() => void handleRefresh()}
+                  className="rounded-full border-eatrivo-black-secondary/60 border-1 bg-white text-gray-700 hover:bg-eatrivo-purple/10 hover:text-eatrivo-purple"
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  {t("refresh")}
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic("light");
+                    setIsAddModalOpen(true);
+                  }}
+                  className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-6"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("add_item")}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence mode="wait" initial={false}>
+            {pendingDrafts.length > 0 ? (
+              <motion.section
+                key="drafts"
+                {...(shouldReduceMotion ? {} : fadeIn)}
+                className="bg-white rounded-2xl border border-eatrivo-orange/20 shadow-sm p-4 md:p-6"
+              >
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge className="rounded-full border-transparent bg-eatrivo-orange/10 text-eatrivo-orange">
+                        {t("drafts_badge")}
+                      </Badge>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {t("drafts_title")}
+                      </p>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      {t("drafts_description", { count: pendingDrafts.length })}
                     </p>
                   </div>
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-amber-600/60 whitespace-nowrap flex items-center gap-1.5">
-                    <Loader2 className="w-3 h-3 animate-spin hidden sm:block" />
-                    {locale === "sk" ? "Čaká na potvrdenie" : "Waiting"}
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      onClick={() => void handleDiscardDrafts()}
+                      disabled={isPreparingDrafts || isConfirmingDrafts}
+                      className="rounded-full border-eatrivo-black-secondary bg-white text-gray-700"
+                    >
+                      <XCircle className="mr-2 h-4 w-4" />
+                      {t("drafts_discard")}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => void handleConfirmDrafts()}
+                      disabled={isPreparingDrafts || isConfirmingDrafts}
+                      className="bg-eatrivo-green hover:bg-eatrivo-green/90 text-white rounded-full px-6"
+                    >
+                      {isConfirmingDrafts ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                      )}
+                      {t("drafts_confirm")}
+                    </Button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* Expiry warning banner */}
-      <AnimatePresence>
-        {expiringItems.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0, scale: 0.95 }}
-            animate={{ opacity: 1, height: "auto", scale: 1 }}
-            exit={{ opacity: 0, height: 0, scale: 0.95 }}
-            className="flex items-start gap-4 p-5 bg-gradient-to-r from-red-50 to-orange-50/50 border border-red-200/60 rounded-[1.5rem] shadow-sm shadow-red-500/5 mx-1"
-          >
-            <div className="w-10 h-10 rounded-full bg-red-100/50 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-5 h-5 text-red-500" />
-            </div>
-            <div className="mt-0.5">
-              <p className="text-[15px] font-bold text-red-900 tracking-tight">
-                {expiringItems.length === 1
-                  ? t("expiry_warning_one")
-                  : t("expiry_warning_few", { count: expiringItems.length })}
-              </p>
-              <p className="text-sm font-medium text-red-700/80 mt-1">
-                {expiringItems
-                  .slice(0, 3)
-                  .map((i) => i.name)
-                  .join(", ")}
-                {expiringItems.length > 3 && ` +${expiringItems.length - 3}`}
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+                  {pendingDrafts.map((draft) => (
+                    <div
+                      key={draft.token}
+                      className="min-w-[12rem] rounded-2xl border border-gray-100 bg-eatrivo-white-secondary px-3 py-3"
+                    >
+                      <p className="truncate text-sm font-semibold text-gray-900">
+                        {draft.name}
+                      </p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {draft.quantity ? `${draft.quantity}${draft.unit ? ` ${draft.unit}` : ""}` : draft.unit ?? "—"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </motion.section>
+            ) : null}
+          </AnimatePresence>
 
-      {/* Main Content Area */}
-      <div className="bg-white/60 backdrop-blur-3xl border border-white/60 rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-2xl shadow-eatrivo-purple/5 min-h-[400px]">
-        {isLoadingRestockItems ? (
-          <div className="mb-8">
-            <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton
-                  key={i}
-                  className="h-10 w-28 shrink-0 rounded-full bg-eatrivo-purple/10"
+          <AnimatePresence mode="wait" initial={false}>
+            {expiringItems.length > 0 ? (
+              <motion.section
+                key="expiring-banner"
+                {...(shouldReduceMotion ? {} : fadeIn)}
+                className="bg-white rounded-2xl border border-eatrivo-red/20 shadow-sm p-4 md:p-6"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="p-2 bg-eatrivo-red/10 rounded-lg">
+                    <AlertTriangle className="w-5 h-5 text-eatrivo-red" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-lg font-semibold text-gray-900">
+                      {expiringItems.length === 1
+                        ? t("expiry_warning_one")
+                        : t("expiry_warning_few", { count: expiringItems.length })}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {expiringItems
+                        .slice(0, 4)
+                        .map((item) => item.name)
+                        .join(", ")}
+                      {expiringItems.length > 4 ? ` +${expiringItems.length - 4}` : ""}
+                    </p>
+                  </div>
+                </div>
+              </motion.section>
+            ) : null}
+          </AnimatePresence>
+
+          {/* <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
+            {isLoadingRestockItems ? (
+              <div className="space-y-3">
+                {[...Array(2)].map((_, index) => (
+                  <Skeleton key={index} className="h-24 rounded-2xl bg-gray-100" />
+                ))}
+              </div>
+            ) : restockItems.length > 0 ? (
+              <PantryRestockStrip
+                items={restockItems}
+                onQuickAdd={quickAddRestockItem}
+                onUpdate={updateRestockItem}
+              />
+            ) : (
+              <SectionStateCard
+                title={t("restock.empty_title")}
+                description={t("restock.empty_description")}
+                icon={<Sparkles className="w-5 h-5" />}
+              />
+            )}
+          </div> */}
+
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 space-y-6">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">{t("inventory_title")}</h2>
+                <p className="text-sm text-gray-600">{t("inventory_description")}</p>
+              </div>
+
+              <Badge className="rounded-full border-transparent bg-eatrivo-purple/10 text-eatrivo-purple">
+                {filteredItems.length}
+              </Badge>
+            </div>
+
+            <div className=" top-0 z-10 p-2 rounded-3xl bg-eatrivo-white-primary border-1 border-eatrivo-black-secondary/40 space-y-3">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder={t("search_placeholder")}
+                  className="h-11 rounded-2xl border-gray-200 bg-eatrivo-white-secondary pl-11"
                 />
-              ))}
-            </div>
-          </div>
-        ) : restockItems.length > 0 ? (
-          <div className="mb-8">
-            <PantryRestockStrip
-              items={restockItems}
-              onQuickAdd={quickAddRestockItem}
-              onUpdate={updateRestockItem}
-            />
-          </div>
-        ) : null}
+              </div>
 
-        {items.length === 0 ? (
-          /* Empty state */
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.5, ease: "easeOut" }}
-            className="text-center py-16 px-4 flex flex-col items-center justify-center h-full min-h-[300px]"
-          >
-            <div className="relative w-28 h-28 mb-8">
-              <div className="absolute inset-0 bg-eatrivo-purple/10 rounded-full animate-ping opacity-75 duration-1000" />
-              <div className="relative w-full h-full bg-white rounded-full flex items-center justify-center shadow-xl shadow-eatrivo-purple/10 border border-eatrivo-purple/5">
-                <Package className="w-12 h-12 text-eatrivo-purple/50" />
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {FILTERS.map((filter) => (
+                  <FilterChip
+                    key={filter}
+                    active={activeFilter === filter}
+                    label={filterLabels[filter]}
+                    onClick={() => {
+                      if (activeFilter !== filter) {
+                        triggerHaptic("light");
+                      }
+                      setActiveFilter(filter);
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Select
+                  value={categoryFilter}
+                  onValueChange={(value) => {
+                    if (value !== categoryFilter) {
+                      triggerHaptic("light");
+                    }
+                    setCategoryFilter(value);
+                  }}
+                >
+                  <SelectTrigger className="h-10 rounded-xl border-gray-200 bg-eatrivo-white-secondary shadow-none">
+                    <SelectValue placeholder={t("category_filter_label")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("category_filter_all")}</SelectItem>
+                    {availableCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {categoryLabels[category as keyof typeof categoryLabels] ??
+                          formatCategoryFallback(category)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {(activeFilter !== "all" ||
+                  categoryFilter !== "all" ||
+                  searchQuery.trim().length > 0) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={clearFilters}
+                    className="rounded-full border-gray-200 bg-white text-gray-700"
+                  >
+                    {t("clear_filters")}
+                  </Button>
+                )}
               </div>
             </div>
-            <h3 className="text-2xl font-black text-[#1a1a2e] mb-3 tracking-tight">
-              {t("empty_state_title")}
-            </h3>
-            <p className="text-gray-500 text-sm md:text-base max-w-sm mx-auto mb-8 font-medium">
-              {t("empty_state_description")}
-            </p>
-            <Button
-              onClick={() => setIsAddModalOpen(true)}
-              className="bg-eatrivo-purple text-white hover:bg-eatrivo-purple/90 rounded-full px-8 py-6 shadow-xl shadow-eatrivo-purple/20 hover:scale-105 active:scale-95 transition-all duration-300 ease-out flex items-center gap-2"
-            >
-              <Plus className="w-5 h-5" strokeWidth={3} />
-              <span className="font-bold">{t("add_first_item")}</span>
-            </Button>
-          </motion.div>
-        ) : (
-          <div className="space-y-10">
-            <AnimatePresence initial={false}>
-              {/* Expiring Section (if applicable) */}
-              {expiringItems.length > 0 && (
-                <div className="space-y-4" key="expiring">
-                  <h2 className="text-xl font-black flex items-center gap-2.5 text-[#1a1a2e] tracking-tight">
-                    <div className="w-8 h-8 rounded-full bg-amber-100/50 flex items-center justify-center">
-                      <AlertTriangle className="w-4 h-4 text-amber-500" />
-                    </div>
-                    {t("filter_expiring")}
-                    <span className="ml-2 text-sm font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                      {expiringItems.length}
-                    </span>
-                  </h2>
-                  <div className="flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-4 -mx-4 px-4 sm:mx-0 sm:px-1">
-                    {expiringItems.map((item) => {
-                      const recurringItem = recurringLookup.get(item.id);
 
-                      return (
-                      <PantryItemRow
-                        key={item.id}
-                        item={item}
-                        isRecurring={Boolean(recurringItem?.isActive)}
-                        recurringItemId={recurringItem?.id}
-                        onUpdate={updateItem}
-                        onDelete={deleteItem}
-                        onToggleRecurring={toggleRecurringForItem}
-                      />
-                      );
-                    })}
+            {error ? (
+              <div className="rounded-2xl border border-eatrivo-red/20 bg-eatrivo-red/10 px-4 py-3 text-sm text-eatrivo-red">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <div>
+                    <p className="font-semibold">{t("load_error_title")}</p>
+                    <p className="mt-1 text-sm">{error}</p>
                   </div>
                 </div>
-              )}
+              </div>
+            ) : null}
 
-              {/* Categorized Carousels */}
-              {categories.map((cat) => {
-                const catItems = itemsByCategory[cat];
-                if (!catItems || catItems.length === 0) return null;
-                const Icon = CATEGORY_ICONS[cat] || Package;
+            {items.length === 0 ? (
+              <SectionStateCard
+                title={t("empty_state_title")}
+                description={t("empty_state_description")}
+                icon={<Package className="w-5 h-5" />}
+                action={
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic("light");
+                      setIsAddModalOpen(true);
+                    }}
+                    className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-6"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t("add_first_item")}
+                  </Button>
+                }
+              />
+            ) : groupedItems.length > 0 ? (
+              <div className="space-y-6">
+                {groupedItems.map(([category, categoryItems]) => {
+                  const categoryLabel =
+                    categoryLabels[category as keyof typeof categoryLabels] ??
+                    formatCategoryFallback(category);
+                  const isExpanded = expandedCategories[category] ?? true;
 
-                return (
-                  <div className="space-y-4" key={cat}>
-                    <h2 className="text-xl font-black flex items-center gap-2.5 text-[#1a1a2e] tracking-tight">
-                      <div className="w-8 h-8 rounded-full bg-eatrivo-purple/10 flex items-center justify-center">
-                        <Icon className="w-4 h-4 text-eatrivo-purple" />
+                  return (
+                    <section key={category} className="space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-eatrivo-blue/10 rounded-lg">
+                            <Package className="w-5 h-5 text-eatrivo-blue" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {categoryLabel}
+                            </h3>
+                            <p className="text-xs text-gray-500">{categoryItems.length}</p>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => toggleCategory(category)}
+                          className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-eatrivo-blue/10 hover:text-eatrivo-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                          aria-label={
+                            isExpanded
+                              ? t("aria_collapse_category", { category: categoryLabel })
+                              : t("aria_expand_category", { category: categoryLabel })
+                          }
+                          aria-expanded={isExpanded}
+                          title={
+                            isExpanded
+                              ? t("aria_collapse_category", { category: categoryLabel })
+                              : t("aria_expand_category", { category: categoryLabel })
+                          }
+                        >
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 transition-transform duration-200",
+                              isExpanded ? "rotate-0" : "-rotate-90",
+                            )}
+                          />
+                        </button>
                       </div>
-                      {getCategoryTranslation(cat)}
-                      <span className="ml-2 text-sm font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                        {catItems.length}
-                      </span>
-                    </h2>
-                    <div className="flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-4 -mx-4 px-4 sm:mx-0 sm:px-1">
-                      {catItems.map((item) => {
-                        const recurringItem = recurringLookup.get(item.id);
 
-                        return (
-                        <PantryItemRow
-                          key={item.id}
-                          item={item}
-                          isRecurring={Boolean(recurringItem?.isActive)}
-                          recurringItemId={recurringItem?.id}
-                          onUpdate={updateItem}
-                          onDelete={deleteItem}
-                          onToggleRecurring={toggleRecurringForItem}
-                        />
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </AnimatePresence>
+                      <AnimatePresence initial={false}>
+                        {isExpanded ? (
+                          <motion.div
+                            key={`${category}-items`}
+                            initial={shouldReduceMotion ? undefined : { opacity: 0, height: 0 }}
+                            animate={
+                              shouldReduceMotion
+                                ? undefined
+                                : { opacity: 1, height: "auto" }
+                            }
+                            exit={shouldReduceMotion ? undefined : { opacity: 0, height: 0 }}
+                            className="space-y-3 overflow-hidden"
+                          >
+                            {categoryItems.map((item) => {
+                              const recurringItem = recurringLookup.get(item.id);
+
+                              return (
+                                <PantryItemRow
+                                  key={item.id}
+                                  item={item}
+                                  locale={locale}
+                                  categoryLabel={categoryLabel}
+                                  expiryLabel={formatExpiry(item.expiryDate, locale)}
+                                  isExpiring={isExpiringSoon(item.expiryDate)}
+                                  isLowStock={item.lowStock}
+                                  isRecurring={Boolean(recurringItem?.isActive)}
+                                  isPendingQuantity={pendingQuantityId === item.id}
+                                  isPendingDelete={pendingDeleteId === item.id}
+                                  isPendingRecurring={pendingRecurringId === item.id}
+                                  sourceLabel={
+                                    item.source === "shopping_list"
+                                      ? t("source_shopping_list")
+                                      : t("source_manual")
+                                  }
+                                  lowStockLabel={t("row_low_stock")}
+                                  expiringLabel={t("row_expiring")}
+                                  recurringLabel={
+                                    recurringItem?.isActive ? t("row_tracked") : t("row_track")
+                                  }
+                                  editLabel={t("aria_edit")}
+                                  saveLabel={t("save_changes")}
+                                  cancelLabel={t("cancel")}
+                                  quantityLabel={t("field_quantity")}
+                                  unitLabel={t("field_unit")}
+                                  quantityPlaceholder={t("field_quantity_placeholder")}
+                                  unitPlaceholder={t("field_unit")}
+                                  quantityCaption={t("field_quantity")}
+                                  decreaseLabel={t("aria_decrease")}
+                                  increaseLabel={t("aria_increase")}
+                                  deleteLabel={t("aria_delete")}
+                                  onIncrease={() => void handleQuantityChange(item, "increment")}
+                                  onDecrease={() => void handleQuantityChange(item, "decrement")}
+                                  onDelete={() => void handleDeleteItem(item.id)}
+                                  onSaveEdit={(updates) => handleItemEdit(item.id, updates)}
+                                  onToggleRecurring={() =>
+                                    void handleToggleRecurring(
+                                      item,
+                                      !recurringItem?.isActive,
+                                      recurringItem?.id,
+                                    )
+                                  }
+                                />
+                              );
+                            })}
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
+                    </section>
+                  );
+                })}
+              </div>
+            ) : (
+              <SectionStateCard
+                title={t("no_results_title")}
+                description={t("no_results_description")}
+                icon={<Search className="w-5 h-5" />}
+                action={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={clearFilters}
+                    className="rounded-full border-gray-200 bg-white text-gray-700"
+                  >
+                    {t("clear_filters")}
+                  </Button>
+                }
+              />
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Add item modal */}
-      <AddPantryItemModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAddItems={async (itemsToAdd) => {
-          if (itemsToAdd.length === 1) {
-            return addItem(itemsToAdd[0]);
-          }
+          <AddPantryItemModal
+            isOpen={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
+            onAddItems={async (itemsToAdd) => {
+              if (itemsToAdd.length === 1) {
+                return addItem(itemsToAdd[0]);
+              }
 
-          return (await addItemsBatch(itemsToAdd)) !== null;
-        }}
-      />
-    </motion.div>
+              return (await addItemsBatch(itemsToAdd)) !== null;
+            }}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

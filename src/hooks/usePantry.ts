@@ -18,6 +18,14 @@ export interface PantryItem {
   shoppingListId: string | null;
   createdAt: string;
   updatedAt: string;
+  lowStock: boolean;
+  lowStockReason: "missing_quantity" | "restock_threshold" | "out_of_stock" | null;
+  restockItemId: string | null;
+  restockDefaultQuantity: string | null;
+  restockDefaultUnit: string | null;
+  isOnActiveShoppingList: boolean;
+  activeShoppingListId: string | null;
+  activeShoppingListItemId: string | null;
 }
 
 export interface PantryDraftItem {
@@ -84,6 +92,12 @@ export interface BatchPantryResult {
 interface PantryMutationResponse {
   item?: PantryItem;
   normalizationQueued?: boolean;
+  error?: string;
+}
+
+interface ShoppingListHandoffResponse {
+  success?: boolean;
+  addedItemIds?: string[];
   error?: string;
 }
 
@@ -220,8 +234,31 @@ export function usePantry() {
   );
 
   const addItem = useCallback(async (item: NewPantryItem): Promise<boolean> => {
-    return prepareDrafts([item]);
-  }, [prepareDrafts]);
+    try {
+      const response = await fetch("/api/pantry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(item),
+      });
+      const data = (await response.json()) as PantryMutationResponse;
+
+      if (!response.ok || !data.item) {
+        toast.error(data.error || "Nepodarilo sa pridať položku");
+        return false;
+      }
+
+      setItems((prev) => [...prev, data.item!]);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event(PANTRY_CHANGED_EVENT));
+      }
+      toast.success("Položka bola pridaná");
+      return true;
+    } catch (err) {
+      console.error("[Pantry] addItem: exception", err);
+      toast.error("Chyba pri pridávaní položky");
+      return false;
+    }
+  }, []);
 
   const addItemsBatch = useCallback(
     async (itemsToAdd: NewPantryItem[]): Promise<BatchPantryResult | null> => {
@@ -299,6 +336,41 @@ export function usePantry() {
       return false;
     }
   }, []);
+
+  const stepItemQuantity = useCallback(
+    async (
+      id: string,
+      operation: "increment" | "decrement",
+      quantityDelta: number = 1,
+    ): Promise<boolean> => {
+      try {
+        const response = await fetch(`/api/pantry/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quantityOperation: operation, quantityDelta }),
+        });
+        const data = (await response.json()) as PantryMutationResponse;
+
+        if (!response.ok || !data.item) {
+          toast.error("Nepodarilo sa upraviť množstvo");
+          return false;
+        }
+
+        setItems((prev) =>
+          prev.map((item) => (item.id === id ? data.item! : item)),
+        );
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event(PANTRY_CHANGED_EVENT));
+        }
+        return true;
+      } catch (err) {
+        console.error("[Pantry] stepItemQuantity: exception", err);
+        toast.error("Chyba pri zmene množstva");
+        return false;
+      }
+    },
+    [],
+  );
 
   const toggleRecurringForItem = useCallback(
     async (
@@ -460,6 +532,64 @@ export function usePantry() {
     [],
   );
 
+  const addItemToShoppingList = useCallback(
+    async (id: string): Promise<boolean> => {
+      try {
+        const response = await fetch("/api/shopping-lists/current", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pantryItemId: id }),
+        });
+        const data = (await response.json()) as ShoppingListHandoffResponse;
+
+        if (!response.ok || !data.success) {
+          toast.error(data.error || "Nepodarilo sa pridať na nákupný zoznam");
+          return false;
+        }
+
+        await fetchItems();
+        toast.success("Položka bola pridaná na nákupný zoznam");
+        return true;
+      } catch (err) {
+        console.error("[Pantry] addItemToShoppingList: exception", err);
+        toast.error("Chyba pri presune na nákupný zoznam");
+        return false;
+      }
+    },
+    [fetchItems],
+  );
+
+  const addLowStockToShoppingList = useCallback(
+    async (ids?: string[]): Promise<boolean> => {
+      try {
+        const response = await fetch("/api/shopping-lists/current", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            ids && ids.length > 0
+              ? { pantryItemIds: ids, lowStockOnly: true }
+              : { lowStockOnly: true },
+          ),
+        });
+        const data = (await response.json()) as ShoppingListHandoffResponse;
+
+        if (!response.ok || !data.success) {
+          toast.error(data.error || "Nepodarilo sa pridať low-stock položky");
+          return false;
+        }
+
+        await fetchItems();
+        toast.success("Low-stock položky boli pridané na nákupný zoznam");
+        return true;
+      } catch (err) {
+        console.error("[Pantry] addLowStockToShoppingList: exception", err);
+        toast.error("Chyba pri presune low-stock položiek");
+        return false;
+      }
+    },
+    [fetchItems],
+  );
+
   // Group items by category
   const itemsByCategory = items.reduce<Record<string, PantryItem[]>>(
     (acc, item) => {
@@ -553,10 +683,13 @@ export function usePantry() {
     addItem,
     addItemsBatch,
     updateItem,
+    stepItemQuantity,
     deleteItem,
     toggleRecurringForItem,
     updateRestockItem,
     quickAddRestockItem,
+    addItemToShoppingList,
+    addLowStockToShoppingList,
     confirmDrafts,
     discardDrafts,
     refresh,

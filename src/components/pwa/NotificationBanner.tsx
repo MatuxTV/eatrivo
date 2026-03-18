@@ -87,9 +87,9 @@ export function NotificationBanner() {
         console.log('[NotifBanner] subscription.keys.p256dh present:', !!json.keys?.p256dh);
 
         console.log('[NotifBanner] Calling savePushSubscription()...');
-        await savePushSubscription(subscription);
+        const result = await savePushSubscription(subscription);
         console.log('[NotifBanner] savePushSubscription() completed successfully');
-        toast.success(t("enabled"));
+        toast.success(result.status === "pending" ? t("pendingConfirmation") : t("enabled"));
         dismiss();
       } else {
         let msg: string;

@@ -18,7 +18,7 @@ export async function generateMetadata({
 
   const t = await getTranslations({
     locale: safeLocale,
-    namespace: "home.comingSoon",
+    namespace: "pantry",
   });
   const common = await getTranslations({
     locale: safeLocale,
@@ -26,8 +26,8 @@ export async function generateMetadata({
   });
 
   return {
-    title: `${t("pantry.title")} - ${common("appName")}`,
-    description: t("pantry.description"),
+    title: `${t("metadata.title")} - ${common("appName")}`,
+    description: t("metadata.description"),
   };
 }
 

@@ -240,3 +240,59 @@ export async function sendRenewalReminderEmail(
     };
   }
 }
+
+export async function sendPushDoubleOptInEmail(
+  userEmail: string,
+  props: {
+    userName?: string | null;
+    confirmUrl: string;
+  },
+  locale: string = "sk",
+): Promise<EmailResponse> {
+  const isEnglish = locale === "en";
+  const subject = isEnglish
+    ? "Confirm push notifications in Eatrivo"
+    : "Potvrďte push notifikácie v Eatrivo";
+  const greeting = isEnglish
+    ? `Hi${props.userName ? ` ${props.userName.split(" ")[0]}` : ""},`
+    : `Ahoj${props.userName ? ` ${props.userName.split(" ")[0]}` : ""},`;
+  const title = isEnglish ? "Confirm notifications" : "Potvrďte notifikácie";
+  const body = isEnglish
+    ? "Please confirm that you want to receive Eatrivo push notifications. We will start sending alerts only after this confirmation step."
+    : "Prosím potvrďte, že chcete dostávať push notifikácie od Eatrivo. Upozornenia začneme posielať až po tomto potvrdení.";
+  const buttonLabel = isEnglish ? "Confirm notifications" : "Potvrdiť notifikácie";
+  const footer = isEnglish
+    ? "If you did not request this, you can safely ignore this email."
+    : "Ak ste o to nepožiadali, tento email môžete bezpečne ignorovať.";
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: DEFAULT_FROM_EMAIL,
+      to: userEmail,
+      subject,
+      html: `
+        <div style="font-family:Arial,sans-serif;background:#fafafa;padding:32px;color:#111827;">
+          <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:24px;padding:32px;box-shadow:0 18px 50px rgba(17,24,39,0.08);">
+            <div style="width:56px;height:56px;border-radius:999px;background:rgba(139,92,246,0.12);color:#8b5cf6;font-size:28px;line-height:56px;text-align:center;margin-bottom:20px;">R</div>
+            <p style="margin:0 0 12px;font-size:16px;">${greeting}</p>
+            <h1 style="margin:0 0 12px;font-size:28px;line-height:1.1;">${title}</h1>
+            <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#4b5563;">${body}</p>
+            <a href="${props.confirmUrl}" style="display:inline-block;padding:14px 22px;border-radius:999px;background:#8b5cf6;color:#ffffff;text-decoration:none;font-weight:700;">${buttonLabel}</a>
+            <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#6b7280;">${footer}</p>
+          </div>
+        </div>
+      `,
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
