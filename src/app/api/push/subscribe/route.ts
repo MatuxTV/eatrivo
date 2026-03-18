@@ -2,22 +2,29 @@
 import { NextResponse } from 'next/server';
 import { auth } from '../../../../../auth';
 import { db } from '@/index';
-import { pushSubscriptions, consentLogs } from '@/db/schema';
+import { pushSubscriptions, users } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { apiLogger } from '@/lib/logger';
 import { checkRateLimit } from '@/lib/rateLimit';
+import { createOrReusePendingPushOptIn, normalizePushOptInLocale, clearPendingPushOptIn } from '@/lib/pwa/pushDoubleOptIn';
+import { sendPushDoubleOptInEmail } from '@/lib/emailService';
+
+type SubscribeRequestBody = {
+  subscription?: {
+    endpoint?: string;
+    keys?: {
+      auth?: string;
+      p256dh?: string;
+    };
+  };
+  locale?: string;
+};
 
 export async function POST(request: NextRequest) {
-  apiLogger.info('[PushSubscribe] POST /api/push/subscribe called');
   try {
     const session = await auth();
 
-    apiLogger.info('[PushSubscribe] session resolved', {
-      metadata: { userId: session?.user?.id ?? 'none', hasSession: !!session },
-    });
-
     if (!session?.user?.id) {
-      apiLogger.warn('[PushSubscribe] Unauthorized — no session user id');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -26,25 +33,13 @@ export async function POST(request: NextRequest) {
 
     const rl = await checkRateLimit(`user:${session.user.id}`, 'standard');
     if (!rl.success) {
-      apiLogger.warn('[PushSubscribe] Rate limited', { metadata: { userId: session.user.id } });
       return rl.response!;
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as SubscribeRequestBody;
     const { subscription } = body;
 
-    apiLogger.info('[PushSubscribe] Request body parsed', {
-      metadata: {
-        hasSubscription: !!subscription,
-        hasEndpoint: !!subscription?.endpoint,
-        endpointPrefix: subscription?.endpoint?.slice(0, 60) ?? 'MISSING',
-        hasAuth: !!subscription?.keys?.auth,
-        hasP256dh: !!subscription?.keys?.p256dh,
-      },
-    });
-
-    if (!subscription || !subscription.endpoint) {
-      apiLogger.error('[PushSubscribe] Invalid subscription data — missing endpoint');
+    if (!subscription?.endpoint || !subscription.keys?.auth || !subscription.keys?.p256dh) {
       return NextResponse.json(
         { error: 'Invalid subscription data' },
         { status: 400 }
@@ -52,36 +47,34 @@ export async function POST(request: NextRequest) {
     }
 
     const userAgent = request.headers.get('user-agent') || null;
+    const locale = normalizePushOptInLocale(body.locale);
+    const ipAddress =
+      request.headers.get('x-forwarded-for')?.split(',')[0] ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
 
-    // Check if subscription already exists for this endpoint
-    apiLogger.info('[PushSubscribe] Checking for existing subscription in DB...', {
-      metadata: { userId: session.user.id },
-    });
-    let existingSubscription;
-    try {
-      existingSubscription = await db
-        .select()
-        .from(pushSubscriptions)
-        .where(
-          and(
-            eq(pushSubscriptions.userId, session.user.id),
-            sql<boolean>`${pushSubscriptions.subscription}->>'endpoint' = ${subscription.endpoint}`
-          )
-        )
-        .limit(1);
-      apiLogger.info('[PushSubscribe] Existing subscription check complete', {
-        metadata: { found: existingSubscription.length > 0 },
-      });
-    } catch (dbQueryErr) {
-      apiLogger.error('[PushSubscribe] DB query for existing subscription failed', dbQueryErr as Error);
-      throw dbQueryErr;
+    const [user] = await db
+      .select({ email: users.email, name: users.name })
+      .from(users)
+      .where(eq(users.id, session.user.id))
+      .limit(1);
+
+    if (!user?.email) {
+      return NextResponse.json({ error: 'User email not found' }, { status: 404 });
     }
 
+    const existingSubscription = await db
+      .select()
+      .from(pushSubscriptions)
+      .where(
+        and(
+          eq(pushSubscriptions.userId, session.user.id),
+          sql<boolean>`${pushSubscriptions.subscription}->>'endpoint' = ${subscription.endpoint}`
+        )
+      )
+      .limit(1);
+
     if (existingSubscription.length > 0) {
-      // Update existing subscription
-      apiLogger.info('[PushSubscribe] Updating existing subscription...', {
-        metadata: { subscriptionId: existingSubscription[0].id },
-      });
       await db
         .update(pushSubscriptions)
         .set({
@@ -90,46 +83,66 @@ export async function POST(request: NextRequest) {
           updatedAt: new Date(),
         })
         .where(eq(pushSubscriptions.id, existingSubscription[0].id));
-      
-      apiLogger.info('Updated existing push subscription', { metadata: { userId: session.user.id } });
-    } else {
-      // Insert new subscription
-      apiLogger.info('[PushSubscribe] Inserting new subscription...', {
-        metadata: { userId: session.user.id },
-      });
-      await db.insert(pushSubscriptions).values({
-        userId: session.user.id,
-        subscription: subscription,
-        userAgent: userAgent,
-      });
-      
-      apiLogger.info('Created new push subscription', { metadata: { userId: session.user.id } });
+
+      return NextResponse.json(
+        { success: true, status: 'confirmed', message: 'Subscription already confirmed' },
+        { status: 200 }
+      );
     }
 
-    // Log push notification consent for GDPR audit trail
-    apiLogger.info('[PushSubscribe] Logging GDPR consent...');
-    const ipAddress =
-      request.headers.get('x-forwarded-for')?.split(',')[0] ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
-
-    await db.insert(consentLogs).values({
+    const pending = await createOrReusePendingPushOptIn({
       userId: session.user.id,
-      type: 'push_notifications',
-      agreed: true,
-      ipAddress: ipAddress,
-      userAgent: userAgent || 'unknown',
-      documentVersion: 'v1.0',
+      userEmail: user.email,
+      userName: user.name,
+      subscription,
+      endpoint: subscription.endpoint,
+      userAgent,
+      ipAddress,
+      locale,
+      createdAt: new Date().toISOString(),
     });
 
-    apiLogger.info('[PushSubscribe] All done — returning 200');
+    if (pending.isNew) {
+      const origin = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
+      const confirmUrl = `${origin}/api/push/confirm/${pending.token}`;
+      const emailResult = await sendPushDoubleOptInEmail(
+        user.email,
+        {
+          userName: user.name,
+          confirmUrl,
+        },
+        locale,
+      );
+
+      if (!emailResult.success) {
+        await clearPendingPushOptIn(pending.token, {
+          userId: session.user.id,
+          userEmail: user.email,
+          userName: user.name,
+          subscription,
+          endpoint: subscription.endpoint,
+          userAgent,
+          ipAddress,
+          locale,
+          createdAt: new Date().toISOString(),
+        });
+        return NextResponse.json({ error: 'Failed to send confirmation email' }, { status: 500 });
+      }
+    }
+
     return NextResponse.json(
-      { success: true, message: 'Subscription saved successfully' },
-      { status: 200 }
+      {
+        success: true,
+        status: 'pending',
+        message:
+          locale === 'en'
+            ? 'Check your email to confirm push notifications.'
+            : 'Skontrolujte email a potvrďte push notifikácie.',
+      },
+      { status: 202 }
     );
   } catch (error) {
     apiLogger.error('Error saving push subscription', error as Error);
-    console.error('[PushSubscribe] UNHANDLED ERROR:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

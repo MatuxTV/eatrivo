@@ -11,7 +11,7 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_ENABLE_SW_DEV !== "true",
   importScripts: ["/custom-sw.js"],
   fallbacks: {
-    document: "/offline",
+    document: "",
     image: "",
     audio: "",
     video: "",

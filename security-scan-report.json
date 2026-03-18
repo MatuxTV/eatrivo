@@ -1,0 +1,127 @@
+{
+  "timestamp": "2026-03-18T16:01:41.533Z",
+  "projectDir": "C:\\Users\\matux\\Documents\\GitHub\\eatrivo",
+  "filesScanned": 286,
+  "overallRisk": "HIGH",
+  "counts": {
+    "CRITICAL": 0,
+    "HIGH": 7,
+    "MEDIUM": 6,
+    "LOW": 1,
+    "INFO": 0
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "category": "env",
+      "message": ".env.local may not be in .gitignore",
+      "file": ".env.local",
+      "line": null,
+      "fix": "Add .env.local to .gitignore"
+    },
+    {
+      "severity": "HIGH",
+      "category": "injection",
+      "message": "Command execution detected — potential command injection",
+      "file": "public\\workbox-f52fd911.js",
+      "line": 1,
+      "fix": "Use execFile() instead of exec(), validate all inputs"
+    },
+    {
+      "severity": "HIGH",
+      "category": "xss",
+      "message": "dangerouslySetInnerHTML used — potential XSS if user input is not sanitized",
+      "file": "src\\components\\email-templates\\ShoppingListNotificationEmail.tsx",
+      "line": 102,
+      "fix": "Sanitize with DOMPurify before rendering"
+    },
+    {
+      "severity": "HIGH",
+      "category": "auth",
+      "message": "Server Action file without apparent auth check",
+      "file": "src\\app\\[locale]\\signout\\page.tsx",
+      "line": 1,
+      "fix": "Add authentication check at the beginning of each server action"
+    },
+    {
+      "severity": "HIGH",
+      "category": "auth",
+      "message": "API route without auth check: GET, POST",
+      "file": "src\\app\\api\\auth\\[...nextauth]\\route.ts",
+      "line": 1,
+      "fix": "Add authentication middleware or check at the beginning of the handler"
+    },
+    {
+      "severity": "HIGH",
+      "category": "auth",
+      "message": "API route without auth check: GET",
+      "file": "src\\app\\api\\cron\\check-pantry-expiry\\route.ts",
+      "line": 1,
+      "fix": "Add authentication middleware or check at the beginning of the handler"
+    },
+    {
+      "severity": "HIGH",
+      "category": "auth",
+      "message": "API route without auth check: POST",
+      "file": "src\\app\\api\\stripe\\webhook\\route.ts",
+      "line": 1,
+      "fix": "Add authentication middleware or check at the beginning of the handler"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "validation",
+      "message": "Server Action file without apparent input validation",
+      "file": "src\\app\\[locale]\\signin\\page.tsx",
+      "line": 1,
+      "fix": "Add input validation using zod, valibot, or similar library"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "validation",
+      "message": "Server Action file without apparent input validation",
+      "file": "src\\app\\[locale]\\signout\\page.tsx",
+      "line": 1,
+      "fix": "Add input validation using zod, valibot, or similar library"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "validation",
+      "message": "API mutation route without input validation",
+      "file": "src\\app\\api\\auth\\[...nextauth]\\route.ts",
+      "line": 1,
+      "fix": "Validate request body using zod or similar"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "validation",
+      "message": "API mutation route without input validation",
+      "file": "src\\app\\api\\push\\test-self\\route.ts",
+      "line": 1,
+      "fix": "Validate request body using zod or similar"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "validation",
+      "message": "API mutation route without input validation",
+      "file": "src\\app\\api\\send-email\\route.ts",
+      "line": 1,
+      "fix": "Validate request body using zod or similar"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "exposure",
+      "message": "server-only package not installed",
+      "file": "package.json",
+      "line": null,
+      "fix": "Install server-only: npm i server-only — use it in server-only modules to prevent client imports"
+    },
+    {
+      "severity": "LOW",
+      "category": "crypto",
+      "message": "Math.random() used — not cryptographically secure",
+      "file": "src\\app\\home\\premium\\DailyMealPlan.tsx",
+      "line": 90,
+      "fix": "Use crypto.randomUUID() or crypto.randomBytes() for security-sensitive values"
+    }
+  ]
+}

@@ -98,8 +98,6 @@ const SHOPPING_CATEGORY_ICONS: Record<string, React.ElementType> = {
 const PANTRY_CHANGED_EVENT = "pantry:changed";
 const KITCHEN_COUNTER_SELECTED_RECIPE_STORAGE_KEY =
   "kitchenCounter:selectedRecipe";
-const SHOPPING_LIST_CHECKED_STORAGE_KEY = "shoppingList:checkedItems";
-
 const RECIPE_TAG_TRANSLATION_KEYS = {
   all: "basic.recipeTags.all",
   "high-protein": "basic.recipeTags.high-protein",
@@ -161,6 +159,7 @@ interface ShoppingListItem {
   name: string;
   quantity: string | null;
   category: string;
+  isChecked?: boolean;
 }
 
 interface ShoppingListApiItem {
@@ -169,6 +168,7 @@ interface ShoppingListApiItem {
   quantity: string | null;
   category: string;
   sortOrder: number;
+  isChecked?: boolean;
 }
 
 interface ShoppingListApiMeta {
@@ -281,52 +281,58 @@ export default function HomePage({
     [activeHomeSection, triggerHaptic],
   );
 
-  const persistCheckedItems = useCallback(
-    (ids: Set<string>, listId: string | undefined) => {
-      if (typeof window === "undefined" || !listId) return;
-      try {
-        const key = `${SHOPPING_LIST_CHECKED_STORAGE_KEY}:${listId}`;
-        window.localStorage.setItem(key, JSON.stringify([...ids]));
-      } catch {
-        /* localStorage full — silently ignore */
-      }
-    },
-    [],
-  );
-
   const toggleCheckItem = useCallback(
     (itemId: string) => {
       triggerHaptic("light");
+      
+      const prevChecked = checkedItemIds.has(itemId);
+      const nextChecked = !prevChecked;
+
       setCheckedItemIds((prev) => {
         const next = new Set(prev);
-        if (next.has(itemId)) {
-          next.delete(itemId);
-        } else {
-          next.add(itemId);
-        }
-        persistCheckedItems(next, currentShoppingList?.id);
+        if (nextChecked) next.add(itemId);
+        else next.delete(itemId);
         return next;
       });
+
+      fetch(`/api/shopping-lists/current/items/${itemId}/check`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isChecked: nextChecked })
+      }).catch((_err) => {
+        toast.error("Chyba synchronizácie s databázou");
+        setCheckedItemIds((prev) => {
+          const next = new Set(prev);
+          if (prevChecked) next.add(itemId);
+          else next.delete(itemId);
+          return next;
+        });
+      });
     },
-    [triggerHaptic, persistCheckedItems, currentShoppingList?.id],
+    [triggerHaptic, checkedItemIds],
   );
 
-  // Restore checked items from localStorage when the shopping list loads
-  useEffect(() => {
-    if (typeof window === "undefined" || !currentShoppingList?.id) return;
-    try {
-      const key = `${SHOPPING_LIST_CHECKED_STORAGE_KEY}:${currentShoppingList.id}`;
-      const stored = window.localStorage.getItem(key);
-      if (stored) {
-        const ids = JSON.parse(stored) as string[];
-        if (Array.isArray(ids)) {
-          setCheckedItemIds(new Set(ids));
-        }
+  const handleEditQuantity = useCallback(async (itemId: string, currentQuantity: string | null) => {
+    const newQuantity = window.prompt("Upraviť množstvo:", currentQuantity || "");
+    if (newQuantity !== null && newQuantity.trim() !== currentQuantity?.trim()) {
+      const trimmed = newQuantity.trim();
+      
+      const previousItems = [...shoppingListItems];
+      setShoppingListItems(prev => prev.map(item => item.id === itemId ? { ...item, quantity: trimmed } : item));
+
+      try {
+        const response = await fetch(`/api/shopping-lists/current/items/${itemId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amountLabel: trimmed })
+        });
+        if (!response.ok) throw new Error("Update failed");
+      } catch {
+        toast.error("Nepodarilo sa upraviť množstvo");
+        setShoppingListItems(previousItems);
       }
-    } catch {
-      /* corrupted — ignore */
     }
-  }, [currentShoppingList?.id]);
+  }, [shoppingListItems]);
 
   const handleRemoveItem = useCallback(
     (itemId: string) => {
@@ -343,7 +349,6 @@ export default function HomePage({
       setCheckedItemIds((prev) => {
         const next = new Set(prev);
         next.delete(itemId);
-        persistCheckedItems(next, currentShoppingList?.id);
         return next;
       });
 
@@ -362,7 +367,6 @@ export default function HomePage({
           toast.error(t("basic.shoppingList.removeError"));
           setShoppingListItems(previousItems);
           setCheckedItemIds(previousCheckedItemIds);
-          persistCheckedItems(previousCheckedItemIds, currentShoppingList?.id);
         })
         .finally(() => {
           setIsRemovingItemId(null);
@@ -372,7 +376,6 @@ export default function HomePage({
       isRemovingItemId,
       triggerHaptic,
       t,
-      persistCheckedItems,
       currentShoppingList?.id,
       shoppingListItems,
       checkedItemIds,
@@ -579,6 +582,7 @@ export default function HomePage({
         name: item.name,
         quantity: item.quantity,
         category: item.category,
+        isChecked: item.isChecked,
       })),
     [],
   );
@@ -657,9 +661,13 @@ export default function HomePage({
       };
 
       setCurrentShoppingList(payload.shoppingList ?? null);
-      setShoppingListItems(
-        Array.isArray(payload.items) ? mapShoppingListItems(payload.items) : [],
-      );
+      const items = Array.isArray(payload.items) ? mapShoppingListItems(payload.items) : [];
+      setShoppingListItems(items);
+      const initialChecked = new Set<string>();
+      items.forEach((item) => {
+        if (item.isChecked && item.id) initialChecked.add(item.id);
+      });
+      setCheckedItemIds(initialChecked);
     } catch (error) {
       logger.warn("Failed to fetch current shopping list", {
         context: "HomePage",
@@ -977,14 +985,15 @@ export default function HomePage({
 
     try {
       const response = await fetch(
-        `/api/shopping-lists/${currentShoppingList.id}/status`,
+        `/api/shopping-lists/${currentShoppingList.id}/checkout-to-pantry`,
         {
-          method: "PATCH",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            status: "completed",
+            mode: "checked_only",
+            completeList: true
           }),
         },
       );
@@ -997,14 +1006,11 @@ export default function HomePage({
         throw new Error(payload?.error ?? "Failed to complete shopping list");
       }
 
-      // Clear checked items from localStorage
-      if (typeof window !== "undefined" && currentShoppingList.id) {
-        window.localStorage.removeItem(
-          `${SHOPPING_LIST_CHECKED_STORAGE_KEY}:${currentShoppingList.id}`,
-        );
-      }
+      toast.success(t("basic.shoppingList.completeSuccess") || "Nákup uložený do špajze!");
+
       setCheckedItemIds(new Set());
 
+      await refreshPantrySummary();
       await loadCurrentShoppingList();
     } catch (error) {
       logger.warn("Failed to complete shopping list", {
@@ -1440,17 +1446,21 @@ export default function HomePage({
                                             {item.name}
                                           </span>
                                           <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-nowrap sm:gap-1.5">
-                                            {item.quantity ? (
-                                              <span
-                                                className={`max-w-full rounded-full bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-center leading-tight ring-1 transition-all duration-200 whitespace-normal break-words sm:whitespace-nowrap ${
-                                                  isChecked
-                                                    ? "text-gray-400 ring-gray-150"
-                                                    : "text-gray-500 ring-gray-200/70"
-                                                }`}
-                                              >
-                                                {item.quantity}
-                                              </span>
-                                            ) : null}
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  void handleEditQuantity(item.id ?? "", item.quantity);
+                                              }}
+                                              aria-label="Edit quantity"
+                                              className={`max-w-full rounded-full bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-center leading-tight ring-1 transition-all duration-200 whitespace-normal break-words sm:whitespace-nowrap cursor-pointer hover:bg-gray-50 active:scale-95 ${
+                                                isChecked
+                                                  ? "text-gray-400 ring-gray-150"
+                                                  : "text-gray-500 hover:text-eatrivo-purple hover:ring-eatrivo-purple/30 ring-gray-200/70"
+                                              } ${!item.quantity ? "px-3" : ""}`}
+                                            >
+                                              {item.quantity || "+"}
+                                            </button>
                                             {/* Remove item button */}
                                             <button
                                               type="button"

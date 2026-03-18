@@ -2,25 +2,40 @@ import type { NextRequest } from "next/server";
 import { NextResponse, after } from "next/server";
 import { auth } from "../../../../auth";
 import { db } from "@/index";
-import { pantryItems, userInfoTable, userProfiles } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import {
+  pantryItems,
+  pantryRestockItems,
+  shoppingListItems,
+  shoppingLists,
+  userInfoTable,
+  userProfiles,
+} from "@/db/schema";
+import { eq, asc, and } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
 import { normalizePantryItemsInBackground } from "@/lib/pantry/background-normalization";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import { CacheService } from "@/lib/redis";
+import {
+  handleApiError,
+  safeErrorResponse,
+  unauthorizedError,
+  validationError,
+} from "@/lib/safeError";
+import { buildPantryInventoryItems, derivePantryInventoryItem } from "@/lib/pantry/grocery";
+import { invalidatePantryCaches, pantryCacheKey } from "@/lib/pantry/restock";
+import {
+  pantryCreateItemSchema,
+  pantryListQuerySchema,
+} from "@/lib/schemas/pantry";
 import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 
 const CACHE_TTL = 300; // 5 minutes
-
-function cacheKey(userProfileId: string) {
-  return `pantry:${userProfileId}`;
-}
 
 // GET /api/pantry — Fetch all pantry items for the authenticated user
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorizedError("Unauthorized");
   }
 
   const identifier = getRateLimitIdentifier(
@@ -33,35 +48,89 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    const query = pantryListQuerySchema.safeParse({
+      lowStockOnly: req.nextUrl.searchParams.get("lowStockOnly"),
+    });
+    if (!query.success) {
+      return validationError("Invalid pantry query");
+    }
+
     const userProfile = await db.query.userProfiles.findFirst({
       where: eq(userProfiles.userId, session.user.id),
     });
     if (!userProfile) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+      return safeErrorResponse("Profile not found", {
+        status: 404,
+        code: "PROFILE_NOT_FOUND",
+      });
     }
 
-    // Try cache first
+    const [activeShoppingList, restockRows] = await Promise.all([
+      db.query.shoppingLists.findFirst({
+        where: and(
+          eq(shoppingLists.userProfileId, userProfile.id),
+          eq(shoppingLists.status, "active"),
+        ),
+      }),
+      db
+        .select()
+        .from(pantryRestockItems)
+        .where(
+          and(
+            eq(pantryRestockItems.userProfileId, userProfile.id),
+            eq(pantryRestockItems.isActive, true),
+          ),
+        )
+        .orderBy(asc(pantryRestockItems.createdAt)),
+    ]);
+
     const cached = await CacheService.get<(typeof pantryItems.$inferSelect)[]>(
-      cacheKey(userProfile.id),
+      pantryCacheKey(userProfile.id),
     );
-    if (cached) {
-      return NextResponse.json({ items: cached });
+
+    const pantryRows =
+      cached ??
+      (await db
+        .select()
+        .from(pantryItems)
+        .where(eq(pantryItems.userProfileId, userProfile.id))
+        .orderBy(asc(pantryItems.createdAt)));
+
+    if (!cached) {
+      await CacheService.set(pantryCacheKey(userProfile.id), pantryRows, CACHE_TTL);
     }
 
-    const items = await db
-      .select()
-      .from(pantryItems)
-      .where(eq(pantryItems.userProfileId, userProfile.id))
-      .orderBy(asc(pantryItems.createdAt));
+    const activeShoppingListItems = activeShoppingList
+      ? await db
+          .select()
+          .from(shoppingListItems)
+          .where(eq(shoppingListItems.shoppingListId, activeShoppingList.id))
+          .orderBy(asc(shoppingListItems.sortOrder))
+      : [];
 
-    await CacheService.set(cacheKey(userProfile.id), items, CACHE_TTL);
-    return NextResponse.json({ items });
+    const items = buildPantryInventoryItems(
+      pantryRows,
+      restockRows,
+      activeShoppingListItems,
+      activeShoppingList?.id ?? null,
+    );
+    const filteredItems = query.data.lowStockOnly
+      ? items.filter((item) => item.lowStock)
+      : items;
+
+    return NextResponse.json({
+      items: filteredItems,
+      meta: {
+        activeShoppingListId: activeShoppingList?.id ?? null,
+        lowStockCount: items.filter((item) => item.lowStock).length,
+      },
+    });
   } catch (error) {
     apiLogger.error("GET /api/pantry error", { error });
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return handleApiError(error, "GET /api/pantry", {
+      status: 500,
+      code: "PANTRY_FETCH_FAILED",
+    });
   }
 }
 
@@ -69,7 +138,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorizedError("Unauthorized");
   }
 
   const identifier = getRateLimitIdentifier(
@@ -82,26 +151,44 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
-    const { name, quantity, unit, category, expiryDate } = body;
-
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    const parsedBody = pantryCreateItemSchema.safeParse(
+      await req.json().catch(() => null),
+    );
+    if (!parsedBody.success) {
+      return validationError("Validation failed");
     }
-    if (name.length > 200) {
-      return NextResponse.json({ error: "Name too long" }, { status: 400 });
-    }
+    const { name, quantity, unit, category, expiryDate } = parsedBody.data;
 
     const userProfile = await db.query.userProfiles.findFirst({
       where: eq(userProfiles.userId, session.user.id),
     });
     if (!userProfile) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+      return safeErrorResponse("Profile not found", {
+        status: 404,
+        code: "PROFILE_NOT_FOUND",
+      });
     }
 
-    const userInfo = await db.query.userInfoTable.findFirst({
-      where: eq(userInfoTable.userProfileId, userProfile.id),
-    });
+    const [userInfo, activeShoppingList, restockRows] = await Promise.all([
+      db.query.userInfoTable.findFirst({
+        where: eq(userInfoTable.userProfileId, userProfile.id),
+      }),
+      db.query.shoppingLists.findFirst({
+        where: and(
+          eq(shoppingLists.userProfileId, userProfile.id),
+          eq(shoppingLists.status, "active"),
+        ),
+      }),
+      db
+        .select()
+        .from(pantryRestockItems)
+        .where(
+          and(
+            eq(pantryRestockItems.userProfileId, userProfile.id),
+            eq(pantryRestockItems.isActive, true),
+          ),
+        ),
+    ]);
 
     const resolvedCategory =
       category && typeof category === "string"
@@ -127,7 +214,14 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
-    await CacheService.del(cacheKey(userProfile.id));
+    const activeShoppingListItems = activeShoppingList
+      ? await db
+          .select()
+          .from(shoppingListItems)
+          .where(eq(shoppingListItems.shoppingListId, activeShoppingList.id))
+      : [];
+
+    await invalidatePantryCaches(userProfile.id);
     after(async () => {
       await normalizePantryItemsInBackground({
         source: "pantry-manual-add",
@@ -138,14 +232,22 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(
-      { item: newItem, normalizationQueued: true },
+      {
+        item: derivePantryInventoryItem(
+          newItem,
+          restockRows,
+          activeShoppingListItems,
+          activeShoppingList?.id ?? null,
+        ),
+        normalizationQueued: true,
+      },
       { status: 201 },
     );
   } catch (error) {
     apiLogger.error("POST /api/pantry error", { error });
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return handleApiError(error, "POST /api/pantry", {
+      status: 500,
+      code: "PANTRY_CREATE_FAILED",
+    });
   }
 }

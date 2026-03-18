@@ -1,3 +1,49 @@
+self.addEventListener('install', function(event) {
+  const cacheName = 'eatrivo-runtime-v1';
+  event.waitUntil(
+    caches.open(cacheName).then(function(cache) {
+      return cache.addAll(['/offline.html']);
+    })
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function(event) {
+  const allowedCaches = ['eatrivo-runtime-v1'];
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          if (cacheName.startsWith('eatrivo-runtime-') && !allowedCaches.includes(cacheName)) {
+            return caches.delete(cacheName);
+          }
+          return Promise.resolve(false);
+        })
+      );
+    }).then(function() {
+      return self.clients.claim();
+    })
+  );
+});
+
+self.addEventListener('fetch', function(event) {
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  if (event.request.mode !== 'navigate') {
+    return;
+  }
+
+  event.respondWith(
+    fetch(event.request).catch(function() {
+      return caches.match('/offline.html').then(function(response) {
+        return response || Response.error();
+      });
+    })
+  );
+});
+
 self.addEventListener('push', function(event) {
   if (event.data) {
     const data = event.data.json();

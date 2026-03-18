@@ -3,11 +3,24 @@ import { NextResponse } from "next/server";
 import { and, asc, eq } from "drizzle-orm";
 
 import { auth } from "../../../../../auth";
-import { shoppingListItems, shoppingLists, userProfiles } from "@/db/schema";
+import {
+  pantryItems,
+  pantryRestockItems,
+  shoppingListItems,
+  shoppingLists,
+  userProfiles,
+} from "@/db/schema";
 import { db } from "@/index";
 import { apiLogger } from "@/lib/logger";
+import {
+  formatAmountLabel,
+  resolveShoppingListSeedFromPantryItem,
+} from "@/lib/pantry/grocery";
+import { buildPantryInventoryItems } from "@/lib/pantry/grocery";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { CacheService } from "@/lib/redis";
+import { handleApiError, safeErrorResponse, unauthorizedError, validationError } from "@/lib/safeError";
+import { shoppingListCurrentMutationSchema } from "@/lib/schemas/pantry";
 import { guessFoodCategory } from "@/lib/units";
 
 type ShoppingListItemResponse = {
@@ -16,6 +29,8 @@ type ShoppingListItemResponse = {
   quantity: string | null;
   category: string;
   sortOrder: number;
+  isChecked: boolean;
+  checkedAt: string | null;
 };
 
 function getShoppingListPlaceholderTimestamp() {
@@ -31,6 +46,8 @@ function mapShoppingListItems(
     quantity: item.amountLabel,
     category: item.category ?? guessFoodCategory(item.name),
     sortOrder: item.sortOrder,
+    isChecked: item.isChecked,
+    checkedAt: item.checkedAt?.toISOString() ?? null,
   }));
 }
 
@@ -44,12 +61,40 @@ async function getUserProfileId(userId: string) {
   return userProfile?.id ?? null;
 }
 
+function namesMatch(left: string, right: string): boolean {
+  return left.trim().toLowerCase() === right.trim().toLowerCase();
+}
+
+function findExistingShoppingListItem(
+  existingItems: Array<typeof shoppingListItems.$inferSelect>,
+  candidate: {
+    name: string;
+    ingredientKey: string | null;
+    ingredientSpecificKey: string | null;
+  },
+) {
+  return existingItems.find((item) => {
+    if (
+      candidate.ingredientSpecificKey &&
+      item.ingredientSpecificKey === candidate.ingredientSpecificKey
+    ) {
+      return true;
+    }
+
+    if (candidate.ingredientKey && item.ingredientKey === candidate.ingredientKey) {
+      return true;
+    }
+
+    return namesMatch(item.name, candidate.name);
+  });
+}
+
 export async function GET(_request: NextRequest) {
   try {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorizedError("Unauthorized");
     }
 
     const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
@@ -59,7 +104,10 @@ export async function GET(_request: NextRequest) {
 
     const userProfileId = await getUserProfileId(session.user.id);
     if (!userProfileId) {
-      return NextResponse.json({ error: "User profile not found" }, { status: 404 });
+      return safeErrorResponse("User profile not found", {
+        status: 404,
+        code: "PROFILE_NOT_FOUND",
+      });
     }
 
     const [shoppingList] = await db
@@ -99,10 +147,10 @@ export async function GET(_request: NextRequest) {
     });
   } catch (error) {
     apiLogger.error("Failed to fetch current shopping list", error);
-    return NextResponse.json(
-      { error: "Failed to fetch current shopping list" },
-      { status: 500 },
-    );
+    return handleApiError(error, "GET /api/shopping-lists/current", {
+      status: 500,
+      code: "SHOPPING_LIST_FETCH_FAILED",
+    });
   }
 }
 
@@ -111,7 +159,7 @@ export async function POST(request: NextRequest) {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorizedError("Unauthorized");
     }
 
     const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
@@ -121,25 +169,19 @@ export async function POST(request: NextRequest) {
 
     const userProfileId = await getUserProfileId(session.user.id);
     if (!userProfileId) {
-      return NextResponse.json({ error: "User profile not found" }, { status: 404 });
+      return safeErrorResponse("User profile not found", {
+        status: 404,
+        code: "PROFILE_NOT_FOUND",
+      });
     }
 
-    const body = (await request.json()) as {
-      name?: string;
-      amountLabel?: string | null;
-      category?: string | null;
-    };
-
-    const normalizedName = body.name?.trim() ?? "";
-    const normalizedAmountLabel = body.amountLabel?.trim() || null;
-    const normalizedCategory = body.category?.trim() || guessFoodCategory(normalizedName);
-
-    if (!normalizedName) {
-      return NextResponse.json(
-        { error: "Item name is required" },
-        { status: 400 },
-      );
+    const parsedBody = shoppingListCurrentMutationSchema.safeParse(
+      await request.json().catch(() => null),
+    );
+    if (!parsedBody.success) {
+      return validationError("Validation failed");
     }
+    const body = parsedBody.data;
 
     let [shoppingList] = await db
       .select()
@@ -168,44 +210,146 @@ export async function POST(request: NextRequest) {
         .returning();
     }
 
-    const existingItems = await db
-      .select()
-      .from(shoppingListItems)
-      .where(eq(shoppingListItems.shoppingListId, shoppingList.id))
-      .orderBy(asc(shoppingListItems.sortOrder));
+    const [existingItems, restockRows] = await Promise.all([
+      db
+        .select()
+        .from(shoppingListItems)
+        .where(eq(shoppingListItems.shoppingListId, shoppingList.id))
+        .orderBy(asc(shoppingListItems.sortOrder)),
+      db
+        .select()
+        .from(pantryRestockItems)
+        .where(
+          and(
+            eq(pantryRestockItems.userProfileId, userProfileId),
+            eq(pantryRestockItems.isActive, true),
+          ),
+        ),
+    ]);
 
-    const existingItem = existingItems.find(
-      (item) => item.name.trim().toLowerCase() === normalizedName.toLowerCase(),
+    const pantryRows =
+      body.pantryItemId || body.pantryItemIds?.length || body.lowStockOnly
+        ? await db
+            .select()
+            .from(pantryItems)
+            .where(eq(pantryItems.userProfileId, userProfileId))
+            .orderBy(asc(pantryItems.createdAt))
+        : [];
+
+    const pantryInventoryItems = buildPantryInventoryItems(
+      pantryRows,
+      restockRows,
+      [],
+      null,
     );
 
-    if (existingItem) {
-      if (!existingItem.amountLabel && normalizedAmountLabel) {
-        await db
-          .update(shoppingListItems)
-          .set({
-            amountLabel: normalizedAmountLabel,
-            category: existingItem.category ?? normalizedCategory,
-            updatedAt: new Date(),
-          })
-          .where(eq(shoppingListItems.id, existingItem.id));
-      } else if (!existingItem.category) {
-        await db
-          .update(shoppingListItems)
-          .set({
-            category: normalizedCategory,
-            updatedAt: new Date(),
-          })
-          .where(eq(shoppingListItems.id, existingItem.id));
+    const requestedPantryIds = new Set([
+      ...(body.pantryItemId ? [body.pantryItemId] : []),
+      ...(body.pantryItemIds ?? []),
+    ]);
+
+    const seeds =
+      body.name
+        ? [
+            {
+              name: body.name.trim(),
+              ingredientName: body.name.trim(),
+              ingredientKey: null,
+              ingredientSpecificKey: null,
+              quantity:
+                body.quantity !== undefined && body.quantity !== null
+                  ? String(body.quantity)
+                  : null,
+              unit: body.unit ?? null,
+              amountLabel:
+                body.amountLabel ??
+                formatAmountLabel(
+                  body.quantity !== undefined ? body.quantity : null,
+                  body.unit ?? null,
+                ),
+              category: body.category ?? guessFoodCategory(body.name),
+            },
+          ]
+        : pantryInventoryItems
+            .filter((item) => {
+              if (requestedPantryIds.size > 0 && !requestedPantryIds.has(item.id)) {
+                return false;
+              }
+
+              return body.lowStockOnly ? item.lowStock : true;
+            })
+            .map((item) => resolveShoppingListSeedFromPantryItem(item, restockRows));
+
+    if (seeds.length === 0) {
+      return safeErrorResponse(
+        body.lowStockOnly
+          ? "No low-stock pantry items found"
+          : "No pantry items found for handoff",
+        {
+          status: 404,
+          code: body.lowStockOnly
+            ? "LOW_STOCK_ITEMS_NOT_FOUND"
+            : "PANTRY_ITEMS_NOT_FOUND",
+        },
+      );
+    }
+
+    const mutableItems = [...existingItems];
+    const addedItemIds: string[] = [];
+
+    for (const seed of seeds) {
+      const existingItem = findExistingShoppingListItem(mutableItems, seed);
+
+      if (existingItem) {
+        const nextAmountLabel = existingItem.amountLabel ?? seed.amountLabel;
+        const nextQuantity = existingItem.quantity ?? seed.quantity ?? null;
+        const nextUnit = existingItem.unit ?? seed.unit ?? null;
+        const nextCategory = existingItem.category ?? seed.category ?? null;
+
+        if (
+          nextAmountLabel !== existingItem.amountLabel ||
+          nextQuantity !== existingItem.quantity ||
+          nextUnit !== existingItem.unit ||
+          nextCategory !== existingItem.category
+        ) {
+          const [updatedItem] = await db
+            .update(shoppingListItems)
+            .set({
+              amountLabel: nextAmountLabel,
+              quantity: nextQuantity,
+              unit: nextUnit,
+              category: nextCategory,
+              updatedAt: new Date(),
+            })
+            .where(eq(shoppingListItems.id, existingItem.id))
+            .returning();
+
+          const itemIndex = mutableItems.findIndex((item) => item.id === existingItem.id);
+          mutableItems[itemIndex] = updatedItem;
+        }
+
+        addedItemIds.push(existingItem.id);
+        continue;
       }
-    } else {
-      await db.insert(shoppingListItems).values({
-        shoppingListId: shoppingList.id,
-        sortOrder: existingItems.length + 1,
-        name: normalizedName,
-        ingredientName: normalizedName,
-        amountLabel: normalizedAmountLabel,
-        category: normalizedCategory,
-      });
+
+      const [insertedItem] = await db
+        .insert(shoppingListItems)
+        .values({
+          shoppingListId: shoppingList.id,
+          sortOrder: mutableItems.length + 1,
+          name: seed.name,
+          ingredientName: seed.ingredientName,
+          ingredientKey: seed.ingredientKey,
+          ingredientSpecificKey: seed.ingredientSpecificKey,
+          quantity: seed.quantity,
+          unit: seed.unit,
+          amountLabel: seed.amountLabel,
+          category: seed.category,
+        })
+        .returning();
+
+      mutableItems.push(insertedItem);
+      addedItemIds.push(insertedItem.id);
     }
 
     const updatedItems = await db
@@ -220,6 +364,7 @@ export async function POST(request: NextRequest) {
     };
 
     await CacheService.del(`shopping-lists:${session.user.id}`);
+    await CacheService.del(`pantry:${userProfileId}`);
 
     return NextResponse.json({
       success: true,
@@ -230,12 +375,13 @@ export async function POST(request: NextRequest) {
         status: result.shoppingList.status,
       },
       items: mapShoppingListItems(result.items),
+      addedItemIds,
     });
   } catch (error) {
     apiLogger.error("Failed to upsert current shopping list item", error);
-    return NextResponse.json(
-      { error: "Failed to update shopping list" },
-      { status: 500 },
-    );
+    return handleApiError(error, "POST /api/shopping-lists/current", {
+      status: 500,
+      code: "SHOPPING_LIST_UPSERT_FAILED",
+    });
   }
 }

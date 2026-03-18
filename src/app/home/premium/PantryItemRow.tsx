@@ -1,9 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil, Trash2, AlertTriangle, Check, X, Pin } from "lucide-react";
-import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import {
+  Check,
+  Loader2,
+  Minus,
+  Pencil,
+  Pin,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -13,235 +24,371 @@ import {
 } from "@/components/ui/select";
 import type { PantryItem } from "@/hooks/usePantry";
 import { PANTRY_UNIT_OPTIONS } from "@/lib/units";
-import PantryQuantityWheel from "./PantryQuantityWheel";
+import { cn } from "@/lib/utils";
 
 interface PantryItemRowProps {
   item: PantryItem;
+  locale: string;
+  categoryLabel: string;
+  expiryLabel: string | null;
+  isExpiring: boolean;
+  isLowStock: boolean;
   isRecurring: boolean;
-  recurringItemId?: string;
-  onUpdate: (
-    id: string,
-    updates: {
-      quantity?: number | null;
-      unit?: string | null;
-      expiryDate?: string | null;
-    },
-  ) => Promise<boolean>;
-  onDelete: (id: string) => Promise<boolean>;
-  onToggleRecurring: (
-    item: PantryItem,
-    enabled: boolean,
-    recurringItemId?: string,
-  ) => Promise<boolean>;
+  isPendingQuantity: boolean;
+  isPendingDelete: boolean;
+  isPendingRecurring: boolean;
+  sourceLabel: string;
+  lowStockLabel: string;
+  expiringLabel: string;
+  recurringLabel: string;
+  editLabel: string;
+  saveLabel: string;
+  cancelLabel: string;
+  quantityLabel: string;
+  unitLabel: string;
+  quantityPlaceholder: string;
+  unitPlaceholder: string;
+  quantityCaption: string;
+  decreaseLabel: string;
+  increaseLabel: string;
+  deleteLabel: string;
+  onIncrease: () => void;
+  onDecrease: () => void;
+  onDelete: () => void;
+  onSaveEdit: (updates: {
+    quantity: number | null;
+    unit: string | null;
+  }) => Promise<boolean>;
+  onToggleRecurring: () => void;
 }
 
-function isExpiringSoon(expiryDate: string | null): boolean {
-  if (!expiryDate) return false;
-  return new Date(expiryDate).getTime() <= Date.now() + 3 * 24 * 60 * 60 * 1000;
+const fadeIn = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.4, ease: "easeOut" as const },
+};
+
+function getLocaleTag(locale: string): string {
+  return locale === "sk" ? "sk-SK" : "en-US";
 }
 
-function formatExpiry(expiryDate: string | null): string | null {
-  if (!expiryDate) return null;
-  return new Date(expiryDate).toLocaleDateString("sk-SK", {
-    day: "numeric",
-    month: "short",
-  });
+function parseStoredNumber(value: string | null | undefined): number | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatQuantity(
+  quantity: string | null,
+  unit: string | null,
+  locale: string,
+): string {
+  const parsed = parseStoredNumber(quantity);
+
+  if (parsed === null) {
+    return unit ?? "—";
+  }
+
+  return `${parsed.toLocaleString(getLocaleTag(locale), {
+    maximumFractionDigits: parsed % 1 === 0 ? 0 : 2,
+  })}${unit ? ` ${unit}` : ""}`;
 }
 
 export default function PantryItemRow({
   item,
+  locale,
+  categoryLabel,
+  expiryLabel,
+  isExpiring,
+  isLowStock,
   isRecurring,
-  recurringItemId,
-  onUpdate,
+  isPendingQuantity,
+  isPendingDelete,
+  isPendingRecurring,
+  sourceLabel,
+  lowStockLabel,
+  expiringLabel,
+  recurringLabel,
+  editLabel,
+  saveLabel,
+  cancelLabel,
+  quantityLabel,
+  unitLabel,
+  quantityPlaceholder,
+  unitPlaceholder,
+  quantityCaption,
+  decreaseLabel,
+  increaseLabel,
+  deleteLabel,
+  onIncrease,
+  onDecrease,
   onDelete,
+  onSaveEdit,
   onToggleRecurring,
 }: PantryItemRowProps) {
-  const t = useTranslations("pantry");
+  const shouldReduceMotion = useReducedMotion();
+  const quantityValue = parseStoredNumber(item.quantity) ?? 0;
   const [isEditing, setIsEditing] = useState(false);
-  const [editQty, setEditQty] = useState<number | null>(
-    item.quantity ? Number.parseFloat(String(item.quantity)) : null,
-  );
-  const [editUnit, setEditUnit] = useState(item.unit ?? "");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isRecurringSaving, setIsRecurringSaving] = useState(false);
+  const [draftQuantity, setDraftQuantity] = useState(item.quantity ?? "");
+  const [draftUnit, setDraftUnit] = useState(item.unit ?? "ks");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
-  const expiringSoon = isExpiringSoon(item.expiryDate);
-  const expiryLabel = formatExpiry(item.expiryDate);
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    const success = await onUpdate(item.id, {
-      quantity: editQty,
-      unit: editUnit || null,
-    });
-    if (success) setIsEditing(false);
-    setIsSaving(false);
-  };
-
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    const success = await onDelete(item.id);
-    // Component unmounts on success (optimistic remove from parent list)
-    // Reset spinner if delete failed so user can retry
-    if (!success) setIsDeleting(false);
-  };
+  useEffect(() => {
+    setDraftQuantity(item.quantity ?? "");
+    setDraftUnit(item.unit ?? "ks");
+  }, [item.quantity, item.unit]);
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9, y: 10 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className={`group relative flex flex-col justify-between w-[176px] shrink-0 p-4 rounded-[1.5rem] border transition-all duration-300 snap-center min-h-[196px] ${
-        expiringSoon
-          ? "border-amber-200/80 bg-gradient-to-br from-amber-50 to-orange-50/60 shadow-md shadow-amber-500/10 hover:shadow-lg hover:shadow-amber-500/20 hover:-translate-y-1"
-          : "border-gray-100 bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-xl hover:shadow-eatrivo-purple/10 hover:border-eatrivo-purple/30 hover:-translate-y-1"
-      }`}
+    <motion.article
+      layout={!shouldReduceMotion}
+      {...(shouldReduceMotion ? {} : fadeIn)}
+      whileHover={shouldReduceMotion ? undefined : { y: -2 }}
+      className={cn(
+        "bg-white rounded-2xl border shadow-sm p-4 md:p-5 transition-colors hover:border-gray-200",
+        isExpiring
+          ? "border-eatrivo-red/20"
+          : isLowStock
+            ? "border-eatrivo-orange/20"
+            : "border-gray-100",
+      )}
     >
-      {/* Top row: Icon + Expiry/Source */}
-      <div className="flex items-start justify-between gap-2 w-full mb-3">
-        {expiringSoon ? (
-          <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-            <AlertTriangle className="w-4 h-4 text-amber-600" />
-          </div>
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-eatrivo-purple/10 transition-colors duration-300">
-            <div className="w-2 h-2 rounded-full bg-gray-300 group-hover:bg-eatrivo-purple/50 transition-colors duration-300" />
-          </div>
-        )}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+              {item.name}
+            </h3>
 
-        {/* Badges container */}
-        <div className="flex flex-col items-end gap-1">
-          <button
-            type="button"
-            onClick={async () => {
-              setIsRecurringSaving(true);
-              await onToggleRecurring(item, !isRecurring, recurringItemId);
-              setIsRecurringSaving(false);
-            }}
-            className={`flex h-8 w-8 items-center justify-center rounded-full transition-all active:scale-95 ${
-              isRecurring
-                ? "bg-eatrivo-purple text-white"
-                : "bg-gray-100 text-gray-500 hover:bg-eatrivo-purple/10 hover:text-eatrivo-purple"
-            }`}
-            aria-label={isRecurring ? t("restock.removeRecurring") : t("restock.makeRecurring")}
-            title={isRecurring ? t("restock.removeRecurring") : t("restock.makeRecurring")}
-          >
-            {isRecurringSaving ? (
-              <div className="h-3 w-3 rounded-full border border-current/30 border-t-current animate-spin" />
-            ) : (
-              <Pin className="h-3.5 w-3.5" />
+            <div className="flex flex-wrap gap-2">
+              <Badge
+                variant="outline"
+                className="rounded-full border-gray-200 bg-eatrivo-white-secondary text-gray-600"
+              >
+                {categoryLabel}
+              </Badge>
+
+              <Badge
+                variant="outline"
+                className="rounded-full border-gray-200 bg-eatrivo-white-secondary text-gray-600"
+              >
+                {sourceLabel}
+              </Badge>
+
+              {isLowStock ? (
+                <Badge className="rounded-full border-transparent bg-eatrivo-orange/10 text-eatrivo-orange">
+                  {lowStockLabel}
+                </Badge>
+              ) : null}
+
+              {isExpiring ? (
+                <Badge className="rounded-full border-transparent bg-eatrivo-red/10 text-eatrivo-red">
+                  {expiringLabel}
+                </Badge>
+              ) : null}
+            </div>
+
+            {expiryLabel ? <p className="text-xs text-gray-500">{expiryLabel}</p> : null}
+          </div>
+
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
+                {quantityCaption}
+              </p>
+              <p className="text-lg font-bold text-eatrivo-purple">
+                {isPendingQuantity ? (
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </span>
+                ) : (
+                  formatQuantity(item.quantity, item.unit, locale)
+                )}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 rounded-full border border-gray-100 bg-eatrivo-white-secondary p-1">
+                <button
+                  type="button"
+                  onClick={onDecrease}
+                  disabled={isPendingQuantity || quantityValue <= 0}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-600 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                  aria-label={decreaseLabel}
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onIncrease}
+                  disabled={isPendingQuantity}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-eatrivo-purple text-white transition-colors hover:bg-eatrivo-purple/90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                  aria-label={increaseLabel}
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsEditing((current) => !current)}
+                disabled={isSavingEdit}
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2",
+                  isEditing
+                    ? "border-eatrivo-purple bg-eatrivo-purple text-white"
+                    : "border-gray-200 bg-white text-gray-500 hover:bg-eatrivo-blue/10 hover:text-eatrivo-blue",
+                )}
+                aria-label={editLabel}
+                aria-pressed={isEditing}
+                title={editLabel}
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={onToggleRecurring}
+                disabled={isPendingRecurring}
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2",
+                  isRecurring
+                    ? "border-eatrivo-purple bg-eatrivo-purple text-white"
+                    : "border-gray-200 bg-white text-gray-500 hover:bg-eatrivo-purple/10 hover:text-eatrivo-purple",
+                )}
+                aria-label={recurringLabel}
+                aria-pressed={isRecurring}
+                title={recurringLabel}
+              >
+                {isPendingRecurring ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Pin className="h-4 w-4" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={onDelete}
+                disabled={isPendingDelete}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 transition-colors hover:border-eatrivo-red/20 hover:bg-eatrivo-red/10 hover:text-eatrivo-red disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                aria-label={deleteLabel}
+              >
+                {isPendingDelete ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <motion.div
+            initial={shouldReduceMotion ? undefined : { opacity: 0, height: 0 }}
+            animate={
+              shouldReduceMotion
+                ? undefined
+                : { opacity: isEditing ? 1 : 0, height: isEditing ? "auto" : 0 }
+            }
+            className={cn(
+              "overflow-hidden",
+              isEditing ? "pt-1" : "pointer-events-none",
             )}
-          </button>
-          {item.source === "shopping_list" && (
-            <span
-              className="text-[10px] px-1.5 py-0.5 bg-eatrivo-purple/10 text-eatrivo-purple rounded-md font-bold uppercase tracking-wider leading-none"
-              title="Z nákupného zoznamu"
-            >
-              🛒
-            </span>
-          )}
-          {expiryLabel && (
-            <span
-              className={`text-[10px] uppercase font-black tracking-tight ${
-                expiringSoon ? "text-amber-600" : "text-gray-400"
-              }`}
-            >
-              Exp. {expiryLabel}
-            </span>
-          )}
+          >
+            <div className="rounded-2xl border border-gray-100 bg-eatrivo-white-secondary p-3">
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_8rem_auto] md:items-end">
+                <div className="flex-1">
+                  <p className="mb-2 text-[10px] uppercase tracking-wider font-semibold text-gray-400">
+                    {quantityLabel}
+                  </p>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    value={draftQuantity}
+                    onChange={(event) => setDraftQuantity(event.target.value)}
+                    placeholder={quantityPlaceholder}
+                    className="h-10 rounded-xl border-gray-200 bg-white"
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <p className="mb-2 text-[10px] uppercase tracking-wider font-semibold text-gray-400">
+                    {unitLabel}
+                  </p>
+                  <Select value={draftUnit} onValueChange={setDraftUnit}>
+                    <SelectTrigger className="h-10 rounded-xl border-gray-200 bg-white shadow-none">
+                      <SelectValue placeholder={unitPlaceholder} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PANTRY_UNIT_OPTIONS.map((unit) => (
+                        <SelectItem key={unit} value={unit}>
+                          {unit}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDraftQuantity(item.quantity ?? "");
+                      setDraftUnit(item.unit ?? "ks");
+                      setIsEditing(false);
+                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                    aria-label={cancelLabel}
+                    title={cancelLabel}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isSavingEdit}
+                    onClick={async () => {
+                      setIsSavingEdit(true);
+                      try {
+                        const parsedQuantity = draftQuantity.trim()
+                          ? Number.parseFloat(draftQuantity)
+                          : null;
+                        const success = await onSaveEdit({
+                          quantity:
+                            parsedQuantity !== null && Number.isFinite(parsedQuantity)
+                              ? parsedQuantity
+                              : null,
+                          unit: draftUnit || null,
+                        });
+
+                        if (success) {
+                          setIsEditing(false);
+                        }
+                      } finally {
+                        setIsSavingEdit(false);
+                      }
+                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-eatrivo-purple text-white transition-colors hover:bg-eatrivo-purple/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                    aria-label={saveLabel}
+                    title={saveLabel}
+                  >
+                    {isSavingEdit ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
-
-      {/* Item Name */}
-      <div className="mb-4">
-        <h3 className="text-[15px] font-black leading-tight text-[#1a1a2e] line-clamp-2 group-hover:text-eatrivo-purple transition-colors">
-          {item.name}
-        </h3>
-      </div>
-
-      {/* Bottom Area: Quantity or Edit Form */}
-      <div className="flex items-end justify-between w-full mt-auto">
-        {isEditing ? (
-          <div className="flex flex-col gap-2 w-full">
-            <PantryQuantityWheel
-              value={editQty}
-              unit={editUnit || null}
-              onChange={setEditQty}
-            />
-            <div className="flex gap-1.5 w-full">
-              <Select value={editUnit || "ks"} onValueChange={setEditUnit}>
-                <SelectTrigger className="w-full h-9 rounded-full border-gray-200 bg-white text-xs font-bold uppercase tracking-tight focus:ring-eatrivo-purple">
-                  <SelectValue placeholder="ks" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PANTRY_UNIT_OPTIONS.map((unit) => (
-                    <SelectItem key={unit} value={unit}>
-                      {unit}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center justify-between gap-1.5 w-full">
-              <button
-                onClick={() => setIsEditing(false)}
-                className="flex-1 h-8 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors flex items-center justify-center active:scale-95"
-              >
-                <X className="w-3.5 h-3.5" strokeWidth={3} />
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="flex-1 h-8 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors flex items-center justify-center shadow-sm shadow-green-500/20 active:scale-95"
-              >
-                {isSaving ? (
-                  <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <Check className="w-3.5 h-3.5" strokeWidth={3} />
-                )}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Display Quantity */}
-            <div className="bg-gray-50 group-hover:bg-eatrivo-purple/5 transition-colors duration-300 px-3 py-1.5 rounded-lg border border-gray-100/50">
-              <span className="text-[17px] font-black tracking-tighter text-[#1a1a2e] group-hover:text-eatrivo-purple transition-colors">
-                {item.quantity
-                  ? parseFloat(String(item.quantity)).toLocaleString("sk-SK")
-                  : t("restock.quantityMissing")}
-                <span className="text-xs font-bold text-gray-500 group-hover:text-eatrivo-purple/70 ml-0.5">
-                  {item.unit ? " " + item.unit : ""}
-                </span>
-              </span>
-            </div>
-
-            {/* Edit / Delete Buttons (Hidden until hover on desktop) */}
-            <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300">
-              <button
-                onClick={() => setIsEditing(true)}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-50 text-gray-400 hover:text-eatrivo-purple hover:bg-eatrivo-purple/10 transition-colors active:scale-95 shadow-sm"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors active:scale-95 shadow-sm"
-              >
-                {isDeleting ? (
-                  <div className="w-3.5 h-3.5 border border-gray-300 border-t-red-500 rounded-full animate-spin" />
-                ) : (
-                  <Trash2 className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </motion.div>
+    </motion.article>
   );
 }

@@ -21,7 +21,7 @@ export function ShoppingListNotificationEmail({
   translations,
 }: ShoppingListNotificationEmailProps) {
   const firstName = clientName.split(" ")[0];
-  const logoRow = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo/LOGO_ROW.png`;
+  const logoRow = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo/LOGO_ROW.png`;
 
   const t = translations?.shoppingList;
   const common = translations?.common;
@@ -52,26 +52,46 @@ export function ShoppingListNotificationEmail({
           {/* Content */}
           <Section style={styles.contentSection}>
             <Text style={styles.greeting}>
-              {(t?.greeting || "Ahoj {firstName}! 👋").replace("{firstName}", firstName)}
+              {(t?.greeting || "Ahoj {firstName}! 👋").replace(
+                "{firstName}",
+                firstName,
+              )}
             </Text>
 
             <Text style={styles.paragraph}>
-              {t?.paragraph || "Náš výživový poradca práve vytvoril nový nákupný zoznam šitý na mieru vašim potrebám. Tento týždeň sa môžete tešiť na chutné a zdravé jedlá, ktoré vám pomôžu dosiahnuť vaše ciele."}
+              {t?.paragraph ||
+                "Náš výživový poradca práve vytvoril nový nákupný zoznam šitý na mieru vašim potrebám. Tento týždeň sa môžete tešiť na chutné a zdravé jedlá, ktoré vám pomôžu dosiahnuť vaše ciele."}
             </Text>
           </Section>
 
           {/* Info Card */}
           <Section style={styles.infoCard}>
-            <table style={{ width: "100%", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #e9d5ff" }}>
+            <table
+              style={{
+                width: "100%",
+                marginBottom: "12px",
+                paddingBottom: "12px",
+                borderBottom: "1px solid #e9d5ff",
+              }}
+            >
               <tr>
                 <td style={styles.infoLabel}>{t?.labels.name || "Názov:"}</td>
                 <td style={styles.infoValue}>{shoppingListName}</td>
               </tr>
             </table>
 
-            <table style={{ width: "100%", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #e9d5ff" }}>
+            <table
+              style={{
+                width: "100%",
+                marginBottom: "12px",
+                paddingBottom: "12px",
+                borderBottom: "1px solid #e9d5ff",
+              }}
+            >
               <tr>
-                <td style={styles.infoLabel}>{t?.labels.dateFrom || "Dátum od:"}</td>
+                <td style={styles.infoLabel}>
+                  {t?.labels.dateFrom || "Dátum od:"}
+                </td>
                 <td style={styles.infoValue}>{shoppingListDate}</td>
               </tr>
             </table>
@@ -83,23 +103,38 @@ export function ShoppingListNotificationEmail({
               {t?.tip.title || "💡 Tip pre efektívny nákup"}
             </Text>
             <Text style={styles.tipText}>
-              {t?.tip.text || "Nákupný zoznam je organizovaný podľa kategórií, aby ste mohli nakupovať rýchlejšie a efektívnejšie. Nezabudnite si ho stiahnuť alebo vytlačiť pred odchodom do obchodu!"}
+              {t?.tip.text ||
+                "Nákupný zoznam je organizovaný podľa kategórií, aby ste mohli nakupovať rýchlejšie a efektívnejšie. Nezabudnite si ho stiahnuť alebo vytlačiť pred odchodom do obchodu!"}
             </Text>
           </Section>
 
           {/* CTA Button */}
           <Section style={styles.ctaSection}>
-            <Button
-              href={homeUrl}
-              style={styles.button}
-            >
+            <Button href={homeUrl} style={styles.button}>
               {t?.cta || "Zobraziť Nákupný Zoznam"}
             </Button>
           </Section>
 
           <Section>
             <Text style={styles.helpText}>
-              <span dangerouslySetInnerHTML={{ __html: (t?.help || "Váš nákupný zoznam nájdete v sekcii <strong>Domov</strong> vo vašom Eatrivo účte.").replace("<strong>Domov</strong>", "<strong>" + (common?.links.home || "Domov") + "</strong>") }} />
+              {t?.help
+                ? t.help.split("<strong>").map((part, i) => {
+                    if (i === 0) return part;
+                    const [boldText, ...rest] = part.split("</strong>");
+                    return (
+                      <React.Fragment key={i}>
+                        <strong>
+                          {boldText === "Domov"
+                            ? common?.links.home || "Domov"
+                            : boldText}
+                        </strong>
+                        {rest.join("</strong>")}
+                      </React.Fragment>
+                    );
+                  })
+                : `Váš nákupný zoznam nájdete v sekcii `}
+              {!t?.help && <strong>{common?.links.home || "Domov"}</strong>}
+              {!t?.help && ` vo vašom Eatrivo účte.`}
             </Text>
           </Section>
 
@@ -110,7 +145,8 @@ export function ShoppingListNotificationEmail({
               {common?.footerTagline || "Váš partner pre zdravý životný štýl"}
             </Text>
             <Text style={styles.footerDisclaimer}>
-              {common?.footerDisclaimerShopping || "Tento email ste dostali, pretože bol pre vás vytvorený nový nákupný zoznam."}
+              {common?.footerDisclaimerShopping ||
+                "Tento email ste dostali, pretože bol pre vás vytvorený nový nákupný zoznam."}
             </Text>
           </Section>
         </Container>
@@ -122,7 +158,8 @@ export function ShoppingListNotificationEmail({
 const styles = {
   body: {
     backgroundColor: "#f9fafb",
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     margin: 0,
     padding: 0,
   },

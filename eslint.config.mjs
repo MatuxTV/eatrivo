@@ -15,10 +15,13 @@ const eslintConfig = [
     ignores: [
       ".agents/**",
       ".claude/**",
+      ".github/**",
       "node_modules/**",
       ".next/**",
       "out/**",
       "build/**",
+      "public/sw.js",
+      "public/workbox-*.js",
       "next-env.d.ts",
       "src/app/api/onboarding/check-username/route.ts"
     ],

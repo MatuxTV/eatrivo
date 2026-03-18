@@ -64,9 +64,9 @@ export function PushNotificationToggle() {
         const subscription = await requestNotificationPermission();
         
         if (subscription) {
-          await savePushSubscription(subscription);
+          const result = await savePushSubscription(subscription);
           setIsSubscribed(true);
-          toast.success(t('enabled'));
+          toast.success(result.status === 'pending' ? t('pendingConfirmation') : t('enabled'));
         } else {
           toast.error(t('enableError'));
         }
