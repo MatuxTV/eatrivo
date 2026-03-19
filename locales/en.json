@@ -478,6 +478,83 @@
         "badge": "Tip of the day",
         "mealPrep": "Meal prep"
       },
+      "customRecipe": {
+        "badge": "Rivo custom",
+        "title": "See what Rivo can cook from your pantry",
+        "description": "We will check what you already have, then suggest one pantry-first recipe and one easy top-up option when possible.",
+        "cta": "Ask Rivo for a custom recipe",
+        "ctaGenerating": "Rivo is generating...",
+        "ctaRetry": "Generate again",
+        "loading": {
+          "badge": "Generating now",
+          "title": "Rivo is building your next best recipe",
+          "description": "We are scanning your pantry, checking quick top-ups, and shaping a recipe that fits right now.",
+          "progressLabel": "Generation progress",
+          "tipsLabel": "Current step",
+          "tips": {
+            "scanning": "Scanning your pantry for hidden wins.",
+            "matching": "Matching ingredients with pantry-ready and almost-cookable ideas.",
+            "finishing": "Finishing the best option for today."
+          }
+        },
+        "result": {
+          "badge": "Fresh from Rivo",
+          "title": "Your custom recipe is ready",
+          "description": "Rivo prepared {count} tailored option(s) for this moment.",
+          "open": "Open recipe result",
+          "regenerate": "Generate again",
+          "readyNow": "Ready now",
+          "almostCookable": "Almost cookable"
+        },
+        "fallback": {
+          "badge": "Smart fallback",
+          "title": "Nothing clicks perfectly yet",
+          "description": "Rivo could not build a cookable recipe from your current pantry, but these quick changes should unlock one fast.",
+          "retry": "Try again",
+          "openPantry": "Update pantry",
+          "missingCount": "Missing {count}",
+          "defaultSuggestions": {
+            "pantry": "Add two or three staple ingredients you buy often.",
+            "protein": "Top up one protein source to unlock more meals.",
+            "vegetables": "Add one fresh vegetable for easier lunch and dinner matches."
+          }
+        },
+        "error": {
+          "badge": "Generation issue",
+          "title": "Rivo hit a small snag",
+          "description": "We could not generate a custom recipe right now. Please try again in a moment.",
+          "detailLabel": "Error detail",
+          "retry": "Try again",
+          "codes": {
+            "AUTH_REQUIRED": "Sign in again to generate a custom recipe.",
+            "RATE_LIMITED": "Rivo is a bit busy right now. Please wait a moment and try again.",
+            "PROFILE_UNAVAILABLE": "We could not load your profile details for recipe generation.",
+            "PANTRY_UNAVAILABLE": "We could not load your pantry right now.",
+            "GENERATION_IN_PROGRESS": "Rivo is already working on your recipe.",
+            "GENERATION_FAILED": "Rivo could not finish the recipe generation.",
+            "TIMEOUT": "Recipe generation took too long. Please try again.",
+            "DEFAULT": "We could not generate a custom recipe right now."
+          }
+        },
+        "message": {
+          "pantryRecipeReady": "Rivo found a pantry recipe for you: {recipeName}.",
+          "almostCookableReady": "Rivo found {recipeName}. You only need {missingCount} more ingredient(s).",
+          "fallbackSuggestionsReady": "Rivo prepared {suggestionCount} backup recipe suggestion(s) from the database.",
+          "emptyPantry": "Your pantry is still empty, so Rivo prepared a few smart starting points.",
+          "noRecipeAvailable": "Nothing matched perfectly yet, but Rivo found a few useful next options."
+        },
+        "recipeUnavailable": {
+          "pantryEmpty": "Your pantry is empty, so there is nothing to cook from it yet.",
+          "noPantryRecipe": "Nothing can be cooked from your current pantry only.",
+          "noAlmostCookable": "Rivo could not find an almost-cookable option with three or fewer missing ingredients."
+        },
+        "toasts": {
+          "ready": "Your custom recipe is ready.",
+          "empty": "Rivo found fallback recommendations instead.",
+          "error": "We could not generate a custom recipe right now.",
+          "resumed": "Rivo resumed your recipe generation."
+        }
+      },
       "pantryDashboard": {
         "badge": "Your Pantry",
         "itemsUnit": "items",

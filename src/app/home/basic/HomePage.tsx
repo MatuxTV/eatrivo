@@ -42,6 +42,7 @@ import { NotificationBanner } from "@/components/pwa/NotificationBanner";
 import FeedbackButton from "@/components/FeedbackButton";
 import ChatWithRivoPage from "@/app/[locale]/chat-with-rivo/ChatWithRivoPage";
 import RecipeBrowserDialog from "../components/RecipeBrowserDialog";
+import RivoCustomRecipeExperience from "../components/RivoCustomRecipeExperience";
 import type {
   BasicHomePantrySummary,
   BasicHomeRecipePreview,
@@ -376,7 +377,6 @@ export default function HomePage({
       isRemovingItemId,
       triggerHaptic,
       t,
-      currentShoppingList?.id,
       shoppingListItems,
       checkedItemIds,
     ],
@@ -432,10 +432,7 @@ export default function HomePage({
     shoppingListItems.length > 0 && totalChecked === shoppingListItems.length;
 
   const openRecipeBrowser = useCallback(
-    (
-      source: "featured" | "cookable" | "almost" | "filtered",
-      index: number,
-    ) => {
+    (source: "featured" | "cookable" | "almost" | "filtered", index: number) => {
       setBrowserSource(source);
       setBrowserIndex(index);
       setBrowserOpen(true);
@@ -1027,6 +1024,8 @@ export default function HomePage({
     currentShoppingList?.id,
     isCompletingShoppingList,
     loadCurrentShoppingList,
+    refreshPantrySummary,
+    t,
   ]);
 
   const handleKitchenCounterBack = useCallback(() => {
@@ -1616,6 +1615,15 @@ export default function HomePage({
                         </div>
                       )}
                     </div>
+                    <RivoCustomRecipeExperience
+                      onOpenPantry={() => {
+                        triggerHaptic("light");
+                        setActiveSection("pantry");
+                      }}
+                      onAddToShoppingList={handleAddToShoppingList}
+                      onCookRecipe={handleCookRecipe}
+                    />
+
                     {/* Middle Section: Pantry & Recent */}
                     {/* Unified Pantry Dashboard */}
                     <div className="mb-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8 group transition-colors hover:border-gray-200 relative overflow-hidden">

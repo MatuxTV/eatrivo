@@ -44,11 +44,11 @@ function negotiateLocale(req: Parameters<Parameters<typeof auth>[0]>[0]) {
   // 2. Check geolocation (Vercel Edge - Slovakia or Czech Republic → SK, otherwise EN)
   const country = (req as unknown as NextRequestWithGeo).geo?.country;
   if (country) {
-    if (country === "SK" || country === "CZ") {
-      return "sk";
+    if (!(country === "SK" || country === "CZ")) {
+      return "en";
     }
-    // Any other country → English
-    return "en";
+    // Slovakia or Czech Republic → Slovak
+    return "sk";
   }
 
   // 3. Fallback to browser Accept-Language header (for local dev or non-Vercel)
