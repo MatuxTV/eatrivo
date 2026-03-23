@@ -555,6 +555,7 @@
             "PROFILE_UNAVAILABLE": "Nepodarilo sa načítať tvoje profilové údaje pre generovanie receptu.",
             "PANTRY_UNAVAILABLE": "Nepodarilo sa načítať tvoju špajzu.",
             "GENERATION_IN_PROGRESS": "Rivo už práve pracuje na tvojom recepte.",
+            "GENERATION_INTERRUPTED": "Generovanie receptu bolo prerušené. Po obnovení stránky sa stream nedá obnoviť, takže ho spusti znova.",
             "GENERATION_FAILED": "Rivo nedokázal dokončiť generovanie receptu.",
             "TIMEOUT": "Generovanie receptu trvalo príliš dlho. Skús to prosím znova.",
             "DEFAULT": "Vlastný recept sa teraz nepodarilo vygenerovať."

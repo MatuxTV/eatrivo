@@ -125,6 +125,19 @@ export class RequestLock {
   }
 
   /**
+   * Refresh TTL for an active lock.
+   * @param key - The lock key to extend
+   * @param ttlSeconds - New TTL in seconds
+   */
+  static async refresh(key: string, ttlSeconds: number): Promise<void> {
+    const lockKey = `lock:${key}`;
+    const exists = await redis.exists(lockKey);
+    if (exists === 1) {
+      await redis.expire(lockKey, ttlSeconds);
+    }
+  }
+
+  /**
    * Get remaining TTL for a lock
    * @param key - The lock key
    * @returns seconds remaining, or -1 if not locked

@@ -13,6 +13,10 @@ import {
 } from "lucide-react";
 
 import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
+import {
+  customRecipeCurrentGenerationResponseSchema,
+  customRecipeStreamEventSchema,
+} from "@/lib/custom-recipes/contracts";
 import type { RecipeIngredientItem } from "@/lib/recipe-ingredients";
 import type { RecipeInstruction } from "@/lib/recipe-instructions";
 import { Button } from "@/components/ui/button";
@@ -119,34 +123,6 @@ interface CustomRecipeApiResultPayload {
   };
 }
 
-interface CustomRecipeApiStartResponse {
-  jobId: string;
-  status: "started" | "in_progress";
-}
-
-interface CustomRecipeApiResumeResponse {
-  jobId: string | null;
-  isGenerating: boolean;
-}
-
-interface CustomRecipeApiStatusResponse {
-  jobId: string;
-  isGenerating: boolean;
-  done: boolean;
-  failed: boolean;
-  progress: number;
-  label: string;
-  node: string;
-  retryCount: number;
-  errorCode?: string;
-}
-
-interface CustomRecipeApiCompletedResponse {
-  jobId: string;
-  done: true;
-  result: CustomRecipeApiResultPayload;
-}
-
 interface CustomRecipeFallbackRecommendation {
   id: string;
   title: string;
@@ -176,8 +152,6 @@ interface RivoCustomRecipeExperienceProps {
 
 const CUSTOM_RECIPE_START_ENDPOINT = "/api/recipes/custom/generate";
 const CUSTOM_RECIPE_MOCK_STORAGE_KEY = "eatrivo:customRecipeMock";
-const FALLBACK_POLL_INTERVAL_MS = 2500;
-const MAX_POLL_ATTEMPTS = 48;
 const DEFAULT_CATEGORY_KEY = "lunch-and-dinner";
 
 function delay(ms: number): Promise<void> {
@@ -209,46 +183,6 @@ function toSlug(value: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-}
-
-function buildStatusUrl(jobId: string): string {
-  return `${CUSTOM_RECIPE_START_ENDPOINT}/status/${jobId}`;
-}
-
-function buildResultUrl(jobId: string): string {
-  return `${CUSTOM_RECIPE_START_ENDPOINT}/result/${jobId}`;
-}
-
-function isStartResponse(payload: unknown): payload is CustomRecipeApiStartResponse {
-  return (
-    isRecord(payload) &&
-    typeof payload.jobId === "string" &&
-    payload.jobId.length > 0 &&
-    (payload.status === "started" || payload.status === "in_progress")
-  );
-}
-
-function isResumeResponse(
-  payload: unknown,
-): payload is CustomRecipeApiResumeResponse {
-  return (
-    isRecord(payload) &&
-    (typeof payload.jobId === "string" || payload.jobId === null) &&
-    typeof payload.isGenerating === "boolean"
-  );
-}
-
-function isStatusResponse(
-  payload: unknown,
-): payload is CustomRecipeApiStatusResponse {
-  return (
-    isRecord(payload) &&
-    typeof payload.jobId === "string" &&
-    typeof payload.isGenerating === "boolean" &&
-    typeof payload.done === "boolean" &&
-    typeof payload.failed === "boolean" &&
-    typeof payload.progress === "number"
-  );
 }
 
 function normalizeResultPayload(payload: unknown): CustomRecipeApiResultPayload | null {
@@ -463,6 +397,8 @@ function mapCustomRecipeError(
       return t("basic.customRecipe.error.codes.PANTRY_UNAVAILABLE");
     case "GENERATION_IN_PROGRESS":
       return t("basic.customRecipe.error.codes.GENERATION_IN_PROGRESS");
+    case "GENERATION_INTERRUPTED":
+      return t("basic.customRecipe.error.codes.GENERATION_INTERRUPTED");
     case "GENERATION_NOT_FOUND":
     case "GENERATION_RESULT_NOT_READY":
     case "GENERATION_FAILED":
@@ -515,6 +451,7 @@ export default function RivoCustomRecipeExperience({
   const shouldReduceMotion = useReducedMotion();
   const triggerHaptic = useHapticFeedback();
   const requestIdRef = useRef(0);
+  const activeRequestControllerRef = useRef<AbortController | null>(null);
 
   const [status, setStatus] = useState<CustomRecipeGenerationStatus>("idle");
   const [progress, setProgress] = useState(0);
@@ -535,8 +472,6 @@ export default function RivoCustomRecipeExperience({
   );
   const displayTip =
     customRecipeTips[tipIndex % customRecipeTips.length] ?? customRecipeTips[0] ?? "";
-  const generatedRecipes = result?.recipes ?? [];
-  const fallbackRecipes = result?.fallbackRecipes ?? [];
   const fallbackRecommendations:
     | Array<
         | CustomRecipeFallbackRecommendation
@@ -587,94 +522,160 @@ export default function RivoCustomRecipeExperience({
 
   useEffect(() => {
     return () => {
+      activeRequestControllerRef.current?.abort();
+      activeRequestControllerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
       requestIdRef.current += 1;
     };
   }, []);
 
-  const fetchCompletedResult = useCallback(async (jobId: string) => {
-    const response = await fetch(buildResultUrl(jobId), {
-      method: "GET",
-      cache: "no-store",
+  useEffect(() => {
+    if (status !== "generating") {
+      return;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [status]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const inspectActiveGeneration = async () => {
+      const response = await fetch(CUSTOM_RECIPE_START_ENDPOINT, {
+        method: "GET",
+        cache: "no-store",
+      });
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          readErrorMessage(payload) ?? "Custom recipe generation state request failed.",
+        );
+      }
+
+      const parsed = customRecipeCurrentGenerationResponseSchema.safeParse(payload);
+      if (!parsed.success || isCancelled || !parsed.data.isGenerating) {
+        return;
+      }
+
+      setStatus("error");
+      setProgress(parsed.data.progress ?? 0);
+      setError(mapCustomRecipeError(t, "GENERATION_INTERRUPTED"));
+      toast.info(t("basic.customRecipe.error.codes.GENERATION_INTERRUPTED"), {
+        duration: 4000,
+      });
+    };
+
+    void inspectActiveGeneration().catch(() => {
+      // Passive inspection failures should not break the primary flow.
     });
-    const payload = (await response.json().catch(() => null)) as
-      | CustomRecipeApiCompletedResponse
-      | Record<string, unknown>
-      | null;
 
-    if (response.status === 404) {
-      return null;
-    }
+    return () => {
+      isCancelled = true;
+    };
+  }, [t]);
 
-    if (!response.ok) {
-      throw new Error(
-        readErrorMessage(payload) ?? "Custom recipe result request failed.",
-      );
-    }
+  const consumeRecipeStream = useCallback(
+    async (response: Response, requestId: number) => {
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as
+          | Record<string, unknown>
+          | null;
+        throw new Error(
+          readErrorMessage(payload) ?? "Custom recipe request failed.",
+        );
+      }
 
-    const normalizedPayload = normalizeResultPayload(payload);
+      if (!response.body) {
+        throw new Error("Custom recipe stream is unavailable.");
+      }
 
-    if (!normalizedPayload) {
-      throw new Error("Custom recipe result response is invalid.");
-    }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-    return normalizedPayload;
-  }, []);
-
-  const pollForCompletion = useCallback(
-    async (jobId: string, requestId: number) => {
-      for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt += 1) {
-        if (attempt > 0) {
-          await delay(FALLBACK_POLL_INTERVAL_MS);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
         }
 
         if (requestIdRef.current !== requestId) {
           throw new Error("__stale_request__");
         }
 
-        const statusResponse = await fetch(buildStatusUrl(jobId), {
-          method: "GET",
-          cache: "no-store",
-        });
-        const statusPayload = (await statusResponse.json().catch(() => null)) as
-          | CustomRecipeApiStatusResponse
-          | Record<string, unknown>
-          | null;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
 
-        if (!statusResponse.ok) {
-          throw new Error(
-            readErrorMessage(statusPayload) ??
-              "Custom recipe status request failed.",
-          );
-        }
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) {
+            continue;
+          }
 
-        if (!isStatusResponse(statusPayload)) {
-          throw new Error("Custom recipe status response is invalid.");
-        }
+          let parsedEvent: unknown;
+          try {
+            parsedEvent = JSON.parse(trimmedLine);
+          } catch {
+            throw new Error("Custom recipe stream response is invalid.");
+          }
 
-        setProgress((current) =>
-          Math.max(Math.min(statusPayload.progress, 100), current),
-        );
+          const parsed = customRecipeStreamEventSchema.safeParse(parsedEvent);
+          if (!parsed.success) {
+            throw new Error("Custom recipe stream event is invalid.");
+          }
 
-        if (statusPayload.failed) {
-          throw new Error(
-            statusPayload.errorCode ?? "Custom recipe generation failed.",
-          );
-        }
+          const streamEvent = parsed.data;
 
-        if (!statusPayload.done || statusPayload.isGenerating) {
-          continue;
-        }
+          if (streamEvent.type === "progress") {
+            setProgress((current) =>
+              Math.max(Math.min(streamEvent.progress, 100), current),
+            );
+            continue;
+          }
 
-        const completedPayload = await fetchCompletedResult(jobId);
+          if (streamEvent.type === "error") {
+            throw new Error(streamEvent.code || streamEvent.message);
+          }
 
-        if (completedPayload) {
-          return completedPayload;
+          return streamEvent.result as CustomRecipeApiResultPayload;
         }
       }
 
-      throw new Error("Custom recipe generation timed out.");
+      if (buffer.trim().length > 0) {
+        const parsedEvent = JSON.parse(buffer) as unknown;
+        const parsed = customRecipeStreamEventSchema.safeParse(parsedEvent);
+        if (!parsed.success) {
+          throw new Error("Custom recipe stream event is invalid.");
+        }
+
+        const streamEvent = parsed.data;
+
+        if (streamEvent.type === "final") {
+          return streamEvent.result as CustomRecipeApiResultPayload;
+        }
+
+        if (streamEvent.type === "error") {
+          throw new Error(streamEvent.code || streamEvent.message);
+        }
+      }
+
+      throw new Error("GENERATION_INTERRUPTED");
     },
-    [fetchCompletedResult],
+    [],
   );
 
   const openRecipeDialog = useCallback(
@@ -708,59 +709,6 @@ export default function RivoCustomRecipeExperience({
     [openRecipeDialog, t],
   );
 
-  const resumeActiveJob = useCallback(async () => {
-    const requestId = requestIdRef.current + 1;
-    requestIdRef.current = requestId;
-
-    const response = await fetch(CUSTOM_RECIPE_START_ENDPOINT, {
-      method: "GET",
-      cache: "no-store",
-    });
-    const payload = (await response.json().catch(() => null)) as
-      | CustomRecipeApiResumeResponse
-      | Record<string, unknown>
-      | null;
-
-    if (!response.ok) {
-      throw new Error(
-        readErrorMessage(payload) ?? "Custom recipe resume request failed.",
-      );
-    }
-
-    if (!isResumeResponse(payload) || !payload.jobId || !payload.isGenerating) {
-      return;
-    }
-
-    setStatus("generating");
-    setProgress(12);
-    setTipIndex(0);
-    setResult(null);
-    setError(null);
-
-    const completedPayload = await pollForCompletion(payload.jobId, requestId);
-
-    if (requestIdRef.current !== requestId) {
-      return;
-    }
-
-    applyCompletedPayload(completedPayload);
-    toast.info(t("basic.customRecipe.toasts.resumed"), { duration: 3000 });
-  }, [applyCompletedPayload, pollForCompletion, t]);
-
-  useEffect(() => {
-    void resumeActiveJob().catch((resumeError) => {
-      setStatus("error");
-      setError(
-        mapCustomRecipeError(
-          t,
-          resumeError instanceof Error
-            ? resumeError.message
-            : "Custom recipe resume failed.",
-        ),
-      );
-    });
-  }, [resumeActiveJob, t]);
-
   const handleGenerate = useCallback(async () => {
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
@@ -774,6 +722,10 @@ export default function RivoCustomRecipeExperience({
     setError(null);
 
     try {
+      activeRequestControllerRef.current?.abort();
+      const controller = new AbortController();
+      activeRequestControllerRef.current = controller;
+
       const mockPayload = readMockPayload();
 
       if (mockPayload) {
@@ -794,23 +746,10 @@ export default function RivoCustomRecipeExperience({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ locale }),
+        signal: controller.signal,
       });
-      const payload = (await response.json().catch(() => null)) as
-        | CustomRecipeApiStartResponse
-        | Record<string, unknown>
-        | null;
 
-      if (!response.ok) {
-        throw new Error(
-          readErrorMessage(payload) ?? "Custom recipe request failed.",
-        );
-      }
-
-      if (!isStartResponse(payload)) {
-        throw new Error("Custom recipe start response is invalid.");
-      }
-
-      const completedPayload = await pollForCompletion(payload.jobId, requestId);
+      const completedPayload = await consumeRecipeStream(response, requestId);
 
       if (requestIdRef.current !== requestId) {
         return;
@@ -818,6 +757,13 @@ export default function RivoCustomRecipeExperience({
 
       applyCompletedPayload(completedPayload);
     } catch (generationError) {
+      if (
+        generationError instanceof DOMException &&
+        generationError.name === "AbortError"
+      ) {
+        return;
+      }
+
       if (
         generationError instanceof Error &&
         generationError.message === "__stale_request__"
@@ -840,20 +786,26 @@ export default function RivoCustomRecipeExperience({
         ),
       );
       toast.error(t("basic.customRecipe.toasts.error"));
+    } finally {
+      activeRequestControllerRef.current = null;
     }
-  }, [applyCompletedPayload, locale, pollForCompletion, t, triggerHaptic]);
+  }, [applyCompletedPayload, consumeRecipeStream, locale, t, triggerHaptic]);
 
   const handleOpenResult = useCallback(() => {
+    const generatedRecipes = result?.recipes ?? [];
+
     if (!generatedRecipes.length) {
       return;
     }
 
     triggerHaptic("light");
     openRecipeDialog(generatedRecipes, 0);
-  }, [generatedRecipes, openRecipeDialog, triggerHaptic]);
+  }, [openRecipeDialog, result, triggerHaptic]);
 
   const handleOpenFallbackRecipe = useCallback(
     (recommendationId: string) => {
+      const fallbackRecipes = result?.fallbackRecipes ?? [];
+
       const recipeIndex = fallbackRecipes.findIndex(
         (recipe) => recipe.id === recommendationId,
       );
@@ -865,7 +817,7 @@ export default function RivoCustomRecipeExperience({
       triggerHaptic("light");
       openRecipeDialog(fallbackRecipes, recipeIndex);
     },
-    [fallbackRecipes, openRecipeDialog, triggerHaptic],
+    [openRecipeDialog, result, triggerHaptic],
   );
 
   const handleOpenPantry = useCallback(() => {

@@ -531,6 +531,7 @@
             "PROFILE_UNAVAILABLE": "We could not load your profile details for recipe generation.",
             "PANTRY_UNAVAILABLE": "We could not load your pantry right now.",
             "GENERATION_IN_PROGRESS": "Rivo is already working on your recipe.",
+            "GENERATION_INTERRUPTED": "Recipe generation was interrupted. Reloading cannot resume the stream, so please start it again.",
             "GENERATION_FAILED": "Rivo could not finish the recipe generation.",
             "TIMEOUT": "Recipe generation took too long. Please try again.",
             "DEFAULT": "We could not generate a custom recipe right now."

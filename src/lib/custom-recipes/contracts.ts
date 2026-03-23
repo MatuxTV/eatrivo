@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { MatchedRecipe } from "@/lib/recipe-matches";
 
 const localeSchema = z.enum(["en", "sk"]);
+const customRecipeJobIdSchema = z.string().uuid();
 
 const messageValuesSchema = z.record(
   z.string(),
@@ -17,10 +18,6 @@ export const messageDescriptorSchema = z.object({
 export const customRecipeStartRequestSchema = z.object({
   locale: localeSchema.optional(),
   fallbackSuggestionLimit: z.coerce.number().int().min(1).max(6).default(4),
-});
-
-export const customRecipeJobParamsSchema = z.object({
-  jobId: z.string().uuid(),
 });
 
 export const customRecipeInstructionSchema = z.object({
@@ -225,17 +222,53 @@ export const customRecipeResultSchema = z.object({
   }),
 });
 
-export const customRecipeStatusResponseSchema = z.object({
-  jobId: z.string().uuid(),
+export const customRecipeCurrentGenerationResponseSchema = z.object({
+  jobId: customRecipeJobIdSchema.nullable(),
   isGenerating: z.boolean(),
-  done: z.boolean(),
-  failed: z.boolean(),
+  progress: z.number().int().min(0).max(100).optional(),
+  label: z.string().min(1).optional(),
+  node: z.string().min(1).optional(),
+  retryCount: z.number().int().min(0).optional(),
+});
+
+export const customRecipeProgressStreamEventSchema = z.object({
+  type: z.literal("progress"),
+  jobId: customRecipeJobIdSchema,
   progress: z.number().int().min(0).max(100),
   label: z.string().min(1),
   node: z.string().min(1),
   retryCount: z.number().int().min(0),
-  errorCode: z.string().min(1).optional(),
+  done: z.boolean(),
+  failed: z.boolean(),
 });
+
+export const customRecipeFinalStreamEventSchema = z.object({
+  type: z.literal("final"),
+  jobId: customRecipeJobIdSchema,
+  progress: z.literal(100),
+  label: z.string().min(1),
+  node: z.string().min(1),
+  retryCount: z.number().int().min(0),
+  done: z.literal(true),
+  userCreated: z.literal(true),
+  result: customRecipeResultSchema,
+});
+
+export const customRecipeErrorStreamEventSchema = z.object({
+  type: z.literal("error"),
+  jobId: customRecipeJobIdSchema,
+  code: z.string().min(1),
+  message: z.string().min(1),
+  progress: z.number().int().min(0).max(100),
+  label: z.string().min(1),
+  node: z.string().min(1),
+});
+
+export const customRecipeStreamEventSchema = z.discriminatedUnion("type", [
+  customRecipeProgressStreamEventSchema,
+  customRecipeFinalStreamEventSchema,
+  customRecipeErrorStreamEventSchema,
+]);
 
 export type MessageDescriptor = z.infer<typeof messageDescriptorSchema>;
 export type CustomRecipeStartRequest = z.infer<
@@ -252,8 +285,20 @@ export type CustomRecipeSuggestion = z.infer<
   typeof customRecipeSuggestionSchema
 >;
 export type CustomRecipeResult = z.infer<typeof customRecipeResultSchema>;
-export type CustomRecipeStatusResponse = z.infer<
-  typeof customRecipeStatusResponseSchema
+export type CustomRecipeCurrentGenerationResponse = z.infer<
+  typeof customRecipeCurrentGenerationResponseSchema
+>;
+export type CustomRecipeStreamEvent = z.infer<
+  typeof customRecipeStreamEventSchema
+>;
+export type CustomRecipeProgressStreamEvent = z.infer<
+  typeof customRecipeProgressStreamEventSchema
+>;
+export type CustomRecipeFinalStreamEvent = z.infer<
+  typeof customRecipeFinalStreamEventSchema
+>;
+export type CustomRecipeErrorStreamEvent = z.infer<
+  typeof customRecipeErrorStreamEventSchema
 >;
 
 export interface CustomRecipePantryContextItem {

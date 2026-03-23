@@ -1,10 +1,17 @@
 import type { NextRequest } from "next/server";
-import { NextResponse, after } from "next/server";
+import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 
 import { auth } from "../../../../../../auth";
 import { userProfiles } from "@/db/schema";
-import { customRecipeStartRequestSchema } from "@/lib/custom-recipes/contracts";
+import {
+  customRecipeCurrentGenerationResponseSchema,
+  customRecipeErrorStreamEventSchema,
+  customRecipeFinalStreamEventSchema,
+  customRecipeProgressStreamEventSchema,
+  customRecipeStartRequestSchema,
+  type CustomRecipeStreamEvent,
+} from "@/lib/custom-recipes/contracts";
 import {
   CustomRecipeGenerationStore,
   customRecipeGenerationLockKey,
@@ -20,6 +27,12 @@ import { apiLogger } from "@/lib/logger";
 import { RequestLock } from "@/lib/redis";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
+const CUSTOM_RECIPE_LOCK_TTL_SECONDS = 300;
+
 function jsonError(
   error: string,
   code: string,
@@ -27,6 +40,14 @@ function jsonError(
   headers?: HeadersInit,
 ) {
   return NextResponse.json({ error, code }, { status, headers });
+}
+
+function writeEvent(
+  controller: ReadableStreamDefaultController<Uint8Array>,
+  encoder: TextEncoder,
+  event: CustomRecipeStreamEvent,
+) {
+  controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
 }
 
 export async function GET(request: NextRequest) {
@@ -49,34 +70,39 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const activeJob = await CustomRecipeGenerationStore.getActiveJob(
-    session.user.id,
+  const progress = await CustomRecipeGenerationStore.getProgress(session.user.id);
+  const isGenerating = await RequestLock.isLocked(
+    customRecipeGenerationLockKey(session.user.id),
   );
 
-  if (!activeJob) {
-    return NextResponse.json({
+  if (!isGenerating) {
+    if (progress?.done || progress?.failed) {
+      await CustomRecipeGenerationStore.clearProgress(session.user.id);
+    }
+
+    return NextResponse.json(customRecipeCurrentGenerationResponseSchema.parse({
       jobId: null,
       isGenerating: false,
-    });
+    }));
   }
 
-  const progress = await CustomRecipeGenerationStore.getProgress(activeJob.jobId);
   if (!progress || progress.userId !== session.user.id || progress.done) {
-    await CustomRecipeGenerationStore.clearActiveJob(session.user.id);
-
-    return NextResponse.json({
+    return NextResponse.json(customRecipeCurrentGenerationResponseSchema.parse({
       jobId: null,
-      isGenerating: false,
-    });
+      isGenerating: true,
+    }));
   }
 
-  await CustomRecipeGenerationStore.touchActiveJob(session.user.id);
-  await CustomRecipeGenerationStore.touchProgress(activeJob.jobId);
+  await CustomRecipeGenerationStore.touchProgress(session.user.id);
 
-  return NextResponse.json({
-    jobId: activeJob.jobId,
+  return NextResponse.json(customRecipeCurrentGenerationResponseSchema.parse({
+    jobId: progress.jobId,
     isGenerating: true,
-  });
+    progress: progress.progress,
+    label: progress.label,
+    node: progress.node,
+    retryCount: progress.retryCount,
+  }));
 }
 
 export async function POST(request: NextRequest) {
@@ -149,29 +175,17 @@ export async function POST(request: NextRequest) {
 
   const userId = session.user.id;
   const lockKey = customRecipeGenerationLockKey(userId);
-  const lockAcquired = await RequestLock.acquire(lockKey, 300);
+  const lockAcquired = await RequestLock.acquire(
+    lockKey,
+    CUSTOM_RECIPE_LOCK_TTL_SECONDS,
+  );
 
   if (!lockAcquired) {
-    const activeJob = await CustomRecipeGenerationStore.getActiveJob(userId);
-
     apiLogger.warn("[customRecipe.generate] generation already in progress", {
       metadata: {
         userId,
-        jobId: activeJob?.jobId ?? null,
       },
     });
-
-    if (activeJob) {
-      await CustomRecipeGenerationStore.touchActiveJob(userId);
-
-      return NextResponse.json(
-        {
-          jobId: activeJob.jobId,
-          status: "in_progress",
-        },
-        { status: 202 },
-      );
-    }
 
     return jsonError(
       "Custom recipe generation already in progress",
@@ -182,14 +196,14 @@ export async function POST(request: NextRequest) {
 
   const jobId = crypto.randomUUID();
 
-  await CustomRecipeGenerationStore.initializeJob(jobId, userId, {
+  await CustomRecipeGenerationStore.initializeGeneration(userId, jobId, {
     progress: INITIAL_PROGRESS.progress,
     label: INITIAL_PROGRESS.label,
     node: "fetch_profile",
     retryCount: 0,
   });
 
-  apiLogger.info("[customRecipe.generate] job initialized", {
+  apiLogger.info("[customRecipe.generate] stream accepted", {
     metadata: {
       userId,
       userProfileId: userProfile.id,
@@ -199,152 +213,242 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  after(async () => {
-    try {
-      apiLogger.info("[customRecipe.generate] background execution started", {
-        metadata: {
-          jobId,
-          userId,
-          userProfileId: userProfile.id,
-        },
-      });
+  const encoder = new TextEncoder();
 
-      const graph = buildCustomRecipeGraph();
-      const stream = await graph.stream(
-        {
-          userId,
-          userProfileId: userProfile.id,
-          locale: parsedBody.data.locale ?? "en",
-          fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
-        },
-        { streamMode: "updates" },
-      );
-
-      for await (const update of stream) {
-        const nodeName = Object.keys(update)[0];
-        const nodeState = update[nodeName] as Partial<
-          typeof CustomRecipeState.State
-        >;
-
-        if (nodeState?.fatalError) {
-          apiLogger.error(
-            "[customRecipe.generate] graph fatal error",
-            undefined,
-            {
-              metadata: {
-                jobId,
-                userId,
-                nodeName,
-                fatalError: nodeState.fatalError,
-                fatalErrorCode: nodeState.fatalErrorCode,
-              },
-            },
-          );
-          await CustomRecipeGenerationStore.setFailure(
+  return new Response(
+    new ReadableStream<Uint8Array>({
+      async start(controller) {
+        try {
+          writeEvent(controller, encoder, customRecipeProgressStreamEventSchema.parse({
+            type: "progress",
             jobId,
-            userId,
-            nodeState.fatalErrorCode ?? "GENERATION_FAILED",
-            nodeState.fatalError,
-          );
-          break;
-        }
-
-        const progressInfo = NODE_PROGRESS[nodeName];
-        if (progressInfo) {
-          apiLogger.info("[customRecipe.generate] node progressed", {
-            metadata: {
-              jobId,
-              userId,
-              nodeName,
-              progress: progressInfo.progress,
-              label: progressInfo.label,
-              retryCount: nodeState?.retryCount ?? 0,
-            },
-          });
-          await CustomRecipeGenerationStore.setProgress(jobId, userId, {
-            progress: progressInfo.progress,
-            label: progressInfo.label,
-            node: nodeName,
-            retryCount: nodeState?.retryCount ?? 0,
+            progress: INITIAL_PROGRESS.progress,
+            label: INITIAL_PROGRESS.label,
+            node: "fetch_profile",
+            retryCount: 0,
             done: false,
             failed: false,
-          });
-        }
+          }));
 
-        if (nodeName === "finalize_result" && nodeState?.finalResult) {
-          apiLogger.info("[customRecipe.generate] final result ready", {
-            metadata: {
-              jobId,
+          const graph = buildCustomRecipeGraph();
+          const stream = await graph.stream(
+            {
               userId,
-              fallbackUsed: nodeState.finalResult.meta.fallbackUsed,
-              pantryRecipeStatus: nodeState.finalResult.pantryRecipe.status,
-              almostCookableStatus:
-                nodeState.finalResult.almostCookableRecipe.status,
-              fallbackSuggestionCount:
-                nodeState.finalResult.fallbackDatabaseSuggestions.length,
+              userProfileId: userProfile.id,
+              locale: parsedBody.data.locale ?? "en",
+              fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
             },
-          });
-          await CustomRecipeGenerationStore.setResult(
-            jobId,
-            userId,
-            nodeState.finalResult,
+            { streamMode: "updates" },
           );
-          await CustomRecipeGenerationStore.setProgress(jobId, userId, {
-            progress: 100,
-            label: "customRecipe.done",
-            node: nodeName,
-            retryCount: nodeState.retryCount ?? 0,
-            done: true,
-            failed: false,
-          });
 
-          apiLogger.info("[customRecipe.generate] job completed", {
+          for await (const update of stream) {
+            const nodeName = Object.keys(update)[0];
+            if (!nodeName) {
+              continue;
+            }
+
+            const nodeState = update[nodeName] as Partial<
+              typeof CustomRecipeState.State
+            >;
+
+            await Promise.all([
+              RequestLock.refresh(lockKey, CUSTOM_RECIPE_LOCK_TTL_SECONDS),
+              CustomRecipeGenerationStore.touchProgress(userId),
+            ]);
+
+            if (nodeState?.fatalError) {
+              const errorCode = nodeState.fatalErrorCode ?? "GENERATION_FAILED";
+              const errorMessage =
+                nodeState.fatalError ?? "Custom recipe generation failed";
+
+              apiLogger.error(
+                "[customRecipe.generate] graph fatal error",
+                undefined,
+                {
+                  metadata: {
+                    jobId,
+                    userId,
+                    nodeName,
+                    fatalError: nodeState.fatalError,
+                    fatalErrorCode: errorCode,
+                  },
+                },
+              );
+
+              await CustomRecipeGenerationStore.setFailure(
+                userId,
+                jobId,
+                errorCode,
+                errorMessage,
+              );
+
+              writeEvent(controller, encoder, customRecipeErrorStreamEventSchema.parse({
+                type: "error",
+                jobId,
+                code: errorCode,
+                message: errorMessage,
+                progress: 100,
+                label: "customRecipe.failed",
+                node: nodeName,
+              }));
+              return;
+            }
+
+            const progressInfo = NODE_PROGRESS[nodeName];
+            if (progressInfo) {
+              const retryCount = nodeState?.retryCount ?? 0;
+
+              apiLogger.info("[customRecipe.generate] node progressed", {
+                metadata: {
+                  jobId,
+                  userId,
+                  nodeName,
+                  progress: progressInfo.progress,
+                  label: progressInfo.label,
+                  retryCount,
+                },
+              });
+
+              await CustomRecipeGenerationStore.setProgress(userId, jobId, {
+                progress: progressInfo.progress,
+                label: progressInfo.label,
+                node: nodeName,
+                retryCount,
+                done: false,
+                failed: false,
+              });
+
+              writeEvent(controller, encoder, customRecipeProgressStreamEventSchema.parse({
+                type: "progress",
+                jobId,
+                progress: progressInfo.progress,
+                label: progressInfo.label,
+                node: nodeName,
+                retryCount,
+                done: false,
+                failed: false,
+              }));
+            }
+
+            if (nodeName === "finalize_result" && nodeState?.finalResult) {
+              apiLogger.info("[customRecipe.generate] final result ready", {
+                metadata: {
+                  jobId,
+                  userId,
+                  fallbackUsed: nodeState.finalResult.meta.fallbackUsed,
+                  pantryRecipeStatus: nodeState.finalResult.pantryRecipe.status,
+                  almostCookableStatus:
+                    nodeState.finalResult.almostCookableRecipe.status,
+                  fallbackSuggestionCount:
+                    nodeState.finalResult.fallbackDatabaseSuggestions.length,
+                },
+              });
+
+              const retryCount = nodeState.retryCount ?? 0;
+
+              await Promise.all([
+                CustomRecipeGenerationStore.setResult(
+                  userId,
+                  jobId,
+                  nodeState.finalResult,
+                ),
+                CustomRecipeGenerationStore.setProgress(userId, jobId, {
+                  progress: 100,
+                  label: "customRecipe.done",
+                  node: nodeName,
+                  retryCount,
+                  done: true,
+                  failed: false,
+                }),
+              ]);
+
+              writeEvent(controller, encoder, customRecipeFinalStreamEventSchema.parse({
+                type: "final",
+                jobId,
+                progress: 100,
+                label: "customRecipe.done",
+                node: nodeName,
+                retryCount,
+                done: true,
+                userCreated: true,
+                result: nodeState.finalResult,
+              }));
+
+              apiLogger.info("[customRecipe.generate] job completed", {
+                metadata: {
+                  jobId,
+                  userId,
+                },
+              });
+              return;
+            }
+          }
+
+          await CustomRecipeGenerationStore.setFailure(
+            userId,
+            jobId,
+            "GENERATION_FAILED",
+            "Custom recipe generation completed without a final result",
+          );
+
+          writeEvent(controller, encoder, customRecipeErrorStreamEventSchema.parse({
+            type: "error",
+            jobId,
+            code: "GENERATION_FAILED",
+            message: "Custom recipe generation completed without a final result",
+            progress: 100,
+            label: "customRecipe.failed",
+            node: "finalize_result",
+          }));
+        } catch (error) {
+          apiLogger.error("[customRecipe.generate] streaming flow failed", error, {
             metadata: {
               jobId,
               userId,
             },
           });
+
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Custom recipe generation failed";
+
+          await CustomRecipeGenerationStore.setFailure(
+            userId,
+            jobId,
+            "GENERATION_FAILED",
+            errorMessage,
+          );
+
+          writeEvent(controller, encoder, customRecipeErrorStreamEventSchema.parse({
+            type: "error",
+            jobId,
+            code: "GENERATION_FAILED",
+            message: errorMessage,
+            progress: 100,
+            label: "customRecipe.failed",
+            node: "failed",
+          }));
+        } finally {
+          await RequestLock.release(lockKey);
+
+          apiLogger.info("[customRecipe.generate] cleanup finished", {
+            metadata: {
+              jobId,
+              userId,
+            },
+          });
+
+          controller.close();
         }
-      }
-    } catch (error) {
-      apiLogger.error("[customRecipe.generate] background flow failed", error, {
-        metadata: {
-          jobId,
-          userId,
-        },
-      });
-
-      await CustomRecipeGenerationStore.setFailure(
-        jobId,
-        userId,
-        "GENERATION_FAILED",
-        "Custom recipe generation failed",
-      );
-    } finally {
-      await RequestLock.release(lockKey);
-      await CustomRecipeGenerationStore.clearActiveJob(userId);
-
-      apiLogger.info("[customRecipe.generate] cleanup finished", {
-        metadata: {
-          jobId,
-          userId,
-        },
-      });
-    }
-  });
-
-  apiLogger.info("[customRecipe.generate] accepted", {
-    metadata: {
-      jobId,
-      userId,
-    },
-  });
-
-  return NextResponse.json(
+      },
+    }),
     {
-      jobId,
-      status: "started",
+      headers: {
+        "Content-Type": "application/x-ndjson; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+      },
     },
-    { status: 202 },
   );
 }
