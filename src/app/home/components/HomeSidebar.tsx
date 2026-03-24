@@ -31,6 +31,7 @@ export default function HomeSidebar({
   onSectionChange,
 }: HomeSidebarProps) {
   const { data: session } = useSession();
+  const user = session?.user;
   const t = useTranslations("home");
 
   const signOutHref = "/signout";
@@ -78,10 +79,10 @@ export default function HomeSidebar({
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
               <div className="relative">
-                {session?.user?.image ? (
+                {user?.image ? (
                   <Image
-                    src={session.user.image}
-                    alt={session?.user?.name || t("userAlt")}
+                    src={user.image}
+                    alt={user.name || t("userAlt")}
                     width={48}
                     height={48}
                     className="rounded-full ring-2 ring-eatrivo-purple/20"
@@ -96,18 +97,18 @@ export default function HomeSidebar({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <h2 className="text-sm font-bold text-gray-900 truncate">
-                    {session?.user?.name}
+                    {user?.name}
                   </h2>
-                  {session?.user?.badges?.map((badgeStr) => (
+                  {user?.badges?.map((badgeStr) => (
                     <UserBadge key={badgeStr} type={badgeStr} />
                   ))}
                 </div>
                 <p
                   className={`text-xs capitalize ${getMembershipStatus(
-                    session?.user?.membership,
+                    user?.membership,
                   )}`}
                 >
-                  {session?.user?.membership || "basic"} {t("membershipSuffix")}
+                  {user?.membership || "basic"} {t("membershipSuffix")}
                 </p>
               </div>
             </div>

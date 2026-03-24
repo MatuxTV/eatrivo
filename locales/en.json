@@ -419,6 +419,10 @@
       "title": "Home",
       "description": "Your daily overview, meal plan, and shopping lists."
     },
+    "common": {
+      "cancel": "Cancel",
+      "save": "Save"
+    },
     "nav": {
       "home": "Home",
       "profile": "Profile",
@@ -478,6 +482,84 @@
         "badge": "Tip of the day",
         "mealPrep": "Meal prep"
       },
+      "customRecipe": {
+        "badge": "Rivo custom",
+        "title": "See what Rivo can cook from your pantry",
+        "description": "We will check what you already have, then suggest one pantry-first recipe and one easy top-up option when possible.",
+        "cta": "Ask Rivo for a custom recipe",
+        "ctaGenerating": "Rivo is generating...",
+        "ctaRetry": "Generate again",
+        "loading": {
+          "badge": "Generating now",
+          "title": "Rivo is building your next best recipe",
+          "description": "We are scanning your pantry, checking quick top-ups, and shaping a recipe that fits right now.",
+          "progressLabel": "Generation progress",
+          "tipsLabel": "Current step",
+          "tips": {
+            "scanning": "Scanning your pantry for hidden wins.",
+            "matching": "Matching ingredients with pantry-ready and almost-cookable ideas.",
+            "finishing": "Finishing the best option for today."
+          }
+        },
+        "result": {
+          "badge": "Fresh from Rivo",
+          "title": "Your custom recipe is ready",
+          "description": "Rivo prepared {count} tailored option(s) for this moment.",
+          "open": "Open recipe result",
+          "regenerate": "Generate again",
+          "readyNow": "Ready now",
+          "almostCookable": "Almost cookable"
+        },
+        "fallback": {
+          "badge": "Smart fallback",
+          "title": "Nothing clicks perfectly yet",
+          "description": "Rivo could not build a cookable recipe from your current pantry, but these quick changes should unlock one fast.",
+          "retry": "Try again",
+          "openPantry": "Update pantry",
+          "missingCount": "Missing {count}",
+          "defaultSuggestions": {
+            "pantry": "Add two or three staple ingredients you buy often.",
+            "protein": "Top up one protein source to unlock more meals.",
+            "vegetables": "Add one fresh vegetable for easier lunch and dinner matches."
+          }
+        },
+        "error": {
+          "badge": "Generation issue",
+          "title": "Rivo hit a small snag",
+          "description": "We could not generate a custom recipe right now. Please try again in a moment.",
+          "detailLabel": "Error detail",
+          "retry": "Try again",
+          "codes": {
+            "AUTH_REQUIRED": "Sign in again to generate a custom recipe.",
+            "RATE_LIMITED": "Rivo is a bit busy right now. Please wait a moment and try again.",
+            "PROFILE_UNAVAILABLE": "We could not load your profile details for recipe generation.",
+            "PANTRY_UNAVAILABLE": "We could not load your pantry right now.",
+            "GENERATION_IN_PROGRESS": "Rivo is already working on your recipe.",
+            "GENERATION_INTERRUPTED": "Recipe generation was interrupted. Reloading cannot resume the stream, so please start it again.",
+            "GENERATION_FAILED": "Rivo could not finish the recipe generation.",
+            "TIMEOUT": "Recipe generation took too long. Please try again.",
+            "DEFAULT": "We could not generate a custom recipe right now."
+          }
+        },
+        "message": {
+          "pantryRecipeReady": "Rivo found a pantry recipe for you: {recipeName}.",
+          "almostCookableReady": "Rivo found {recipeName}. You only need {missingCount} more ingredient(s).",
+          "fallbackSuggestionsReady": "Rivo prepared {suggestionCount} backup recipe suggestion(s) from the database.",
+          "emptyPantry": "Your pantry is still empty, so Rivo prepared a few smart starting points.",
+          "noRecipeAvailable": "Nothing matched perfectly yet, but Rivo found a few useful next options."
+        },
+        "recipeUnavailable": {
+          "pantryEmpty": "Your pantry is empty, so there is nothing to cook from it yet.",
+          "noPantryRecipe": "Nothing can be cooked from your current pantry only.",
+          "noAlmostCookable": "Rivo could not find an almost-cookable option with three or fewer missing ingredients."
+        },
+        "toasts": {
+          "ready": "Your custom recipe is ready.",
+          "empty": "Rivo found fallback recommendations instead.",
+          "error": "We could not generate a custom recipe right now.",
+          "resumed": "Rivo resumed your recipe generation."
+        }
+      },
       "pantryDashboard": {
         "badge": "Your Pantry",
         "itemsUnit": "items",
@@ -523,6 +605,9 @@
         "allDone": "All done! 🎉",
         "editTitleLabel": "Edit list name",
         "titleUpdateError": "Failed to update list name",
+        "editQuantityButton": "Edit quantity",
+        "editQuantityLabel": "Quantity",
+        "editQuantityPlaceholder": "e.g. 2 pcs or 500 g",
         "removeItemLabel": "Remove item",
         "removeError": "Failed to remove item"
       },
@@ -546,6 +631,10 @@
         "nextStep": "Next step",
         "stepProgress": "Step {current} of {total}",
         "finishRecipe": "Finish recipe",
+        "finishPending": "Finishing...",
+        "recipeFinished": "Recipe finished",
+        "pantryUpdated": "Pantry updated for {count} items",
+        "finishError": "Failed to deduct ingredients from pantry",
         "progress": "{checked}/{total} ingredients ready",
         "step1Title": "Prep your station",
         "step1Text": "Check the ingredients for {recipeTitle} and set up your workspace before you start cooking.",
@@ -696,6 +785,11 @@
       "pdfDocument": "PDF Document",
       "view": "View",
       "download": "Download",
+      "editQuantity": "Edit quantity",
+      "saveQuantity": "Save",
+      "cancelEditQuantity": "Cancel quantity edit",
+      "quantityLabel": "Quantity",
+      "quantityPlaceholder": "e.g. 2 pcs or 500 g",
       "edit": {
         "title": "Edit Shopping List",
         "nameLabel": "Name",
@@ -834,6 +928,10 @@
         "title": "Chat with Rivo",
         "description": "Ask Rivo anything about nutrition, recipes, or meal planning. Your personal AI chef, always ready.",
         "badge": "● COMING SOON",
+        "warning": {
+          "title": "Rivo is still in development",
+          "body": "Unfortunately, Rivo is still in development. You can use him as your information assistant. For now, he cannot change anything in your profile or work with your recipes. These features will be released in future updates."
+        },
         "tags": {
           "tag1": "Smart",
           "tag2": "24/7 Available",
@@ -1423,6 +1521,10 @@
     "row_expiring": "Expiring",
     "row_track": "Track",
     "row_tracked": "Tracked",
+    "row_add_package": "Add pack",
+    "row_add_package_again": "Add another",
+    "row_add_package_pending": "Adding",
+    "row_add_package_label": "Add another package to the shopping list",
     "aria_expand_category": "Show items in {category}",
     "aria_collapse_category": "Hide items in {category}",
     "aria_edit": "Edit item",
@@ -1443,6 +1545,14 @@
     "field_name_placeholder": "e.g. Milk, Apples, Pasta...",
     "field_quantity": "Quantity",
     "field_quantity_placeholder": "e.g. 500",
+    "field_tracking_mode": "Tracking mode",
+    "tracking_mode_quantity": "Track quantity",
+    "tracking_mode_availability": "Track availability",
+    "tracking_mode_availability_hint": "Availability mode stores this item as something you have on hand without tracking grams or pieces.",
+    "field_availability": "Availability",
+    "availability_in_stock": "In stock",
+    "availability_out_of_stock": "Out of stock",
+    "toggle_availability": "Toggle availability",
     "field_unit": "Unit",
     "field_category": "Category",
     "field_expiry": "Expiry date",

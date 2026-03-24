@@ -21,8 +21,16 @@ import {
   unauthorizedError,
   validationError,
 } from "@/lib/safeError";
+import {
+  findPantrySuggestionForItem,
+  getPantryAiSuggestions,
+} from "@/lib/pantry/ai-normalization";
 import { buildPantryInventoryItems, derivePantryInventoryItem } from "@/lib/pantry/grocery";
 import { invalidatePantryCaches, pantryCacheKey } from "@/lib/pantry/restock";
+import {
+  resolvePantryTrackingMode,
+  shouldPreservePantryQuantity,
+} from "@/lib/pantry/tracking";
 import {
   pantryCreateItemSchema,
   pantryListQuerySchema,
@@ -157,7 +165,28 @@ export async function POST(req: NextRequest) {
     if (!parsedBody.success) {
       return validationError("Validation failed");
     }
-    const { name, quantity, unit, category, expiryDate } = parsedBody.data;
+    const {
+      name,
+      trackingMode,
+      inStock,
+      quantity,
+      unit,
+      category,
+      expiryDate,
+    } = parsedBody.data;
+
+    apiLogger.debug("[pantry.create] request validated", {
+      metadata: {
+        userId: session.user.id,
+        itemName: name,
+        requestedTrackingMode: trackingMode ?? null,
+        requestedInStock: inStock ?? null,
+        requestedQuantity: quantity ?? null,
+        requestedUnit: unit ?? null,
+        category: category ?? null,
+        expiryDate: expiryDate ?? null,
+      },
+    });
 
     const userProfile = await db.query.userProfiles.findFirst({
       where: eq(userProfiles.userId, session.user.id),
@@ -169,7 +198,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const [userInfo, activeShoppingList, restockRows] = await Promise.all([
+    const [userInfo, activeShoppingList, restockRows, currentPantry] = await Promise.all([
       db.query.userInfoTable.findFirst({
         where: eq(userInfoTable.userProfileId, userProfile.id),
       }),
@@ -188,6 +217,10 @@ export async function POST(req: NextRequest) {
             eq(pantryRestockItems.isActive, true),
           ),
         ),
+      db
+        .select()
+        .from(pantryItems)
+        .where(eq(pantryItems.userProfileId, userProfile.id)),
     ]);
 
     const resolvedCategory =
@@ -195,6 +228,92 @@ export async function POST(req: NextRequest) {
         ? category
         : guessFoodCategory(name.trim());
     const normalizedName = name.trim();
+    const normalizedUnit = unit ? normalizeUnit(String(unit)) : null;
+    const aiSuggestions = await getPantryAiSuggestions({
+      userProfileId: userProfile.id,
+      locale: userInfo?.language ?? "sk",
+      currentPantry,
+      pendingItems: [
+        {
+          name: normalizedName,
+          trackingMode: trackingMode ?? null,
+          inStock: inStock ?? null,
+          quantity: quantity ?? null,
+          unit: normalizedUnit,
+          category: resolvedCategory,
+          expiryDate: expiryDate ?? null,
+        },
+      ],
+    });
+    const aiSuggestion = findPantrySuggestionForItem(
+      aiSuggestions,
+      normalizedName,
+      0,
+    );
+    const resolvedTrackingMode = resolvePantryTrackingMode({
+      name: normalizedName,
+      ingredientKey:
+        aiSuggestion?.ingredientKey ??
+        aiSuggestion?.matchedExistingIngredientKey ??
+        null,
+      ingredientSpecificKey:
+        aiSuggestion?.ingredientSpecificKey ??
+        aiSuggestion?.matchedExistingIngredientSpecificKey ??
+        null,
+      aiRecommendedTrackingMode:
+        aiSuggestion?.recommendedTrackingMode ?? null,
+      trackingMode: trackingMode ?? null,
+      quantity: quantity ?? null,
+      unit: normalizedUnit,
+    });
+    const preserveQuantity = shouldPreservePantryQuantity({
+      name: normalizedName,
+      ingredientKey:
+        aiSuggestion?.ingredientKey ??
+        aiSuggestion?.matchedExistingIngredientKey ??
+        null,
+      ingredientSpecificKey:
+        aiSuggestion?.ingredientSpecificKey ??
+        aiSuggestion?.matchedExistingIngredientSpecificKey ??
+        null,
+      trackingMode: resolvedTrackingMode,
+      aiRecommendedTrackingMode:
+        aiSuggestion?.recommendedTrackingMode ?? null,
+      quantity: quantity ?? null,
+      unit: normalizedUnit,
+    });
+    const resolvedInStock =
+      resolvedTrackingMode === "availability" ? (inStock ?? true) : true;
+
+    apiLogger.debug("[pantry.create] resolved pantry item", {
+      metadata: {
+        userProfileId: userProfile.id,
+        itemName: normalizedName,
+        aiIngredientKey:
+          aiSuggestion?.ingredientKey ??
+          aiSuggestion?.matchedExistingIngredientKey ??
+          null,
+        aiIngredientSpecificKey:
+          aiSuggestion?.ingredientSpecificKey ??
+          aiSuggestion?.matchedExistingIngredientSpecificKey ??
+          null,
+        aiRecommendedTrackingMode:
+          aiSuggestion?.recommendedTrackingMode ?? null,
+        resolvedTrackingMode,
+        preserveQuantity,
+        resolvedInStock,
+        quantity:
+          (resolvedTrackingMode === "quantity" || preserveQuantity) &&
+          quantity !== null &&
+          quantity !== undefined
+            ? String(quantity)
+            : null,
+        unit:
+          (resolvedTrackingMode === "quantity" || preserveQuantity) && normalizedUnit
+            ? normalizedUnit
+            : null,
+      },
+    });
 
     const [newItem] = await db
       .insert(pantryItems)
@@ -204,9 +323,18 @@ export async function POST(req: NextRequest) {
         ingredientName: null,
         ingredientKey: null,
         ingredientSpecificKey: null,
+        trackingMode: resolvedTrackingMode,
+        inStock: resolvedInStock,
         quantity:
-          quantity !== null && quantity !== undefined ? String(quantity) : null,
-        unit: unit ? normalizeUnit(String(unit)) : null,
+          (resolvedTrackingMode === "quantity" || preserveQuantity) &&
+          quantity !== null &&
+          quantity !== undefined
+            ? String(quantity)
+            : null,
+        unit:
+          (resolvedTrackingMode === "quantity" || preserveQuantity) && normalizedUnit
+            ? normalizedUnit
+            : null,
         category: resolvedCategory,
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         source: "manual",
@@ -229,6 +357,19 @@ export async function POST(req: NextRequest) {
         locale: userInfo?.language ?? "sk",
         pantryItemIds: [newItem.id],
       });
+    });
+
+    apiLogger.info("[pantry.create] pantry item inserted", {
+      metadata: {
+        userProfileId: userProfile.id,
+        pantryItemId: newItem.id,
+        itemName: newItem.name,
+        trackingMode: newItem.trackingMode,
+        inStock: newItem.inStock,
+        quantity: newItem.quantity,
+        unit: newItem.unit,
+        category: newItem.category,
+      },
     });
 
     return NextResponse.json(

@@ -74,6 +74,11 @@ function normalizeSuggestionArray(value: unknown): PantryBatchSuggestion[] {
         typeof item.ingredientSpecificKey === "string"
           ? item.ingredientSpecificKey
           : null,
+      recommendedTrackingMode:
+        item.recommendedTrackingMode === "quantity" ||
+        item.recommendedTrackingMode === "availability"
+          ? item.recommendedTrackingMode
+          : null,
       alreadyExists: Boolean(item.alreadyExists),
       matchedExistingIngredientKey:
         typeof item.matchedExistingIngredientKey === "string"
@@ -119,7 +124,7 @@ export async function buildPantryNormalizationPrompt(
     "You normalize pantry items into existing canonical ingredient keys used by recipes.",
     `Primary locale: ${input.locale}`,
     "Return ONLY valid JSON array.",
-    'Each item must be: {"rawName": string, "normalizedName": string | null, "ingredientSpecificKey": string | null, "ingredientKey": string | null, "alreadyExists": boolean, "matchedExistingIngredientSpecificKey": string | null, "matchedExistingIngredientKey": string | null, "category": string | null, "confidence": number | null, "reason": string | null}',
+    'Each item must be: {"rawName": string, "normalizedName": string | null, "ingredientSpecificKey": string | null, "ingredientKey": string | null, "recommendedTrackingMode": "quantity" | "availability" | null, "alreadyExists": boolean, "matchedExistingIngredientSpecificKey": string | null, "matchedExistingIngredientKey": string | null, "category": string | null, "confidence": number | null, "reason": string | null}',
     "Rules:",
     "- normalizedName is ONLY a grammar/display correction of rawName.",
     "- normalizedName may only fix uppercase/lowercase and restore Slovak diacritics like dlzne and makcene.",
@@ -133,22 +138,28 @@ export async function buildPantryNormalizationPrompt(
     "- If candidateKeys are provided for an item, choose from candidateKeys unless you are highly confident that none of them fit.",
     "- If you are not confident about the exact variant, return ingredientSpecificKey as null and still try to return a broader ingredientKey.",
     "- If you are not confident about both, return both as null.",
+    '- recommendedTrackingMode should be "availability" only for pantry staples that are usually tracked as simply on hand, for example garlic, salt, pepper, olive oil, soy sauce, vinegar.',
+    '- recommendedTrackingMode should be "quantity" for quantity-sensitive or packaged ingredients like milk, eggs, onion, apple, rice, yogurt, chicken, pasta, bread, vegetables, fruit, meat, and dairy.',
+    '- If the pending item includes an explicit quantity, prefer recommendedTrackingMode="quantity" unless the amount is clearly meaningless.',
+    '- If you are unsure, return recommendedTrackingMode as null instead of guessing.',
     "- Prefer stable recipe-style exact keys like olive-oil, chicken-breast, greek-yogurt, tomato, green-bean, jasmine-rice, mozzarella-cheese.",
     "- Prefer broad fallback keys like oil, chicken, yogurt, tomato, bean, rice, cheese when they fit.",
     "- Never output localized keys like paradajky, kuracie-prsia, zelene-fazulky, cestoviny-penne.",
     "- Do not invent quantities or units.",
     "Valid examples:",
-    '- rawName="malinove smoothie" -> normalizedName="Malinové smoothie" -> ingredientSpecificKey=null -> ingredientKey=null',
-    '- rawName="Jasminova ryza" -> normalizedName="Jazmínová ryža" -> ingredientSpecificKey="jasmine-rice" -> ingredientKey="rice"',
-    '- rawName="kuracie prsia" -> normalizedName="Kuracie prsia" -> ingredientSpecificKey="chicken-breast" -> ingredientKey="chicken"',
-    '- rawName="Mozzarella" -> normalizedName="Mozzarella" -> ingredientSpecificKey="mozzarella-cheese" -> ingredientKey="cheese"',
-    '- rawName="Mlieko" -> normalizedName="Mlieko" -> ingredientSpecificKey="milk" -> ingredientKey="milk"',
+    '- rawName="malinove smoothie" -> normalizedName="Malinové smoothie" -> ingredientSpecificKey=null -> ingredientKey=null -> recommendedTrackingMode="quantity"',
+    '- rawName="Jasminova ryza" -> normalizedName="Jazmínová ryža" -> ingredientSpecificKey="jasmine-rice" -> ingredientKey="rice" -> recommendedTrackingMode="quantity"',
+    '- rawName="kuracie prsia" -> normalizedName="Kuracie prsia" -> ingredientSpecificKey="chicken-breast" -> ingredientKey="chicken" -> recommendedTrackingMode="quantity"',
+    '- rawName="Mozzarella" -> normalizedName="Mozzarella" -> ingredientSpecificKey="mozzarella-cheese" -> ingredientKey="cheese" -> recommendedTrackingMode="quantity"',
+    '- rawName="Mlieko" -> normalizedName="Mlieko" -> ingredientSpecificKey="milk" -> ingredientKey="milk" -> recommendedTrackingMode="quantity"',
+    '- rawName="Cesnak" -> normalizedName="Cesnak" -> ingredientSpecificKey="garlic" -> ingredientKey="garlic" -> recommendedTrackingMode="availability"',
     "Invalid examples:",
     '- rawName="Paradajky" -> normalizedName="paradajka"  // invalid because meaning changed from plural form to singular form',
     '- rawName="Proteínový shake" -> normalizedName="Proteínový nápoj"  // invalid because wording changed',
     '- rawName="Paradajky" -> ingredientSpecificKey="paradajky"  // invalid because localized slug',
     '- rawName="Kuracie prsia" -> ingredientSpecificKey="kuracie-prsia"  // invalid because localized slug',
     '- rawName="Mozzarella" -> ingredientKey="mozzarella-cheese" and ingredientSpecificKey=null  // invalid because broad fallback cannot be more specific than the exact key',
+    '- rawName="Kuracie prsia" -> recommendedTrackingMode="availability"  // invalid because meat is quantity-sensitive',
     "CURRENT PANTRY:",
     pantryLines.join("\n") || "- none",
     "PENDING ITEMS:",

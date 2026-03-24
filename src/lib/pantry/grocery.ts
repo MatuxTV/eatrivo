@@ -3,6 +3,8 @@ import type {
   pantryRestockItems,
   shoppingListItems,
 } from "@/db/schema";
+import { formatAmountLabel } from "@/lib/pantry/format";
+import { isStampedAvailabilityCandidate } from "@/lib/pantry/tracking";
 import { guessFoodCategory } from "@/lib/units";
 
 import {
@@ -17,20 +19,6 @@ type ShoppingListItemRow = typeof shoppingListItems.$inferSelect;
 
 function namesMatch(left: string, right: string): boolean {
   return left.trim().toLowerCase() === right.trim().toLowerCase();
-}
-
-export function formatAmountLabel(
-  quantity: string | number | null | undefined,
-  unit: string | null | undefined,
-): string | null {
-  if (quantity === null || quantity === undefined || quantity === "") {
-    return null;
-  }
-
-  const normalizedQuantity =
-    typeof quantity === "number" ? String(quantity) : quantity;
-
-  return unit ? `${normalizedQuantity} ${unit}`.trim() : normalizedQuantity;
 }
 
 export function findMatchingShoppingListItem(
@@ -79,12 +67,48 @@ export function derivePantryInventoryItem(
   const thresholdUnit = restockItem
     ? normalizeRestockUnit(restockItem.defaultUnit)
     : null;
+  const trackingMode = pantryItem.trackingMode ?? "quantity";
+  const inStock = pantryItem.inStock ?? true;
+  const isStamped =
+    trackingMode === "availability" &&
+    (pantryQuantity !== null ||
+      isStampedAvailabilityCandidate({
+        name: pantryItem.name,
+        ingredientKey: pantryItem.ingredientKey,
+        ingredientSpecificKey: pantryItem.ingredientSpecificKey,
+        quantity: pantryQuantity,
+        unit: pantryUnit,
+      }));
+  const supportsRestockPackage =
+    isStamped && Boolean(restockItem?.defaultQuantity ?? restockItem?.defaultUnit);
 
   let lowStock = false;
-  let lowStockReason: "missing_quantity" | "restock_threshold" | "out_of_stock" | null =
-    null;
+  let lowStockReason:
+    | "missing_quantity"
+    | "restock_threshold"
+    | "out_of_stock"
+    | null = null;
 
-  if (restockItem) {
+  if (trackingMode === "availability") {
+    if (!inStock) {
+      lowStock = true;
+      lowStockReason = "out_of_stock";
+    } else if (
+      isStamped &&
+      pantryQuantity !== null &&
+      thresholdQuantity !== null &&
+      pantryUnit !== null &&
+      thresholdUnit !== null &&
+      pantryUnit === thresholdUnit &&
+      pantryQuantity <= thresholdQuantity
+    ) {
+      lowStock = true;
+      lowStockReason = "restock_threshold";
+    } else if (isStamped && pantryQuantity !== null && pantryQuantity <= 0) {
+      lowStock = true;
+      lowStockReason = "out_of_stock";
+    }
+  } else if (restockItem) {
     if (pantryQuantity === null) {
       lowStock = true;
       lowStockReason = "missing_quantity";
@@ -108,12 +132,16 @@ export function derivePantryInventoryItem(
 
   return {
     ...pantryItem,
+    trackingMode,
+    inStock,
     category: pantryItem.category ?? guessFoodCategory(pantryItem.name),
     lowStock,
     lowStockReason,
     restockItemId: restockItem?.id ?? null,
     restockDefaultQuantity: restockItem?.defaultQuantity ?? null,
     restockDefaultUnit: restockItem?.defaultUnit ?? null,
+    isStamped,
+    supportsRestockPackage,
     isOnActiveShoppingList: Boolean(matchedShoppingItem),
     activeShoppingListId: matchedShoppingItem ? activeShoppingListId : null,
     activeShoppingListItemId: matchedShoppingItem?.id ?? null,
@@ -140,15 +168,32 @@ export function resolveShoppingListSeedFromPantryItem(
     ingredientKey: pantryItem.ingredientKey,
     ingredientSpecificKey: pantryItem.ingredientSpecificKey,
   });
-
-  const quantity = restockItem?.defaultQuantity ?? pantryItem.quantity ?? null;
-  const unit = restockItem?.defaultUnit ?? pantryItem.unit ?? null;
+  const trackingMode = pantryItem.trackingMode ?? "quantity";
+  const isStamped =
+    trackingMode === "availability" &&
+    isStampedAvailabilityCandidate({
+      name: pantryItem.name,
+      ingredientKey: pantryItem.ingredientKey,
+      ingredientSpecificKey: pantryItem.ingredientSpecificKey,
+      quantity: parseStoredQuantity(pantryItem.quantity),
+      unit: normalizeRestockUnit(pantryItem.unit),
+    });
+  const quantity =
+    trackingMode === "quantity" || isStamped
+      ? restockItem?.defaultQuantity ?? pantryItem.quantity ?? null
+      : null;
+  const unit =
+    trackingMode === "quantity" || isStamped
+      ? restockItem?.defaultUnit ?? pantryItem.unit ?? null
+      : null;
 
   return {
     name: pantryItem.name.trim(),
     ingredientName: pantryItem.ingredientName ?? pantryItem.name.trim(),
     ingredientKey: pantryItem.ingredientKey,
     ingredientSpecificKey: pantryItem.ingredientSpecificKey,
+    trackingMode,
+    inStock: pantryItem.inStock ?? true,
     quantity,
     unit,
     amountLabel: formatAmountLabel(quantity, unit),

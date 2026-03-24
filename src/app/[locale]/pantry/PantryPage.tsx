@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePantry, type PantryItem, type PantryRestockItem } from "@/hooks/usePantry";
+import { formatAmountLabel, formatLocalizedAmountLabel } from "@/lib/pantry/format";
 import { PANTRY_UNIT_OPTIONS, guessFoodCategory, toCanonicalQuantity } from "@/lib/units";
 import { cn } from "@/lib/utils";
 
@@ -97,25 +98,12 @@ function formatCategoryFallback(value: string): string {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function formatNumericValue(value: number, locale: string): string {
-  return value.toLocaleString(getLocaleTag(locale), {
-    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
-  });
-}
-
 function formatQuantity(
   quantity: number | string | null | undefined,
   unit: string | null | undefined,
   locale: string,
 ): string {
-  const parsed =
-    typeof quantity === "number" ? quantity : parseStoredNumber(quantity ?? null);
-
-  if (parsed === null) {
-    return unit ? unit : "—";
-  }
-
-  return `${formatNumericValue(parsed, locale)}${unit ? ` ${unit}` : ""}`;
+  return formatLocalizedAmountLabel(quantity, unit, locale) ?? "—";
 }
 
 function isExpiringSoon(expiryDate: string | null): boolean {
@@ -587,7 +575,7 @@ export default function PantryPage() {
 
       const amountLabel =
         quantityForList !== null || insight.unit
-          ? formatQuantity(quantityForList, insight.unit, locale)
+          ? formatAmountLabel(quantityForList, insight.unit)
           : null;
 
       const response = await fetch("/api/shopping-lists/current", {

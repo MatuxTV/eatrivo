@@ -19,6 +19,10 @@ import {
   shoppingListIdSchema,
 } from "@/lib/schemas/shopping-list";
 import { CacheService, RequestLock } from "@/lib/redis";
+import {
+  resolvePantryTrackingMode,
+  shouldPreservePantryQuantity,
+} from "@/lib/pantry/tracking";
 import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 
 function errorResponse(error: string, code: string, status: number) {
@@ -70,6 +74,15 @@ export async function POST(
   if (!bodyResult.success) {
     return errorResponse("Validation failed", "INVALID_INPUT", 400);
   }
+
+  apiLogger.debug("[shopping-list.checkout] request validated", {
+    metadata: {
+      shoppingListId: idResult.data,
+      userId: session.user.id,
+      mode: bodyResult.data.mode,
+      completeList: bodyResult.data.completeList,
+    },
+  });
 
   const lockKey = `shopping-list-checkout:${session.user.id}:${idResult.data}`;
   const lockAcquired = await RequestLock.acquire(lockKey, 120);
@@ -131,6 +144,14 @@ export async function POST(
       .from(shoppingListItems)
       .where(eq(shoppingListItems.shoppingListId, shoppingList.id));
 
+    apiLogger.debug("[shopping-list.checkout] shopping list items loaded", {
+      metadata: {
+        shoppingListId: shoppingList.id,
+        userProfileId: userProfile.id,
+        totalItems: allItems.length,
+      },
+    });
+
     if (allItems.length === 0) {
       return errorResponse("Not found", "SHOPPING_LIST_EMPTY", 404);
     }
@@ -176,25 +197,104 @@ export async function POST(
 
     const pantryValues = selectedItems
       .filter((item) => !existingImportKeys.has(buildPantryImportKey(item)))
-      .map((item) => ({
-      userProfileId: userProfile.id,
-      name: item.name.trim(),
-      ingredientName: item.ingredientName,
-      ingredientKey: item.ingredientKey,
-      ingredientSpecificKey: item.ingredientSpecificKey,
-      quantity: item.quantity != null ? String(item.quantity) : null,
-      unit: item.unit ? normalizeUnit(item.unit) : null,
-      category: item.category || guessFoodCategory(item.name),
-      source: "shopping_list" as const,
-      shoppingListId: shoppingList.id,
-    }));
+      .map((item) => {
+        const normalizedUnit = item.unit ? normalizeUnit(item.unit) : null;
+        const trackingMode = resolvePantryTrackingMode({
+          name: item.name,
+          ingredientKey: item.ingredientKey,
+          ingredientSpecificKey: item.ingredientSpecificKey,
+          quantity: item.quantity != null ? Number(item.quantity) : null,
+          unit: normalizedUnit,
+        });
+        const preserveQuantity = shouldPreservePantryQuantity({
+          name: item.name,
+          ingredientKey: item.ingredientKey,
+          ingredientSpecificKey: item.ingredientSpecificKey,
+          trackingMode,
+          quantity: item.quantity != null ? Number(item.quantity) : null,
+          unit: normalizedUnit,
+        });
+
+        const payload = {
+          userProfileId: userProfile.id,
+          name: item.name.trim(),
+          ingredientName: item.ingredientName,
+          ingredientKey: item.ingredientKey,
+          ingredientSpecificKey: item.ingredientSpecificKey,
+          trackingMode,
+          inStock: true,
+          quantity:
+            (trackingMode === "quantity" || preserveQuantity) && item.quantity != null
+              ? String(item.quantity)
+              : null,
+          unit:
+            (trackingMode === "quantity" || preserveQuantity) && normalizedUnit
+              ? normalizedUnit
+              : null,
+          category: item.category || guessFoodCategory(item.name),
+          source: "shopping_list" as const,
+          shoppingListId: shoppingList.id,
+        };
+
+        apiLogger.debug("[shopping-list.checkout] prepared pantry item", {
+          metadata: {
+            shoppingListId: shoppingList.id,
+            userProfileId: userProfile.id,
+            shoppingListItemId: item.id,
+            itemName: payload.name,
+            ingredientKey: payload.ingredientKey,
+            ingredientSpecificKey: payload.ingredientSpecificKey,
+            trackingMode: payload.trackingMode,
+            quantity: payload.quantity,
+            unit: payload.unit,
+            category: payload.category,
+          },
+        });
+
+        return payload;
+      });
+
+    apiLogger.debug("[shopping-list.checkout] import payload prepared", {
+      metadata: {
+        shoppingListId: shoppingList.id,
+        userProfileId: userProfile.id,
+        selectedItems: selectedItems.length,
+        existingImportedItems: existingPantryItems.length,
+        preparedPantryRows: pantryValues.length,
+        skippedAsDuplicates: selectedItems.length - pantryValues.length,
+      },
+    });
 
     const insertedItems = pantryValues.length
       ? await db
           .insert(pantryItems)
           .values(pantryValues)
-          .returning({ id: pantryItems.id })
+          .returning({
+            id: pantryItems.id,
+            name: pantryItems.name,
+            trackingMode: pantryItems.trackingMode,
+            inStock: pantryItems.inStock,
+            quantity: pantryItems.quantity,
+            unit: pantryItems.unit,
+            category: pantryItems.category,
+          })
       : [];
+
+    for (const insertedItem of insertedItems) {
+      apiLogger.info("[shopping-list.checkout] inserted pantry item", {
+        metadata: {
+          shoppingListId: shoppingList.id,
+          userProfileId: userProfile.id,
+          pantryItemId: insertedItem.id,
+          itemName: insertedItem.name,
+          trackingMode: insertedItem.trackingMode,
+          inStock: insertedItem.inStock,
+          quantity: insertedItem.quantity,
+          unit: insertedItem.unit,
+          category: insertedItem.category,
+        },
+      });
+    }
 
     const [updatedShoppingList] =
       shoppingList.status === "completed"
@@ -246,6 +346,15 @@ export async function POST(
         }
       });
     }
+
+    apiLogger.info("[shopping-list.checkout] pantry import completed", {
+      metadata: {
+        shoppingListId: shoppingList.id,
+        userProfileId: userProfile.id,
+        importedCount: insertedItems.length,
+        shoppingListStatus: updatedShoppingList.status,
+      },
+    });
 
     return NextResponse.json({
       shoppingList: updatedShoppingList,

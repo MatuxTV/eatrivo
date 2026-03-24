@@ -22,6 +22,10 @@ import {
 } from "@/lib/safeError";
 import { derivePantryInventoryItem } from "@/lib/pantry/grocery";
 import { invalidatePantryCaches } from "@/lib/pantry/restock";
+import {
+  shouldPreservePantryQuantity,
+  supportsPantryQuantityMutations,
+} from "@/lib/pantry/tracking";
 import { pantryIdSchema, pantryUpdateItemSchema } from "@/lib/schemas/pantry";
 import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 
@@ -161,6 +165,13 @@ export async function PUT(
   }
 
   try {
+    apiLogger.debug("[pantry.update] request received", {
+      metadata: {
+        pantryItemId: id,
+        userId: session.user.id,
+      },
+    });
+
     const parsedBody = pantryUpdateItemSchema.safeParse(
       await req.json().catch(() => null),
     );
@@ -169,6 +180,8 @@ export async function PUT(
     }
     const {
       name,
+      trackingMode,
+      inStock,
       quantity,
       unit,
       category,
@@ -177,9 +190,24 @@ export async function PUT(
       quantityDelta,
     } = parsedBody.data;
 
+    apiLogger.debug("[pantry.update] payload validated", {
+      metadata: {
+        pantryItemId: id,
+        userProfileId: result.userProfile.id,
+        hasNameChange: name !== undefined,
+        requestedTrackingMode: trackingMode ?? null,
+        requestedInStock: inStock ?? null,
+        requestedQuantity: quantity ?? null,
+        requestedUnit: unit ?? null,
+        quantityOperation: quantityOperation ?? null,
+        quantityDelta: quantityDelta ?? null,
+      },
+    });
+
     const resolvedName =
       name !== undefined ? name.trim() : result.item.name;
     const shouldNormalizeInBackground = name !== undefined;
+    const resolvedTrackingMode = trackingMode ?? result.item.trackingMode;
     const resolvedCategory =
       category !== undefined ? category : name !== undefined
         ? guessFoodCategory(resolvedName)
@@ -187,6 +215,12 @@ export async function PUT(
     const currentQuantity = result.item.quantity
       ? Number.parseFloat(String(result.item.quantity))
       : null;
+    const normalizedUnit =
+      unit !== undefined
+        ? unit !== null
+          ? normalizeUnit(String(unit))
+          : null
+        : undefined;
     const steppedQuantity =
       quantityOperation && quantityDelta !== undefined
         ? Math.max(
@@ -195,6 +229,72 @@ export async function PUT(
               (quantityOperation === "increment" ? quantityDelta : -quantityDelta),
           )
         : undefined;
+    const nextQuantityValue =
+      quantity !== undefined
+        ? quantity
+        : steppedQuantity !== undefined
+          ? steppedQuantity
+          : currentQuantity;
+    const nextUnitValue = normalizedUnit !== undefined ? normalizedUnit : result.item.unit;
+    const preserveQuantity = shouldPreservePantryQuantity({
+      name: resolvedName,
+      ingredientKey: result.item.ingredientKey,
+      ingredientSpecificKey: result.item.ingredientSpecificKey,
+      trackingMode: resolvedTrackingMode,
+      quantity: nextQuantityValue,
+      unit: nextUnitValue,
+    });
+    const canMutateQuantity = supportsPantryQuantityMutations({
+      name: resolvedName,
+      ingredientKey: result.item.ingredientKey,
+      ingredientSpecificKey: result.item.ingredientSpecificKey,
+      trackingMode: resolvedTrackingMode,
+      quantity: nextQuantityValue,
+      unit: nextUnitValue,
+    });
+
+    apiLogger.debug("[pantry.update] resolved mutation", {
+      metadata: {
+        pantryItemId: id,
+        userProfileId: result.userProfile.id,
+        previousTrackingMode: result.item.trackingMode,
+        resolvedTrackingMode,
+        currentQuantity,
+        nextQuantityValue,
+        nextUnitValue,
+        preserveQuantity,
+        canMutateQuantity,
+        shouldNormalizeInBackground,
+      },
+    });
+
+    if (
+      resolvedTrackingMode === "availability" &&
+      (quantity !== undefined || quantityOperation !== undefined || quantityDelta !== undefined) &&
+      !canMutateQuantity
+    ) {
+      apiLogger.warn("[pantry.update] rejected quantity mutation for availability item", {
+        metadata: {
+          pantryItemId: id,
+          userProfileId: result.userProfile.id,
+          resolvedTrackingMode,
+          quantityOperation: quantityOperation ?? null,
+          quantityDelta: quantityDelta ?? null,
+          requestedQuantity: quantity ?? null,
+        },
+      });
+      return validationError("Availability mode does not support quantity mutations");
+    }
+
+    if (resolvedTrackingMode === "quantity" && inStock !== undefined) {
+      apiLogger.warn("[pantry.update] rejected inStock update for quantity item", {
+        metadata: {
+          pantryItemId: id,
+          userProfileId: result.userProfile.id,
+        },
+      });
+      return validationError("inStock is only valid for availability mode");
+    }
 
     const [updatedItem] = await db
       .update(pantryItems)
@@ -207,14 +307,28 @@ export async function PUT(
               ingredientSpecificKey: null,
             }
           : {}),
-        ...(quantity !== undefined
-          ? { quantity: quantity !== null ? String(quantity) : null }
-          : steppedQuantity !== undefined
-            ? { quantity: String(steppedQuantity) }
-          : {}),
-        ...(unit !== undefined
-          ? { unit: unit !== null ? normalizeUnit(String(unit)) : null }
-          : {}),
+        ...(trackingMode !== undefined ? { trackingMode: resolvedTrackingMode } : {}),
+        ...(resolvedTrackingMode === "availability"
+          ? {
+              inStock: inStock ?? result.item.inStock,
+              quantity: preserveQuantity
+                ? nextQuantityValue !== null
+                  ? String(nextQuantityValue)
+                  : null
+                : null,
+              unit: preserveQuantity ? nextUnitValue ?? null : null,
+            }
+          : {
+              ...(quantity !== undefined
+                ? { quantity: quantity !== null ? String(quantity) : null }
+                : steppedQuantity !== undefined
+                  ? { quantity: String(steppedQuantity) }
+                  : {}),
+              ...(unit !== undefined
+                ? { unit: normalizedUnit ?? null }
+                : {}),
+              ...(trackingMode !== undefined ? { inStock: true } : {}),
+            }),
         ...(resolvedCategory !== undefined ? { category: resolvedCategory } : {}),
         ...(expiryDate !== undefined
           ? { expiryDate: expiryDate !== null ? new Date(expiryDate) : null }
@@ -259,6 +373,18 @@ export async function PUT(
         });
       });
     }
+
+    apiLogger.info("[pantry.update] pantry item updated", {
+      metadata: {
+        pantryItemId: updatedItem.id,
+        userProfileId: result.userProfile.id,
+        trackingMode: updatedItem.trackingMode,
+        quantity: updatedItem.quantity,
+        unit: updatedItem.unit,
+        inStock: updatedItem.inStock,
+        normalizationQueued: shouldNormalizeInBackground,
+      },
+    });
 
     return NextResponse.json({
       item: derivePantryInventoryItem(

@@ -8,6 +8,8 @@ export interface PantryDraftItem {
   ingredientName: string | null;
   ingredientKey: string | null;
   ingredientSpecificKey: string | null;
+  trackingMode: "quantity" | "availability";
+  inStock: boolean;
   quantity: string | null;
   unit: string | null;
   category: string | null;

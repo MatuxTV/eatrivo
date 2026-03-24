@@ -7,6 +7,10 @@ import { eq, and } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
 import { CacheService } from "@/lib/redis";
 import { normalizePantryItemsInBackground } from "@/lib/pantry/background-normalization";
+import {
+  resolvePantryTrackingMode,
+  shouldPreservePantryQuantity,
+} from "@/lib/pantry/tracking";
 import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 
 // POST /api/pantry/import/[shoppingListId]
@@ -23,6 +27,13 @@ export async function POST(
   const { shoppingListId } = await params;
 
   try {
+    apiLogger.debug("[pantry.import] request received", {
+      metadata: {
+        shoppingListId,
+        userId: session.user.id,
+      },
+    });
+
     const userProfile = await db.query.userProfiles.findFirst({
       where: eq(userProfiles.userId, session.user.id),
     });
@@ -53,6 +64,14 @@ export async function POST(
       where: eq(shoppingListItems.shoppingListId, shoppingListId),
     });
 
+    apiLogger.debug("[pantry.import] shopping list items loaded", {
+      metadata: {
+        shoppingListId,
+        userProfileId: userProfile.id,
+        totalItems: items.length,
+      },
+    });
+
     if (items.length === 0) {
       return NextResponse.json({ imported: 0, items: [] });
     }
@@ -62,32 +81,96 @@ export async function POST(
       (item) => item.name && typeof item.name === "string",
     );
 
+    apiLogger.debug("[pantry.import] preparing pantry rows", {
+      metadata: {
+        shoppingListId,
+        userProfileId: userProfile.id,
+        validItems: validItems.length,
+        skippedItems: items.length - validItems.length,
+      },
+    });
+
     // Insert all items
     const toInsert = await Promise.all(validItems
       .map(async (item) => {
         const normalizedName = item.name.trim();
+        const normalizedUnit = item.unit ? normalizeUnit(item.unit) : null;
+        const trackingMode = resolvePantryTrackingMode({
+          name: normalizedName,
+          ingredientKey: item.ingredientKey,
+          ingredientSpecificKey: item.ingredientSpecificKey,
+          quantity: item.quantity !== null ? Number(item.quantity) : null,
+          unit: normalizedUnit,
+        });
+        const preserveQuantity = shouldPreservePantryQuantity({
+          name: normalizedName,
+          ingredientKey: item.ingredientKey,
+          ingredientSpecificKey: item.ingredientSpecificKey,
+          trackingMode,
+          quantity: item.quantity !== null ? Number(item.quantity) : null,
+          unit: normalizedUnit,
+        });
 
-        return {
+        const payload = {
           userProfileId: userProfile.id,
           name: normalizedName,
           ingredientName: item.ingredientName,
           ingredientKey: item.ingredientKey,
           ingredientSpecificKey: item.ingredientSpecificKey,
+          trackingMode,
+          inStock: true,
           quantity:
-            item.quantity !== null && item.quantity !== undefined
+            (trackingMode === "quantity" || preserveQuantity) &&
+            item.quantity !== null &&
+            item.quantity !== undefined
               ? String(item.quantity)
               : null,
-          unit: item.unit ? normalizeUnit(item.unit) : null,
+          unit:
+            (trackingMode === "quantity" || preserveQuantity) && normalizedUnit
+              ? normalizedUnit
+              : null,
           category: item.category || guessFoodCategory(normalizedName),
           source: "shopping_list" as const,
           shoppingListId,
         };
+
+        apiLogger.debug("[pantry.import] prepared pantry item", {
+          metadata: {
+            shoppingListId,
+            userProfileId: userProfile.id,
+            itemName: payload.name,
+            ingredientKey: payload.ingredientKey,
+            ingredientSpecificKey: payload.ingredientSpecificKey,
+            trackingMode: payload.trackingMode,
+            quantity: payload.quantity,
+            unit: payload.unit,
+            category: payload.category,
+          },
+        });
+
+        return payload;
       }));
 
     const insertedItems = await db
       .insert(pantryItems)
       .values(toInsert)
       .returning();
+
+    for (const insertedItem of insertedItems) {
+      apiLogger.info("[pantry.import] inserted pantry item", {
+        metadata: {
+          shoppingListId,
+          userProfileId: userProfile.id,
+          pantryItemId: insertedItem.id,
+          itemName: insertedItem.name,
+          trackingMode: insertedItem.trackingMode,
+          inStock: insertedItem.inStock,
+          quantity: insertedItem.quantity,
+          unit: insertedItem.unit,
+          category: insertedItem.category,
+        },
+      });
+    }
 
     // Invalidate pantry cache
     await CacheService.del(`pantry:${userProfile.id}`);
@@ -105,6 +188,7 @@ export async function POST(
         userProfileId: userProfile.id,
         shoppingListId,
         imported: insertedItems.length,
+        normalizationQueued: true,
       },
     });
 

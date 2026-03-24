@@ -1,4 +1,4 @@
-import { permissions, hasAccess } from "@/app/config/permission";
+import { permissions, hasAccess, hasAdminRole } from "@/app/config/permission";
 import { auth } from "./auth";
 import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
@@ -44,11 +44,11 @@ function negotiateLocale(req: Parameters<Parameters<typeof auth>[0]>[0]) {
   // 2. Check geolocation (Vercel Edge - Slovakia or Czech Republic → SK, otherwise EN)
   const country = (req as unknown as NextRequestWithGeo).geo?.country;
   if (country) {
-    if (country === "SK" || country === "CZ") {
-      return "sk";
+    if (!(country === "SK" || country === "CZ")) {
+      return "en";
     }
-    // Any other country → English
-    return "en";
+    // Slovakia or Czech Republic → Slovak
+    return "sk";
   }
 
   // 3. Fallback to browser Accept-Language header (for local dev or non-Vercel)
@@ -110,10 +110,10 @@ export default auth((req) => {
     return NextResponse.redirect(new URL(`/${locale}/signin`, nextUrl));
   }
 
-  // Check admin access specifically
+  // Check admin access — use DB role, not billing membership
   if (
     pathnameWithoutLocale.startsWith("/admin") &&
-    !hasAccess(pathnameWithoutLocale, userRole)
+    !hasAdminRole(req.auth?.user?.role)
   ) {
     return NextResponse.redirect(new URL(`/${locale}/not-authorized`, nextUrl));
   }

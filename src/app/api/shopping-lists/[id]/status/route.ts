@@ -8,6 +8,10 @@ import { apiLogger } from "@/lib/logger";
 import { CacheService } from "@/lib/redis";
 import { sendPushToUser } from "@/lib/pwa/sendPushToAll";
 import { normalizePantryItemsInBackground } from "@/lib/pantry/background-normalization";
+import {
+  resolvePantryTrackingMode,
+  shouldPreservePantryQuantity,
+} from "@/lib/pantry/tracking";
 import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 
 const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
@@ -35,6 +39,14 @@ export async function PATCH(
   try {
     const body = await req.json();
     const { status: newStatus } = body;
+
+    apiLogger.debug("[shopping-list.status] request received", {
+      metadata: {
+        shoppingListId: id,
+        userId: session.user.id,
+        requestedStatus: typeof newStatus === "string" ? newStatus : null,
+      },
+    });
 
     if (!newStatus || typeof newStatus !== "string") {
       return NextResponse.json(
@@ -79,6 +91,15 @@ export async function PATCH(
       );
     }
 
+    apiLogger.debug("[shopping-list.status] transition validated", {
+      metadata: {
+        shoppingListId: id,
+        userProfileId: userProfile.id,
+        previousStatus: shoppingList.status,
+        nextStatus: newStatus,
+      },
+    });
+
     // Update status
     const [updated] = await db
       .update(shoppingLists)
@@ -94,6 +115,13 @@ export async function PATCH(
 
     // Side effects for "purchased"
     if (newStatus === "purchased") {
+      apiLogger.info("[shopping-list.status] purchased transition queued pantry import", {
+        metadata: {
+          shoppingListId: id,
+          userProfileId: userProfile.id,
+        },
+      });
+
       after(async () => {
         try {
           await importShoppingListToPantry(
@@ -143,37 +171,119 @@ async function importShoppingListToPantry(
   userProfileId: string,
   locale: string,
 ): Promise<void> {
+  apiLogger.debug("[shopping-list.status-import] import started", {
+    metadata: {
+      shoppingListId,
+      userProfileId,
+      locale,
+    },
+  });
+
   // Fetch the items from the shopping list directly
   const items = await db.query.shoppingListItems.findMany({
     where: eq(shoppingListItems.shoppingListId, shoppingListId),
   });
 
-  if (items.length === 0) return;
+  if (items.length === 0) {
+    apiLogger.debug("[shopping-list.status-import] no items found", {
+      metadata: {
+        shoppingListId,
+        userProfileId,
+      },
+    });
+    return;
+  }
 
   const validParsedItems = items.filter(
     (item) => item.name && typeof item.name === "string",
   );
 
+  apiLogger.debug("[shopping-list.status-import] preparing pantry rows", {
+    metadata: {
+      shoppingListId,
+      userProfileId,
+      totalItems: items.length,
+      validItems: validParsedItems.length,
+      skippedItems: items.length - validParsedItems.length,
+    },
+  });
+
   const toInsert = await Promise.all(validParsedItems
     .map(async (item) => {
       const normalizedName = item.name.trim();
+      const normalizedUnit = item.unit ? normalizeUnit(item.unit) : null;
+      const trackingMode = resolvePantryTrackingMode({
+        name: normalizedName,
+        ingredientKey: item.ingredientKey,
+        ingredientSpecificKey: item.ingredientSpecificKey,
+        quantity: item.quantity != null ? Number(item.quantity) : null,
+        unit: normalizedUnit,
+      });
+      const preserveQuantity = shouldPreservePantryQuantity({
+        name: normalizedName,
+        ingredientKey: item.ingredientKey,
+        ingredientSpecificKey: item.ingredientSpecificKey,
+        trackingMode,
+        quantity: item.quantity != null ? Number(item.quantity) : null,
+        unit: normalizedUnit,
+      });
 
-      return {
+      const payload = {
         userProfileId,
         name: normalizedName,
         ingredientName: item.ingredientName,
         ingredientKey: item.ingredientKey,
         ingredientSpecificKey: item.ingredientSpecificKey,
-        quantity: item.quantity != null ? String(item.quantity) : null,
-        unit: item.unit ? normalizeUnit(item.unit) : null,
+        trackingMode,
+        inStock: true,
+        quantity:
+          (trackingMode === "quantity" || preserveQuantity) && item.quantity != null
+            ? String(item.quantity)
+            : null,
+        unit:
+          (trackingMode === "quantity" || preserveQuantity) && normalizedUnit
+            ? normalizedUnit
+            : null,
         category: item.category || guessFoodCategory(normalizedName),
         source: "shopping_list" as const,
         shoppingListId,
       };
+
+      apiLogger.debug("[shopping-list.status-import] prepared pantry item", {
+        metadata: {
+          shoppingListId,
+          userProfileId,
+          shoppingListItemId: item.id,
+          itemName: payload.name,
+          ingredientKey: payload.ingredientKey,
+          ingredientSpecificKey: payload.ingredientSpecificKey,
+          trackingMode: payload.trackingMode,
+          quantity: payload.quantity,
+          unit: payload.unit,
+          category: payload.category,
+        },
+      });
+
+      return payload;
     }));
 
   if (toInsert.length > 0) {
     const insertedItems = await db.insert(pantryItems).values(toInsert).returning();
+    for (const insertedItem of insertedItems) {
+      apiLogger.info("[shopping-list.status-import] inserted pantry item", {
+        metadata: {
+          shoppingListId,
+          userProfileId,
+          pantryItemId: insertedItem.id,
+          itemName: insertedItem.name,
+          trackingMode: insertedItem.trackingMode,
+          inStock: insertedItem.inStock,
+          quantity: insertedItem.quantity,
+          unit: insertedItem.unit,
+          category: insertedItem.category,
+        },
+      });
+    }
     await normalizePantryItemsInBackground({
       source: "shopping-list-status-import",
       userProfileId,

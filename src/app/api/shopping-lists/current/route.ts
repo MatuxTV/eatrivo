@@ -8,25 +8,37 @@ import {
   pantryRestockItems,
   shoppingListItems,
   shoppingLists,
+  userInfoTable,
   userProfiles,
 } from "@/db/schema";
 import { db } from "@/index";
 import { apiLogger } from "@/lib/logger";
 import {
-  formatAmountLabel,
+  findPantrySuggestionForItem,
+  getPantryAiSuggestions,
+} from "@/lib/pantry/ai-normalization";
+import {
   resolveShoppingListSeedFromPantryItem,
 } from "@/lib/pantry/grocery";
+import { formatAmountLabel } from "@/lib/pantry/format";
 import { buildPantryInventoryItems } from "@/lib/pantry/grocery";
+import {
+  normalizeRestockUnit,
+  parseStoredQuantity,
+  serializeQuantity,
+} from "@/lib/pantry/restock";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { CacheService } from "@/lib/redis";
 import { handleApiError, safeErrorResponse, unauthorizedError, validationError } from "@/lib/safeError";
 import { shoppingListCurrentMutationSchema } from "@/lib/schemas/pantry";
-import { guessFoodCategory } from "@/lib/units";
+import { guessFoodCategory, parseQuantity } from "@/lib/units";
 
 type ShoppingListItemResponse = {
   id: string;
   name: string;
   quantity: string | null;
+  quantityValue: string | null;
+  unit: string | null;
   category: string;
   sortOrder: number;
   isChecked: boolean;
@@ -43,7 +55,9 @@ function mapShoppingListItems(
   return items.map((item) => ({
     id: item.id,
     name: item.name,
-    quantity: item.amountLabel,
+    quantity: item.amountLabel ?? formatAmountLabel(item.quantity, item.unit),
+    quantityValue: item.quantity,
+    unit: item.unit,
     category: item.category ?? guessFoodCategory(item.name),
     sortOrder: item.sortOrder,
     isChecked: item.isChecked,
@@ -182,6 +196,35 @@ export async function POST(request: NextRequest) {
       return validationError("Validation failed");
     }
     const body = parsedBody.data;
+    const parsedAmountLabel = body.amountLabel
+      ? parseQuantity(body.amountLabel)
+      : null;
+    const resolvedManualQuantity =
+      body.quantity !== undefined
+        ? body.quantity
+        : parsedAmountLabel?.value ?? null;
+    const resolvedManualUnit =
+      body.unit !== undefined
+        ? normalizeRestockUnit(body.unit)
+        : parsedAmountLabel?.unit ?? null;
+    const resolvedManualAmountLabel =
+      body.amountLabel ??
+      formatAmountLabel(resolvedManualQuantity, resolvedManualUnit);
+
+    apiLogger.debug("[shopping-list.current.upsert] request validated", {
+      metadata: {
+        userId: session.user.id,
+        userProfileId,
+        mode: body.name ? "manual" : "pantry-handoff",
+        pantryItemId: body.pantryItemId ?? null,
+        pantryItemIdsCount: body.pantryItemIds?.length ?? 0,
+        lowStockOnly: body.lowStockOnly ?? false,
+        appendPackage: body.appendPackage ?? false,
+        amountLabel: body.amountLabel ?? null,
+        parsedAmountLabelQuantity: parsedAmountLabel?.value ?? null,
+        parsedAmountLabelUnit: parsedAmountLabel?.unit ?? null,
+      },
+    });
 
     let [shoppingList] = await db
       .select()
@@ -228,13 +271,19 @@ export async function POST(request: NextRequest) {
     ]);
 
     const pantryRows =
-      body.pantryItemId || body.pantryItemIds?.length || body.lowStockOnly
+      body.name || body.pantryItemId || body.pantryItemIds?.length || body.lowStockOnly
         ? await db
             .select()
             .from(pantryItems)
             .where(eq(pantryItems.userProfileId, userProfileId))
             .orderBy(asc(pantryItems.createdAt))
         : [];
+
+    const userInfo = body.name
+      ? await db.query.userInfoTable.findFirst({
+          where: eq(userInfoTable.userProfileId, userProfileId),
+        })
+      : null;
 
     const pantryInventoryItems = buildPantryInventoryItems(
       pantryRows,
@@ -248,26 +297,74 @@ export async function POST(request: NextRequest) {
       ...(body.pantryItemIds ?? []),
     ]);
 
+    const aiSuggestion = body.name
+      ? findPantrySuggestionForItem(
+          await getPantryAiSuggestions({
+            userProfileId,
+            locale: userInfo?.language ?? "sk",
+            currentPantry: pantryRows,
+            pendingItems: [
+              {
+                name: body.name.trim(),
+                trackingMode: null,
+                inStock: null,
+                quantity: resolvedManualQuantity,
+                unit: resolvedManualUnit,
+                category: body.category ?? guessFoodCategory(body.name),
+                expiryDate: null,
+              },
+            ],
+          }),
+          body.name.trim(),
+          0,
+        )
+      : null;
+
+    if (body.name) {
+      apiLogger.debug("[shopping-list.current.upsert] AI normalization resolved", {
+        metadata: {
+          shoppingListId: shoppingList.id,
+          userProfileId,
+          itemName: body.name.trim(),
+          normalizedName: aiSuggestion?.normalizedName ?? null,
+          ingredientKey:
+            aiSuggestion?.ingredientKey ??
+            aiSuggestion?.matchedExistingIngredientKey ??
+            null,
+          ingredientSpecificKey:
+            aiSuggestion?.ingredientSpecificKey ??
+            aiSuggestion?.matchedExistingIngredientSpecificKey ??
+            null,
+          category: aiSuggestion?.category ?? null,
+          confidence: aiSuggestion?.confidence ?? null,
+        },
+      });
+    }
+
     const seeds =
       body.name
         ? [
             {
-              name: body.name.trim(),
-              ingredientName: body.name.trim(),
-              ingredientKey: null,
-              ingredientSpecificKey: null,
+              name: aiSuggestion?.normalizedName ?? body.name.trim(),
+              ingredientName: aiSuggestion?.normalizedName ?? body.name.trim(),
+              ingredientKey:
+                aiSuggestion?.ingredientKey ??
+                aiSuggestion?.matchedExistingIngredientKey ??
+                null,
+              ingredientSpecificKey:
+                aiSuggestion?.ingredientSpecificKey ??
+                aiSuggestion?.matchedExistingIngredientSpecificKey ??
+                null,
               quantity:
-                body.quantity !== undefined && body.quantity !== null
-                  ? String(body.quantity)
+                resolvedManualQuantity !== null
+                  ? String(resolvedManualQuantity)
                   : null,
-              unit: body.unit ?? null,
-              amountLabel:
-                body.amountLabel ??
-                formatAmountLabel(
-                  body.quantity !== undefined ? body.quantity : null,
-                  body.unit ?? null,
-                ),
-              category: body.category ?? guessFoodCategory(body.name),
+              unit: resolvedManualUnit,
+              amountLabel: resolvedManualAmountLabel,
+              category:
+                aiSuggestion?.category ??
+                body.category ??
+                guessFoodCategory(body.name),
             },
           ]
         : pantryInventoryItems
@@ -279,6 +376,30 @@ export async function POST(request: NextRequest) {
               return body.lowStockOnly ? item.lowStock : true;
             })
             .map((item) => resolveShoppingListSeedFromPantryItem(item, restockRows));
+
+    apiLogger.debug("[shopping-list.current.upsert] prepared seeds", {
+      metadata: {
+        shoppingListId: shoppingList.id,
+        userProfileId,
+        seedCount: seeds.length,
+      },
+    });
+
+    for (const seed of seeds) {
+      apiLogger.debug("[shopping-list.current.upsert] seed prepared", {
+        metadata: {
+          shoppingListId: shoppingList.id,
+          userProfileId,
+          itemName: seed.name,
+          ingredientKey: seed.ingredientKey,
+          ingredientSpecificKey: seed.ingredientSpecificKey,
+          quantity: seed.quantity,
+          unit: seed.unit,
+          amountLabel: seed.amountLabel,
+          category: seed.category,
+        },
+      });
+    }
 
     if (seeds.length === 0) {
       return safeErrorResponse(
@@ -301,10 +422,41 @@ export async function POST(request: NextRequest) {
       const existingItem = findExistingShoppingListItem(mutableItems, seed);
 
       if (existingItem) {
-        const nextAmountLabel = existingItem.amountLabel ?? seed.amountLabel;
-        const nextQuantity = existingItem.quantity ?? seed.quantity ?? null;
-        const nextUnit = existingItem.unit ?? seed.unit ?? null;
+        const seedQuantity = parseStoredQuantity(seed.quantity);
+        const existingQuantity = parseStoredQuantity(existingItem.quantity);
+        const seedUnit = normalizeRestockUnit(seed.unit);
+        const existingUnit = normalizeRestockUnit(existingItem.unit);
+        const shouldAppendPackage =
+          body.appendPackage === true &&
+          seedQuantity !== null &&
+          (existingQuantity === null || existingUnit === seedUnit);
+        const mergedQuantity = shouldAppendPackage
+          ? (existingQuantity ?? 0) + seedQuantity
+          : null;
+        const nextAmountLabel = shouldAppendPackage
+          ? formatAmountLabel(mergedQuantity, seed.unit ?? existingItem.unit ?? null)
+          : existingItem.amountLabel ?? seed.amountLabel;
+        const nextQuantity = shouldAppendPackage
+          ? serializeQuantity(mergedQuantity)
+          : existingItem.quantity ?? seed.quantity ?? null;
+        const nextUnit = shouldAppendPackage
+          ? seed.unit ?? existingItem.unit ?? null
+          : existingItem.unit ?? seed.unit ?? null;
         const nextCategory = existingItem.category ?? seed.category ?? null;
+
+        apiLogger.debug("[shopping-list.current.upsert] matched existing item", {
+          metadata: {
+            shoppingListId: shoppingList.id,
+            userProfileId,
+            shoppingListItemId: existingItem.id,
+            itemName: existingItem.name,
+            appendPackage: shouldAppendPackage,
+            existingQuantity: existingItem.quantity,
+            seedQuantity: seed.quantity,
+            nextQuantity,
+            nextUnit,
+          },
+        });
 
         if (
           nextAmountLabel !== existingItem.amountLabel ||
@@ -326,6 +478,18 @@ export async function POST(request: NextRequest) {
 
           const itemIndex = mutableItems.findIndex((item) => item.id === existingItem.id);
           mutableItems[itemIndex] = updatedItem;
+
+          apiLogger.info("[shopping-list.current.upsert] updated shopping list item", {
+            metadata: {
+              shoppingListId: shoppingList.id,
+              userProfileId,
+              shoppingListItemId: updatedItem.id,
+              itemName: updatedItem.name,
+              quantity: updatedItem.quantity,
+              unit: updatedItem.unit,
+              amountLabel: updatedItem.amountLabel,
+            },
+          });
         }
 
         addedItemIds.push(existingItem.id);
@@ -350,6 +514,19 @@ export async function POST(request: NextRequest) {
 
       mutableItems.push(insertedItem);
       addedItemIds.push(insertedItem.id);
+
+      apiLogger.info("[shopping-list.current.upsert] inserted shopping list item", {
+        metadata: {
+          shoppingListId: shoppingList.id,
+          userProfileId,
+          shoppingListItemId: insertedItem.id,
+          itemName: insertedItem.name,
+          quantity: insertedItem.quantity,
+          unit: insertedItem.unit,
+          amountLabel: insertedItem.amountLabel,
+          category: insertedItem.category,
+        },
+      });
     }
 
     const updatedItems = await db

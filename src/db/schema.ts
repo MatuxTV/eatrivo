@@ -86,6 +86,16 @@ export const pantryItemSourceEnum = pgEnum("pantry_item_source", [
   "shopping_list",
 ]);
 
+export const pantryTrackingModeEnum = pgEnum("pantry_tracking_mode", [
+  "quantity",
+  "availability",
+]);
+
+export const recipeSourceEnum = pgEnum("recipe_source", [
+  "catalog",
+  "ai_custom",
+]);
+
 export const foodItems = pgTable("food_items", {
   id: integer("id").primaryKey().notNull(),
   name: text().notNull(),
@@ -101,6 +111,12 @@ export const recipes = pgTable("recipes", {
   id: uuid("id").primaryKey().defaultRandom(),
   slug: text("slug").notNull().unique(),
   externalKey: text("external_key").notNull().unique(),
+  source: recipeSourceEnum("source").default("catalog").notNull(),
+  userGenerated: boolean("user_generated").default(false).notNull(),
+  createdByUserId: uuid("created_by_user_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
+  sourceJobId: uuid("source_job_id"),
   name: text("name").notNull(),
   category: text("category").notNull(),
   categoryKey: text("category_key").notNull(),
@@ -135,6 +151,7 @@ export const recipeIngredients = pgTable("recipe_ingredients", {
   displayName: text("display_name").notNull(),
   ingredientName: text("ingredient_name"),
   ingredientKey: text("ingredient_key"),
+  ingredientSpecificKey: text("ingredient_specific_key"),
   quantity: numeric("quantity", { precision: 8, scale: 3 }),
   unit: text("unit"),
   optional: boolean("optional").default(false).notNull(),
@@ -340,6 +357,10 @@ export const pantryItems = pgTable("pantry_items", {
   ingredientName: text("ingredient_name"),
   ingredientKey: text("ingredient_key"),
   ingredientSpecificKey: text("ingredient_specific_key"),
+  trackingMode: pantryTrackingModeEnum("tracking_mode")
+    .default("quantity")
+    .notNull(),
+  inStock: boolean("in_stock").default(true).notNull(),
   quantity: numeric("quantity", { precision: 8, scale: 3 }),
   unit: text("unit"),
   category: text("category"),

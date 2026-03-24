@@ -10,6 +10,8 @@ export interface PantryItem {
   ingredientName: string | null;
   ingredientKey: string | null;
   ingredientSpecificKey: string | null;
+  trackingMode: "quantity" | "availability";
+  inStock: boolean;
   quantity: string | null;
   unit: string | null;
   category: string | null;
@@ -23,6 +25,8 @@ export interface PantryItem {
   restockItemId: string | null;
   restockDefaultQuantity: string | null;
   restockDefaultUnit: string | null;
+  isStamped: boolean;
+  supportsRestockPackage: boolean;
   isOnActiveShoppingList: boolean;
   activeShoppingListId: string | null;
   activeShoppingListItemId: string | null;
@@ -34,6 +38,8 @@ export interface PantryDraftItem {
   ingredientName: string | null;
   ingredientKey: string | null;
   ingredientSpecificKey: string | null;
+  trackingMode?: "quantity" | "availability" | null;
+  inStock?: boolean | null;
   quantity: string | null;
   unit: string | null;
   category: string | null;
@@ -61,6 +67,8 @@ export interface PantryRestockItem {
 
 export interface NewPantryItem {
   name: string;
+  trackingMode?: "quantity" | "availability";
+  inStock?: boolean;
   quantity?: number | null;
   unit?: string | null;
   category?: string | null;
@@ -143,7 +151,6 @@ export function usePantry() {
     try {
       setIsLoading(true);
       setError(null);
-      console.debug("[Pantry] fetchItems: start");
       const response = await fetch("/api/pantry");
       if (!response.ok) throw new Error("Failed to fetch pantry items");
       const data = await response.json();
@@ -151,7 +158,6 @@ export function usePantry() {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event(PANTRY_CHANGED_EVENT));
       }
-      console.debug("[Pantry] fetchItems: loaded", { count: (data.items ?? []).length });
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to load pantry";
@@ -283,7 +289,6 @@ export function usePantry() {
   const updateItem = useCallback(
     async (id: string, updates: Partial<NewPantryItem>): Promise<boolean> => {
       try {
-        console.debug("[Pantry] updateItem: start", { id, updates });
         const response = await fetch(`/api/pantry/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -295,7 +300,6 @@ export function usePantry() {
           return false;
         }
         const data = (await response.json()) as PantryMutationResponse;
-        console.debug("[Pantry] updateItem: success", { id });
         setItems((prev) =>
           prev.map((item) => (item.id === id && data.item ? data.item : item)),
         );
@@ -315,14 +319,12 @@ export function usePantry() {
 
   const deleteItem = useCallback(async (id: string): Promise<boolean> => {
     try {
-      console.debug("[Pantry] deleteItem: start", { id });
       const response = await fetch(`/api/pantry/${id}`, { method: "DELETE" });
       if (!response.ok) {
         console.warn("[Pantry] deleteItem: failed", { id, status: response.status });
         toast.error("Nepodarilo sa odstrániť položku");
         return false;
       }
-      console.debug("[Pantry] deleteItem: success", { id });
       // Optimistic remove
       setItems((prev) => prev.filter((item) => item.id !== id));
       if (typeof window !== "undefined") {
@@ -533,12 +535,15 @@ export function usePantry() {
   );
 
   const addItemToShoppingList = useCallback(
-    async (id: string): Promise<boolean> => {
+    async (id: string, options?: { appendPackage?: boolean }): Promise<boolean> => {
       try {
         const response = await fetch("/api/shopping-lists/current", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pantryItemId: id }),
+          body: JSON.stringify({
+            pantryItemId: id,
+            appendPackage: options?.appendPackage ?? false,
+          }),
         });
         const data = (await response.json()) as ShoppingListHandoffResponse;
 
@@ -548,7 +553,11 @@ export function usePantry() {
         }
 
         await fetchItems();
-        toast.success("Položka bola pridaná na nákupný zoznam");
+        toast.success(
+          options?.appendPackage
+            ? "Ďalšie balenie bolo pridané na nákupný zoznam"
+            : "Položka bola pridaná na nákupný zoznam",
+        );
         return true;
       } catch (err) {
         console.error("[Pantry] addItemToShoppingList: exception", err);

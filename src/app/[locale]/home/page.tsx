@@ -32,6 +32,7 @@ import {
 import { guessFoodCategory } from "@/lib/units";
 import {
   normalizeRecipeLocale,
+  resolveIngredientDisplayName,
   resolveIngredientTranslation,
 } from "@/lib/recipe-localization";
 
@@ -43,6 +44,18 @@ type StoredIngredientTranslation = {
 type StoredRecipeIngredient = {
   translations?: Record<string, StoredIngredientTranslation>;
 };
+
+function resolveStoredIngredientDisplayName(
+  translation: StoredIngredientTranslation | undefined,
+): string | null {
+  const displayName = translation?.display_name?.trim();
+  if (displayName) {
+    return displayName;
+  }
+
+  const ingredientName = translation?.ingredient_name?.trim();
+  return ingredientName || null;
+}
 
 export interface BasicHomeRecipePreview {
   id: string;
@@ -100,8 +113,7 @@ function extractAllIngredientNames(
       translations.en ??
       Object.values(translations)[0];
 
-    const label =
-      translation?.ingredient_name ?? translation?.display_name ?? null;
+    const label = resolveStoredIngredientDisplayName(translation);
 
     return label ? [label] : [];
   });
@@ -177,6 +189,8 @@ async function getBasicHomeData(
               defaultLocale: recipes.defaultLocale,
               ingredientName: recipeIngredients.ingredientName,
               displayName: recipeIngredients.displayName,
+              ingredientKey: recipeIngredients.ingredientKey,
+              ingredientSpecificKey: recipeIngredients.ingredientSpecificKey,
               quantity: recipeIngredients.quantity,
               unit: recipeIngredients.unit,
               sortOrder: recipeIngredients.sortOrder,
@@ -227,18 +241,23 @@ async function getBasicHomeData(
 
     const existingItems = ingredientItemsByRecipeId.get(row.recipeId) ?? [];
     const ingredientName =
-      localizedIngredient?.ingredientName ??
-      localizedIngredient?.displayName ??
+      resolveIngredientDisplayName(localizedIngredient, row.displayName) ??
       row.ingredientName ??
       row.displayName;
+    const ingredientCategoryName =
+      localizedIngredient?.ingredientName?.trim() ||
+      row.ingredientName?.trim() ||
+      ingredientName;
 
     existingItems.push({
       name: ingredientName,
       amount: formatRecipeIngredientAmount(row.quantity, row.unit, locale),
-      category: guessFoodCategory(ingredientName),
+      category: guessFoodCategory(ingredientCategoryName),
       quantityValue:
         row.quantity === null ? null : Number.parseFloat(row.quantity),
       unit: row.unit,
+      ingredientKey: row.ingredientKey,
+      ingredientSpecificKey: row.ingredientSpecificKey,
     });
     ingredientItemsByRecipeId.set(row.recipeId, existingItems);
   }

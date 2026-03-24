@@ -34,20 +34,8 @@ export async function saveToDb(
     weekEnd.setDate(weekStart.getDate() + daysUntilSunday);
     weekEnd.setHours(23, 59, 59, 999);
 
-    // ── INSERT Shopping List ──
-    const [newShoppingList] = await db
-      .insert(shoppingLists)
-      .values({
-        userProfileId,
-        title: aiOutput.title,
-        description: aiOutput.description,
-        weekStartDate: weekStart,
-        weekEndDate: weekEnd,
-        status: "draft",
-      })
-      .returning();
-
-    // ── Parse markdown to items and Insert ──
+    // ── Parse markdown → items BEFORE transaction (AI call shouldn't hold DB locks) ──
+    let parsedItems: { name: string; quantity: number | null; unit: string | null; category: string | null }[] = [];
     try {
       const apiKey = process.env.GOOGLE_AI_API_KEY;
       if (apiKey) {
@@ -70,43 +58,53 @@ Return JSON array only, no explanation, no markdown:`;
         const parsed = JSON.parse(jsonStr);
 
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const validParsedItems = parsed.filter((item) => item.name && typeof item.name === "string");
-          if (validParsedItems.length > 0) {
-            const toInsertItems = validParsedItems.map((item, index) => {
-              const normalizedName = item.name.trim();
-              return {
-                shoppingListId: newShoppingList.id,
-                sortOrder: index,
-                name: normalizedName,
-                quantity: item.quantity !== null && item.quantity !== undefined ? String(item.quantity) : null,
-                unit: item.unit ? normalizeUnit(item.unit) : null,
-                category: item.category || guessFoodCategory(normalizedName),
-              };
-            });
-            await db.insert(shoppingListItems).values(toInsertItems);
-          }
+          parsedItems = parsed.filter((item: { name?: unknown }) => item.name && typeof item.name === "string");
         }
       }
     } catch (parseErr) {
       apiLogger.error("saveToDb: Failed to extract items from AI output", parseErr);
+      // parsedItems stays empty — transaction below will still create the list
     }
 
-    apiLogger.info("Shopping list generated and saved", {
-      metadata: {
-        shoppingListId: newShoppingList.id,
-        userProfileId,
-      },
-    });
-
-    // ── INSERT AI Insights (Shopping List) ──
+    // ── Atomic DB transaction: list + items + insights ──
     const expirationDate = new Date();
     expirationDate.setHours(expirationDate.getHours() + 24);
 
-    try {
-      await db.insert(aiInsights).values({
+    const newShoppingList = await db.transaction(async (tx) => {
+      // INSERT Shopping List
+      const [list] = await tx
+        .insert(shoppingLists)
+        .values({
+          userProfileId,
+          title: aiOutput.title,
+          description: aiOutput.description,
+          weekStartDate: weekStart,
+          weekEndDate: weekEnd,
+          status: "draft",
+        })
+        .returning();
+
+      // INSERT Items (if parsing succeeded)
+      if (parsedItems.length > 0) {
+        const toInsertItems = parsedItems.map((item, index) => {
+          const normalizedName = item.name.trim();
+          return {
+            shoppingListId: list.id,
+            sortOrder: index,
+            name: normalizedName,
+            quantity: item.quantity !== null && item.quantity !== undefined ? String(item.quantity) : null,
+            unit: item.unit ? normalizeUnit(item.unit) : null,
+            category: item.category || guessFoodCategory(normalizedName),
+          };
+        });
+        await tx.insert(shoppingListItems).values(toInsertItems);
+      }
+
+      // INSERT AI Insights (Shopping List)
+      await tx.insert(aiInsights).values({
         userProfileId,
         insightType: "shopping_list",
-        title: newShoppingList.title || "Nákupný Zoznam",
+        title: list.title || "Nákupný Zoznam",
         content: {
           title: aiOutput.title,
           description: aiOutput.description,
@@ -120,9 +118,17 @@ Return JSON array only, no explanation, no markdown:`;
         },
         expiresAt: expirationDate,
       });
-    } catch (dbError) {
-      apiLogger.error("AI insights shopping list save FAILED:", dbError);
-    }
+
+      return list;
+    });
+
+    apiLogger.info("Shopping list generated and saved", {
+      metadata: {
+        shoppingListId: newShoppingList.id,
+        userProfileId,
+        itemCount: parsedItems.length,
+      },
+    });
 
     // ── Track analytics ──
     await Analytics.shoppingListCreated(userId, {
@@ -213,8 +219,6 @@ Return JSON array only, no explanation, no markdown:`;
       } catch (dbError) {
         apiLogger.error("AI insights meal plan save FAILED:", dbError);
       }
-
-      // ── Track meal plan analytics ──
       await Analytics.mealPlanGenerated(userId, {
         tier: "premium",
       });

@@ -29,6 +29,11 @@ function isValidDraftItem(value: unknown): value is PantryBatchInputItem {
   const item = value as Record<string, unknown>;
   return (
     typeof item.name === "string" &&
+    (item.trackingMode === null ||
+      item.trackingMode === undefined ||
+      item.trackingMode === "quantity" ||
+      item.trackingMode === "availability") &&
+    (item.inStock === null || item.inStock === undefined || typeof item.inStock === "boolean") &&
     (item.quantity === null || item.quantity === undefined || typeof item.quantity === "number") &&
     (item.unit === null || item.unit === undefined || typeof item.unit === "string") &&
     (item.category === null || item.category === undefined || typeof item.category === "string") &&

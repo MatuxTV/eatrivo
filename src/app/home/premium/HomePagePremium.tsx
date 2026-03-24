@@ -219,13 +219,16 @@ export default function HomePagePremium() {
 
   // Check welcome dialog visibility after session loads (prevents hydration mismatch)
   useEffect(() => {
-    if (session?.user) {
-      const userVersion = session.user.lastSeenWelcomeVersion;
-      const currentVersion = APP_CONFIG.WELCOME_DIALOG_VERSION;
-      const needsWelcome = !userVersion || userVersion !== currentVersion;
-      setShowWelcomeDialog(needsWelcome);
-      setWelcomeCheckDone(true);
+    const userVersion = session?.user?.lastSeenWelcomeVersion;
+
+    if (!session?.user) {
+      return;
     }
+
+    const currentVersion = APP_CONFIG.WELCOME_DIALOG_VERSION;
+    const needsWelcome = !userVersion || userVersion !== currentVersion;
+    setShowWelcomeDialog(needsWelcome);
+    setWelcomeCheckDone(true);
   }, [session?.user]);
 
   // Show upgrade popup for basic users on every home visit — temporarily disabled
