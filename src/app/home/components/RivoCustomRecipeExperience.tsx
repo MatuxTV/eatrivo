@@ -1,29 +1,45 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   AlertCircle,
-  ArrowRight,
+  Beef,
+  Check,
   ChefHat,
-  RefreshCcw,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Droplet,
+  Flame,
+  Minus,
+  Plus,
   Sparkles,
+  Users,
+  Wheat,
+  X,
 } from "lucide-react";
 
 import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
 import {
   customRecipeCurrentGenerationResponseSchema,
+  customRecipeLatestResultResponseSchema,
   customRecipeStreamEventSchema,
 } from "@/lib/custom-recipes/contracts";
 import type { RecipeIngredientItem } from "@/lib/recipe-ingredients";
 import type { RecipeInstruction } from "@/lib/recipe-instructions";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import RecipeBrowserDialog from "./RecipeBrowserDialog";
 
-type CustomRecipeGenerationStatus =
+export type CustomRecipeGenerationStatus =
   | "idle"
   | "generating"
   | "success"
@@ -41,7 +57,18 @@ interface CustomRecipeApiIngredientItem {
   category?: string | null;
   quantityValue?: number | null;
   unit?: string | null;
+  ingredientKey?: string | null;
+  ingredientSpecificKey?: string | null;
+  pantryMatchName?: string | null;
   pantryComparison?: RecipeIngredientItem["pantryComparison"] | null;
+}
+
+interface CustomRecipeApiMatchedIngredient {
+  recipeIngredientName: string;
+  pantryIngredientName: string | null;
+  matchType: "exact" | "fallback";
+  displayName: string;
+  amount: string | null;
 }
 
 interface CustomRecipeApiGeneratedRecipe {
@@ -63,6 +90,7 @@ interface CustomRecipeApiGeneratedRecipe {
   fatG: number;
   ingredientItems: CustomRecipeApiIngredientItem[];
   instructions: RecipeInstruction[];
+  matchedIngredients?: CustomRecipeApiMatchedIngredient[];
   matchedIngredientNames: string[];
   missingIngredientNames: string[];
 }
@@ -123,7 +151,7 @@ interface CustomRecipeApiResultPayload {
   };
 }
 
-interface CustomRecipeFallbackRecommendation {
+export interface CustomRecipeFallbackRecommendation {
   id: string;
   title: string;
   category: string;
@@ -133,11 +161,25 @@ interface CustomRecipeFallbackRecommendation {
   proteinG?: number;
 }
 
-interface CustomRecipeAdaptedResult {
+export interface CustomRecipeAdaptedResult {
   recipes: BasicHomeRecipePreview[];
   fallbackRecipes: BasicHomeRecipePreview[];
   fallbackRecommendations: CustomRecipeFallbackRecommendation[];
   userMessage?: CustomRecipeApiMessageDescriptor;
+}
+
+export type CustomRecipeFallbackItem =
+  | CustomRecipeFallbackRecommendation
+  | { title: string; description?: string | null };
+
+export interface CustomRecipeHeroSnapshot {
+  status: CustomRecipeGenerationStatus;
+  progress: number;
+  displayTip: string;
+  result: CustomRecipeAdaptedResult | null;
+  error: string | null;
+  userMessage: string | null;
+  fallbackRecommendations: CustomRecipeFallbackItem[];
 }
 
 interface RivoCustomRecipeExperienceProps {
@@ -148,11 +190,50 @@ interface RivoCustomRecipeExperienceProps {
     category: string | null,
   ) => Promise<void>;
   onCookRecipe?: (recipe: BasicHomeRecipePreview) => void;
+  showPrimaryCta?: boolean;
+  showPanel?: boolean;
+  onStatusChange?: (status: CustomRecipeGenerationStatus) => void;
+  onStateChange?: (snapshot: CustomRecipeHeroSnapshot) => void;
+}
+
+export interface RivoCustomRecipeExperienceHandle {
+  generate: () => void;
+  openResultRecipe: (index?: number) => void;
+  openFallbackRecipe: (recommendationId: string) => void;
+  openPantry: () => void;
 }
 
 const CUSTOM_RECIPE_START_ENDPOINT = "/api/recipes/custom/generate";
+const CUSTOM_RECIPE_ACCEPT_ENDPOINT = "/api/recipes/custom/accept";
+const CUSTOM_RECIPE_LATEST_ENDPOINT = "/api/recipes/custom/latest";
 const CUSTOM_RECIPE_MOCK_STORAGE_KEY = "eatrivo:customRecipeMock";
+const CUSTOM_RECIPE_STATE_STORAGE_KEY = "eatrivo:customRecipeState";
 const DEFAULT_CATEGORY_KEY = "lunch-and-dinner";
+
+interface PersistedCustomRecipeState {
+  version: 1;
+  savedAt: number;
+  locale: string;
+  status: Exclude<CustomRecipeGenerationStatus, "generating">;
+  rawResultPayload: CustomRecipeApiResultPayload | null;
+  error: string | null;
+}
+
+function getCategoryGradient(categoryKey: string): string {
+  switch (categoryKey) {
+    case "breakfast":
+      return "from-amber-500 via-orange-500 to-rose-500";
+    case "lunch":
+    case "lunch-and-dinner":
+      return "from-emerald-500 via-teal-500 to-cyan-500";
+    case "dinner":
+      return "from-indigo-500 via-violet-500 to-fuchsia-500";
+    case "smoothies":
+      return "from-pink-500 via-rose-500 to-orange-400";
+    default:
+      return "from-purple-600 via-fuchsia-500 to-pink-500";
+  }
+}
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -224,6 +305,102 @@ function readMockPayload(): CustomRecipeApiResultPayload | null {
   return normalizedPayload;
 }
 
+function readPersistedCustomRecipeState(
+  locale: string,
+): PersistedCustomRecipeState | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const rawState = window.sessionStorage.getItem(CUSTOM_RECIPE_STATE_STORAGE_KEY);
+
+  if (!rawState) {
+    return null;
+  }
+
+  try {
+    const parsedState = JSON.parse(rawState) as Partial<PersistedCustomRecipeState>;
+
+    if (
+      parsedState.version !== 1 ||
+      typeof parsedState.savedAt !== "number" ||
+      typeof parsedState.locale !== "string" ||
+      parsedState.locale !== locale ||
+      !parsedState.status
+    ) {
+      return null;
+    }
+
+    return {
+      version: 1,
+      savedAt: parsedState.savedAt,
+      locale: parsedState.locale,
+      status: parsedState.status,
+      rawResultPayload:
+        normalizeResultPayload(parsedState.rawResultPayload) ?? null,
+      error: typeof parsedState.error === "string" ? parsedState.error : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function persistCustomRecipeState(snapshot: PersistedCustomRecipeState) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.setItem(
+    CUSTOM_RECIPE_STATE_STORAGE_KEY,
+    JSON.stringify(snapshot),
+  );
+}
+
+function clearPersistedCustomRecipeState() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.removeItem(CUSTOM_RECIPE_STATE_STORAGE_KEY);
+}
+
+async function fetchLatestCustomRecipeState(
+  locale: string,
+): Promise<PersistedCustomRecipeState | null> {
+  const response = await fetch(CUSTOM_RECIPE_LATEST_ENDPOINT, {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  if (response.status === 204 || response.status === 401) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error("Custom recipe latest result request failed.");
+  }
+
+  const payload = await response.json().catch(() => null);
+  const parsed = customRecipeLatestResultResponseSchema.safeParse(payload);
+
+  if (!parsed.success || parsed.data.result.meta.locale !== locale) {
+    return null;
+  }
+
+  return {
+    version: 1,
+    savedAt: Date.parse(parsed.data.createdAt),
+    locale,
+    status: (
+      parsed.data.result.pantryRecipe.status !== "available" &&
+        parsed.data.result.almostCookableRecipe.status !== "available")
+      ? "fallback-empty"
+      : "success",
+    rawResultPayload: parsed.data.result,
+    error: null,
+  };
+}
+
 function adaptIngredientItem(
   ingredient: CustomRecipeApiIngredientItem,
 ): RecipeIngredientItem | null {
@@ -243,14 +420,27 @@ function adaptIngredientItem(
         ? ingredient.quantityValue
         : null,
     unit: readString(ingredient.unit),
+    ingredientKey: readString(ingredient.ingredientKey),
+    ingredientSpecificKey: readString(ingredient.ingredientSpecificKey),
     pantryComparison: ingredient.pantryComparison ?? null,
   };
 }
 
 function buildMatchedIngredients(
+  matchedIngredients: CustomRecipeApiMatchedIngredient[] | undefined,
   matchedIngredientNames: string[],
   ingredientItems: RecipeIngredientItem[],
 ): NonNullable<BasicHomeRecipePreview["matchedIngredients"]> | undefined {
+  if (matchedIngredients && matchedIngredients.length > 0) {
+    return matchedIngredients.map((ingredient) => ({
+      recipeIngredientName: ingredient.recipeIngredientName,
+      pantryIngredientName: ingredient.pantryIngredientName,
+      matchType: ingredient.matchType,
+      displayName: ingredient.displayName,
+      amount: ingredient.amount,
+    }));
+  }
+
   const ingredientByName = new Map(
     ingredientItems.map((ingredient) => [
       ingredient.name.trim().toLowerCase(),
@@ -258,7 +448,7 @@ function buildMatchedIngredients(
     ]),
   );
 
-  const matchedIngredients = matchedIngredientNames.map((ingredientName) => {
+    const fallbackMatchedIngredients = matchedIngredientNames.map((ingredientName) => {
     const ingredient = ingredientByName.get(ingredientName.trim().toLowerCase());
 
     return {
@@ -270,7 +460,9 @@ function buildMatchedIngredients(
     };
   });
 
-  return matchedIngredients.length > 0 ? matchedIngredients : undefined;
+  return fallbackMatchedIngredients.length > 0
+    ? fallbackMatchedIngredients
+    : undefined;
 }
 
 function adaptGeneratedRecipe(
@@ -300,6 +492,7 @@ function adaptGeneratedRecipe(
         ? recipe.matchedIngredientNames
         : ingredientItems.map((ingredient) => ingredient.name).slice(0, 4),
     matchedIngredients: buildMatchedIngredients(
+      recipe.matchedIngredients,
       recipe.matchedIngredientNames,
       ingredientItems,
     ),
@@ -351,6 +544,7 @@ function adaptSuggestionRecipe(
         ? recipe.matchedIngredientNames
         : ingredientItems.map((ingredient) => ingredient.name).slice(0, 4),
     matchedIngredients: buildMatchedIngredients(
+      undefined,
       recipe.matchedIngredientNames,
       ingredientItems,
     ),
@@ -371,7 +565,16 @@ function resolveMessageDescriptor(
   }
 
   try {
-    return t(descriptor.key, descriptor.values);
+    const values = descriptor.values
+      ? Object.fromEntries(
+          Object.entries(descriptor.values).map(([key, value]) => [
+            key,
+            typeof value === "boolean" ? String(value) : value,
+          ]),
+        )
+      : undefined;
+
+    return t(descriptor.key, values);
   } catch {
     return null;
   }
@@ -441,11 +644,18 @@ function adaptCustomRecipeResponse(
   };
 }
 
-export default function RivoCustomRecipeExperience({
+const RivoCustomRecipeExperience = forwardRef<
+  RivoCustomRecipeExperienceHandle,
+  RivoCustomRecipeExperienceProps
+>(function RivoCustomRecipeExperience({
   onOpenPantry,
   onAddToShoppingList,
   onCookRecipe,
-}: RivoCustomRecipeExperienceProps) {
+  showPrimaryCta = true,
+  showPanel = true,
+  onStatusChange,
+  onStateChange,
+}: RivoCustomRecipeExperienceProps, ref) {
   const t = useTranslations("home");
   const locale = useLocale();
   const shouldReduceMotion = useReducedMotion();
@@ -457,10 +667,16 @@ export default function RivoCustomRecipeExperience({
   const [progress, setProgress] = useState(0);
   const [tipIndex, setTipIndex] = useState(0);
   const [result, setResult] = useState<CustomRecipeAdaptedResult | null>(null);
+  const [rawResultPayload, setRawResultPayload] =
+    useState<CustomRecipeApiResultPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogIndex, setDialogIndex] = useState(0);
   const [dialogRecipes, setDialogRecipes] = useState<BasicHomeRecipePreview[]>([]);
+  const [dialogDirection, setDialogDirection] = useState(0);
+  const [selectedMissingIngredients, setSelectedMissingIngredients] = useState<Set<string>>(
+    new Set(),
+  );
 
   const customRecipeTips = useMemo(
     () => [
@@ -472,19 +688,46 @@ export default function RivoCustomRecipeExperience({
   );
   const displayTip =
     customRecipeTips[tipIndex % customRecipeTips.length] ?? customRecipeTips[0] ?? "";
-  const fallbackRecommendations:
-    | Array<
-        | CustomRecipeFallbackRecommendation
-        | { title: string; description?: string | null }
-      >
-    = result?.fallbackRecommendations.length
-      ? result.fallbackRecommendations
-      : [
-          { title: t("basic.customRecipe.fallback.defaultSuggestions.pantry") },
-          { title: t("basic.customRecipe.fallback.defaultSuggestions.protein") },
-          { title: t("basic.customRecipe.fallback.defaultSuggestions.vegetables") },
-        ];
+  const fallbackRecommendations = useMemo<CustomRecipeFallbackItem[]>(
+    () =>
+      result?.fallbackRecommendations.length
+        ? result.fallbackRecommendations
+        : [
+            { title: t("basic.customRecipe.fallback.defaultSuggestions.pantry") },
+            { title: t("basic.customRecipe.fallback.defaultSuggestions.protein") },
+            { title: t("basic.customRecipe.fallback.defaultSuggestions.vegetables") },
+          ],
+    [result?.fallbackRecommendations, t],
+  );
   const userMessage = resolveMessageDescriptor(t, result?.userMessage);
+  const activeDialogRecipe = dialogRecipes[dialogIndex] ?? null;
+  const hasNextDialogRecipe = dialogIndex < dialogRecipes.length - 1;
+  const hasPreviousDialogRecipe = dialogIndex > 0;
+
+  useEffect(() => {
+    onStatusChange?.(status);
+  }, [onStatusChange, status]);
+
+  useEffect(() => {
+    onStateChange?.({
+      status,
+      progress,
+      displayTip,
+      result,
+      error,
+      userMessage,
+      fallbackRecommendations,
+    });
+  }, [
+    displayTip,
+    error,
+    fallbackRecommendations,
+    onStateChange,
+    progress,
+    result,
+    status,
+    userMessage,
+  ]);
 
   useEffect(() => {
     if (status !== "generating" || customRecipeTips.length <= 1) {
@@ -519,6 +762,83 @@ export default function RivoCustomRecipeExperience({
       window.clearInterval(interval);
     };
   }, [status]);
+
+  useEffect(() => {
+    if (!dialogOpen) {
+      setSelectedMissingIngredients(new Set());
+    }
+  }, [dialogOpen]);
+
+  useEffect(() => {
+    const persistedState = readPersistedCustomRecipeState(locale);
+
+    if (!persistedState) {
+      let isCancelled = false;
+
+      void fetchLatestCustomRecipeState(locale)
+        .then((latestState) => {
+          if (!latestState || isCancelled) {
+            return;
+          }
+
+          const adaptedResult = latestState.rawResultPayload
+            ? adaptCustomRecipeResponse(latestState.rawResultPayload)
+            : null;
+
+          setError(latestState.error);
+          setRawResultPayload(latestState.rawResultPayload);
+          setResult(adaptedResult);
+          setProgress(latestState.rawResultPayload ? 100 : 0);
+          setStatus(latestState.status);
+          persistCustomRecipeState(latestState);
+        })
+        .catch(() => {
+          // Passive restore failure should not break the component.
+        });
+
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    setError(persistedState.error);
+
+    if (persistedState.rawResultPayload) {
+      const adaptedResult = adaptCustomRecipeResponse(persistedState.rawResultPayload);
+      setRawResultPayload(persistedState.rawResultPayload);
+      setResult(adaptedResult);
+      setProgress(100);
+      setStatus(persistedState.status);
+      return;
+    }
+
+    setRawResultPayload(null);
+    setResult(null);
+    setProgress(0);
+    setStatus(persistedState.status);
+
+    return undefined;
+  }, [locale]);
+
+  useEffect(() => {
+    if (status === "idle") {
+      return;
+    }
+
+    if (status === "generating") {
+      clearPersistedCustomRecipeState();
+      return;
+    }
+
+    persistCustomRecipeState({
+      version: 1,
+      savedAt: Date.now(),
+      locale,
+      status,
+      rawResultPayload,
+      error,
+    });
+  }, [error, locale, rawResultPayload, status]);
 
   useEffect(() => {
     return () => {
@@ -586,6 +906,29 @@ export default function RivoCustomRecipeExperience({
       isCancelled = true;
     };
   }, [t]);
+
+  useEffect(() => {
+    if (!dialogOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight" && hasNextDialogRecipe) {
+        setDialogDirection(1);
+        setDialogIndex((current) => current + 1);
+      }
+
+      if (event.key === "ArrowLeft" && hasPreviousDialogRecipe) {
+        setDialogDirection(-1);
+        setDialogIndex((current) => current - 1);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [dialogOpen, hasNextDialogRecipe, hasPreviousDialogRecipe]);
 
   const consumeRecipeStream = useCallback(
     async (response: Response, requestId: number) => {
@@ -686,6 +1029,7 @@ export default function RivoCustomRecipeExperience({
 
       setDialogRecipes(recipes);
       setDialogIndex(index);
+      setDialogDirection(0);
       setDialogOpen(true);
     },
     [],
@@ -694,6 +1038,7 @@ export default function RivoCustomRecipeExperience({
   const applyCompletedPayload = useCallback(
     (payload: CustomRecipeApiResultPayload) => {
       const adaptedResult = adaptCustomRecipeResponse(payload);
+      setRawResultPayload(payload);
       setResult(adaptedResult);
       setProgress(100);
 
@@ -714,11 +1059,13 @@ export default function RivoCustomRecipeExperience({
     requestIdRef.current = requestId;
 
     triggerHaptic("medium");
+    clearPersistedCustomRecipeState();
     setDialogOpen(false);
     setStatus("generating");
     setProgress(12);
     setTipIndex(0);
     setResult(null);
+    setRawResultPayload(null);
     setError(null);
 
     try {
@@ -791,16 +1138,19 @@ export default function RivoCustomRecipeExperience({
     }
   }, [applyCompletedPayload, consumeRecipeStream, locale, t, triggerHaptic]);
 
-  const handleOpenResult = useCallback(() => {
-    const generatedRecipes = result?.recipes ?? [];
+  const handleOpenResultRecipe = useCallback(
+    (index = 0) => {
+      const recipes = result?.recipes ?? [];
 
-    if (!generatedRecipes.length) {
-      return;
-    }
+      if (!recipes.length || index < 0 || index >= recipes.length) {
+        return;
+      }
 
-    triggerHaptic("light");
-    openRecipeDialog(generatedRecipes, 0);
-  }, [openRecipeDialog, result, triggerHaptic]);
+      triggerHaptic("light");
+      openRecipeDialog(recipes, index);
+    },
+    [openRecipeDialog, result?.recipes, triggerHaptic],
+  );
 
   const handleOpenFallbackRecipe = useCallback(
     (recommendationId: string) => {
@@ -826,12 +1176,110 @@ export default function RivoCustomRecipeExperience({
     onOpenPantry();
   }, [onOpenPantry, triggerHaptic]);
 
+  const handleDialogOpenChange = useCallback((open: boolean) => {
+    setDialogOpen(open);
+  }, []);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      generate: () => {
+        void handleGenerate();
+      },
+      openResultRecipe: (index = 0) => {
+        handleOpenResultRecipe(index);
+      },
+      openFallbackRecipe: (recommendationId: string) => {
+        handleOpenFallbackRecipe(recommendationId);
+      },
+      openPantry: () => {
+        handleOpenPantry();
+      },
+    }),
+    [handleGenerate, handleOpenFallbackRecipe, handleOpenPantry, handleOpenResultRecipe],
+  );
+
+  const handleNextDialogRecipe = useCallback(() => {
+    if (!hasNextDialogRecipe) {
+      return;
+    }
+
+    setDialogDirection(1);
+    setDialogIndex((current) => current + 1);
+  }, [hasNextDialogRecipe]);
+
+  const handlePreviousDialogRecipe = useCallback(() => {
+    if (!hasPreviousDialogRecipe) {
+      return;
+    }
+
+    setDialogDirection(-1);
+    setDialogIndex((current) => current - 1);
+  }, [hasPreviousDialogRecipe]);
+
+  const handleSelectMissingIngredient = useCallback(
+    async (name: string, quantity: string | null, category: string | null) => {
+      if (!onAddToShoppingList) {
+        return;
+      }
+
+      setSelectedMissingIngredients((previous) => new Set(previous).add(name));
+
+      try {
+        await onAddToShoppingList(name, quantity, category);
+      } catch {
+        setSelectedMissingIngredients((previous) => {
+          const next = new Set(previous);
+          next.delete(name);
+          return next;
+        });
+      }
+    },
+    [onAddToShoppingList],
+  );
+
+  const persistAcceptedGeneratedRecipe = useCallback(
+    (recipe: BasicHomeRecipePreview) => {
+      if (!rawResultPayload) {
+        return;
+      }
+
+      const generatedRecipe =
+        recipe.id === "generated-pantry-recipe" &&
+        rawResultPayload.pantryRecipe.status === "available"
+          ? rawResultPayload.pantryRecipe
+          : recipe.id === "generated-almost-cookable-recipe" &&
+              rawResultPayload.almostCookableRecipe.status === "available"
+            ? rawResultPayload.almostCookableRecipe
+            : null;
+
+      if (!generatedRecipe) {
+        return;
+      }
+
+      void fetch(CUSTOM_RECIPE_ACCEPT_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "same-origin",
+        keepalive: true,
+        body: JSON.stringify({
+          locale: rawResultPayload.meta.locale,
+          recipe: generatedRecipe,
+        }),
+      }).catch(() => null);
+    },
+    [rawResultPayload],
+  );
+
   const handleCookGeneratedRecipe = useCallback(
     (recipe: BasicHomeRecipePreview) => {
       setDialogOpen(false);
+      persistAcceptedGeneratedRecipe(recipe);
       onCookRecipe?.(recipe);
     },
-    [onCookRecipe],
+    [onCookRecipe, persistAcceptedGeneratedRecipe],
   );
 
   const fadeIn = shouldReduceMotion
@@ -842,72 +1290,138 @@ export default function RivoCustomRecipeExperience({
         exit: { opacity: 0, y: -8 },
         transition: { duration: 0.4, ease: "easeOut" as const },
       };
+  const dialogSlideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0,
+    }),
+    center: { x: 0, opacity: 1 },
+    exit: (direction: number) => ({
+      x: direction > 0 ? -300 : 300,
+      opacity: 0,
+    }),
+  };
 
   return (
     <>
-      <div className="mb-6 space-y-4">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 hover:border-gray-200 transition-colors">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-eatrivo-blue/10 rounded-lg">
-                <Sparkles className="w-5 h-5 text-eatrivo-blue" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                  {t("basic.customRecipe.badge")}
-                </p>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  {t("basic.customRecipe.title")}
-                </h2>
-                <p className="text-sm text-gray-600 max-w-2xl">
-                  {t("basic.customRecipe.description")}
-                </p>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              onClick={() => {
-                void handleGenerate();
-              }}
-              disabled={status === "generating"}
-              className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-6 focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-            >
-              {status === "generating"
-                ? t("basic.customRecipe.ctaGenerating")
-                : status === "idle"
-                  ? t("basic.customRecipe.cta")
-                  : t("basic.customRecipe.ctaRetry")}
-            </Button>
-          </div>
-        </div>
-
-        <AnimatePresence mode="wait">
-          {status === "idle" ? null : (
-            <motion.div
-              key={status}
-              {...fadeIn}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 space-y-4"
-            >
-              {status === "generating" ? (
-                <div className="space-y-4" role="status" aria-live="polite">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-eatrivo-purple/10 rounded-lg">
-                      <Sparkles className="w-5 h-5 text-eatrivo-purple" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                        {t("basic.customRecipe.loading.badge")}
-                      </p>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {t("basic.customRecipe.loading.title")}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {t("basic.customRecipe.loading.description")}
-                      </p>
-                    </div>
+      {showPanel ? (
+        <div className="mb-6">
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-colors hover:border-gray-200 md:p-6">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div key={status} {...fadeIn} className="space-y-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`rounded-lg p-2 ${
+                      status === "generating"
+                        ? "bg-eatrivo-purple/10"
+                        : status === "success"
+                          ? "bg-eatrivo-green/10"
+                          : status === "fallback-empty"
+                            ? "bg-eatrivo-orange/10"
+                            : status === "error"
+                              ? "bg-eatrivo-red/10"
+                              : "bg-eatrivo-blue/10"
+                    }`}
+                  >
+                    {status === "error" ? (
+                      <AlertCircle className="h-5 w-5 text-eatrivo-red" />
+                    ) : status === "success" ? (
+                      <ChefHat className="h-5 w-5 text-eatrivo-green" />
+                    ) : (
+                      <Sparkles
+                        className={`h-5 w-5 ${
+                          status === "generating"
+                            ? "text-eatrivo-purple"
+                            : status === "fallback-empty"
+                              ? "text-eatrivo-orange"
+                              : "text-eatrivo-blue"
+                        }`}
+                      />
+                    )}
                   </div>
 
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                      {status === "generating"
+                        ? t("basic.customRecipe.loading.badge")
+                        : status === "success"
+                          ? t("basic.customRecipe.result.badge")
+                          : status === "fallback-empty"
+                            ? t("basic.customRecipe.fallback.badge")
+                            : status === "error"
+                              ? t("basic.customRecipe.error.badge")
+                              : t("basic.customRecipe.badge")}
+                    </p>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {status === "generating"
+                        ? t("basic.customRecipe.loading.title")
+                        : status === "success"
+                          ? t("basic.customRecipe.result.title")
+                          : status === "fallback-empty"
+                            ? t("basic.customRecipe.fallback.title")
+                            : status === "error"
+                              ? t("basic.customRecipe.error.title")
+                              : t("basic.customRecipe.title")}
+                    </h2>
+                    <p className="max-w-2xl text-sm text-gray-600">
+                      {status === "generating"
+                        ? t("basic.customRecipe.loading.description")
+                        : status === "success" && result
+                          ? t("basic.customRecipe.result.description", {
+                              count: result.recipes.length,
+                            })
+                          : status === "fallback-empty"
+                            ? t("basic.customRecipe.fallback.description")
+                            : status === "error"
+                              ? t("basic.customRecipe.error.description")
+                              : t("basic.customRecipe.description")}
+                    </p>
+                    {userMessage && status !== "idle" ? (
+                      <p className="text-sm text-gray-500">{userMessage}</p>
+                    ) : null}
+                  </div>
+                </div>
+
+                {showPrimaryCta || status === "fallback-empty" || status === "error" ? (
+                  <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
+                    {showPrimaryCta ? (
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          void handleGenerate();
+                        }}
+                        disabled={status === "generating"}
+                        className="rounded-full bg-eatrivo-purple px-6 text-white hover:bg-eatrivo-purple/90 focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                      >
+                        {status === "generating"
+                          ? t("basic.customRecipe.ctaGenerating")
+                          : status === "idle"
+                            ? t("basic.customRecipe.cta")
+                            : status === "fallback-empty"
+                              ? t("basic.customRecipe.fallback.retry")
+                              : status === "error"
+                                ? t("basic.customRecipe.error.retry")
+                                : t("basic.customRecipe.result.regenerate")}
+                      </Button>
+                    ) : null}
+
+                    {status === "fallback-empty" || status === "error" ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={handleOpenPantry}
+                        className="rounded-full border border-gray-200 text-gray-700 hover:bg-eatrivo-white-secondary focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                      >
+                        {t("basic.customRecipe.fallback.openPantry")}
+                      </Button>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+
+              {status === "generating" ? (
+                <div className="space-y-4" role="status" aria-live="polite">
                   <div className="rounded-2xl bg-eatrivo-white-secondary p-4 space-y-3">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
@@ -952,38 +1466,21 @@ export default function RivoCustomRecipeExperience({
 
               {status === "success" && result ? (
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-eatrivo-green/10 rounded-lg">
-                      <ChefHat className="w-5 h-5 text-eatrivo-green" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                        {t("basic.customRecipe.result.badge")}
-                      </p>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {t("basic.customRecipe.result.title")}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {t("basic.customRecipe.result.description", {
-                          count: result.recipes.length,
-                        })}
-                      </p>
-                      {userMessage ? (
-                        <p className="text-sm text-gray-500">{userMessage}</p>
-                      ) : null}
-                    </div>
-                  </div>
-
                   <div className="grid gap-3 md:grid-cols-2">
-                    {result.recipes.map((recipe) => {
+                    {result.recipes.map((recipe, index) => {
                       const isAlmostCookable =
                         Array.isArray(recipe.missingIngredients) &&
                         recipe.missingIngredients.length > 0;
 
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={recipe.id}
-                          className="rounded-2xl border border-gray-100 bg-eatrivo-white-primary p-4"
+                          onClick={() => {
+                            triggerHaptic("light");
+                            openRecipeDialog(result.recipes, index);
+                          }}
+                          className="rounded-2xl border border-gray-100 bg-eatrivo-white-primary p-4 text-left transition-all duration-200 hover:border-eatrivo-purple/30 hover:bg-white hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-eatrivo-purple/40 focus-visible:ring-offset-2"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div>
@@ -1008,58 +1505,19 @@ export default function RivoCustomRecipeExperience({
                             <span className="rounded-full bg-eatrivo-orange/10 px-2.5 py-1 text-xs font-medium text-eatrivo-orange">
                               {recipe.totalTimeMin} {t("time.minutesShort")}
                             </span>
+                            <span className="rounded-full bg-eatrivo-purple/10 px-2.5 py-1 text-xs font-medium text-eatrivo-purple">
+                              {t("basic.customRecipe.result.open")}
+                            </span>
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
-                  </div>
-
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button
-                      type="button"
-                      onClick={handleOpenResult}
-                      className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-6 focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                    >
-                      {t("basic.customRecipe.result.open")}
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => {
-                        void handleGenerate();
-                      }}
-                      className="rounded-full border border-gray-200 text-gray-700 hover:bg-eatrivo-white-secondary focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                    >
-                      <RefreshCcw className="w-4 h-4" />
-                      {t("basic.customRecipe.result.regenerate")}
-                    </Button>
                   </div>
                 </div>
               ) : null}
 
               {status === "fallback-empty" ? (
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-eatrivo-orange/10 rounded-lg">
-                      <Sparkles className="w-5 h-5 text-eatrivo-orange" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                        {t("basic.customRecipe.fallback.badge")}
-                      </p>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {t("basic.customRecipe.fallback.title")}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {t("basic.customRecipe.fallback.description")}
-                      </p>
-                      {userMessage ? (
-                        <p className="text-sm text-gray-500">{userMessage}</p>
-                      ) : null}
-                    </div>
-                  </div>
-
                   <div className="grid gap-3 md:grid-cols-3">
                     {fallbackRecommendations.map((recommendation) => (
                       <button
@@ -1114,48 +1572,11 @@ export default function RivoCustomRecipeExperience({
                     ))}
                   </div>
 
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        void handleGenerate();
-                      }}
-                      className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-6 focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                    >
-                      <RefreshCcw className="w-4 h-4" />
-                      {t("basic.customRecipe.fallback.retry")}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={handleOpenPantry}
-                      className="rounded-full border border-gray-200 text-gray-700 hover:bg-eatrivo-white-secondary focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                    >
-                      {t("basic.customRecipe.fallback.openPantry")}
-                    </Button>
-                  </div>
                 </div>
               ) : null}
 
               {status === "error" ? (
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-eatrivo-red/10 rounded-lg">
-                      <AlertCircle className="w-5 h-5 text-eatrivo-red" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                        {t("basic.customRecipe.error.badge")}
-                      </p>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {t("basic.customRecipe.error.title")}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {t("basic.customRecipe.error.description")}
-                      </p>
-                    </div>
-                  </div>
-
                   {error ? (
                     <div className="rounded-2xl border border-eatrivo-red/10 bg-eatrivo-red/5 px-4 py-3">
                       <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
@@ -1164,42 +1585,395 @@ export default function RivoCustomRecipeExperience({
                       <p className="mt-1 text-sm text-gray-700">{error}</p>
                     </div>
                   ) : null}
-
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        void handleGenerate();
-                      }}
-                      className="bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-6 focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                    >
-                      <RefreshCcw className="w-4 h-4" />
-                      {t("basic.customRecipe.error.retry")}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={handleOpenPantry}
-                      className="rounded-full border border-gray-200 text-gray-700 hover:bg-eatrivo-white-secondary focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                    >
-                      {t("basic.customRecipe.fallback.openPantry")}
-                    </Button>
-                  </div>
                 </div>
               ) : null}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
 
-      <RecipeBrowserDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        recipes={dialogRecipes}
-        initialIndex={dialogIndex}
-        onAddToShoppingList={onAddToShoppingList}
-        onCookRecipe={handleCookGeneratedRecipe}
-      />
+                {status === "idle" ? null : null}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      ) : null}
+
+      <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
+        <DialogContent
+          showCloseButton={false}
+          className="max-w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto bg-eatrivo-white-primary p-0 gap-0 border-none shadow-2xl rounded-[2rem] sm:rounded-[2.5rem]"
+        >
+          {activeDialogRecipe ? (
+            <>
+              <div className="sticky top-0 z-30 flex items-center justify-between bg-eatrivo-white-primary/98 px-4 pt-4 pb-2">
+                <button
+                  type="button"
+                  disabled={!hasPreviousDialogRecipe}
+                  onClick={handlePreviousDialogRecipe}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-lg ring-1 ring-gray-200/50 transition-all hover:bg-white active:scale-90 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+
+                <span className="text-[12px] font-bold tracking-wider text-gray-400">
+                  {dialogIndex + 1} / {dialogRecipes.length}
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={!hasNextDialogRecipe}
+                    onClick={handleNextDialogRecipe}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-lg ring-1 ring-gray-200/50 transition-all hover:bg-white active:scale-90 disabled:cursor-not-allowed disabled:opacity-30"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDialogOpen(false)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-lg ring-1 ring-gray-200/50 transition-all hover:bg-white active:scale-90"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+
+              <AnimatePresence mode="wait" custom={dialogDirection}>
+                <motion.div
+                  key={activeDialogRecipe.id}
+                  custom={dialogDirection}
+                  variants={dialogSlideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                >
+                  <div
+                    className={`relative mx-4 overflow-hidden rounded-[1.5rem] bg-gradient-to-br ${getCategoryGradient(activeDialogRecipe.categoryKey)} p-6 text-white sm:p-8`}
+                  >
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.3),transparent_45%)]" />
+                    <div className="relative z-10 space-y-4">
+                      <div className="flex flex-wrap gap-2">
+                        <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] backdrop-blur-md">
+                          {activeDialogRecipe.category}
+                        </span>
+                        {activeDialogRecipe.mealPrepFriendly ? (
+                          <span className="flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] backdrop-blur-md">
+                            <Sparkles className="h-3 w-3" />
+                            {t("basic.recipeDialog.mealPrep")}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <DialogTitle className="text-balance text-3xl font-black leading-[1.05] tracking-tighter text-white drop-shadow-sm sm:text-4xl">
+                        {activeDialogRecipe.title}
+                      </DialogTitle>
+                      <DialogDescription className="sr-only">
+                        {t("basic.recipeDialog.detail")}
+                      </DialogDescription>
+
+                      <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-white/90">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="h-4 w-4" />
+                          {activeDialogRecipe.totalTimeMin} {t("time.minutesShort")}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Flame className="h-4 w-4" />
+                          {activeDialogRecipe.calories} kcal
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Users className="h-4 w-4" />
+                          {t("basic.recipeDialog.servings", { count: 1 })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-8 p-6 sm:p-8">
+                    <div>
+                      <h3 className="mb-4 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">
+                        {t("recipe.nutritionValues")}
+                        <div className="h-px flex-1 bg-gray-100" />
+                      </h3>
+
+                      <div className="grid grid-cols-4 gap-3">
+                        {[
+                          {
+                            icon: Flame,
+                            value: activeDialogRecipe.calories,
+                            unit: "",
+                            label: t("nutrition.calories"),
+                            color: "text-orange-500 bg-orange-50",
+                          },
+                          {
+                            icon: Beef,
+                            value: activeDialogRecipe.proteinG,
+                            unit: "g",
+                            label: t("nutrition.protein"),
+                            color: "text-green-600 bg-green-50",
+                          },
+                          {
+                            icon: Wheat,
+                            value: activeDialogRecipe.carbsG,
+                            unit: "g",
+                            label: t("nutrition.carbs"),
+                            color: "text-amber-600 bg-amber-50",
+                          },
+                          {
+                            icon: Droplet,
+                            value: activeDialogRecipe.fatG,
+                            unit: "g",
+                            label: t("nutrition.fats"),
+                            color: "text-rose-500 bg-rose-50",
+                          },
+                        ].map((macro) => (
+                          <div
+                            key={macro.label}
+                            className="flex flex-col items-center gap-2 rounded-2xl bg-gray-50 p-3 ring-1 ring-gray-100"
+                          >
+                            <div
+                              className={`flex h-8 w-8 items-center justify-center rounded-full ${macro.color}`}
+                            >
+                              <macro.icon className="h-4 w-4" />
+                            </div>
+                            <span className="text-xl font-black leading-none tracking-tight text-[#1a1a2e]">
+                              {macro.value}
+                              {macro.unit}
+                            </span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                              {macro.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="mb-4 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">
+                        {t("recipe.ingredients")}
+                        <div className="h-px flex-1 bg-gray-100" />
+                      </h3>
+
+                      {(() => {
+                        const ingredientByName = new Map(
+                          activeDialogRecipe.ingredientItems.map((ingredient) => [
+                            ingredient.name.trim().toLowerCase(),
+                            ingredient,
+                          ]),
+                        );
+
+                        const resolveAmountLabel = (
+                          ingredientName: string,
+                          fallbackAmount: string | null,
+                        ) => {
+                          const ingredient = ingredientByName.get(
+                            ingredientName.trim().toLowerCase(),
+                          );
+
+                          if (
+                            ingredient?.pantryComparison?.status === "insufficient" &&
+                            ingredient.pantryComparison.requiredLabel &&
+                            ingredient.pantryComparison.availableLabel
+                          ) {
+                            return `${ingredient.pantryComparison.requiredLabel} (${t("basic.recipeDialog.haveAmountInline", {
+                              amount: ingredient.pantryComparison.availableLabel,
+                            })})`;
+                          }
+
+                          return (
+                            ingredient?.pantryComparison?.requiredLabel ??
+                            ingredient?.amount ??
+                            fallbackAmount
+                          );
+                        };
+
+                        const resolveTone = (
+                          ingredientName: string,
+                          available: boolean,
+                          matchType: "exact" | "fallback",
+                        ) => {
+                          if (!available) {
+                            return "red" as const;
+                          }
+
+                          if (matchType === "fallback") {
+                            return "orange" as const;
+                          }
+
+                          const comparison = ingredientByName.get(
+                            ingredientName.trim().toLowerCase(),
+                          )?.pantryComparison;
+
+                          if (
+                            comparison?.status === "insufficient" ||
+                            comparison?.status === "unit-mismatch" ||
+                            comparison?.status === "missing-pantry-quantity"
+                          ) {
+                            return "orange" as const;
+                          }
+
+                          return "green" as const;
+                        };
+
+                        const available = (activeDialogRecipe.matchedIngredients ?? []).map(
+                          (ingredient) => ({
+                            key: ingredient.recipeIngredientName,
+                            name: ingredient.displayName,
+                            amount: resolveAmountLabel(
+                              ingredient.recipeIngredientName,
+                              ingredient.amount,
+                            ),
+                            category: null,
+                            available: true,
+                            matchType: ingredient.matchType,
+                            tone: resolveTone(
+                              ingredient.recipeIngredientName,
+                              true,
+                              ingredient.matchType,
+                            ),
+                          }),
+                        );
+                        const fallbackAvailable =
+                          activeDialogRecipe.matchedIngredients === undefined
+                            ? activeDialogRecipe.ingredientItems.map((ingredient) => ({
+                                key: ingredient.name,
+                                name: ingredient.name,
+                                amount: resolveAmountLabel(
+                                  ingredient.name,
+                                  ingredient.amount,
+                                ),
+                                category: null,
+                                available: true,
+                                matchType: "exact" as const,
+                                tone: resolveTone(ingredient.name, true, "exact"),
+                              }))
+                            : [];
+                        const missing = (activeDialogRecipe.missingIngredients ?? []).map(
+                          (ingredientName) => ({
+                            key: ingredientName,
+                            name: ingredientName,
+                            amount: resolveAmountLabel(ingredientName, null),
+                            category:
+                              ingredientByName.get(
+                                ingredientName.trim().toLowerCase(),
+                              )?.category ?? null,
+                            available: false,
+                            matchType: "exact" as const,
+                            tone: "red" as const,
+                          }),
+                        );
+                        const allIngredients = [
+                          ...available,
+                          ...fallbackAvailable,
+                          ...missing,
+                        ];
+
+                        if (allIngredients.length === 0) {
+                          return (
+                            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 py-8 text-center">
+                              <ChefHat className="mx-auto mb-3 h-8 w-8 text-gray-300" />
+                              <p className="text-[13px] font-bold text-gray-400">
+                                {t("recipe.noIngredients")}
+                              </p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            {allIngredients.map((ingredient) => (
+                              <div
+                                key={`${ingredient.key}-${ingredient.available ? "available" : "missing"}`}
+                                className={`flex items-center gap-3 rounded-xl px-4 py-3 ring-1 transition-colors ${
+                                  ingredient.tone === "green"
+                                    ? "bg-green-50/60 ring-green-200/50"
+                                    : ingredient.tone === "orange"
+                                      ? "bg-amber-50/70 ring-amber-200/60"
+                                      : "bg-red-50/60 ring-red-200/50"
+                                }`}
+                              >
+                                {ingredient.available ? (
+                                  <div
+                                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full shadow-sm ${
+                                      ingredient.tone === "orange"
+                                        ? "bg-eatrivo-orange"
+                                        : "bg-eatrivo-green"
+                                    }`}
+                                  >
+                                    {ingredient.tone === "orange" ? (
+                                      <Minus className="h-3 w-3 text-white" />
+                                    ) : (
+                                      <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                                    )}
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      void handleSelectMissingIngredient(
+                                        ingredient.name,
+                                        ingredient.amount,
+                                        ingredient.category,
+                                      );
+                                    }}
+                                    disabled={selectedMissingIngredients.has(ingredient.name)}
+                                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-all active:scale-90 ${
+                                      selectedMissingIngredients.has(ingredient.name)
+                                        ? "bg-gray-200"
+                                        : "bg-red-500 shadow-sm shadow-red-200 hover:bg-red-600"
+                                    }`}
+                                    title={t("basic.recipeDialog.addToShoppingList")}
+                                  >
+                                    {selectedMissingIngredients.has(ingredient.name) ? (
+                                      <Check className="h-3 w-3 text-gray-500" strokeWidth={3} />
+                                    ) : (
+                                      <Plus className="h-3 w-3 text-white" strokeWidth={3} />
+                                    )}
+                                  </button>
+                                )}
+
+                                <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+                                  <span
+                                    className={`truncate text-[13px] font-bold ${
+                                      ingredient.tone === "green"
+                                        ? "text-[#1a1a2e]"
+                                        : ingredient.tone === "orange"
+                                          ? "text-amber-800"
+                                          : "text-red-700"
+                                    }`}
+                                  >
+                                    {ingredient.name}
+                                  </span>
+                                  {ingredient.amount ? (
+                                    <span className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500 ring-1 ring-gray-200/70">
+                                      {ingredient.amount}
+                                    </span>
+                                  ) : null}
+                                </div>
+                              </div>
+                            ))}
+
+                            <div className="pt-2 sm:col-span-2">
+                              <Button
+                                className="w-full"
+                                onClick={() => handleCookGeneratedRecipe(activeDialogRecipe)}
+                                disabled={!onCookRecipe}
+                              >
+                                {t("basic.recipeDialog.cookThisRecipe")}
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </>
   );
-}
+});
+
+RivoCustomRecipeExperience.displayName = "RivoCustomRecipeExperience";
+
+export default RivoCustomRecipeExperience;

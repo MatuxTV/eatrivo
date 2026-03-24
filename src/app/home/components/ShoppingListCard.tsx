@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -19,161 +20,129 @@ import {
   FileText,
   ShoppingCart,
   Check,
-  Lightbulb,
   ChefHat,
   RefreshCw,
   Trash2,
   Loader2,
+  X,
 } from "lucide-react";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import { formatDate } from "@/lib/formatters";
 import { MealPlanViewerModal } from "@/app/home/premium/MealPlanViewerModal";
+import { localizeAmountForDisplay } from "@/lib/pantry/format";
+import InlineEditPanel from "./InlineEditPanel";
+import InlineEditToggleButton from "./InlineEditToggleButton";
 
 const cn = (...a: (string | false | null | undefined)[]) =>
   a.filter(Boolean).join(" ");
 
-// ─── Markdown parser ───────────────────────────────────────────────────────────
-
-interface ParsedItem {
+interface ShoppingListViewerItem {
+  id: string;
   name: string;
-  quantity: string;
-  note: string;
-}
-interface ParsedCategory {
-  name: string;
-  items: ParsedItem[];
-}
-interface ParsedList {
-  macros: string;
-  categories: ParsedCategory[];
-  tips: string[];
-  footer: string;
+  quantity: string | null;
+  quantityValue?: string | null;
+  unit?: string | null;
+  category: string;
+  sortOrder: number;
+  isChecked: boolean;
+  checkedAt: string | null;
 }
 
-function parseShoppingList(markdown: string): ParsedList {
-  const result: ParsedList = {
-    macros: "",
-    categories: [],
-    tips: [],
-    footer: "",
-  };
-  let currentCategory: ParsedCategory | null = null;
-  let inTips = false;
-  let tableHeaderDone = false;
-
-  for (const raw of markdown.split("\n")) {
-    const line = raw.trim();
-    if (!line) continue;
-
-    // h1 title → skip (already in Dialog header)
-    if (line.startsWith("# ")) continue;
-
-    // Macros summary line
-    if (line.includes("Denný príjem") || line.includes("Daily intake")) {
-      result.macros = line.replace(/\*\*/g, "");
-      continue;
-    }
-
-    // Budget/footer line
-    if (line.startsWith("💰")) {
-      result.footer = line.replace(/\*\*/g, "");
-      continue;
-    }
-
-    // Validation block → skip
-    if (line.match(/^✅ VALIDÁCIA|^\d+\. Množstv/)) continue;
-
-    // Separator line
-    if (line === "---") continue;
-
-    // h2 → new category
-    if (line.startsWith("## ")) {
-      if (currentCategory) result.categories.push(currentCategory);
-      currentCategory = { name: line.slice(3).trim(), items: [] };
-      inTips = false;
-      tableHeaderDone = false;
-      continue;
-    }
-
-    // h3 → tips section start
-    if (line.startsWith("### ")) {
-      if (currentCategory) {
-        result.categories.push(currentCategory);
-        currentCategory = null;
-      }
-      inTips = true;
-      continue;
-    }
-
-    // Table separator row → skip
-    if (line.match(/^\|[\s\-:|]+\|$/)) continue;
-
-    // Table row → shopping item
-    if (currentCategory && line.startsWith("|")) {
-      const cells = line
-        .split("|")
-        .map((c) => c.trim())
-        .filter(Boolean);
-      // First row is the header (Potravina | Množstvo | Poznámka)
-      if (!tableHeaderDone) {
-        tableHeaderDone = true;
-        continue;
-      }
-      if (cells.length >= 1) {
-        currentCategory.items.push({
-          name: cells[0] ?? "",
-          quantity: cells[1] ?? "",
-          note: cells[2] ?? "",
-        });
-      }
-      continue;
-    }
-
-    // Tip bullet
-    if (inTips && (line.startsWith("- ") || line.startsWith("* "))) {
-      result.tips.push(line.slice(2).trim());
-    }
-  }
-
-  if (currentCategory && currentCategory.items.length > 0)
-    result.categories.push(currentCategory);
-  return result;
+function formatCategoryLabel(category: string): string {
+  return category
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 // ─── Shopping List Viewer ──────────────────────────────────────────────────────
 
 interface ViewerProps {
-  markdown: string;
   id: string;
+  locale: string;
+  items: ShoppingListViewerItem[];
+  isEditable?: boolean;
+  isUpdatingItemId?: string | null;
+  editQuantityLabel: string;
+  saveQuantityLabel: string;
+  cancelEditLabel: string;
+  quantityLabel: string;
+  quantityPlaceholder: string;
+  onSaveQuantity?: (
+    itemId: string,
+    nextQuantity: string | null,
+  ) => Promise<boolean>;
 }
 
 const STORAGE_KEY = (id: string) => `sl-checked:${id}`;
 
-function ShoppingListViewer({ markdown, id }: ViewerProps) {
+function ShoppingListViewer({
+  id,
+  locale,
+  items,
+  isEditable = false,
+  isUpdatingItemId = null,
+  editQuantityLabel,
+  saveQuantityLabel,
+  cancelEditLabel,
+  quantityLabel,
+  quantityPlaceholder,
+  onSaveQuantity,
+}: ViewerProps) {
   const [checked, setChecked] = useState<Set<string>>(() => {
     try {
       const raw =
         typeof window !== "undefined"
           ? localStorage.getItem(STORAGE_KEY(id))
           : null;
-      return raw ? new Set<string>(JSON.parse(raw)) : new Set<string>();
+      if (raw) {
+        return new Set<string>(JSON.parse(raw));
+      }
     } catch {
-      return new Set<string>();
+      return new Set<string>(items.filter((item) => item.isChecked).map((item) => item.id));
     }
+
+    return new Set<string>(items.filter((item) => item.isChecked).map((item) => item.id));
   });
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [draftQuantity, setDraftQuantity] = useState("");
+  const groupedItems = useMemo(() => {
+    const groups = new Map<string, ShoppingListViewerItem[]>();
+    const orderedItems = [...items].sort((left, right) => left.sortOrder - right.sortOrder);
 
-  const parsed = useMemo(() => parseShoppingList(markdown), [markdown]);
+    for (const item of orderedItems) {
+      const categoryKey = item.category || "other";
+      const categoryItems = groups.get(categoryKey);
+      if (categoryItems) {
+        categoryItems.push(item);
+      } else {
+        groups.set(categoryKey, [item]);
+      }
+    }
 
-  const totalItems = parsed.categories.reduce(
-    (sum, c) => sum + c.items.length,
+    return [...groups.entries()].map(([category, categoryItems]) => ({
+      category,
+      label: formatCategoryLabel(category),
+      items: categoryItems,
+    }));
+  }, [items]);
+
+  const totalItems = items.length;
+  const checkedCount = items.reduce(
+    (count, item) => count + (checked.has(item.id) ? 1 : 0),
     0,
   );
-  const checkedCount = checked.size;
+
+  useEffect(() => {
+    if (editingItemId && !items.some((item) => item.id === editingItemId)) {
+      setEditingItemId(null);
+      setDraftQuantity("");
+    }
+  }, [editingItemId, items]);
 
   const toggle = (key: string) =>
     setChecked((prev) => {
@@ -190,6 +159,16 @@ function ShoppingListViewer({ markdown, id }: ViewerProps) {
       }
       return next;
     });
+
+  const closeEditor = () => {
+    setEditingItemId(null);
+    setDraftQuantity("");
+  };
+
+  const openEditor = (itemId: string, currentQuantity: string | null) => {
+    setEditingItemId(itemId);
+    setDraftQuantity(currentQuantity ?? "");
+  };
 
   return (
     <div className="space-y-4 ">
@@ -228,117 +207,201 @@ function ShoppingListViewer({ markdown, id }: ViewerProps) {
         </div>
       )}
 
-      {/* Macros summary */}
-      {parsed.macros && (
-        <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2 leading-relaxed">
-          {parsed.macros}
-        </p>
-      )}
-
       {/* Categories */}
-      {parsed.categories.map((cat, ci) => (
-        <div key={ci}>
+      {groupedItems.map((group) => (
+        <div key={group.category}>
           {/* Category pill */}
           <div className="flex items-center gap-2 mb-2">
             <span className="inline-flex items-center gap-1.5 bg-eatrivo-purple/10 text-eatrivo-purple px-3 py-1 rounded-full text-sm font-bold">
-              {cat.name}
+              {group.label}
             </span>
           </div>
 
           {/* Items */}
           <ul className="space-y-1">
-            {cat.items.map((item, ii) => {
-              const key = `${ci}-${ii}`;
-              const isDone = checked.has(key);
+            {group.items.map((item) => {
+              const isDone = checked.has(item.id);
+              const isEditing = editingItemId === item.id;
+              const localizedQuantity = localizeAmountForDisplay(
+                item.quantityValue,
+                item.unit,
+                item.quantity,
+                locale,
+              );
               return (
-                <li key={key} className="list-none">
-                  <button
-                    type="button"
-                    onClick={() => toggle(key)}
+                <li key={item.id} className="list-none">
+                  <div
                     className={cn(
                       "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all duration-150 group",
                       isDone ? "bg-gray-50" : "hover:bg-eatrivo-purple/5",
+                      isEditing && "bg-eatrivo-purple/[0.06] ring-1 ring-eatrivo-purple/10",
                     )}
                   >
-                    {/* Circle checkbox */}
-                    <span
-                      className={cn(
-                        "flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-150",
-                        isDone
-                          ? "bg-eatrivo-purple border-eatrivo-purple"
-                          : "border-gray-300 group-hover:border-eatrivo-purple/50",
-                      )}
+                    <button
+                      type="button"
+                      onClick={() => toggle(item.id)}
+                      className="flex min-w-0 flex-1 items-center gap-3 text-left"
                     >
-                      {isDone && (
-                        <Check className="w-3 h-3 text-white stroke-[3]" />
-                      )}
-                    </span>
-
-                    {/* Food name */}
-                    <span
-                      className={cn(
-                        "flex-1 text-sm font-medium transition-colors",
-                        isDone ? "line-through text-gray-400" : "text-gray-800",
-                      )}
-                    >
-                      {item.name}
-                    </span>
-
-                    {/* Quantity badge */}
-                    {item.quantity && (
+                      {/* Circle checkbox */}
                       <span
                         className={cn(
-                          "flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium transition-colors",
+                          "flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-150",
                           isDone
-                            ? "bg-gray-100 text-gray-400"
-                            : "bg-eatrivo-purple/10 text-eatrivo-purple",
+                            ? "bg-eatrivo-purple border-eatrivo-purple"
+                            : "border-gray-300 group-hover:border-eatrivo-purple/50",
                         )}
                       >
-                        {item.quantity}
+                        {isDone && (
+                          <Check className="w-3 h-3 text-white stroke-[3]" />
+                        )}
                       </span>
-                    )}
-                  </button>
 
-                  {/* Note (smaller, indented) */}
-                  {item.note && !isDone && (
-                    <p className="ml-11 text-xs text-gray-400 pb-1">
-                      {item.note}
-                    </p>
-                  )}
+                      {/* Food name */}
+                      <span
+                        className={cn(
+                          "flex-1 text-sm font-medium transition-colors",
+                          isDone ? "line-through text-gray-400" : "text-gray-800",
+                        )}
+                      >
+                        {item.name}
+                      </span>
+                    </button>
+
+                    <div className="flex shrink-0 items-center gap-2">
+                      {localizedQuantity ? (
+                        <span
+                          className={cn(
+                            "flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium transition-colors",
+                            isDone
+                              ? "bg-gray-100 text-gray-400"
+                              : "bg-eatrivo-purple/10 text-eatrivo-purple",
+                          )}
+                        >
+                          {localizedQuantity}
+                        </span>
+                      ) : null}
+
+                      {isEditable && onSaveQuantity ? (
+                        isUpdatingItemId === item.id ? (
+                          <button
+                            type="button"
+                            disabled
+                            className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 opacity-50"
+                            aria-label={editQuantityLabel}
+                            title={editQuantityLabel}
+                          >
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          </button>
+                        ) : (
+                          <InlineEditToggleButton
+                            label={editQuantityLabel}
+                            isActive={isEditing}
+                            onClick={() => {
+                              if (isEditing) {
+                                closeEditor();
+                                return;
+                              }
+                              openEditor(item.id, item.quantity);
+                            }}
+                            disabled={
+                              isUpdatingItemId !== null && isUpdatingItemId !== item.id
+                            }
+                            className="h-7 w-7 border-gray-200 text-gray-400"
+                            iconClassName="h-3.5 w-3.5"
+                          />
+                        )
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <InlineEditPanel
+                    isOpen={isEditing}
+                    className="ml-8 mt-2"
+                    panelClassName="border-gray-100 bg-none bg-eatrivo-white-secondary shadow-none"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                      <div className="min-w-0 flex-1">
+                        <label
+                          htmlFor={`shopping-quantity-${item.id}`}
+                          className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500"
+                        >
+                          {quantityLabel}
+                        </label>
+                        <Input
+                          id={`shopping-quantity-${item.id}`}
+                          value={draftQuantity}
+                          onChange={(event) => setDraftQuantity(event.target.value)}
+                          onKeyDown={async (event) => {
+                            if (event.key === "Escape") {
+                              event.preventDefault();
+                              closeEditor();
+                              return;
+                            }
+
+                            if (event.key !== "Enter" || !onSaveQuantity) {
+                              return;
+                            }
+
+                            event.preventDefault();
+                            const success = await onSaveQuantity(
+                              item.id,
+                              draftQuantity.trim() ? draftQuantity.trim() : null,
+                            );
+                            if (success) {
+                              closeEditor();
+                            }
+                          }}
+                          placeholder={quantityPlaceholder}
+                          className="h-10 border-gray-200 bg-white/90 shadow-none"
+                          autoFocus
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={closeEditor}
+                          className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-eatrivo-purple/20"
+                          aria-label={cancelEditLabel}
+                          title={cancelEditLabel}
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!onSaveQuantity) {
+                              return;
+                            }
+
+                            const success = await onSaveQuantity(
+                              item.id,
+                              draftQuantity.trim() ? draftQuantity.trim() : null,
+                            );
+                            if (success) {
+                              closeEditor();
+                            }
+                          }}
+                          disabled={isUpdatingItemId === item.id}
+                          className="inline-flex h-9 items-center gap-2 rounded-full bg-eatrivo-purple px-3.5 text-sm font-semibold text-white transition-colors hover:bg-eatrivo-purple/90 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-eatrivo-purple/20"
+                        >
+                          {isUpdatingItemId === item.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Check className="h-4 w-4" />
+                          )}
+                          <span>{saveQuantityLabel}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </InlineEditPanel>
                 </li>
               );
             })}
           </ul>
         </div>
       ))}
-
-      {/* Tips — plain, no checkboxes */}
-      {parsed.tips.length > 0 && (
-        <div className="mt-2 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-xs font-bold text-amber-700">Tipy</span>
-          </div>
-          <ul className="space-y-1.5">
-            {parsed.tips.map((tip, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-2 text-xs text-amber-700"
-              >
-                <span className="flex-shrink-0 w-1 h-1 rounded-full bg-amber-400 mt-1.5" />
-                {tip}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Footer — estimated price */}
-      {parsed.footer && (
-        <p className="text-xs text-gray-400 text-center pt-1">
-          {parsed.footer}
-        </p>
-      )}
     </div>
   );
 }
@@ -378,10 +441,11 @@ export default function ShoppingListCard({
   const [isViewing, setIsViewing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [markdownContent, setMarkdownContent] = useState<string | null>(null);
+  const [shoppingItems, setShoppingItems] = useState<ShoppingListViewerItem[] | null>(null);
   const [isMealPlanModalOpen, setMealPlanModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSettingStatus, setIsSettingStatus] = useState(false);
+  const [isUpdatingItemId, setIsUpdatingItemId] = useState<string | null>(null);
 
   const formatDateLocal = (dateString: string) =>
     formatDate(dateString, locale, {
@@ -445,6 +509,16 @@ export default function ShoppingListCard({
   };
 
   const statusConfig = getStatusConfig(status);
+  const canEditItems = status === "draft" || status === "active" || status === "approved";
+  const editQuantityLabel = t("editQuantity", { defaultValue: "Upraviť množstvo" });
+  const saveQuantityLabel = t("saveQuantity", { defaultValue: "Uložiť" });
+  const cancelEditLabel = t("cancelEditQuantity", {
+    defaultValue: "Zrušiť úpravu množstva",
+  });
+  const quantityLabel = t("quantityLabel", { defaultValue: "Množstvo" });
+  const quantityPlaceholder = t("quantityPlaceholder", {
+    defaultValue: "napr. 2 ks alebo 500 g",
+  });
 
   const handleStatusChange = async (listId: string, newStatus: string) => {
     try {
@@ -507,7 +581,7 @@ export default function ShoppingListCard({
 
       // Open print-ready page — browser saves as PDF via system dialog
       window.open(
-        `/api/shopping-lists/${id}/view?print=1`,
+        `/api/shopping-lists/${id}/view?print=1&locale=${encodeURIComponent(locale)}`,
         "_blank",
         "noopener,noreferrer",
       );
@@ -525,6 +599,7 @@ export default function ShoppingListCard({
   const handleView = async () => {
     try {
       setIsViewing(true);
+      setShoppingItems(null);
 
       fetch("/api/analytics/track", {
         method: "POST",
@@ -536,11 +611,11 @@ export default function ShoppingListCard({
         }),
       }).catch(console.error);
 
-      // Fetch markdown content and show inline
+      // Fetch structured shopping items and show inline
       const res = await fetch(`/api/shopping-lists/${id}`);
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
-      setMarkdownContent(data.markdownContent ?? "");
+      setShoppingItems(Array.isArray(data.items) ? data.items : []);
       setSheetOpen(true);
     } catch (error) {
       logger.error("View error", error, {
@@ -550,6 +625,59 @@ export default function ShoppingListCard({
       toast.error(t("errors.view"));
     } finally {
       setIsViewing(false);
+    }
+  };
+
+  const handleSaveQuantity = async (itemId: string, nextQuantity: string | null) => {
+    if (isUpdatingItemId) {
+      return false;
+    }
+
+    const normalizedQuantity =
+      typeof nextQuantity === "string" && nextQuantity.trim().length > 0
+        ? nextQuantity.trim()
+        : null;
+    const previousItems = shoppingItems ? [...shoppingItems] : null;
+    setIsUpdatingItemId(itemId);
+    setShoppingItems((prev) =>
+      prev?.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              quantity: normalizedQuantity,
+            }
+          : item,
+      ) ?? prev,
+    );
+
+    try {
+      const response = await fetch(`/api/shopping-lists/${id}/items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amountLabel: normalizedQuantity }),
+      });
+      const data = (await response.json().catch(() => null)) as {
+        error?: string;
+        items?: ShoppingListViewerItem[];
+      } | null;
+
+      if (!response.ok) {
+        throw new Error(data?.error ?? "Nepodarilo sa upraviť množstvo");
+      }
+
+      if (Array.isArray(data?.items)) {
+        setShoppingItems(data.items);
+      }
+      toast.success("Množstvo bolo upravené");
+      return true;
+    } catch (error) {
+      setShoppingItems(previousItems);
+      toast.error(
+        error instanceof Error ? error.message : "Nepodarilo sa upraviť množstvo",
+      );
+      return false;
+    } finally {
+      setIsUpdatingItemId(null);
     }
   };
 
@@ -581,10 +709,22 @@ export default function ShoppingListCard({
             </div>
           </DialogHeader>
 
-          {/* Scrollable markdown content */}
+          {/* Scrollable shopping list content */}
           <div className="overflow-y-auto flex-1 px-5 py-4 bg-eatrivo-white-primary">
-            {markdownContent !== null ? (
-              <ShoppingListViewer markdown={markdownContent} id={id} />
+            {shoppingItems !== null ? (
+              <ShoppingListViewer
+                id={id}
+                locale={locale}
+                items={shoppingItems}
+                isEditable={canEditItems}
+                isUpdatingItemId={isUpdatingItemId}
+                editQuantityLabel={editQuantityLabel}
+                saveQuantityLabel={saveQuantityLabel}
+                cancelEditLabel={cancelEditLabel}
+                quantityLabel={quantityLabel}
+                quantityPlaceholder={quantityPlaceholder}
+                onSaveQuantity={canEditItems ? handleSaveQuantity : undefined}
+              />
             ) : (
               <div className="flex flex-col items-center justify-center h-40 gap-3 text-gray-400">
                 <ShoppingCart className="w-8 h-8 animate-pulse" />
@@ -601,7 +741,7 @@ export default function ShoppingListCard({
               asChild
               onClick={() =>
                 window.open(
-                  `/api/shopping-lists/${id}/view?print=1`,
+                  `/api/shopping-lists/${id}/view?print=1&locale=${encodeURIComponent(locale)}`,
                   "_blank",
                   "noopener,noreferrer",
                 )

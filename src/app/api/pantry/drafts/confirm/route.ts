@@ -87,6 +87,8 @@ export async function POST(req: NextRequest) {
             ingredientName: draft.ingredientName,
             ingredientKey: draft.ingredientKey,
             ingredientSpecificKey: draft.ingredientSpecificKey,
+            trackingMode: draft.trackingMode,
+            inStock: draft.inStock,
             quantity: draft.quantity,
             unit: draft.unit,
             category: draft.category,

@@ -110,7 +110,7 @@ export default function AddPantryItemModal({
       .map((item) => ({
         name: item.name.trim(),
         quantity: item.quantity ? parseFloat(item.quantity) : null,
-        unit: item.unit || null,
+        unit: item.quantity ? item.unit || null : null,
         category: item.category,
         expiryDate: item.expiryDate ? `${item.expiryDate}T12:00:00` : null,
       }));

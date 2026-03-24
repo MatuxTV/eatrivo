@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sprout, Target, MessageSquarePlus, Crown } from "lucide-react";
+import { AlertTriangle, Send, Sprout, Target, MessageSquarePlus, Crown } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { FeedbackDialog } from "@/components/FeedbackButton";
 import Link from "next/link";
 
@@ -20,9 +21,34 @@ const NARRATIVE_LOADER_STEPS = [
   "Pripravujem odpoveď...",
 ];
 
-// Global in-memory cache to persist chat across dashboard tab switches (clears on hard refresh)
-let globalMessagesCache: Message[] = [];
-let globalSessionId: string | null = null;
+// Session-scoped chat cache helpers (sessionStorage = per-tab, clears on tab close)
+const CHAT_STORAGE_KEY = "rivo-chat-cache";
+const SESSION_ID_KEY = "rivo-chat-session";
+
+function loadCachedMessages(): Message[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = sessionStorage.getItem(CHAT_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCachedMessages(msgs: Message[]) {
+  try {
+    sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(msgs));
+  } catch { /* storage full — silently ignore */ }
+}
+
+function loadSessionId(): string | null {
+  if (typeof window === "undefined") return null;
+  return sessionStorage.getItem(SESSION_ID_KEY);
+}
+
+function saveSessionId(id: string) {
+  sessionStorage.setItem(SESSION_ID_KEY, id);
+}
 
 interface ChatLimit {
   limited: boolean;
@@ -34,7 +60,8 @@ interface ChatLimit {
 const MAX_INPUT_CHARS = 600;
 
 export default function ChatWithRivoPage() {
-  const [messages, setMessages] = useState<Message[]>(globalMessagesCache);
+  const t = useTranslations("home.comingSoon.chatWithRivo");
+  const [messages, setMessages] = useState<Message[]>(loadCachedMessages);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [loaderStepIndex, setLoaderStepIndex] = useState(0);
@@ -52,16 +79,16 @@ export default function ChatWithRivoPage() {
     }
   }, []);
 
-  const sessionId = useRef(globalSessionId || crypto.randomUUID());
-  if (!globalSessionId) {
-    globalSessionId = sessionId.current;
-  }
+  const sessionId = useRef(loadSessionId() || crypto.randomUUID());
+  useEffect(() => {
+    saveSessionId(sessionId.current);
+  }, []);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Sync state to memory cache
+  // Sync state to sessionStorage (per-tab, auto-cleared on tab close)
   useEffect(() => {
-    globalMessagesCache = messages;
+    saveCachedMessages(messages);
   }, [messages]);
 
   // Fetch daily limit on mount
@@ -255,7 +282,26 @@ export default function ChatWithRivoPage() {
 
         <AnimatePresence initial={false}>
           {messages.length === 0 && (
-            <motion.div
+            <>
+              <div className="mb-3 px-1 md:max-w-3xl md:mx-auto md:w-full">
+                <div className="overflow-hidden rounded-[1.1rem] border border-amber-200/70 bg-gradient-to-r from-amber-50/90 via-white to-orange-50/80 shadow-[0_8px_24px_-20px_rgba(245,158,11,0.45)]">
+                  <div className="flex items-start gap-2.5 px-3 py-2.5 sm:px-4 sm:py-3">
+                    <div className="mt-0.5 rounded-xl bg-amber-100 p-1.5 text-amber-700 ring-1 ring-amber-200/80">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-bold tracking-tight text-[#172033] sm:text-sm">
+                        {t("warning.title")}
+                      </p>
+                      <p className="mt-0.5 text-[11px] leading-5 text-eatrivo-black-secondary sm:text-xs">
+                        {t("warning.body")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <motion.div
               initial="hidden"
               animate="visible"
               exit="hidden"
@@ -346,7 +392,8 @@ export default function ChatWithRivoPage() {
                   </span>
                 </motion.button>
               </motion.div>
-            </motion.div>
+              </motion.div>
+            </>
           )}
 
           {messages.map((msg, i) => (

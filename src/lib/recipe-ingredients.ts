@@ -1,4 +1,4 @@
-import { formatNumber } from "@/lib/formatters";
+import { formatLocalizedAmountLabel } from "@/lib/pantry/format";
 import type { RecipeIngredientPantryComparison } from "@/lib/recipe-quantity-comparison";
 
 export interface RecipeIngredientItem {
@@ -7,20 +7,9 @@ export interface RecipeIngredientItem {
   category?: string | null;
   quantityValue?: number | null;
   unit?: string | null;
+  ingredientKey?: string | null;
+  ingredientSpecificKey?: string | null;
   pantryComparison?: RecipeIngredientPantryComparison | null;
-}
-
-function normalizeQuantity(value: string | number | null | undefined): number | null {
-  if (value === null || value === undefined) {
-    return null;
-  }
-
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? value : null;
-  }
-
-  const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export function formatRecipeIngredientAmount(
@@ -28,22 +17,7 @@ export function formatRecipeIngredientAmount(
   unit: string | null | undefined,
   locale: string,
 ): string | null {
-  const normalizedUnit = unit?.trim() || null;
-  const normalizedQuantity = normalizeQuantity(quantity);
-
-  if (normalizedQuantity === null && !normalizedUnit) {
-    return null;
-  }
-
-  if (normalizedQuantity === null) {
-    return normalizedUnit;
-  }
-
-  const formattedQuantity = formatNumber(normalizedQuantity, locale, {
+  return formatLocalizedAmountLabel(quantity, unit, locale, {
     maximumFractionDigits: 3,
   });
-
-  return normalizedUnit
-    ? `${formattedQuantity} ${normalizedUnit}`
-    : formattedQuantity;
 }

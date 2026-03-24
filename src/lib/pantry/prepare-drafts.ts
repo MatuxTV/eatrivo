@@ -15,6 +15,10 @@ import {
   loadIngredientAliasIndex,
   resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
+import {
+  resolvePantryTrackingMode,
+  shouldPreservePantryQuantity,
+} from "@/lib/pantry/tracking";
 import { guessFoodCategory, normalizeUnit } from "@/lib/units";
 
 interface PreparePantryDraftsInput {
@@ -121,17 +125,43 @@ export async function preparePantryDrafts(
       item.name,
       aiSuggestion?.normalizedName,
     );
+    const trackingMode = resolvePantryTrackingMode({
+      name: displayName,
+      ingredientKey: ingredientIdentity.ingredientKey,
+      ingredientSpecificKey: ingredientIdentity.ingredientSpecificKey,
+      aiRecommendedTrackingMode: aiSuggestion?.recommendedTrackingMode ?? null,
+      trackingMode: item.trackingMode ?? null,
+      quantity: item.quantity ?? null,
+      unit: item.unit ?? null,
+    });
+    const normalizedUnit = item.unit ? normalizeUnit(item.unit) : null;
+    const preserveQuantity = shouldPreservePantryQuantity({
+      name: displayName,
+      ingredientKey: ingredientIdentity.ingredientKey,
+      ingredientSpecificKey: ingredientIdentity.ingredientSpecificKey,
+      trackingMode,
+      aiRecommendedTrackingMode: aiSuggestion?.recommendedTrackingMode ?? null,
+      quantity: item.quantity ?? null,
+      unit: normalizedUnit,
+    });
 
     return createPantryDraftItem({
       name: displayName,
       ingredientName: ingredientIdentity.ingredientName,
       ingredientKey: ingredientIdentity.ingredientKey,
       ingredientSpecificKey: ingredientIdentity.ingredientSpecificKey,
+      trackingMode,
+      inStock: trackingMode === "availability" ? (item.inStock ?? true) : true,
       quantity:
-        item.quantity !== null && item.quantity !== undefined
+        (trackingMode === "quantity" || preserveQuantity) &&
+        item.quantity !== null &&
+        item.quantity !== undefined
           ? String(item.quantity)
           : null,
-      unit: item.unit ? normalizeUnit(item.unit) : null,
+      unit:
+        (trackingMode === "quantity" || preserveQuantity) && normalizedUnit
+          ? normalizedUnit
+          : null,
       category:
         item.category?.trim() ||
         aiSuggestion?.category ||
@@ -154,6 +184,8 @@ export function normalizePreparedDraftInput(
   return items
     .map((item) => ({
       name: item.name.trim(),
+      trackingMode: item.trackingMode ?? null,
+      inStock: item.inStock ?? null,
       quantity: item.quantity ?? null,
       unit: item.unit?.trim() || null,
       category: item.category?.trim() || null,

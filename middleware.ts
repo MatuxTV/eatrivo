@@ -1,4 +1,4 @@
-import { permissions, hasAccess } from "@/app/config/permission";
+import { permissions, hasAccess, hasAdminRole } from "@/app/config/permission";
 import { auth } from "./auth";
 import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
@@ -110,10 +110,10 @@ export default auth((req) => {
     return NextResponse.redirect(new URL(`/${locale}/signin`, nextUrl));
   }
 
-  // Check admin access specifically
+  // Check admin access — use DB role, not billing membership
   if (
     pathnameWithoutLocale.startsWith("/admin") &&
-    !hasAccess(pathnameWithoutLocale, userRole)
+    !hasAdminRole(req.auth?.user?.role)
   ) {
     return NextResponse.redirect(new URL(`/${locale}/not-authorized`, nextUrl));
   }

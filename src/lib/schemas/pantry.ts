@@ -44,6 +44,8 @@ export const pantryAmountLabelSchema = z.preprocess(
   trimToNull,
   z.string().trim().max(100).nullable(),
 );
+export const pantryTrackingModeSchema = z.enum(["quantity", "availability"]);
+export const pantryInStockSchema = z.boolean();
 export const pantryExpiryDateSchema = z.preprocess(
   trimToNull,
   z
@@ -56,17 +58,54 @@ export const pantryListQuerySchema = z.object({
   lowStockOnly: z.preprocess(booleanFromQuery, z.boolean()).default(false),
 });
 
-export const pantryCreateItemSchema = z.object({
+export const pantryConsumeRecipeIngredientSchema = z.object({
   name: pantryNameSchema,
-  quantity: pantryQuantitySchema.nullable().optional(),
+  quantityValue: pantryQuantitySchema.nullable().optional(),
   unit: pantryUnitSchema.optional(),
-  category: pantryCategorySchema.optional(),
-  expiryDate: pantryExpiryDateSchema.optional(),
+  ingredientKey: z.string().trim().max(160).nullable().optional(),
+  ingredientSpecificKey: z.string().trim().max(200).nullable().optional(),
 });
+
+export const pantryConsumeRecipeMatchSchema = z.object({
+  recipeIngredientName: pantryNameSchema,
+  pantryIngredientName: pantryNameSchema.nullable(),
+  matchType: z.enum(["exact", "fallback"]),
+});
+
+export const pantryConsumeRecipeSchema = z.object({
+  recipeId: z.string().trim().min(1).max(120).optional(),
+  recipeTitle: z.string().trim().min(1).max(200),
+  ingredientItems: z.array(pantryConsumeRecipeIngredientSchema).min(1).max(50),
+  matchedIngredients: z.array(pantryConsumeRecipeMatchSchema).max(50).default([]),
+});
+
+export const pantryCreateItemSchema = z
+  .object({
+    name: pantryNameSchema,
+    trackingMode: pantryTrackingModeSchema.optional(),
+    inStock: pantryInStockSchema.optional(),
+    quantity: pantryQuantitySchema.nullable().optional(),
+    unit: pantryUnitSchema.optional(),
+    category: pantryCategorySchema.optional(),
+    expiryDate: pantryExpiryDateSchema.optional(),
+  })
+  .superRefine((value, ctx) => {
+    const trackingMode = value.trackingMode ?? "quantity";
+
+    if (trackingMode === "quantity" && value.inStock !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "inStock is only allowed for availability mode",
+        path: ["inStock"],
+      });
+    }
+  });
 
 export const pantryUpdateItemSchema = z
   .object({
     name: pantryNameSchema.optional(),
+    trackingMode: pantryTrackingModeSchema.optional(),
+    inStock: pantryInStockSchema.optional(),
     quantity: pantryQuantitySchema.nullable().optional(),
     unit: pantryUnitSchema.optional(),
     category: pantryCategorySchema.optional(),
@@ -107,14 +146,19 @@ export const pantryUpdateItemSchema = z
       });
     }
 
-    if (
-      value.quantityOperation !== undefined &&
-      value.quantity !== undefined
-    ) {
+    if (value.quantityOperation !== undefined && value.quantity !== undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Use either quantity or quantityOperation, not both",
         path: ["quantity"],
+      });
+    }
+
+    if (value.trackingMode === "quantity" && value.inStock !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "inStock is only allowed for availability mode",
+        path: ["inStock"],
       });
     }
   });
@@ -129,6 +173,7 @@ export const shoppingListCurrentMutationSchema = z
     pantryItemId: pantryIdSchema.optional(),
     pantryItemIds: z.array(pantryIdSchema).min(1).max(100).optional(),
     lowStockOnly: z.boolean().optional().default(false),
+    appendPackage: z.boolean().optional().default(false),
   })
   .superRefine((value, ctx) => {
     const sourceCount =

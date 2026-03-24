@@ -10,9 +10,14 @@ import {
   ChefHat,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
+import { logger } from "@/lib/logger";
+import { toast } from "sonner";
+
+const PANTRY_CHANGED_EVENT = "pantry:changed";
 
 interface KitchenCounterPageProps {
   recipe?: BasicHomeRecipePreview | null;
@@ -140,6 +145,7 @@ export default function KitchenCounterPage({
   const activeStep = steps[currentStepIndex] ?? null;
   const canGoToPreviousStep = currentStepIndex > 0;
   const canGoToNextStep = currentStepIndex < steps.length - 1;
+  const [isFinishingRecipe, setIsFinishingRecipe] = useState(false);
 
   useEffect(() => {
     setIngredients(
@@ -202,7 +208,7 @@ export default function KitchenCounterPage({
       return;
     }
 
-    onBack();
+    void handleFinishRecipe();
   };
 
   const handlePreviousStep = () => {
@@ -211,6 +217,87 @@ export default function KitchenCounterPage({
     }
 
     setCurrentStepIndex((previous) => previous - 1);
+  };
+
+  const handleFinishRecipe = async () => {
+    if (!activeRecipe || isFinishingRecipe) {
+      return;
+    }
+
+    logger.debug("[kitchen-counter.finish] starting recipe completion", {
+      metadata: {
+        recipeId: activeRecipe.id,
+        recipeTitle: activeRecipe.title,
+        ingredientCount: activeRecipe.ingredientItems?.length ?? 0,
+        matchedIngredientCount: activeRecipe.matchedIngredients?.length ?? 0,
+      },
+    });
+
+    setIsFinishingRecipe(true);
+
+    try {
+      const response = await fetch("/api/pantry/consume-recipe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          recipeId: activeRecipe.id,
+          recipeTitle: activeRecipe.title,
+          ingredientItems: activeRecipe.ingredientItems ?? [],
+          matchedIngredients: activeRecipe.matchedIngredients ?? [],
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as {
+        error?: string;
+        summary?: { updatedItems?: number; deletedItems?: number };
+      } | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? t("basic.kitchenCounter.finishError"));
+      }
+
+      logger.info("[kitchen-counter.finish] recipe completion succeeded", {
+        metadata: {
+          recipeId: activeRecipe.id,
+          recipeTitle: activeRecipe.title,
+          updatedItems: payload?.summary?.updatedItems ?? 0,
+          deletedItems: payload?.summary?.deletedItems ?? 0,
+        },
+      });
+
+      const changedPantryItems =
+        (payload?.summary?.updatedItems ?? 0) +
+        (payload?.summary?.deletedItems ?? 0);
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event(PANTRY_CHANGED_EVENT));
+      }
+
+      if (changedPantryItems > 0) {
+        toast.success(
+          t("basic.kitchenCounter.pantryUpdated", {
+            count: changedPantryItems,
+          }),
+        );
+      } else {
+        toast.success(t("basic.kitchenCounter.recipeFinished"));
+      }
+
+      onBack();
+    } catch (error) {
+      logger.error("[kitchen-counter.finish] recipe completion failed", error, {
+        metadata: {
+          recipeId: activeRecipe.id,
+          recipeTitle: activeRecipe.title,
+        },
+      });
+      toast.error(
+        error instanceof Error ? error.message : t("basic.kitchenCounter.finishError"),
+      );
+    } finally {
+      setIsFinishingRecipe(false);
+    }
   };
 
   if (!activeRecipe) {
@@ -275,6 +362,7 @@ export default function KitchenCounterPage({
           <Button
             variant="ghost"
             onClick={onBack}
+            disabled={isFinishingRecipe}
             className="hidden md:flex text-eatrivo-purple hover:bg-eatrivo-purple/10 rounded-full w-10 h-10 p-0 items-center justify-center transition-colors"
           >
             <X className="w-5 h-5" />
@@ -432,6 +520,7 @@ export default function KitchenCounterPage({
         <div className="max-w-4xl w-full pointer-events-auto grid grid-cols-2 gap-3 md:flex md:justify-end md:items-center">
           <Button
             onClick={canGoToPreviousStep ? handlePreviousStep : onBack}
+            disabled={isFinishingRecipe}
             className="h-12 bg-eatrivo-white-primary rounded-xl text-sm font-semibold border-eatrivo-black-secondary/30 border-1 text-eatrivo-purple md:hidden"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
@@ -440,13 +529,18 @@ export default function KitchenCounterPage({
               : t("basic.kitchenCounter.backToHome")}
           </Button>
           <Button
-            onClick={steps.length > 0 ? handleNextStep : onBack}
+            onClick={steps.length > 0 ? handleNextStep : () => void handleFinishRecipe()}
+            disabled={isFinishingRecipe}
             className="bg-[#1a1a2e] hover:bg-[#2a2a4a] text-white h-12 md:h-auto w-full md:w-auto text-base md:text-lg font-bold py-3 md:py-6 px-5 md:px-8 rounded-2xl md:rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_12px_25px_rgba(0,0,0,0.25)] transition-all flex items-center justify-center gap-2 col-span-1 md:col-auto"
           >
-            {canGoToNextStep
-              ? t("basic.kitchenCounter.nextStep")
-              : t("basic.kitchenCounter.finishRecipe")}
-            {canGoToNextStep ? (
+            {isFinishingRecipe
+              ? t("basic.kitchenCounter.finishPending")
+              : canGoToNextStep
+                ? t("basic.kitchenCounter.nextStep")
+                : t("basic.kitchenCounter.finishRecipe")}
+            {isFinishingRecipe ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : canGoToNextStep ? (
               <ChevronRight className="w-5 h-5" />
             ) : (
               <Check className="w-5 h-5" />

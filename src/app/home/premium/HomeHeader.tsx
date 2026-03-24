@@ -17,6 +17,7 @@ export default function HomeHeader({
   onSectionChange,
 }: HomeHeaderProps) {
   const { data: session } = useSession();
+  const user = session?.user;
 
   return (
     <div className="md:hidden fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-100 z-40 px-4 py-3">
@@ -26,10 +27,10 @@ export default function HomeHeader({
           onClick={() => onSectionChange("profile")}
           className="flex items-center gap-3 active:opacity-70 transition-opacity text-left cursor-pointer bg-transparent border-none p-0"
         >
-          {session?.user?.image ? (
+          {user?.image ? (
             <Image
-              src={session.user.image}
-              alt={session?.user?.name || "User"}
+              src={user.image}
+              alt={user.name || "User"}
               width={36}
               height={36}
               className="rounded-full ring-2 ring-eatrivo-purple/20"
@@ -42,23 +43,23 @@ export default function HomeHeader({
           <div>
             <div className="flex items-center gap-1.5 mb-0.5">
               <h2 className="text-sm font-bold text-gray-900 truncate max-w-[150px]">
-                {session?.user?.name}
+                {user?.name}
               </h2>
-              {session?.user?.badges?.map((badgeStr) => (
+              {user?.badges?.map((badgeStr) => (
                 <UserBadge key={badgeStr} type={badgeStr} />
               ))}
             </div>
             <p
-              className={`text-[10px] font-medium capitalize ${getMembershipStatus(session?.user?.membership)}`}
+              className={`text-[10px] font-medium capitalize ${getMembershipStatus(user?.membership)}`}
             >
-              {session?.user?.membership || "basic"}
+              {user?.membership || "basic"}
             </p>
           </div>
         </button>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
-          {session?.user?.membership === "trainer" && (
+          {user?.membership === "trainer" && (
             <Link href="/admin">
               <Button
                 variant="ghost"

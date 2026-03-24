@@ -25,6 +25,10 @@ function routeAfterRecipeRequest(state: typeof CustomRecipeState.State): string 
     return "error_handler";
   }
 
+  if (state.parsedAiOutput) {
+    return "fallback_database_recommendations";
+  }
+
   if (state.rawAiOutput) {
     return "validate_recipe_json";
   }

@@ -419,6 +419,10 @@
       "title": "Home",
       "description": "Your daily overview, meal plan, and shopping lists."
     },
+    "common": {
+      "cancel": "Cancel",
+      "save": "Save"
+    },
     "nav": {
       "home": "Home",
       "profile": "Profile",
@@ -601,6 +605,9 @@
         "allDone": "All done! 🎉",
         "editTitleLabel": "Edit list name",
         "titleUpdateError": "Failed to update list name",
+        "editQuantityButton": "Edit quantity",
+        "editQuantityLabel": "Quantity",
+        "editQuantityPlaceholder": "e.g. 2 pcs or 500 g",
         "removeItemLabel": "Remove item",
         "removeError": "Failed to remove item"
       },
@@ -624,6 +631,10 @@
         "nextStep": "Next step",
         "stepProgress": "Step {current} of {total}",
         "finishRecipe": "Finish recipe",
+        "finishPending": "Finishing...",
+        "recipeFinished": "Recipe finished",
+        "pantryUpdated": "Pantry updated for {count} items",
+        "finishError": "Failed to deduct ingredients from pantry",
         "progress": "{checked}/{total} ingredients ready",
         "step1Title": "Prep your station",
         "step1Text": "Check the ingredients for {recipeTitle} and set up your workspace before you start cooking.",
@@ -774,6 +785,11 @@
       "pdfDocument": "PDF Document",
       "view": "View",
       "download": "Download",
+      "editQuantity": "Edit quantity",
+      "saveQuantity": "Save",
+      "cancelEditQuantity": "Cancel quantity edit",
+      "quantityLabel": "Quantity",
+      "quantityPlaceholder": "e.g. 2 pcs or 500 g",
       "edit": {
         "title": "Edit Shopping List",
         "nameLabel": "Name",
@@ -912,6 +928,10 @@
         "title": "Chat with Rivo",
         "description": "Ask Rivo anything about nutrition, recipes, or meal planning. Your personal AI chef, always ready.",
         "badge": "● COMING SOON",
+        "warning": {
+          "title": "Rivo is still in development",
+          "body": "Unfortunately, Rivo is still in development. You can use him as your information assistant. For now, he cannot change anything in your profile or work with your recipes. These features will be released in future updates."
+        },
         "tags": {
           "tag1": "Smart",
           "tag2": "24/7 Available",
@@ -1501,6 +1521,10 @@
     "row_expiring": "Expiring",
     "row_track": "Track",
     "row_tracked": "Tracked",
+    "row_add_package": "Add pack",
+    "row_add_package_again": "Add another",
+    "row_add_package_pending": "Adding",
+    "row_add_package_label": "Add another package to the shopping list",
     "aria_expand_category": "Show items in {category}",
     "aria_collapse_category": "Hide items in {category}",
     "aria_edit": "Edit item",
@@ -1521,6 +1545,14 @@
     "field_name_placeholder": "e.g. Milk, Apples, Pasta...",
     "field_quantity": "Quantity",
     "field_quantity_placeholder": "e.g. 500",
+    "field_tracking_mode": "Tracking mode",
+    "tracking_mode_quantity": "Track quantity",
+    "tracking_mode_availability": "Track availability",
+    "tracking_mode_availability_hint": "Availability mode stores this item as something you have on hand without tracking grams or pieces.",
+    "field_availability": "Availability",
+    "availability_in_stock": "In stock",
+    "availability_out_of_stock": "Out of stock",
+    "toggle_availability": "Toggle availability",
     "field_unit": "Unit",
     "field_category": "Category",
     "field_expiry": "Expiry date",

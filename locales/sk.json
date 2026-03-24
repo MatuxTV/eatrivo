@@ -443,6 +443,10 @@
       "title": "Domov",
       "description": "Váš denný prehľad, jedálny plán a nákupné zoznamy."
     },
+    "common": {
+      "cancel": "Zrušiť",
+      "save": "Uložiť"
+    },
     "nav": {
       "home": "Domov",
       "profile": "Profil",
@@ -625,6 +629,9 @@
         "allDone": "Všetko nakúpené! 🎉",
         "editTitleLabel": "Upraviť názov zoznamu",
         "titleUpdateError": "Nepodarilo sa aktualizovať názov",
+        "editQuantityButton": "Upraviť množstvo",
+        "editQuantityLabel": "Množstvo",
+        "editQuantityPlaceholder": "napr. 2 ks alebo 500 g",
         "removeItemLabel": "Odstrániť položku",
         "removeError": "Nepodarilo sa odstrániť položku"
       },
@@ -648,6 +655,10 @@
         "nextStep": "Ďalší krok",
         "stepProgress": "Krok {current} z {total}",
         "finishRecipe": "Dokončiť recept",
+        "finishPending": "Dokončujem...",
+        "recipeFinished": "Recept je hotový",
+        "pantryUpdated": "Špajza bola aktualizovaná pre {count} položky",
+        "finishError": "Nepodarilo sa odpísať suroviny zo špajze",
         "progress": "{checked}/{total} surovín pripravených",
         "step1Title": "Priprav si pracovnú plochu",
         "step1Text": "Skontroluj ingrediencie pre recept {recipeTitle} a priprav si pracovnú plochu ešte pred varením.",
@@ -798,6 +809,11 @@
       "pdfDocument": "PDF Dokument",
       "view": "Zobraziť",
       "download": "Stiahnuť",
+      "editQuantity": "Upraviť množstvo",
+      "saveQuantity": "Uložiť",
+      "cancelEditQuantity": "Zrušiť úpravu množstva",
+      "quantityLabel": "Množstvo",
+      "quantityPlaceholder": "napr. 2 ks alebo 500 g",
       "edit": {
         "title": "Upraviť nákupný zoznam",
         "nameLabel": "Názov",
@@ -948,6 +964,10 @@
         "title": "Chat s Rivom",
         "description": "Opýtaj sa Riva čokoľvek o výžive, receptoch alebo pláne jedál. Tvoj osobný AI šéfkuchár, vždy pripravený.",
         "badge": "● UŽ ČOSKORO",
+        "warning": {
+          "title": "Rivo je stále vo vývoji",
+          "body": "Bohužiaľ, Rivo je stále vo vývoji. Môžeš ho používať ako informačného asistenta. Zatiaľ nedokáže meniť nič vo vašom profile ani pracovať s vašimi receptami. Tieto funkcie sprístupníme v budúcich aktualizáciách."
+        },
         "tags": {
           "tag1": "Inteligentný",
           "tag2": "Dostupný 24/7",
@@ -1523,6 +1543,10 @@
     "row_expiring": "Expirácia",
     "row_track": "Sledovať",
     "row_tracked": "Sledované",
+    "row_add_package": "Pridať balenie",
+    "row_add_package_again": "Pridať ďalšie",
+    "row_add_package_pending": "Pridávam",
+    "row_add_package_label": "Pridať ďalšie balenie do nákupného zoznamu",
     "aria_expand_category": "Zobraziť položky v kategórii {category}",
     "aria_collapse_category": "Skryť položky v kategórii {category}",
     "aria_edit": "Upraviť položku",
@@ -1543,6 +1567,14 @@
     "field_name_placeholder": "napr. Mlieko, Jablká, Cestoviny...",
     "field_quantity": "Množstvo",
     "field_quantity_placeholder": "napr. 500",
+    "field_tracking_mode": "Spôsob sledovania",
+    "tracking_mode_quantity": "Sledovať množstvo",
+    "tracking_mode_availability": "Sledovať dostupnosť",
+    "tracking_mode_availability_hint": "Režim dostupnosti uloží položku ako vec, ktorú máš doma, bez sledovania gramov alebo kusov.",
+    "field_availability": "Dostupnosť",
+    "availability_in_stock": "Na sklade",
+    "availability_out_of_stock": "Minuté",
+    "toggle_availability": "Prepnúť dostupnosť",
     "field_unit": "Jednotka",
     "field_category": "Kategória",
     "field_expiry": "Dátum expirácie",

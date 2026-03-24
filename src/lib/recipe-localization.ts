@@ -85,3 +85,21 @@ export function resolveIngredientTranslation(
 
   return translations.values().next().value ?? null;
 }
+
+export function resolveIngredientDisplayName(
+  translation: Pick<IngredientTranslationRecord, "displayName" | "ingredientName"> | null | undefined,
+  fallbackName?: string | null,
+): string | null {
+  const displayName = translation?.displayName?.trim();
+  if (displayName) {
+    return displayName;
+  }
+
+  const ingredientName = translation?.ingredientName?.trim();
+  if (ingredientName) {
+    return ingredientName;
+  }
+
+  const fallback = fallbackName?.trim();
+  return fallback ? fallback : null;
+}

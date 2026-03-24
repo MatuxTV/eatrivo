@@ -106,6 +106,34 @@
       "when": 1773326400000,
       "tag": "0018_normalized_shopping_lists",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1774261200000,
+      "tag": "0019_user_generated_recipes",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1774258554775,
+      "tag": "0016_early_living_mummy",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1774347049880,
+      "tag": "0017_adorable_mac_gargan",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1774363299548,
+      "tag": "0018_black_newton_destine",
+      "breakpoints": true
     }
   ]
 }

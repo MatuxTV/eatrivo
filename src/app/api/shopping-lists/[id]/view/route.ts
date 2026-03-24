@@ -5,6 +5,7 @@ import { db } from "@/index";
 import { shoppingLists, shoppingListItems, userProfiles } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { formatLocalizedAmountLabel } from "@/lib/pantry/format";
 
 function escapeHtml(str: string): string {
   return str
@@ -39,6 +40,7 @@ export async function GET(
     }
 
     const { id } = await params;
+  const locale = req.nextUrl.searchParams.get("locale") ?? "sk";
 
     // Fetch shopping list — check ownership (or admin/trainer access)
     const isAdmin = ["admin", "coach"].includes(userProfile.role ?? "");
@@ -79,17 +81,16 @@ export async function GET(
       categories.forEach(cat => {
         htmlContent += `<h2>${escapeHtml(cat)}</h2>\n<ul>\n`;
         groupedItems[cat].forEach(i => {
-          const qty = i.quantity ? `${i.quantity} ` : "";
-          const unit = i.unit ? `${i.unit} ` : "";
+          const amountLabel = formatLocalizedAmountLabel(i.quantity, i.unit, locale);
           const check = i.isChecked ? "✅ " : "";
-          htmlContent += `  <li>${check}<strong>${escapeHtml(i.name)}</strong>: ${qty}${unit}</li>\n`;
+          htmlContent += `  <li>${check}<strong>${escapeHtml(i.name)}</strong>${amountLabel ? `: ${escapeHtml(amountLabel)}` : ""}</li>\n`;
         });
         htmlContent += `</ul>\n`;
       });
     }
 
     // Create formatted dates using Intl.DateTimeFormat
-    const dateFormatter = new Intl.DateTimeFormat("sk-SK", {
+    const dateFormatter = new Intl.DateTimeFormat(locale, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -103,7 +104,7 @@ export async function GET(
     // Create a nice HTML page
     const html = `
 <!DOCTYPE html>
-<html lang="sk">
+<html lang="${escapeHtml(locale)}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -205,7 +206,7 @@ export async function GET(
     </div>
     <div class="content">${htmlContent}</div>
     <div class="footer">
-      Vytvorené pomocou Eatrivo &nbsp;•&nbsp; ${new Intl.DateTimeFormat("sk-SK").format(new Date())}
+      Vytvorené pomocou Eatrivo &nbsp;•&nbsp; ${new Intl.DateTimeFormat(locale).format(new Date())}
     </div>
   </div>
 

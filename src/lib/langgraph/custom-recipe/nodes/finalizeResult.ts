@@ -4,7 +4,42 @@ import {
   customRecipeResultSchema,
   mapAiCandidateToGeneratedRecipe,
 } from "@/lib/custom-recipes/contracts";
+import { scoreCustomRecipe } from "@/lib/custom-recipes/quality";
+import { apiLogger } from "@/lib/logger";
 import type { CustomRecipeState } from "../state";
+
+function applyQualityGate(
+  state: typeof CustomRecipeState.State,
+  recipe: ReturnType<typeof mapAiCandidateToGeneratedRecipe>,
+  unavailableMessageKey: string,
+) {
+  const quality = scoreCustomRecipe(recipe, {
+    pantryItemCount: state.pantryItemCount,
+    cookingTimePreference: state.userInfo?.cooking_time_pref ?? null,
+    goal: state.userInfo?.goal ?? null,
+  });
+
+  apiLogger.info("[customRecipe.finalizeResult] recipe quality scored", {
+    metadata: {
+      userId: state.userId,
+      userProfileId: state.userProfileId,
+      recipeKind: recipe.kind,
+      recipeName: recipe.name,
+      score: quality.score,
+      accepted: quality.accepted,
+      reasons: quality.reasons,
+    },
+  });
+
+  if (quality.accepted) {
+    return recipe;
+  }
+
+  return buildUnavailableRecipe(
+    "AI_UNABLE_TO_COMPOSE",
+    buildMessageDescriptor(unavailableMessageKey),
+  );
+}
 
 function buildPantryUnavailable(state: typeof CustomRecipeState.State) {
   const unavailableReason =
@@ -44,14 +79,29 @@ export async function finalizeResult(
 ): Promise<Partial<typeof CustomRecipeState.State>> {
   const pantryRecipe =
     state.parsedAiOutput?.pantryRecipe.status === "available"
-      ? mapAiCandidateToGeneratedRecipe(state.parsedAiOutput.pantryRecipe, "pantry")
+      ? applyQualityGate(
+          state,
+          mapAiCandidateToGeneratedRecipe(state.parsedAiOutput.pantryRecipe, "pantry", {
+            pantryRows: state.pantryRows,
+            locale: state.locale,
+          }),
+          "basic.customRecipe.recipeUnavailable.noPantryRecipe",
+        )
       : buildPantryUnavailable(state);
 
   const almostCookableRecipe =
     state.parsedAiOutput?.almostCookableRecipe.status === "available"
-      ? mapAiCandidateToGeneratedRecipe(
-          state.parsedAiOutput.almostCookableRecipe,
-          "almost_cookable",
+      ? applyQualityGate(
+          state,
+          mapAiCandidateToGeneratedRecipe(
+            state.parsedAiOutput.almostCookableRecipe,
+            "almost_cookable",
+            {
+              pantryRows: state.pantryRows,
+              locale: state.locale,
+            },
+          ),
+          "basic.customRecipe.recipeUnavailable.noAlmostCookable",
         )
       : buildAlmostUnavailableFromState(state);
 

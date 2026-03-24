@@ -1,5 +1,6 @@
-import { formatNumber } from "@/lib/formatters";
+import { formatLocalizedAmountLabel } from "@/lib/pantry/format";
 import {
+  fromCanonicalQuantity,
   normalizeUnit,
   subtractQuantity,
   toCanonicalQuantity,
@@ -11,6 +12,7 @@ export type RecipeIngredientPantryComparisonStatus =
   | "unit-mismatch"
   | "missing-pantry-quantity"
   | "missing-recipe-quantity"
+  | "available-staple"
   | "unavailable";
 
 export interface RecipeIngredientPantryComparison {
@@ -29,6 +31,8 @@ export interface RecipeIngredientPantryComparison {
 }
 
 interface PantryQuantityCandidate {
+  trackingMode?: "quantity" | "availability" | null;
+  inStock?: boolean | null;
   quantity: string | number | null | undefined;
   unit: string | null | undefined;
 }
@@ -53,19 +57,9 @@ function formatQuantityLabel(
   unit: string | null,
   locale: string,
 ): string | null {
-  if (quantity === null && !unit) {
-    return null;
-  }
-
-  if (quantity === null) {
-    return unit;
-  }
-
-  const formattedQuantity = formatNumber(quantity, locale, {
+  return formatLocalizedAmountLabel(quantity, unit, locale, {
     maximumFractionDigits: 3,
   });
-
-  return unit ? `${formattedQuantity} ${unit}` : formattedQuantity;
 }
 
 export function buildRecipeIngredientPantryComparison(
@@ -85,6 +79,8 @@ export function buildRecipeIngredientPantryComparison(
 
   const comparableCandidates = pantryCandidates
     .map((candidate) => ({
+      trackingMode: candidate.trackingMode ?? "quantity",
+      inStock: candidate.inStock ?? true,
       quantity: normalizeNumericQuantity(candidate.quantity),
       unit: candidate.unit?.trim() ? normalizeUnit(candidate.unit) : null,
       canonical:
@@ -97,6 +93,11 @@ export function buildRecipeIngredientPantryComparison(
           : null,
     }))
     .filter((candidate) => candidate.quantity !== null);
+  const availableStapleCandidates = pantryCandidates.filter(
+    (candidate) =>
+      (candidate.trackingMode ?? "quantity") === "availability" &&
+      (candidate.inStock ?? true),
+  );
 
   const requiredLabel = formatQuantityLabel(
     normalizedRequiredQuantity,
@@ -138,6 +139,23 @@ export function buildRecipeIngredientPantryComparison(
     };
   }
 
+  if (availableStapleCandidates.length > 0) {
+    return {
+      status: "available-staple",
+      canCompare: false,
+      isEnough: true,
+      requiredQuantity: normalizedRequiredQuantity,
+      requiredUnit: normalizedRequiredUnit,
+      requiredLabel,
+      availableQuantity: null,
+      availableUnit: null,
+      availableLabel: null,
+      missingQuantity: 0,
+      missingLabel: null,
+      matchingPantryItems: availableStapleCandidates.length,
+    };
+  }
+
   const sameUnitCandidates = canonicalRequired
     ? comparableCandidates.filter(
         (candidate) =>
@@ -159,11 +177,19 @@ export function buildRecipeIngredientPantryComparison(
           0,
         );
     const comparisonTarget = canonicalRequired?.value ?? normalizedRequiredQuantity;
-    const comparisonUnit = canonicalRequired?.unit ?? normalizedRequiredUnit;
+    const comparisonUnit = normalizedRequiredUnit ?? canonicalRequired?.sourceUnit ?? null;
     const isEnough = availableQuantity >= comparisonTarget;
     const missingQuantity = isEnough
       ? 0
       : subtractQuantity(comparisonTarget, availableQuantity);
+    const localizedAvailableQuantity =
+      canonicalRequired && comparisonUnit
+        ? fromCanonicalQuantity(availableQuantity, comparisonUnit) ?? availableQuantity
+        : availableQuantity;
+    const localizedMissingQuantity =
+      canonicalRequired && comparisonUnit
+        ? fromCanonicalQuantity(missingQuantity, comparisonUnit) ?? missingQuantity
+        : missingQuantity;
 
     return {
       status: isEnough ? "enough" : "insufficient",
@@ -172,17 +198,17 @@ export function buildRecipeIngredientPantryComparison(
       requiredQuantity: normalizedRequiredQuantity,
       requiredUnit: normalizedRequiredUnit,
       requiredLabel,
-      availableQuantity,
+      availableQuantity: localizedAvailableQuantity,
       availableUnit: comparisonUnit,
       availableLabel: formatQuantityLabel(
-        availableQuantity,
+        localizedAvailableQuantity,
         comparisonUnit,
         locale,
       ),
-      missingQuantity,
+      missingQuantity: localizedMissingQuantity,
       missingLabel: isEnough
         ? null
-        : formatQuantityLabel(missingQuantity, comparisonUnit, locale),
+        : formatQuantityLabel(localizedMissingQuantity, comparisonUnit, locale),
       matchingPantryItems: sameUnitCandidates.length,
     };
   }

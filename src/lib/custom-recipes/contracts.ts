@@ -1,6 +1,9 @@
 import { z } from "zod";
 
 import type { MatchedRecipe } from "@/lib/recipe-matches";
+import { parseRecipeIngredient } from "@/lib/ingredients";
+import { buildRecipeIngredientPantryComparison } from "@/lib/recipe-quantity-comparison";
+import { guessFoodCategory } from "@/lib/units";
 
 const localeSchema = z.enum(["en", "sk"]);
 const customRecipeJobIdSchema = z.string().uuid();
@@ -31,6 +34,42 @@ export const customRecipeIngredientItemSchema = z.object({
   category: z.string().max(80).nullable().optional(),
   quantityValue: z.number().finite().nullable().optional(),
   unit: z.string().max(40).nullable().optional(),
+  ingredientKey: z.string().max(160).nullable().optional(),
+  ingredientSpecificKey: z.string().max(200).nullable().optional(),
+  pantryMatchName: z.string().max(120).nullable().optional(),
+  pantryComparison: z
+    .object({
+      status: z.enum([
+        "enough",
+        "insufficient",
+        "unit-mismatch",
+        "missing-pantry-quantity",
+        "missing-recipe-quantity",
+        "available-staple",
+        "unavailable",
+      ]),
+      canCompare: z.boolean(),
+      isEnough: z.boolean().nullable(),
+      requiredQuantity: z.number().finite().nullable(),
+      requiredUnit: z.string().max(40).nullable(),
+      requiredLabel: z.string().max(80).nullable(),
+      availableQuantity: z.number().finite().nullable(),
+      availableUnit: z.string().max(40).nullable(),
+      availableLabel: z.string().max(80).nullable(),
+      missingQuantity: z.number().finite().nullable(),
+      missingLabel: z.string().max(80).nullable(),
+      matchingPantryItems: z.number().int().min(0),
+    })
+    .nullable()
+    .optional(),
+});
+
+const customRecipeMatchedIngredientSchema = z.object({
+  recipeIngredientName: z.string().min(1).max(120),
+  pantryIngredientName: z.string().min(1).max(120).nullable(),
+  matchType: z.enum(["exact", "fallback"]),
+  displayName: z.string().min(1).max(180),
+  amount: z.string().max(80).nullable(),
 });
 
 export const customRecipeAiIngredientSchema = z
@@ -170,8 +209,14 @@ export const customRecipeGeneratedRecipeSchema = z.object({
   fatG: z.number().min(0).max(200),
   ingredientItems: z.array(customRecipeIngredientItemSchema).min(1).max(20),
   instructions: z.array(customRecipeInstructionSchema).min(1).max(12),
+  matchedIngredients: z.array(customRecipeMatchedIngredientSchema).max(20).default([]),
   matchedIngredientNames: z.array(z.string().min(1).max(120)).max(20),
   missingIngredientNames: z.array(z.string().min(1).max(120)).max(3),
+});
+
+export const customRecipeAcceptRequestSchema = z.object({
+  locale: localeSchema,
+  recipe: customRecipeGeneratedRecipeSchema,
 });
 
 export const customRecipeSuggestionSchema = z.object({
@@ -231,6 +276,12 @@ export const customRecipeCurrentGenerationResponseSchema = z.object({
   retryCount: z.number().int().min(0).optional(),
 });
 
+export const customRecipeLatestResultResponseSchema = z.object({
+  jobId: customRecipeJobIdSchema,
+  createdAt: z.string().datetime(),
+  result: customRecipeResultSchema,
+});
+
 export const customRecipeProgressStreamEventSchema = z.object({
   type: z.literal("progress"),
   jobId: customRecipeJobIdSchema,
@@ -274,6 +325,9 @@ export type MessageDescriptor = z.infer<typeof messageDescriptorSchema>;
 export type CustomRecipeStartRequest = z.infer<
   typeof customRecipeStartRequestSchema
 >;
+export type CustomRecipeAcceptRequest = z.infer<
+  typeof customRecipeAcceptRequestSchema
+>;
 export type CustomRecipeAiOutput = z.infer<typeof customRecipeAiOutputSchema>;
 export type CustomRecipeGeneratedRecipe = z.infer<
   typeof customRecipeGeneratedRecipeSchema
@@ -287,6 +341,9 @@ export type CustomRecipeSuggestion = z.infer<
 export type CustomRecipeResult = z.infer<typeof customRecipeResultSchema>;
 export type CustomRecipeCurrentGenerationResponse = z.infer<
   typeof customRecipeCurrentGenerationResponseSchema
+>;
+export type CustomRecipeLatestResultResponse = z.infer<
+  typeof customRecipeLatestResultResponseSchema
 >;
 export type CustomRecipeStreamEvent = z.infer<
   typeof customRecipeStreamEventSchema
@@ -307,9 +364,48 @@ export interface CustomRecipePantryContextItem {
   ingredientName: string | null;
   ingredientKey: string | null;
   ingredientSpecificKey: string | null;
+  trackingMode: "quantity" | "availability";
+  inStock: boolean;
   quantity: string | null;
   unit: string | null;
   category: string | null;
+}
+
+function normalizeLookup(value: string | null | undefined): string {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function buildMatchedIngredientDisplayName(
+  recipeIngredientName: string,
+  pantryIngredientName: string | null,
+  matchType: "exact" | "fallback",
+): string {
+  if (
+    matchType === "fallback" &&
+    pantryIngredientName &&
+    normalizeLookup(pantryIngredientName) !== normalizeLookup(recipeIngredientName)
+  ) {
+    return `${recipeIngredientName} (${pantryIngredientName})`;
+  }
+
+  return recipeIngredientName;
+}
+
+function findPantryMatch(
+  pantryRows: CustomRecipePantryContextItem[],
+  pantryMatchName: string | null,
+): CustomRecipePantryContextItem | null {
+  const normalizedPantryMatchName = normalizeLookup(pantryMatchName);
+
+  if (!normalizedPantryMatchName) {
+    return null;
+  }
+
+  return (
+    pantryRows.find(
+      (row) => normalizeLookup(row.pantryName) === normalizedPantryMatchName,
+    ) ?? null
+  );
 }
 
 export function buildMessageDescriptor(
@@ -330,16 +426,104 @@ export function buildUnavailableRecipe(
   };
 }
 
+function normalizeCustomRecipeIngredientItem(
+    ingredient: Extract<
+      CustomRecipeAiOutput["pantryRecipe"],
+      { status: "available" }
+    >["ingredients"][number],
+  options?: {
+    pantryRows?: CustomRecipePantryContextItem[];
+    locale?: "en" | "sk";
+  },
+): CustomRecipeGeneratedRecipe["ingredientItems"][number] {
+  const combinedValue = [ingredient.amount?.trim(), ingredient.name.trim()]
+    .filter(Boolean)
+    .join(" ");
+  const parsedIngredient = parseRecipeIngredient(combinedValue || ingredient.name);
+  const pantryMatch = findPantryMatch(
+    options?.pantryRows ?? [],
+    ingredient.pantryStatus === "pantry" ? ingredient.pantryMatchName : null,
+  );
+  const pantryComparison = options?.locale
+    ? buildRecipeIngredientPantryComparison(
+        parsedIngredient.quantity,
+        parsedIngredient.unit,
+        pantryMatch ? [pantryMatch] : [],
+        options.locale,
+      )
+    : null;
+
+  return {
+    name: ingredient.name,
+    amount: ingredient.amount,
+    category:
+      pantryMatch?.category ??
+      guessFoodCategory(parsedIngredient.ingredientName ?? ingredient.name),
+    quantityValue: parsedIngredient.quantity,
+    unit: parsedIngredient.unit,
+    ingredientKey: pantryMatch?.ingredientKey ?? parsedIngredient.ingredientKey,
+    ingredientSpecificKey: pantryMatch?.ingredientSpecificKey ?? null,
+    pantryMatchName: pantryMatch?.pantryName ?? ingredient.pantryMatchName ?? null,
+    pantryComparison,
+  };
+}
+
+function buildGeneratedMatchedIngredients(
+  candidate: Extract<
+    CustomRecipeAiOutput["pantryRecipe"],
+    { status: "available" }
+  >,
+  ingredientItems: CustomRecipeGeneratedRecipe["ingredientItems"],
+): CustomRecipeGeneratedRecipe["matchedIngredients"] {
+  return candidate.ingredients
+    .filter((ingredient) => ingredient.pantryStatus === "pantry")
+    .map((ingredient) => {
+      const matchedItem = ingredientItems.find(
+        (item) => normalizeLookup(item.name) === normalizeLookup(ingredient.name),
+      );
+      const pantryIngredientName =
+        matchedItem?.pantryMatchName ?? ingredient.pantryMatchName ?? null;
+      const matchType =
+        pantryIngredientName &&
+        normalizeLookup(pantryIngredientName) === normalizeLookup(ingredient.name)
+          ? "exact"
+          : "fallback";
+
+      return {
+        recipeIngredientName: ingredient.name,
+        pantryIngredientName,
+        matchType,
+        displayName: buildMatchedIngredientDisplayName(
+          ingredient.name,
+          pantryIngredientName,
+          matchType,
+        ),
+        amount: matchedItem?.amount ?? ingredient.amount,
+      };
+    });
+}
+
 export function mapAiCandidateToGeneratedRecipe(
   candidate: Extract<
     CustomRecipeAiOutput["pantryRecipe"],
     { status: "available" }
   >,
   kind: CustomRecipeGeneratedRecipe["kind"],
+  options?: {
+    pantryRows?: CustomRecipePantryContextItem[];
+    locale?: "en" | "sk";
+  },
 ): CustomRecipeGeneratedRecipe {
-  const matchedIngredientNames = candidate.ingredients
-    .filter((ingredient) => ingredient.pantryStatus === "pantry")
-    .map((ingredient) => ingredient.name);
+  const ingredientItems = candidate.ingredients.map((ingredient) =>
+    normalizeCustomRecipeIngredientItem(ingredient, options),
+  );
+  const matchedIngredients = buildGeneratedMatchedIngredients(
+    candidate,
+    ingredientItems,
+  );
+  const matchedIngredientNames = matchedIngredients.map(
+    (ingredient) => ingredient.displayName,
+  );
   const missingIngredientNames = candidate.ingredients
     .filter((ingredient) => ingredient.pantryStatus === "missing")
     .map((ingredient) => ingredient.name);
@@ -361,14 +545,9 @@ export function mapAiCandidateToGeneratedRecipe(
     proteinG: candidate.nutrition.proteinG,
     carbohydratesG: candidate.nutrition.carbohydratesG,
     fatG: candidate.nutrition.fatG,
-    ingredientItems: candidate.ingredients.map((ingredient) => ({
-      name: ingredient.name,
-      amount: ingredient.amount,
-      category: null,
-      quantityValue: null,
-      unit: null,
-    })),
+    ingredientItems,
     instructions: candidate.instructions,
+    matchedIngredients,
     matchedIngredientNames,
     missingIngredientNames,
   };

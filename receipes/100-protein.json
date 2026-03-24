@@ -25,86 +25,96 @@
       "ingredients": [
         {
           "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
           "quantity": 1,
           "unit": "tbsp",
           "optional": false,
           "sort_order": 0,
           "translations": {
             "en": {
-              "display_name": "1 tbsp. olive oil",
+              "display_name": "olive oil",
               "ingredient_name": "olive oil"
             },
             "sk": {
-              "display_name": "1 PL olivového oleja",
-              "ingredient_name": "olivový olej"
+              "display_name": "olivový olej",
+              "ingredient_name": "olive oil"
             }
           }
         },
         {
           "ingredient_key": "potato",
+          "ingredient_specific_key": "potato",
+          "canonical_name": "potato",
           "quantity": 1,
-          "unit": "ks",
+          "unit": "pc",
           "optional": false,
           "sort_order": 1,
           "translations": {
             "en": {
-              "display_name": "1 small potato, peeled, chopped",
+              "display_name": "potato",
               "ingredient_name": "potato"
             },
             "sk": {
-              "display_name": "1 malý zemiak, ošúpaný, nakrájaný",
-              "ingredient_name": "zemiak"
+              "display_name": "zemiak",
+              "ingredient_name": "potato"
             }
           }
         },
         {
           "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
           "quantity": 1,
-          "unit": "ks",
+          "unit": "pc",
           "optional": false,
           "sort_order": 2,
           "translations": {
             "en": {
-              "display_name": "1 small onion, chopped",
+              "display_name": "onion",
               "ingredient_name": "onion"
             },
             "sk": {
-              "display_name": "1 malá cibuľa, nakrájaná",
-              "ingredient_name": "cibuľa"
+              "display_name": "cibuľa",
+              "ingredient_name": "onion"
             }
           }
         },
         {
           "ingredient_key": "zucchini",
+          "ingredient_specific_key": "zucchini",
+          "canonical_name": "zucchini",
           "quantity": 1.5,
-          "unit": "ks",
+          "unit": "pc",
           "optional": false,
           "sort_order": 3,
           "translations": {
             "en": {
-              "display_name": "1½ small zucchini, thinly sliced",
+              "display_name": "zucchini",
               "ingredient_name": "zucchini"
             },
             "sk": {
-              "display_name": "1½ malej cukety, nakrájanej na tenké plátky",
-              "ingredient_name": "cuketa"
+              "display_name": "cuketa",
+              "ingredient_name": "zucchini"
             }
           }
         },
         {
           "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
           "quantity": 6,
-          "unit": "ks",
+          "unit": "pc",
           "optional": false,
           "sort_order": 4,
           "translations": {
             "en": {
-              "display_name": "6 eggs",
+              "display_name": "egg",
               "ingredient_name": "egg"
             },
             "sk": {
-              "display_name": "6 vajec",
-              "ingredient_name": "vajce"
+              "display_name": "vajce",
+              "ingredient_name": "egg"
             }
           }
         }
@@ -153,149 +163,165 @@
         "contains-soy",
         "contains-fish"
       ],
-      "servings": 4,
+      "servings": 2,
       "prep_time_min": 15,
       "total_time_min": 25,
       "nutrition_per_serving": {
-        "calories": 237,
-        "protein_g": 20,
-        "carbohydrates_g": 3,
-        "fat_g": 15
+        "calories": 474,
+        "protein_g": 40,
+        "carbohydrates_g": 6,
+        "fat_g": 30
       },
       "ingredients": [
         {
           "ingredient_key": "cottage-cheese",
+          "ingredient_specific_key": "cottage-cheese",
+          "canonical_name": "cottage cheese",
           "quantity": 200,
           "unit": "g",
           "optional": false,
           "sort_order": 0,
           "translations": {
             "en": {
-              "display_name": "7 oz. (200g) cottage cheese",
+              "display_name": "cottage cheese",
               "ingredient_name": "cottage cheese"
             },
             "sk": {
-              "display_name": "200 g cottage syra",
-              "ingredient_name": "cottage syr"
+              "display_name": "cottage syr",
+              "ingredient_name": "cottage cheese"
             }
           }
         },
         {
           "ingredient_key": "watercress",
-          "quantity": 4,
-          "unit": "hrst",
+          "ingredient_specific_key": "watercress",
+          "canonical_name": "watercress",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 1,
           "translations": {
             "en": {
-              "display_name": "4 handfuls watercress",
+              "display_name": "watercress",
               "ingredient_name": "watercress"
             },
             "sk": {
-              "display_name": "4 hrste potočnice",
-              "ingredient_name": "potočnica"
+              "display_name": "potočnica",
+              "ingredient_name": "watercress"
             }
           }
         },
         {
           "ingredient_key": "lemon-peel",
+          "ingredient_specific_key": "lemon-peel",
+          "canonical_name": "lemon peel",
           "quantity": 1,
-          "unit": "ks",
+          "unit": "pc",
           "optional": false,
           "sort_order": 2,
           "translations": {
             "en": {
-              "display_name": "1 lemon, peel only",
+              "display_name": "lemon peel",
               "ingredient_name": "lemon peel"
             },
             "sk": {
-              "display_name": "kôra z 1 citróna",
-              "ingredient_name": "citrónová kôra"
+              "display_name": "citrónová kôra",
+              "ingredient_name": "lemon peel"
             }
           }
         },
         {
           "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
           "quantity": 6,
-          "unit": "ks",
+          "unit": "pc",
           "optional": false,
           "sort_order": 3,
           "translations": {
             "en": {
-              "display_name": "6 eggs",
+              "display_name": "egg",
               "ingredient_name": "egg"
             },
             "sk": {
-              "display_name": "6 vajec",
-              "ingredient_name": "vajce"
+              "display_name": "vajce",
+              "ingredient_name": "egg"
             }
           }
         },
         {
           "ingredient_key": "soy-milk",
+          "ingredient_specific_key": "soy-milk",
+          "canonical_name": "soy milk",
           "quantity": 60,
           "unit": "ml",
           "optional": false,
           "sort_order": 4,
           "translations": {
             "en": {
-              "display_name": "1¼ cup (60ml) soy milk",
+              "display_name": "soy milk",
               "ingredient_name": "soy milk"
             },
             "sk": {
-              "display_name": "60 ml sójového mlieka",
-              "ingredient_name": "sójové mlieko"
+              "display_name": "sójové mlieko",
+              "ingredient_name": "soy milk"
             }
           }
         },
         {
           "ingredient_key": "mixed-herb",
+          "ingredient_specific_key": "mixed-herb",
+          "canonical_name": "mixed herb",
           "quantity": 1,
           "unit": "tsp",
           "optional": false,
           "sort_order": 5,
           "translations": {
             "en": {
-              "display_name": "1 tsp. mixed herbs",
+              "display_name": "mixed herb",
               "ingredient_name": "mixed herb"
             },
             "sk": {
-              "display_name": "1 čl zmesi byliniek",
-              "ingredient_name": "zmes byliniek"
+              "display_name": "zmes byliniek",
+              "ingredient_name": "mixed herb"
             }
           }
         },
         {
           "ingredient_key": "coconut-oil",
+          "ingredient_specific_key": "coconut-oil",
+          "canonical_name": "coconut oil",
           "quantity": 4,
           "unit": "tsp",
           "optional": false,
           "sort_order": 6,
           "translations": {
             "en": {
-              "display_name": "4 tsp. coconut oil",
+              "display_name": "coconut oil",
               "ingredient_name": "coconut oil"
             },
             "sk": {
-              "display_name": "4 čl kokosového oleja",
-              "ingredient_name": "kokosový olej"
+              "display_name": "kokosový olej",
+              "ingredient_name": "coconut oil"
             }
           }
         },
         {
           "ingredient_key": "smoked-salmon",
+          "ingredient_specific_key": "smoked-salmon",
+          "canonical_name": "smoked salmon",
           "quantity": 100,
           "unit": "g",
           "optional": false,
           "sort_order": 7,
           "translations": {
             "en": {
-              "display_name": "3.5 oz. (100g) smoked salmon, chopped",
+              "display_name": "smoked salmon",
               "ingredient_name": "smoked salmon"
             },
             "sk": {
-              "display_name": "100 g údeného lososa, nasekaného",
-              "ingredient_name": "údený losos"
+              "display_name": "údený losos",
+              "ingredient_name": "smoked salmon"
             }
           }
         }
@@ -308,7 +334,7 @@
           "instructions": [
             "Place the cottage cheese, watercress and lemon peel in a high bowl and puree with the hand blender (or food processor) until smooth paste forms.",
             "Beat the eggs with the milk and herbs in a separate bowl.",
-            "Heat 1 tsp. of oil in the medium size frying pan and fry 1/4 of the egg over medium heat for 2 minutes until the egg solidifies, then turn around. Bake the other side for ½ minute.",
+            "Heat 1 tsp. of oil in the medium size frying pan and fry 1/4 of the egg over medium heat for 2 minutes until the egg solidifies, then turn around. Bake the other side for 0.5 minute.",
             "Remove the omelet from the pan and set aside. Fry the other omelets with the rest of the oil.",
             "To serve, spread the cottage cheese paste over the omelets and top with smoked salmon. Roll up the omelet as a wrap and cut in half."
           ],
@@ -344,217 +370,241 @@
         "contains-nuts",
         "contains-dairy"
       ],
-      "servings": 4,
+      "servings": 2,
       "prep_time_min": 5,
       "total_time_min": 25,
       "nutrition_per_serving": {
-        "calories": 329,
-        "protein_g": 43,
-        "carbohydrates_g": 11,
-        "fat_g": 12
+        "calories": 658,
+        "protein_g": 86,
+        "carbohydrates_g": 22,
+        "fat_g": 24
       },
       "ingredients": [
         {
           "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
           "quantity": 4,
-          "unit": "ks",
+          "unit": "pc",
           "optional": false,
           "sort_order": 0,
           "translations": {
             "en": {
-              "display_name": "4 eggs",
+              "display_name": "egg",
               "ingredient_name": "egg"
             },
             "sk": {
-              "display_name": "4 vajcia",
-              "ingredient_name": "vajce"
+              "display_name": "vajce",
+              "ingredient_name": "egg"
             }
           }
         },
         {
           "ingredient_key": "egg-white",
+          "ingredient_specific_key": "egg-white",
+          "canonical_name": "egg white",
           "quantity": 4,
-          "unit": "ks",
+          "unit": "pc",
           "optional": false,
           "sort_order": 1,
           "translations": {
             "en": {
-              "display_name": "4 egg whites",
+              "display_name": "egg white",
               "ingredient_name": "egg white"
             },
             "sk": {
-              "display_name": "4 vaječné bielky",
-              "ingredient_name": "vaječný bielok"
+              "display_name": "vaječný bielok",
+              "ingredient_name": "egg white"
             }
           }
         },
         {
           "ingredient_key": "almond-milk",
+          "ingredient_specific_key": "almond-milk",
+          "canonical_name": "almond milk",
           "quantity": 2,
           "unit": "tbsp",
           "optional": false,
           "sort_order": 2,
           "translations": {
             "en": {
-              "display_name": "2 tbsp. almond milk",
+              "display_name": "almond milk",
               "ingredient_name": "almond milk"
             },
             "sk": {
-              "display_name": "2 PL mandľového mlieka",
-              "ingredient_name": "mandľové mlieko"
+              "display_name": "mandľové mlieko",
+              "ingredient_name": "almond milk"
             }
           }
         },
         {
           "ingredient_key": "coconut-oil",
+          "ingredient_specific_key": "coconut-oil",
+          "canonical_name": "coconut oil",
           "quantity": 1,
           "unit": "tsp",
           "optional": false,
           "sort_order": 3,
           "translations": {
             "en": {
-              "display_name": "1 tsp. coconut oil",
+              "display_name": "coconut oil",
               "ingredient_name": "coconut oil"
             },
             "sk": {
-              "display_name": "1 čl kokosového oleja",
-              "ingredient_name": "kokosový olej"
+              "display_name": "kokosový olej",
+              "ingredient_name": "coconut oil"
             }
           }
         },
         {
           "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
           "quantity": 1,
-          "unit": "ks",
+          "unit": "pc",
           "optional": false,
           "sort_order": 4,
           "translations": {
             "en": {
-              "display_name": "1 small onion, chopped",
+              "display_name": "onion",
               "ingredient_name": "onion"
             },
             "sk": {
-              "display_name": "1 malá cibuľa, nakrájaná",
-              "ingredient_name": "cibuľa"
+              "display_name": "cibuľa",
+              "ingredient_name": "onion"
             }
           }
         },
         {
           "ingredient_key": "lean-ground-turkey",
+          "ingredient_specific_key": "lean-ground-turkey",
+          "canonical_name": "lean ground turkey",
           "quantity": 450,
           "unit": "g",
           "optional": false,
           "sort_order": 5,
           "translations": {
             "en": {
-              "display_name": "1 lb. (450g) lean ground turkey",
+              "display_name": "lean ground turkey",
               "ingredient_name": "lean ground turkey"
             },
             "sk": {
-              "display_name": "450 g chudého mletého morčacieho mäsa",
-              "ingredient_name": "chudé mleté morčacie mäso"
+              "display_name": "chudé mleté morčacie mäso",
+              "ingredient_name": "lean ground turkey"
             }
           }
         },
         {
           "ingredient_key": "oregano",
+          "ingredient_specific_key": "oregano",
+          "canonical_name": "oregano",
           "quantity": 2,
           "unit": "tsp",
           "optional": false,
           "sort_order": 6,
           "translations": {
             "en": {
-              "display_name": "2 tsp. oregano",
+              "display_name": "oregano",
               "ingredient_name": "oregano"
             },
             "sk": {
-              "display_name": "2 čl oregána",
-              "ingredient_name": "oregáno"
+              "display_name": "oregáno",
+              "ingredient_name": "oregano"
             }
           }
         },
         {
           "ingredient_key": "cumin",
+          "ingredient_specific_key": "cumin",
+          "canonical_name": "cumin",
           "quantity": 1,
           "unit": "tsp",
           "optional": false,
           "sort_order": 7,
           "translations": {
             "en": {
-              "display_name": "1 tsp. cumin",
+              "display_name": "cumin",
               "ingredient_name": "cumin"
             },
             "sk": {
-              "display_name": "1 čl rímskej rasce",
-              "ingredient_name": "rímska rasca"
+              "display_name": "rímska rasca",
+              "ingredient_name": "cumin"
             }
           }
         },
         {
           "ingredient_key": "spinach",
+          "ingredient_specific_key": "spinach",
+          "canonical_name": "spinach",
           "quantity": 60,
           "unit": "g",
           "optional": false,
           "sort_order": 8,
           "translations": {
             "en": {
-              "display_name": "2 cups (60g) spinach, chopped",
+              "display_name": "spinach",
               "ingredient_name": "spinach"
             },
             "sk": {
-              "display_name": "60 g špenátu, nasekaného",
-              "ingredient_name": "špenát"
+              "display_name": "špenát",
+              "ingredient_name": "spinach"
             }
           }
         },
         {
           "ingredient_key": "red-bell-pepper",
+          "ingredient_specific_key": "red-bell-pepper",
+          "canonical_name": "red bell pepper",
           "quantity": 4,
-          "unit": "ks",
+          "unit": "pc",
           "optional": false,
           "sort_order": 9,
           "translations": {
             "en": {
-              "display_name": "4 red medium bell peppers",
+              "display_name": "red bell pepper",
               "ingredient_name": "red bell pepper"
             },
             "sk": {
-              "display_name": "4 stredné červené papriky",
-              "ingredient_name": "červená paprika"
+              "display_name": "červená paprika",
+              "ingredient_name": "red bell pepper"
             }
           }
         },
         {
           "ingredient_key": "cheese",
+          "ingredient_specific_key": "cheese",
+          "canonical_name": "cheese",
           "quantity": 50,
           "unit": "g",
           "optional": false,
           "sort_order": 10,
           "translations": {
             "en": {
-              "display_name": "½ cup (50g) cheese (dairy or plant-based)",
+              "display_name": "cheese",
               "ingredient_name": "cheese"
             },
             "sk": {
-              "display_name": "50 g syra (klasického alebo rastlinného)",
-              "ingredient_name": "syr"
+              "display_name": "syr",
+              "ingredient_name": "cheese"
             }
           }
         },
         {
           "ingredient_key": "parsley",
+          "ingredient_specific_key": "parsley",
+          "canonical_name": "parsley",
           "quantity": null,
           "unit": null,
           "optional": true,
           "sort_order": 11,
           "translations": {
             "en": {
-              "display_name": "parsley, chopped to serve",
+              "display_name": "parsley",
               "ingredient_name": "parsley"
             },
             "sk": {
-              "display_name": "petržlenová vňať, nasekaná na podávanie",
-              "ingredient_name": "petržlenová vňať"
+              "display_name": "petržlenová vňať",
+              "ingredient_name": "parsley"
             }
           }
         }
@@ -565,7 +615,7 @@
           "category_label": "Lunch",
           "serving_unit_label": "serving",
           "instructions": [
-            "Heat oven to 400°F (200°C).",
+            "Heat oven to 200 °C.",
             "Beat the eggs, egg whites and milk, then set aside.",
             "Heat the coconut oil in a pan over medium heat. Add the onion and cook for 3 minutes until softened and browned.",
             "Add in the turkey, oregano and cumin, season with salt and pepper. Cook until meat is cooked through, about 5 minutes. Then add the spinach, and mix until it wilts about 2 minutes.",
@@ -597,5 +647,6 @@
       },
       "meal_prep_friendly": true
     }
-  ]
+  ],
+  "rejected": []
 }

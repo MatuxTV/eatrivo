@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   customRecipeAiOutputSchema,
   customRecipeResultSchema,
+  mapAiCandidateToGeneratedRecipe,
 } from "./contracts";
 
 test("customRecipeAiOutputSchema accepts a valid payload", () => {
@@ -130,6 +131,15 @@ test("customRecipeResultSchema accepts structured final payload", () => {
       fatG: 16,
       ingredientItems: [{ name: "Rice", amount: "150 g", category: null }],
       instructions: [{ title: "", text: "Assemble and serve." }],
+      matchedIngredients: [
+        {
+          recipeIngredientName: "Rice",
+          pantryIngredientName: "Rice",
+          matchType: "exact",
+          displayName: "Rice",
+          amount: "150 g",
+        },
+      ],
       matchedIngredientNames: ["Rice"],
       missingIngredientNames: ["Avocado"],
     },
@@ -148,4 +158,71 @@ test("customRecipeResultSchema accepts structured final payload", () => {
   });
 
   assert.equal(parsed.meta.locale, "en");
+});
+
+test("mapAiCandidateToGeneratedRecipe enriches pantry keys from pantry context", () => {
+  const recipe = mapAiCandidateToGeneratedRecipe(
+    {
+      status: "available",
+      name: "Steak Bowl",
+      category: "Dinner",
+      description: "Protein bowl from pantry items.",
+      servings: 1,
+      servingUnit: null,
+      prepTimeMin: 10,
+      totalTimeMin: 20,
+      difficulty: "easy",
+      mealPrepFriendly: false,
+      tags: ["protein"],
+      nutrition: {
+        calories: 550,
+        proteinG: 45,
+        carbohydratesG: 22,
+        fatG: 24,
+      },
+      ingredients: [
+        {
+          name: "Steak",
+          amount: "200 g",
+          pantryStatus: "pantry",
+          pantryMatchName: "Hovadzi steak",
+        },
+        {
+          name: "Rice",
+          amount: "100 g",
+          pantryStatus: "missing",
+          pantryMatchName: null,
+        },
+      ],
+      instructions: [{ title: "", text: "Cook and serve." }],
+    },
+    "almost_cookable",
+    {
+      locale: "en",
+      pantryRows: [
+        {
+          id: "pantry-1",
+          pantryName: "Hovadzi steak",
+          ingredientName: "Beef steak",
+          ingredientKey: "beef-steak",
+          ingredientSpecificKey: "beef-steak-ribeye",
+          trackingMode: "quantity",
+          inStock: true,
+          quantity: "250",
+          unit: "g",
+          category: "protein",
+        },
+      ],
+    },
+  );
+
+  assert.equal(recipe.ingredientItems[0]?.ingredientKey, "beef-steak");
+  assert.equal(
+    recipe.ingredientItems[0]?.ingredientSpecificKey,
+    "beef-steak-ribeye",
+  );
+  assert.equal(recipe.ingredientItems[1]?.ingredientKey, "rice");
+  assert.equal(recipe.matchedIngredients[0]?.pantryIngredientName, "Hovadzi steak");
+  assert.equal(recipe.matchedIngredients[0]?.matchType, "fallback");
+  assert.deepEqual(recipe.matchedIngredientNames, ["Steak (Hovadzi steak)"]);
 });

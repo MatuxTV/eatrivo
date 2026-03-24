@@ -6,14 +6,19 @@ import { auth } from "../../../../../../../auth";
 import { shoppingListItems, shoppingLists, userProfiles } from "@/db/schema";
 import { db } from "@/index";
 import { apiLogger } from "@/lib/logger";
+import { formatAmountLabel } from "@/lib/pantry/format";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { CacheService } from "@/lib/redis";
+import { pantryAmountLabelSchema } from "@/lib/schemas/pantry";
 import { guessFoodCategory } from "@/lib/units";
+import { parseQuantity } from "@/lib/units";
 
 type ShoppingListItemResponse = {
   id: string;
   name: string;
   quantity: string | null;
+  quantityValue: string | null;
+  unit: string | null;
   category: string;
   sortOrder: number;
   isChecked: boolean;
@@ -26,7 +31,9 @@ function mapShoppingListItems(
   return items.map((item) => ({
     id: item.id,
     name: item.name,
-    quantity: item.amountLabel,
+    quantity: item.amountLabel ?? formatAmountLabel(item.quantity, item.unit),
+    quantityValue: item.quantity,
+    unit: item.unit,
     category: item.category ?? guessFoodCategory(item.name),
     sortOrder: item.sortOrder,
     isChecked: item.isChecked,
@@ -54,10 +61,30 @@ export async function PATCH(
     const { itemId } = await params;
     if (!itemId) return NextResponse.json({ error: "Item ID is required" }, { status: 400 });
 
-    const body = await request.json();
-    if (body.amountLabel === undefined) {
+    apiLogger.debug("[shopping-list.current-item.update] request received", {
+      metadata: {
+        shoppingListItemId: itemId,
+        userId: session.user.id,
+      },
+    });
+
+    const parsedBody = pantryAmountLabelSchema.safeParse(
+      (await request.json().catch(() => null))?.amountLabel,
+    );
+    if (!parsedBody.success) {
       return NextResponse.json({ error: "amountLabel is required" }, { status: 400 });
     }
+    const amountLabel = parsedBody.data;
+    const parsedAmount = amountLabel ? parseQuantity(amountLabel) : null;
+
+    apiLogger.debug("[shopping-list.current-item.update] amount parsed", {
+      metadata: {
+        shoppingListItemId: itemId,
+        amountLabel,
+        parsedQuantity: parsedAmount?.value ?? null,
+        parsedUnit: parsedAmount?.unit ?? null,
+      },
+    });
 
     const [userProfile] = await db
       .select({ id: userProfiles.id })
@@ -77,10 +104,20 @@ export async function PATCH(
       return NextResponse.json({ error: "No active shopping list found" }, { status: 404 });
     }
 
+    apiLogger.debug("[shopping-list.current-item.update] active list resolved", {
+      metadata: {
+        shoppingListId: shoppingList.id,
+        shoppingListItemId: itemId,
+        userProfileId: userProfile.id,
+      },
+    });
+
     const [item] = await db
       .update(shoppingListItems)
       .set({
-        amountLabel: body.amountLabel,
+        amountLabel,
+        quantity: parsedAmount ? String(parsedAmount.value) : null,
+        unit: parsedAmount?.unit ?? null,
         updatedAt: new Date(),
       })
       .where(
@@ -102,6 +139,17 @@ export async function PATCH(
       .from(shoppingListItems)
       .where(eq(shoppingListItems.shoppingListId, shoppingList.id))
       .orderBy(asc(shoppingListItems.sortOrder));
+
+    apiLogger.info("[shopping-list.current-item.update] current shopping list item updated", {
+      metadata: {
+        shoppingListId: shoppingList.id,
+        shoppingListItemId: item.id,
+        userProfileId: userProfile.id,
+        amountLabel: item.amountLabel,
+        quantity: item.quantity,
+        unit: item.unit,
+      },
+    });
 
     return NextResponse.json({ success: true, item, items: mapShoppingListItems(updatedItems) });
   } catch (error) {
@@ -135,6 +183,13 @@ export async function DELETE(
         { status: 400 },
       );
     }
+
+    apiLogger.debug("[shopping-list.current-item.delete] request received", {
+      metadata: {
+        shoppingListItemId: itemId,
+        userId: session.user.id,
+      },
+    });
 
     // Find user profile
     const [userProfile] = await db
@@ -199,6 +254,15 @@ export async function DELETE(
       .orderBy(asc(shoppingListItems.sortOrder));
 
     await CacheService.del(`shopping-lists:${session.user.id}`);
+
+    apiLogger.info("[shopping-list.current-item.delete] current shopping list item deleted", {
+      metadata: {
+        shoppingListId: shoppingList.id,
+        shoppingListItemId: itemId,
+        userProfileId: userProfile.id,
+        remainingItems: updatedItems.length,
+      },
+    });
 
     return NextResponse.json({
       success: true,

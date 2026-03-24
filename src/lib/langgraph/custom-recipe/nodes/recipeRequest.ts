@@ -1,13 +1,65 @@
 import { HumanMessage } from "@langchain/core/messages";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { setMaxListeners } from "events";
+import { z } from "zod";
 
 import { CUSTOM_RECIPE_AI_TIMEOUT_MS } from "../constants";
-import type { CustomRecipePantryContextItem } from "@/lib/custom-recipes/contracts";
+import {
+  type CustomRecipePantryContextItem,
+} from "@/lib/custom-recipes/contracts";
 import { apiLogger } from "@/lib/logger";
+import { getRecipeMatchesForUserProfile } from "@/lib/recipe-matches";
 import type { CustomRecipeState } from "../state";
 
 setMaxListeners(30);
+
+const customRecipeGeminiIngredientSchema = z.object({
+  name: z.string(),
+  amount: z.string().nullable().optional(),
+  pantryStatus: z.enum(["pantry", "missing"]),
+  pantryMatchName: z.string().nullable().optional(),
+});
+
+const customRecipeGeminiInstructionSchema = z.object({
+  title: z.string(),
+  text: z.string(),
+});
+
+const customRecipeGeminiNutritionSchema = z.object({
+  calories: z.number(),
+  proteinG: z.number(),
+  carbohydratesG: z.number(),
+  fatG: z.number(),
+});
+
+const customRecipeGeminiCandidateSchema = z.object({
+  status: z.enum(["available", "unavailable"]),
+  reason: z
+    .enum([
+      "INSUFFICIENT_PANTRY",
+      "AI_UNABLE_TO_COMPOSE",
+      "PANTRY_EMPTY",
+      "DIETARY_CONSTRAINTS",
+    ])
+    .optional(),
+  name: z.string().optional(),
+  category: z.string().optional(),
+  description: z.string().optional(),
+  servings: z.number().optional(),
+  servingUnit: z.string().nullable().optional(),
+  prepTimeMin: z.number().optional(),
+  totalTimeMin: z.number().optional(),
+  difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+  mealPrepFriendly: z.boolean().optional(),
+  tags: z.array(z.string()).optional(),
+  nutrition: customRecipeGeminiNutritionSchema.optional(),
+  ingredients: z.array(customRecipeGeminiIngredientSchema).optional(),
+  instructions: z.array(customRecipeGeminiInstructionSchema).optional(),
+});
+
+const customRecipeGeminiSingleCandidateSchema = z.object({
+  recipe: customRecipeGeminiCandidateSchema,
+});
 
 function extractJson(content: string): string {
   const cleaned = content
@@ -53,6 +105,130 @@ function stringifyPantryItem(
   return `${pantryItem.pantryName} (${amount})`;
 }
 
+function buildReferenceRecipesSection(
+  referenceRecipes: Awaited<ReturnType<typeof getRecipeMatchesForUserProfile>>,
+): string {
+  const references = [...referenceRecipes.cookable, ...referenceRecipes.almostCookable]
+    .slice(0, 1)
+    .map((recipe, index) => {
+      const ingredientPreview = recipe.ingredientItems
+        .slice(0, 4)
+        .map((ingredient) => ingredient.name)
+        .join(", ");
+
+      return [
+        `Reference ${index + 1}:`,
+        `- Name: ${recipe.name}`,
+        `- Total time: ${recipe.totalTimeMin} min`,
+        `- Protein: ${recipe.proteinG}g`,
+        `- Matched ingredients: ${recipe.matchedIngredientNames.join(", ") || "none"}`,
+        `- Ingredient style: ${ingredientPreview || "none"}`,
+      ].join("\n");
+    });
+
+  if (references.length === 0) {
+    return "";
+  }
+
+  return `\nReference recipes from our database:\n${references.join("\n\n")}\n\nUse these only as guidance for realism, structure, and naming style. Do not copy them verbatim.`;
+}
+
+function buildBasePrompt(
+  state: typeof CustomRecipeState.State,
+  firstName: string,
+  pantrySummary: string,
+  diet: string,
+  allergies: string,
+  likes: string,
+  dislikes: string,
+  kitchenEquipment: string,
+  referenceRecipesSection: string,
+): string {
+  return `
+You are Rivo, the recipe generation workflow for Eatrivo.
+
+Return one recipe candidate only.
+
+Hard rules:
+- For pantry ingredients, pantryMatchName must exactly match one pantry item from the list below.
+- Never invent pantryMatchName values.
+- Respect allergies, dislikes, diet preference, goal, activity, and kitchen equipment.
+- Keep the recipe realistic and concise.
+
+User profile:
+- Name: ${firstName}
+- Goal: ${state.userInfo?.goal ?? "unknown"}
+- Activity: ${state.userInfo?.activity_level ?? "unknown"}
+- Diet: ${diet}
+- Allergies: ${allergies}
+- Likes: ${likes}
+- Dislikes: ${dislikes}
+- Cooking time preference: ${state.userInfo?.cooking_time_pref ?? "unknown"}
+- Cooking skill: ${state.userInfo?.cooking_skill_level ?? "unknown"}
+- Kitchen equipment: ${kitchenEquipment}
+
+Pantry items:
+${pantrySummary}${referenceRecipesSection}
+`.trim();
+}
+
+function buildCandidatePrompt(
+  kind: "pantry" | "almost_cookable",
+  basePrompt: string,
+): string {
+  if (kind === "pantry") {
+    return `${basePrompt}
+
+Generate a pantry recipe candidate.
+- It must be fully cookable from pantry ingredients only.
+- If not possible, return status unavailable with the best matching reason.
+- Keep ingredients focused, ideally 4 to 10 items.
+- Keep instructions to 2 to 6 steps.`;
+  }
+
+  return `${basePrompt}
+
+Generate an almost-cookable recipe candidate.
+- It may require at most 3 missing ingredients.
+- Missing ingredients must be marked as missing and pantryMatchName must be null for them.
+- If not possible, return status unavailable with the best matching reason.
+- Keep ingredients focused, ideally 4 to 10 items.
+- Keep instructions to 2 to 6 steps.`;
+}
+
+function normalizeUnavailableCandidate(
+  candidate: z.infer<typeof customRecipeGeminiCandidateSchema> | null | undefined,
+) {
+  if (!candidate || candidate.status !== "unavailable") {
+    return candidate;
+  }
+
+  return {
+    ...candidate,
+    reason: candidate.reason ?? "AI_UNABLE_TO_COMPOSE",
+  };
+}
+
+async function requestSingleCandidate(
+  model: ChatGoogleGenerativeAI,
+  prompt: string,
+  timeoutMs: number,
+) {
+  const structuredModel = model.withStructuredOutput(
+    customRecipeGeminiSingleCandidateSchema,
+    {
+      method: "functionCalling",
+      name: "generate_custom_recipe_candidate",
+      includeRaw: true,
+    },
+  );
+
+  return withTimeout(
+    structuredModel.invoke([new HumanMessage(prompt)]),
+    timeoutMs,
+  );
+}
+
 export async function recipeRequest(
   state: typeof CustomRecipeState.State,
 ): Promise<Partial<typeof CustomRecipeState.State>> {
@@ -76,114 +252,211 @@ export async function recipeRequest(
   const dislikes = state.userInfo?.dislikes?.trim() || "none";
   const kitchenEquipment =
     state.userInfo?.kitchen_equipment?.filter(Boolean).join(", ") || "unknown";
-
-  const prompt = `
-You are Rivo, the JSON-first recipe generation workflow for Eatrivo.
-
-Return raw JSON only. No markdown. No commentary.
-
-Generate up to two recipe options for locale "${state.locale}":
-1. "pantryRecipe" -> only if it can be cooked entirely from pantry ingredients.
-2. "almostCookableRecipe" -> only if it needs at most 3 missing ingredients.
-
-If a recipe cannot be produced, return:
-{
-  "status": "unavailable",
-  "reason": "INSUFFICIENT_PANTRY" | "AI_UNABLE_TO_COMPOSE" | "PANTRY_EMPTY" | "DIETARY_CONSTRAINTS"
-}
-
-Use this exact output schema:
-{
-  "pantryRecipe": {
-    "status": "available",
-    "name": "string",
-    "category": "string",
-    "description": "string",
-    "servings": number,
-    "servingUnit": "string or null",
-    "prepTimeMin": number,
-    "totalTimeMin": number,
-    "difficulty": "easy" | "medium" | "hard",
-    "mealPrepFriendly": boolean,
-    "tags": ["string"],
-    "nutrition": {
-      "calories": number,
-      "proteinG": number,
-      "carbohydratesG": number,
-      "fatG": number
+  const referenceRecipeMatches = await getRecipeMatchesForUserProfile(
+    state.userProfileId,
+    {
+      locale: state.locale,
+      maxMissingIngredients: 3,
+      cookableLimit: 1,
+      almostCookableLimit: 1,
     },
-    "ingredients": [
-      {
-        "name": "string",
-        "amount": "string or null",
-        "pantryStatus": "pantry" | "missing",
-        "pantryMatchName": "exact pantry item name or null"
-      }
-    ],
-    "instructions": [{ "title": "string", "text": "string" }]
-  },
-  "almostCookableRecipe": { ...same contract... }
-}
+  ).catch((error) => {
+    apiLogger.warn("[customRecipe.recipeRequest] reference recipe lookup failed", {
+      metadata: {
+        userId: state.userId,
+        userProfileId: state.userProfileId,
+        errorMessage: error instanceof Error ? error.message : "unknown error",
+      },
+    });
 
-Hard rules:
-- For pantry ingredients, pantryMatchName must exactly match one item from the pantry list below.
-- Never invent pantryMatchName values.
-- pantryRecipe may not contain any "missing" ingredients.
-- almostCookableRecipe may contain at most 3 missing ingredients.
-- Respect allergies, dislikes, diet preference, goal, activity, height, and weight.
-- Prefer recipes that are realistic for the provided pantry and kitchen equipment.
+    return {
+      pantryIsEmpty: false,
+      pantryIngredientKeyCount: 0,
+      recipeCountAnalyzed: 0,
+      cookable: [],
+      almostCookable: [],
+    };
+  });
+  const referenceRecipesSection = buildReferenceRecipesSection(referenceRecipeMatches);
 
-User profile:
-- Name: ${firstName}
-- Goal: ${state.userInfo?.goal ?? "unknown"}
-- Activity: ${state.userInfo?.activity_level ?? "unknown"}
-- Height cm: ${state.userInfo?.height ?? "unknown"}
-- Weight kg: ${state.userInfo?.weight ?? "unknown"}
-- Diet: ${diet}
-- Allergies: ${allergies}
-- Likes: ${likes}
-- Dislikes: ${dislikes}
-- Cooking time preference: ${state.userInfo?.cooking_time_pref ?? "unknown"}
-- Cooking skill: ${state.userInfo?.cooking_skill_level ?? "unknown"}
-- Kitchen equipment: ${kitchenEquipment}
-- Meals per day: ${state.userInfo?.meal_per_day ?? "unknown"}
-
-Pantry items:
-${pantrySummary}
-`.trim();
+  const basePrompt = buildBasePrompt(
+    state,
+    firstName,
+    pantrySummary,
+    diet,
+    allergies,
+    likes,
+    dislikes,
+    kitchenEquipment,
+    referenceRecipesSection,
+  );
+  const pantryPrompt = buildCandidatePrompt("pantry", basePrompt);
+  const almostCookablePrompt = buildCandidatePrompt("almost_cookable", basePrompt);
 
   const model = new ChatGoogleGenerativeAI({
     model: "gemini-3-flash-preview",
     temperature: 0.3,
-    maxOutputTokens: 4096,
+    maxOutputTokens: 2048,
     apiKey,
   });
 
   try {
-    const response = await withTimeout(
-      model.invoke([new HumanMessage(prompt)]),
-      CUSTOM_RECIPE_AI_TIMEOUT_MS,
+    const perCandidateTimeoutMs = Math.max(
+      12_000,
+      Math.floor(CUSTOM_RECIPE_AI_TIMEOUT_MS * 0.6),
+    );
+    const [pantryResponse, almostCookableResponse] = await Promise.allSettled([
+      requestSingleCandidate(model, pantryPrompt, perCandidateTimeoutMs),
+      requestSingleCandidate(model, almostCookablePrompt, perCandidateTimeoutMs),
+    ]);
+
+    const pantryParsed =
+      pantryResponse.status === "fulfilled"
+        ? normalizeUnavailableCandidate(pantryResponse.value.parsed?.recipe)
+        : null;
+    const almostCookableParsed =
+      almostCookableResponse.status === "fulfilled"
+        ? normalizeUnavailableCandidate(almostCookableResponse.value.parsed?.recipe)
+        : null;
+    const response =
+      pantryParsed || almostCookableParsed
+        ? {
+            parsed: {
+              pantryRecipe: pantryParsed ?? {
+                status: "unavailable" as const,
+                reason: "AI_UNABLE_TO_COMPOSE" as const,
+              },
+              almostCookableRecipe: almostCookableParsed ?? {
+                status: "unavailable" as const,
+                reason: "AI_UNABLE_TO_COMPOSE" as const,
+              },
+            },
+            raw: null,
+          }
+        : null;
+
+    const pantryRawContent =
+      pantryResponse.status === "fulfilled" &&
+      pantryResponse.value.raw &&
+      typeof pantryResponse.value.raw === "object" &&
+      "content" in pantryResponse.value.raw
+        ? typeof pantryResponse.value.raw.content === "string"
+          ? pantryResponse.value.raw.content
+          : Array.isArray(pantryResponse.value.raw.content)
+            ? pantryResponse.value.raw.content
+                .map((part) =>
+                  typeof part === "object" &&
+                  part !== null &&
+                  "text" in part &&
+                  typeof part.text === "string"
+                    ? part.text
+                    : "",
+                )
+                .join("")
+            : JSON.stringify(pantryResponse.value.raw.content)
+        : "";
+    const almostRawContent =
+      almostCookableResponse.status === "fulfilled" &&
+      almostCookableResponse.value.raw &&
+      typeof almostCookableResponse.value.raw === "object" &&
+      "content" in almostCookableResponse.value.raw
+        ? typeof almostCookableResponse.value.raw.content === "string"
+          ? almostCookableResponse.value.raw.content
+          : Array.isArray(almostCookableResponse.value.raw.content)
+            ? almostCookableResponse.value.raw.content
+                .map((part) =>
+                  typeof part === "object" &&
+                  part !== null &&
+                  "text" in part &&
+                  typeof part.text === "string"
+                    ? part.text
+                    : "",
+                )
+                .join("")
+            : JSON.stringify(almostCookableResponse.value.raw.content)
+        : "";
+
+    const content = [pantryRawContent, almostRawContent].filter(Boolean).join("\n");
+    const extracted = extractJson(content);
+    const likelyTruncated = false;
+
+    // Collect structural metrics for debugging
+    const trimmed = extracted.trim();
+    const openBraces = (trimmed.match(/{/g) || []).length;
+    const closeBraces = (trimmed.match(/}/g) || []).length;
+    const openBrackets = (trimmed.match(/\[/g) || []).length;
+    const closeBrackets = (trimmed.match(/\]/g) || []).length;
+
+    // Log output characteristics for monitoring
+    apiLogger.info("[customRecipe.recipeRequest] AI response received", {
+      metadata: {
+        userId: state.userId,
+        userProfileId: state.userProfileId,
+        rawContentLength: content.length,
+        extractedJsonLength: extracted.length,
+        structuredParseSucceeded: response !== null,
+        likelyTruncated,
+        braceBalance: openBraces === closeBraces,
+        bracketBalance: openBrackets === closeBrackets,
+        endsWithBrace: trimmed.endsWith("}"),
+        pantryCallSucceeded: pantryResponse.status === "fulfilled",
+        almostCookableCallSucceeded: almostCookableResponse.status === "fulfilled",
+        retryCount: state.retryCount,
+      },
+    });
+
+    if (response?.parsed) {
+      const normalizedOutput = JSON.stringify(response.parsed);
+
+      apiLogger.info(
+        "[customRecipe.recipeRequest] structured output parsed successfully",
+        {
+          metadata: {
+            userId: state.userId,
+            userProfileId: state.userProfileId,
+            pantryRecipeStatus: response.parsed.pantryRecipe.status,
+            almostCookableStatus: response.parsed.almostCookableRecipe.status,
+            normalizedOutputLength: normalizedOutput.length,
+            referenceRecipeCount:
+              referenceRecipeMatches.cookable.length +
+              referenceRecipeMatches.almostCookable.length,
+            perCandidateTimeoutMs,
+            retryCount: state.retryCount,
+          },
+        },
+      );
+
+      return {
+        parsedAiOutput: null,
+        rawAiOutput: normalizedOutput,
+        requestError: null,
+      };
+    }
+
+    const rejectionReasons = [pantryResponse, almostCookableResponse]
+      .filter((result): result is PromiseRejectedResult => result.status === "rejected")
+      .map((result) =>
+        result.reason instanceof Error ? result.reason.message : "unknown error",
+      );
+
+    apiLogger.warn(
+      "[customRecipe.recipeRequest] both candidate requests failed",
+      {
+        metadata: {
+          userId: state.userId,
+          userProfileId: state.userProfileId,
+          retryCount: state.retryCount + 1,
+          rejectionReasons,
+        },
+      },
     );
 
-    const content =
-      typeof response.content === "string"
-        ? response.content
-        : Array.isArray(response.content)
-          ? response.content
-              .map((part) =>
-                typeof part === "object" &&
-                part !== null &&
-                "text" in part &&
-                typeof part.text === "string"
-                  ? part.text
-                  : "",
-              )
-              .join("")
-          : JSON.stringify(response.content);
-
     return {
-      rawAiOutput: extractJson(content),
-      requestError: null,
+      rawAiOutput: null,
+      parsedAiOutput: null,
+      requestError:
+        rejectionReasons[0] ?? "Recipe generation request failed",
+      retryCount: state.retryCount + 1,
     };
   } catch (error) {
     apiLogger.warn("[customRecipe.recipeRequest] AI request failed", {
@@ -191,6 +464,8 @@ ${pantrySummary}
         userId: state.userId,
         userProfileId: state.userProfileId,
         retryCount: state.retryCount + 1,
+        errorMessage: error instanceof Error ? error.message : "unknown error",
+        errorType: error instanceof Error ? error.constructor.name : typeof error,
       },
     });
 

@@ -1,5 +1,6 @@
 export const CUSTOM_RECIPE_MAX_RETRIES = 3;
-export const CUSTOM_RECIPE_AI_TIMEOUT_MS = 25_000;
+export const CUSTOM_RECIPE_AI_TIMEOUT_MS = 35_000; // Increased to 35s to reduce interruptions
+export const CUSTOM_RECIPE_MIN_VALID_OUTPUT_LENGTH = 600; // Minimum chars for valid recipe JSON
 
 export const NODE_PROGRESS: Record<
   string,

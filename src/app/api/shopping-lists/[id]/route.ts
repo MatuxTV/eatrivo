@@ -1,16 +1,47 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { asc, eq, and } from "drizzle-orm";
+
 import { auth } from "../../../../../auth";
 import { db } from "@/index";
-import { shoppingLists, userProfiles } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { shoppingListItems, shoppingLists, userProfiles } from "@/db/schema";
 import { apiLogger } from "@/lib/logger";
+import { formatAmountLabel } from "@/lib/pantry/format";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { CacheService } from "@/lib/redis";
+import { guessFoodCategory } from "@/lib/units";
+
+type ShoppingListItemResponse = {
+  id: string;
+  name: string;
+  quantity: string | null;
+  quantityValue: string | null;
+  unit: string | null;
+  category: string;
+  sortOrder: number;
+  isChecked: boolean;
+  checkedAt: string | null;
+};
+
+function mapShoppingListItems(
+  items: Array<typeof shoppingListItems.$inferSelect>,
+): ShoppingListItemResponse[] {
+  return items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    quantity: item.amountLabel ?? formatAmountLabel(item.quantity, item.unit),
+    quantityValue: item.quantity,
+    unit: item.unit,
+    category: item.category ?? guessFoodCategory(item.name),
+    sortOrder: item.sortOrder,
+    isChecked: item.isChecked,
+    checkedAt: item.checkedAt?.toISOString() ?? null,
+  }));
+}
 
 /**
  * GET /api/shopping-lists/[id]
- * Returns shopping list data as JSON (including markdownContent for inline viewer)
+ * Returns shopping list data as JSON with structured items for the inline viewer.
  */
 export async function GET(
   _req: NextRequest,
@@ -63,6 +94,12 @@ export async function GET(
       );
     }
 
+    const items = await db
+      .select()
+      .from(shoppingListItems)
+      .where(eq(shoppingListItems.shoppingListId, item.id))
+      .orderBy(asc(shoppingListItems.sortOrder));
+
     return NextResponse.json({
       id: item.id,
       title: item.title,
@@ -70,6 +107,7 @@ export async function GET(
       weekStartDate: item.weekStartDate,
       weekEndDate: item.weekEndDate,
       status: item.status,
+      items: mapShoppingListItems(items),
     });
   } catch (error) {
     apiLogger.error("Error fetching shopping list", error);

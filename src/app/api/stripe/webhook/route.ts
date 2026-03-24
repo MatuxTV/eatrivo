@@ -159,7 +159,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       stripeSubscription as unknown as { cancel_at: number | null }
     ).cancel_at;
 
-    // Create subscription record
+    // Create subscription record (upsert: idempotent for webhook replays)
     await db.insert(subscriptions).values({
       userId: userId,
       stripeSubscriptionId: subscriptionId,
@@ -168,6 +168,16 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       currentPeriodEnd: periodEndDate,
       cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end ?? false,
       cancelAt: cancelAtTimestamp ? new Date(cancelAtTimestamp * 1000) : null,
+    }).onConflictDoUpdate({
+      target: subscriptions.stripeSubscriptionId,
+      set: {
+        stripePriceId: priceId,
+        status: "active",
+        currentPeriodEnd: periodEndDate,
+        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end ?? false,
+        cancelAt: cancelAtTimestamp ? new Date(cancelAtTimestamp * 1000) : null,
+        updatedAt: new Date(),
+      },
     });
 
     // Track subscription upgrade event

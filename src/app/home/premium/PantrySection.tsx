@@ -12,7 +12,6 @@ import {
   Plus,
   RefreshCw,
   Search,
-  Sparkles,
   XCircle,
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -38,7 +37,6 @@ import { guessFoodCategory } from "@/lib/units";
 import { cn } from "@/lib/utils";
 import AddPantryItemModal from "./AddPantryItemModal";
 import PantryItemRow from "./PantryItemRow";
-import PantryRestockStrip from "./PantryRestockStrip";
 
 type FilterKey = "all" | "restock" | "expiring" | "manual" | "shopping_list";
 
@@ -296,7 +294,6 @@ export default function PantrySection({
     pendingDrafts,
     expiringItems,
     isLoading,
-    isLoadingRestockItems,
     isPreparingDrafts,
     isConfirmingDrafts,
     error,
@@ -305,9 +302,8 @@ export default function PantrySection({
     updateItem,
     stepItemQuantity,
     deleteItem,
+    addItemToShoppingList,
     toggleRecurringForItem,
-    updateRestockItem,
-    quickAddRestockItem,
     confirmDrafts,
     discardDrafts,
     refresh,
@@ -322,6 +318,7 @@ export default function PantrySection({
   const [pendingQuantityId, setPendingQuantityId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [pendingRecurringId, setPendingRecurringId] = useState<string | null>(null);
+  const [pendingAddPackageId, setPendingAddPackageId] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -539,6 +536,25 @@ export default function PantrySection({
     }
   }
 
+  async function handleAddPackage(item: PantryItem): Promise<void> {
+    if (!item.supportsRestockPackage || pendingAddPackageId) {
+      return;
+    }
+
+    setPendingAddPackageId(item.id);
+    try {
+      const success = await addItemToShoppingList(item.id, {
+        appendPackage: true,
+      });
+
+      if (success) {
+        triggerHaptic("light");
+      }
+    } finally {
+      setPendingAddPackageId(null);
+    }
+  }
+
   async function handleItemEdit(
     itemId: string,
     updates: { quantity: number | null; unit: string | null },
@@ -549,6 +565,17 @@ export default function PantrySection({
     }
 
     return success;
+  }
+
+  async function handleAvailabilityToggle(item: PantryItem): Promise<void> {
+    const success = await updateItem(item.id, {
+      trackingMode: "availability",
+      inStock: !item.inStock,
+    });
+
+    if (success) {
+      triggerHaptic("medium");
+    }
   }
 
   function clearFilters() {
@@ -957,13 +984,24 @@ export default function PantrySection({
                                   quantityPlaceholder={t("field_quantity_placeholder")}
                                   unitPlaceholder={t("field_unit")}
                                   quantityCaption={t("field_quantity")}
+                                  availabilityCaption={t("field_availability")}
+                                  availableLabel={t("availability_in_stock")}
+                                  unavailableLabel={t("availability_out_of_stock")}
+                                  toggleAvailabilityLabel={t("toggle_availability")}
                                   decreaseLabel={t("aria_decrease")}
                                   increaseLabel={t("aria_increase")}
                                   deleteLabel={t("aria_delete")}
+                                  addPackageLabel={t("row_add_package_label")}
+                                  addPackageCtaLabel={t("row_add_package")}
+                                  addPackagePendingLabel={t("row_add_package_pending")}
+                                  addPackageReadyLabel={t("row_add_package_again")}
+                                  showAddPackageAction={item.supportsRestockPackage}
+                                  isPendingAddPackage={pendingAddPackageId === item.id}
                                   onIncrease={() => void handleQuantityChange(item, "increment")}
                                   onDecrease={() => void handleQuantityChange(item, "decrement")}
                                   onDelete={() => void handleDeleteItem(item.id)}
                                   onSaveEdit={(updates) => handleItemEdit(item.id, updates)}
+                                  onToggleAvailability={() => void handleAvailabilityToggle(item)}
                                   onToggleRecurring={() =>
                                     void handleToggleRecurring(
                                       item,
@@ -971,6 +1009,7 @@ export default function PantrySection({
                                       recurringItem?.id,
                                     )
                                   }
+                                  onAddPackage={() => void handleAddPackage(item)}
                                 />
                               );
                             })}

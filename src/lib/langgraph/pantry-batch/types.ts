@@ -1,5 +1,7 @@
 export interface PantryBatchInputItem {
   name: string;
+  trackingMode?: "quantity" | "availability" | null;
+  inStock?: boolean | null;
   quantity: number | null;
   unit: string | null;
   category: string | null;
@@ -11,6 +13,7 @@ export interface PantryBatchSuggestion {
   normalizedName: string | null;
   ingredientKey: string | null;
   ingredientSpecificKey: string | null;
+  recommendedTrackingMode: "quantity" | "availability" | null;
   alreadyExists: boolean;
   matchedExistingIngredientKey: string | null;
   matchedExistingIngredientSpecificKey: string | null;

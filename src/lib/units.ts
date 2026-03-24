@@ -45,6 +45,7 @@ const UNIT_ALIASES: Record<string, string> = {
   // Count
   piece: "ks",
   pieces: "ks",
+  pc: "ks",
   ks: "ks",
   kus: "ks",
   kusy: "ks",
@@ -159,6 +160,24 @@ export function toCanonicalQuantity(
     dimension: conversion.dimension,
     sourceUnit: normalizedUnit,
   };
+}
+
+export function fromCanonicalQuantity(
+  value: number,
+  unit: string,
+): number | null {
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+
+  const normalizedUnit = normalizeUnit(unit);
+  const conversion = CANONICAL_UNIT_CONVERSIONS[normalizedUnit];
+
+  if (!conversion) {
+    return null;
+  }
+
+  return value / conversion.multiplier;
 }
 
 /**

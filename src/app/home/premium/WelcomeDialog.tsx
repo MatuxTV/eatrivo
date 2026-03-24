@@ -34,15 +34,16 @@ export default function WelcomeDialog({
   changelog,
 }: WelcomeDialogProps) {
   const { data: session } = useSession();
+  const user = session?.user;
   const t = useTranslations("home");
 
   const handleClose = () => {
     onOpenChange(false);
   };
 
-  const isUpdate =
-    session?.user?.lastSeenWelcomeVersion &&
-    session.user.lastSeenWelcomeVersion !== version;
+  const isUpdate = Boolean(
+    user?.lastSeenWelcomeVersion && user.lastSeenWelcomeVersion !== version,
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -85,7 +86,7 @@ export default function WelcomeDialog({
                 {isUpdate
                   ? t("welcome.title.update")
                   : t("welcome.title.welcome", {
-                      name: session?.user?.name?.split(" ")[0] || "",
+                      name: user?.name?.split(" ")[0] || "",
                     })}
               </DialogTitle>
               <p className="text-gray-500 text-sm max-w-xs mx-auto">
