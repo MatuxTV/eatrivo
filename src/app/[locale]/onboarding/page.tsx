@@ -40,7 +40,7 @@ export default async function OnboardingPage({ params }: PageProps) {
 
   const existingProfile = await checkUserProfileExists(session.user.id);
   if (existingProfile) {
-    redirect(`/${locale}/home`);
+    redirect("/home");
   }
 
   return <OnboardingClient userEmail={session.user.email || undefined} />;

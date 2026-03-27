@@ -37,7 +37,7 @@ export default async function SignInPage({ params }: PageProps) {
 
   const session = await auth();
   if (session?.user) {
-    redirect(`/${locale}/home`);
+    redirect("/home");
   }
 
   return (

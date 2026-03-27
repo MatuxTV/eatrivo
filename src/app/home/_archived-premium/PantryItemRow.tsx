@@ -14,11 +14,11 @@ import {
 import { motion, useReducedMotion } from "framer-motion";
 
 import { Badge } from "@/components/ui/badge";
+import InlineEditPanel from "@/components/inline-edit/InlineEditPanel";
+import InlineEditToggleButton from "@/components/inline-edit/InlineEditToggleButton";
+import QuantityUnitEditor from "@/components/inline-edit/QuantityUnitEditor";
 import type { PantryItem } from "@/hooks/usePantry";
 import { cn } from "@/lib/utils";
-import InlineEditPanel from "@/app/home/components/InlineEditPanel";
-import InlineEditToggleButton from "@/app/home/components/InlineEditToggleButton";
-import QuantityUnitEditor from "@/app/home/components/QuantityUnitEditor";
 import { formatLocalizedAmountLabel } from "@/lib/pantry/format";
 
 interface PantryItemRowProps {

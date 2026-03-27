@@ -8,6 +8,7 @@ import { getMembershipStatus } from "@/lib/functions";
 import { useSession } from "next-auth/react";
 import { UserBadge } from "@/components/ui/UserBadge";
 import type { AppHomeSection } from "../types/navigation";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 interface HomeHeaderProps {
   onSectionChange: (section: AppHomeSection) => void;
@@ -59,6 +60,7 @@ export default function HomeHeader({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           {user?.membership === "trainer" && (
             <Link href="/admin">
               <Button
@@ -82,6 +84,8 @@ export default function HomeHeader({
               <LogOut className="w-5 h-5" />
             </Button>
           </Link>
+
+
         </div>
       </div>
     </div>

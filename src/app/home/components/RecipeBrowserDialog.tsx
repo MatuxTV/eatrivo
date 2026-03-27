@@ -25,7 +25,7 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
-import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
+import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import { Button } from "@/components/ui/button";
 
 /* ────────────────────────────────────────────── */

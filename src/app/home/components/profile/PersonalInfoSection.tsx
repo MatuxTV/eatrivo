@@ -95,7 +95,7 @@ export default function PersonalInfoSection({
 
       const result = await response.json();
       onUpdate(result.profile);
-      reset(data); // Reset form to mark as not dirty
+      reset(data);
       toast.success(t("personal.toast.updated"));
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -145,7 +145,6 @@ export default function PersonalInfoSection({
             <p className="text-sm text-gray-500">{t("personal.description")}</p>
           </div>
 
-          {/* Full Name */}
           <div className="space-y-2">
             <Label
               htmlFor="fullName"
@@ -167,7 +166,6 @@ export default function PersonalInfoSection({
             )}
           </div>
 
-          {/* Date of Birth */}
           <div className="space-y-2">
             <Label
               htmlFor="dateOfBirth"
@@ -191,7 +189,6 @@ export default function PersonalInfoSection({
             )}
           </div>
 
-          {/* Email (Read-only) */}
           <div className="space-y-2">
             <Label
               htmlFor="email"
@@ -213,7 +210,6 @@ export default function PersonalInfoSection({
             </p>
           </div>
 
-          {/* Membership Badge */}
           <div className="p-4 bg-gradient-to-br from-eatrivo-purple/5 to-eatrivo-pink/5 rounded-xl border border-eatrivo-purple/10">
             <div className="flex items-center justify-between">
               <div>
@@ -242,7 +238,6 @@ export default function PersonalInfoSection({
             </Link>
           </div>
 
-          {/* Submit Button */}
           <Button
             type="submit"
             disabled={!isDirty || isSaving}

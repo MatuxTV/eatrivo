@@ -33,10 +33,10 @@ import { logger } from "@/lib/logger";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import { formatDate } from "@/lib/formatters";
-import { MealPlanViewerModal } from "@/app/home/premium/MealPlanViewerModal";
+import { MealPlanViewerModal } from "@/app/home/components/MealPlanViewerModal";
 import { localizeAmountForDisplay } from "@/lib/pantry/format";
-import InlineEditPanel from "./InlineEditPanel";
-import InlineEditToggleButton from "./InlineEditToggleButton";
+import InlineEditPanel from "@/components/inline-edit/InlineEditPanel";
+import InlineEditToggleButton from "@/components/inline-edit/InlineEditToggleButton";
 
 const cn = (...a: (string | false | null | undefined)[]) =>
   a.filter(Boolean).join(" ");

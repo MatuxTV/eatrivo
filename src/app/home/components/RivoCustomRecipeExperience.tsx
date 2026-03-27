@@ -22,7 +22,7 @@ import {
   X,
 } from "lucide-react";
 
-import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
+import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import {
   customRecipeCurrentGenerationResponseSchema,
   customRecipeLatestResultResponseSchema,

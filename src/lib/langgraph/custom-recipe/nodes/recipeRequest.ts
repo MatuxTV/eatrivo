@@ -294,7 +294,7 @@ export async function recipeRequest(
   const almostCookablePrompt = buildCandidatePrompt("almost_cookable", basePrompt);
 
   const model = new ChatGoogleGenerativeAI({
-    model: "gemini-3-flash-preview",
+    model: "gemini-3.1-pro-preview",
     temperature: 0.3,
     maxOutputTokens: 2048,
     apiKey,

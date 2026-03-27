@@ -24,7 +24,7 @@ import type {
   CustomRecipeHeroSnapshot,
   RivoCustomRecipeExperienceHandle,
 } from "./RivoCustomRecipeExperience";
-import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
+import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 const RivoCustomRecipeExperience = dynamic(

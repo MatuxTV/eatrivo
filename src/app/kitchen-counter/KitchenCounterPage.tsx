@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
+  AlertTriangle,
   Check,
   X,
   Flame,
@@ -13,7 +14,15 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 
@@ -27,8 +36,7 @@ interface KitchenCounterPageProps {
 type KitchenCounterIngredient = {
   name: string;
   amount: string;
-  checked: boolean;
-  tone: "green" | "orange" | "red";
+  isAvailable: boolean;
 };
 
 type KitchenCounterStep = {
@@ -80,8 +88,7 @@ function buildKitchenCounterIngredients(
       return {
         name: ingredient.name,
         amount,
-        checked: tone === "green",
-        tone,
+        isAvailable: tone === "green",
       };
     });
   }
@@ -89,15 +96,13 @@ function buildKitchenCounterIngredients(
   const availableIngredients = (recipe.ingredientPreview || []).map((name) => ({
     name,
     amount: t("basic.kitchenCounter.readyAmount"),
-    checked: true,
-    tone: "green" as const,
+    isAvailable: true,
   }));
 
   const missingIngredients = (recipe.missingIngredients ?? []).map((name) => ({
     name,
     amount: t("basic.kitchenCounter.missingAmount"),
-    checked: false,
-    tone: "red" as const,
+    isAvailable: false,
   }));
 
   const allIngredients = [...availableIngredients, ...missingIngredients];
@@ -131,8 +136,9 @@ export default function KitchenCounterPage({
 }: KitchenCounterPageProps) {
   const t = useTranslations("home");
   const activeRecipe = recipe ?? null;
-  const [ingredients, setIngredients] = useState<KitchenCounterIngredient[]>(
-    [],
+  const ingredients = useMemo(
+    () => (activeRecipe ? buildKitchenCounterIngredients(activeRecipe, t) : []),
+    [activeRecipe, t],
   );
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const steps = useMemo(
@@ -140,21 +146,22 @@ export default function KitchenCounterPage({
     [activeRecipe],
   );
   const checkedIngredientsCount = ingredients.filter(
-    (ingredient) => ingredient.checked,
+    (ingredient) => ingredient.isAvailable,
   ).length;
+  const missingIngredients = useMemo(
+    () => ingredients.filter((ingredient) => !ingredient.isAvailable),
+    [ingredients],
+  );
   const activeStep = steps[currentStepIndex] ?? null;
   const canGoToPreviousStep = currentStepIndex > 0;
   const canGoToNextStep = currentStepIndex < steps.length - 1;
   const [isFinishingRecipe, setIsFinishingRecipe] = useState(false);
-
-  useEffect(() => {
-    setIngredients(
-      activeRecipe ? buildKitchenCounterIngredients(activeRecipe, t) : [],
-    );
-  }, [activeRecipe, t]);
+  const [isMissingIngredientsDialogOpen, setIsMissingIngredientsDialogOpen] =
+    useState(false);
 
   useEffect(() => {
     setCurrentStepIndex(0);
+    setIsMissingIngredientsDialogOpen(false);
   }, [activeRecipe?.id]);
 
   useEffect(() => {
@@ -194,21 +201,13 @@ export default function KitchenCounterPage({
     };
   }, [activeRecipe]);
 
-  const toggleIngredient = (index: number) => {
-    setIngredients((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, checked: !item.checked } : item,
-      ),
-    );
-  };
-
   const handleNextStep = () => {
     if (canGoToNextStep) {
       setCurrentStepIndex((previous) => previous + 1);
       return;
     }
 
-    void handleFinishRecipe();
+    void handleFinishAttempt();
   };
 
   const handlePreviousStep = () => {
@@ -219,7 +218,20 @@ export default function KitchenCounterPage({
     setCurrentStepIndex((previous) => previous - 1);
   };
 
-  const handleFinishRecipe = async () => {
+  const handleFinishAttempt = async () => {
+    if (!activeRecipe || isFinishingRecipe) {
+      return;
+    }
+
+    if (missingIngredients.length > 0) {
+      setIsMissingIngredientsDialogOpen(true);
+      return;
+    }
+
+    await executeFinishRecipe();
+  };
+
+  const executeFinishRecipe = async () => {
     if (!activeRecipe || isFinishingRecipe) {
       return;
     }
@@ -300,6 +312,11 @@ export default function KitchenCounterPage({
     }
   };
 
+  const handleConfirmFinishWithMissingIngredients = () => {
+    setIsMissingIngredientsDialogOpen(false);
+    void executeFinishRecipe();
+  };
+
   if (!activeRecipe) {
     return (
       <div className="flex flex-col min-h-[70vh] bg-[#FAFAFA] overflow-hidden rounded-[1.5rem]">
@@ -346,7 +363,77 @@ export default function KitchenCounterPage({
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[#FDFCFE] relative pb-[240px] md:pb-28">
+    <div className="min-h-[100dvh] bg-eatrivo-white-primary overflow-hidden relative pb-[240px] md:pb-28">
+      <Dialog
+        open={isMissingIngredientsDialogOpen}
+        onOpenChange={setIsMissingIngredientsDialogOpen}
+      >
+        <DialogContent
+          className="max-w-[calc(100%-1.5rem)] rounded-2xl border border-eatrivo-black-primary/20 bg-eatrivo-white-primary p-2 sm:max-w-md"
+          showCloseButton={false}
+        >
+          <div className="border-b border-red-100/80 bg-gradient-to-br from-red-50 via-white to-orange-50 px-6 py-5">
+            <div className="flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-eatrivo-red bg-eatrivo-white-primary text-red-500 shadow-sm">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <DialogHeader className="text-left">
+                <DialogTitle className="text-lg font-black tracking-tight text-eatrivo-black-primary">
+                  {t("basic.kitchenCounter.missingIngredientsTitle")}
+                </DialogTitle>
+                <DialogDescription className="text-sm font-medium leading-6 text-eatrivo-black-secondary">
+                  {t("basic.kitchenCounter.missingIngredientsDescription")}
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+          </div>
+
+          <div className="px-6 py-5">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-eatrivo-red">
+              {t("basic.kitchenCounter.missingIngredientsListTitle")}
+            </p>
+            <ul className="mt-3 space-y-2.5">
+              {missingIngredients.map((ingredient) => (
+                <li
+                  key={ingredient.name}
+                  className="flex items-start gap-3 rounded-2xl border border-eatrivo-red/20 bg-eatrivo-red/10 px-3 py-3"
+                >
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-eatrivo-red/20 bg-eatrivo-white-primary text-eatrivo-red">
+                    <AlertTriangle className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold leading-5 text-eatrivo-black-primary">
+                      {ingredient.name}
+                    </p>
+                    <p className="mt-0.5 text-sm font-medium text-eatrivo-black-secondary">
+                      {ingredient.amount}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <DialogFooter className="border-t border-gray-100 px-6 py-5 sm:justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-11 rounded-full border border-gray-200 px-5 text-sm font-semibold text-eatrivo-black-secondary hover:bg-eatrivo-black-secondary/10 transition-all active:scale-95 "
+              onClick={() => setIsMissingIngredientsDialogOpen(false)}
+            >
+              {t("basic.kitchenCounter.missingIngredientsCancel")}
+            </Button>
+            <Button
+              type="button"
+              className="h-11 rounded-full bg-eatrivo-green px-5 text-sm font-bold text-eatrivo-white-primary border-eatrivo-green/60 border-2 hover:bg-eatrivo-green-dark transition-all active:scale-95"
+              onClick={handleConfirmFinishWithMissingIngredients}
+            >
+              {t("basic.kitchenCounter.missingIngredientsContinue")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         {/* ─── Top Header ────────────────────────────────────────── */}
         <header className="flex items-center justify-between mb-8">
@@ -396,47 +483,32 @@ export default function KitchenCounterPage({
             </span>
           </div>
           <ul className="space-y-3.5">
-            {ingredients.map((item, idx) => (
+            {ingredients.map((item) => (
               <li
                 key={item.name}
-                className="flex items-center gap-3 cursor-pointer group rounded-xl min-h-11 px-2 -mx-2"
-                onClick={() => toggleIngredient(idx)}
-                role="button"
-                tabIndex={0}
-                aria-pressed={item.checked}
-                aria-label={`${item.name} (${item.amount})`}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    toggleIngredient(idx);
-                  }
-                }}
+                className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50/70 px-3 py-2.5"
               >
                 <div
-                  className={`h-11 w-11 rounded-xl shrink-0 transition-colors border-2 flex items-center justify-center ${
-                    item.checked
-                      ? "border-emerald-500 bg-emerald-50"
-                      : item.tone === "red"
-                        ? "border-red-300 bg-red-50"
-                        : item.tone === "orange"
-                          ? "border-amber-300 bg-amber-50"
-                          : "border-[#C4A9FF] bg-[#F5EDFF]"
+                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+                    item.isAvailable
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-600"
+                      : "border-red-300 bg-red-50 text-red-500"
                   }`}
                 >
-                  {item.checked ? (
-                    <Check className="w-5 h-5 text-emerald-600" />
-                  ) : null}
+                  {item.isAvailable ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4" />
+                  )}
                 </div>
-                <span
-                  className={`text-base md:text-[15px] font-medium leading-relaxed transition-all ${
-                    item.checked
-                      ? "text-gray-400 line-through"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {item.name}{" "}
-                  <span className="text-gray-400">({item.amount})</span>
-                </span>
+                <div className="min-w-0">
+                  <p className="text-[15px] font-semibold leading-6 text-gray-800">
+                    {item.name}
+                  </p>
+                  <p className="mt-0.5 text-sm font-medium text-gray-500">
+                    {item.amount}
+                  </p>
+                </div>
               </li>
             ))}
           </ul>
@@ -506,22 +578,12 @@ export default function KitchenCounterPage({
       </div>
 
       {/* ─── Bottom Floating Action ────────────────────────────── */}
-      <div className="fixed bottom-[calc(96px+72px+env(safe-area-inset-bottom))] md:bottom-[76px] left-0 right-0 z-40 px-4 md:hidden">
-        <div className="mx-auto max-w-4xl flex justify-center">
-          <span className="h-9 px-3 rounded-full bg-eatrivo-purple/10 text-eatrivo-purple text-sm font-semibold inline-flex items-center shadow-sm backdrop-blur-sm pointer-events-auto">
-            {t("basic.kitchenCounter.progress", {
-              checked: checkedIngredientsCount,
-              total: ingredients.length,
-            })}
-          </span>
-        </div>
-      </div>
       <div className="fixed bottom-[calc(90px+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 p-3 md:p-6 bg-gradient-to-t from-[#FDFCFE] via-[#FDFCFE]/95 to-transparent flex justify-center pb-4 pt-8 md:pb-[max(12px,env(safe-area-inset-bottom))] pointer-events-none z-40">
         <div className="max-w-4xl w-full pointer-events-auto grid grid-cols-2 gap-3 md:flex md:justify-end md:items-center">
           <Button
             onClick={canGoToPreviousStep ? handlePreviousStep : onBack}
             disabled={isFinishingRecipe}
-            className="h-12 bg-eatrivo-white-primary rounded-xl text-sm font-semibold border-eatrivo-black-secondary/30 border-1 text-eatrivo-purple md:hidden"
+            className="h-12 bg-eatrivo-white-primary transform transition-all active:scale-95 rounded-xl text-sm font-semibold border-eatrivo-black-secondary/30 border-1 text-eatrivo-purple md:hidden"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             {canGoToPreviousStep
@@ -529,9 +591,9 @@ export default function KitchenCounterPage({
               : t("basic.kitchenCounter.backToHome")}
           </Button>
           <Button
-            onClick={steps.length > 0 ? handleNextStep : () => void handleFinishRecipe()}
+            onClick={steps.length > 0 ? handleNextStep : () => void handleFinishAttempt()}
             disabled={isFinishingRecipe}
-            className="bg-[#1a1a2e] hover:bg-[#2a2a4a] text-white h-12 md:h-auto w-full md:w-auto text-base md:text-lg font-bold py-3 md:py-6 px-5 md:px-8 rounded-2xl md:rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_12px_25px_rgba(0,0,0,0.25)] transition-all flex items-center justify-center gap-2 col-span-1 md:col-auto"
+            className={`${canGoToNextStep ? "bg-eatrivo-black-primary" : " bg-eatrivo-green"} text-white h-12 md:h-auto w-full transform active:scale-95 md:w-auto text-base md:text-lg font-bold py-3 md:py-6 px-5 md:px-8 rounded-2xl md:rounded-full hover:shadow-[0_12px_25px_rgba(0,0,0,0.25)] transition-all flex items-center justify-center gap-2 col-span-1 md:col-auto`}
           >
             {isFinishingRecipe
               ? t("basic.kitchenCounter.finishPending")

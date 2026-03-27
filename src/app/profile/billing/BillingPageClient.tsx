@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SubscriptionStatus } from "@/components/billing/SubscriptionStatus";
 import { PricingCard } from "@/components/billing/PricingCard";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface SubscriptionData {
@@ -110,17 +109,15 @@ export default function BillingPageClient() {
   }
 
   const membership = data?.membership || "basic";
-  // Only show upgrade options for basic users (Pro tier hidden for now)
   const showUpgradeOptions = membership === "basic";
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <h1 className="mb-8 text-3xl font-bold">{t("title")}</h1>
 
-      {/* Back Button */}
       <Button
         variant="ghost"
-        onClick={() => router.push(`/${locale}/profile`)}
+        onClick={() => router.push("/home")}
         className="mb-6 flex items-center gap-2 text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -175,14 +172,6 @@ export default function BillingPageClient() {
               price={5}
               onSelect={() => handleUpgrade("premium")}
             />
-            {/* Pro tier - hidden for now, ready for future use
-            <PricingCard
-              tier="pro"
-              price={9}
-              isPopular
-              onSelect={() => handleUpgrade("pro")}
-            />
-            */}
           </div>
         </div>
       )}

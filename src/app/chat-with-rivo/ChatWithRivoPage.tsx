@@ -21,7 +21,6 @@ const NARRATIVE_LOADER_STEPS = [
   "Pripravujem odpoveď...",
 ];
 
-// Session-scoped chat cache helpers (sessionStorage = per-tab, clears on tab close)
 const CHAT_STORAGE_KEY = "rivo-chat-cache";
 const SESSION_ID_KEY = "rivo-chat-session";
 
@@ -38,7 +37,9 @@ function loadCachedMessages(): Message[] {
 function saveCachedMessages(msgs: Message[]) {
   try {
     sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(msgs));
-  } catch { /* storage full — silently ignore */ }
+  } catch {
+    // storage full - silently ignore
+  }
 }
 
 function loadSessionId(): string | null {
@@ -86,12 +87,10 @@ export default function ChatWithRivoPage() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Sync state to sessionStorage (per-tab, auto-cleared on tab close)
   useEffect(() => {
     saveCachedMessages(messages);
   }, [messages]);
 
-  // Fetch daily limit on mount
   useEffect(() => {
     fetchChatLimit();
   }, [fetchChatLimit]);
@@ -111,7 +110,6 @@ export default function ChatWithRivoPage() {
     return () => clearInterval(interval);
   }, [isStreaming]);
 
-  // Auto-send prompt from URL query parameter if present
   const hasProcessedUrlPrompt = useRef(false);
 
   useEffect(() => {
@@ -123,20 +121,16 @@ export default function ChatWithRivoPage() {
     if (promptQuery) {
       hasProcessedUrlPrompt.current = true;
 
-      // Auto-send after a tiny bit to ensure initial mount is clean
       setTimeout(() => {
         sendMessage(promptQuery);
       }, 100);
 
-      // Clean up the URL to prevent re-sending on refresh
       window.history.replaceState({}, "", window.location.pathname);
     }
-  }, []); // Empty deps so it only runs on mount
+  }, []);
 
   const handleSuggestedPrompt = (promptText: string) => {
     setInput(promptText);
-    // Optional: automatically send after short delay
-    // setTimeout(() => sendMessage(promptText), 300);
   };
 
   async function sendMessage(overrideInput?: string) {
@@ -161,7 +155,6 @@ export default function ChatWithRivoPage() {
       });
 
       if (!res.ok) {
-        // Handle daily limit reached
         if (res.status === 429) {
           try {
             const errorData = await res.json();
@@ -196,7 +189,7 @@ export default function ChatWithRivoPage() {
               return;
             }
           } catch {
-            /* fall through to generic error */
+            // fall through to generic error
           }
         }
         throw new Error("Request failed");
@@ -208,7 +201,6 @@ export default function ChatWithRivoPage() {
       const decoder = new TextDecoder();
       let accumulated = "";
 
-      // Add a placeholder message for the assistant
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
       while (true) {
@@ -227,7 +219,6 @@ export default function ChatWithRivoPage() {
       }
     } catch {
       setMessages((prev) => {
-        // Find if we already added a blank assistant placeholder
         const lastMsg = prev[prev.length - 1];
         if (lastMsg && lastMsg.role === "assistant" && lastMsg.content === "") {
           const updated = [...prev];
@@ -236,34 +227,29 @@ export default function ChatWithRivoPage() {
             content: "Ups, Rivo práve odpočíva... Skús to znova 😴",
           };
           return updated;
-        } else {
-          return [
-            ...prev,
-            {
-              role: "assistant",
-              content: "Ups, Rivo práve odpočíva... Skús to znova 😴",
-            },
-          ];
         }
+        return [
+          ...prev,
+          {
+            role: "assistant",
+            content: "Ups, Rivo práve odpočíva... Skús to znova 😴",
+          },
+        ];
       });
     } finally {
       setIsStreaming(false);
-      // Refresh limit after each message
       fetchChatLimit();
     }
   }
 
   return (
     <div className="flex flex-col h-full flex-1 w-full mx-auto px-4 md:px-8 bg-eatrivo-white-primary relative overflow-hidden pt-20 pb-[88px] md:pt-0 md:pb-0">
-      {/* Decorative ambient background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-eatrivo-purple/10 blur-[100px] rounded-full opacity-60"></div>
         <div className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] bg-eatrivo-pink/5 blur-[120px] rounded-full opacity-40"></div>
       </div>
 
-      {/* Messages list */}
       <div className="flex-1 overflow-y-auto space-y-6 pt-4 pb-6 scrollbar-hide relative z-10 md:max-w-4xl md:mx-auto md:w-full">
-        {/* Daily message limit counter */}
         {chatLimit?.limited && (
           <div className="absolute top-2 right-2 md:top-4 md:-right-4 z-20">
             <span
@@ -302,96 +288,96 @@ export default function ChatWithRivoPage() {
               </div>
 
               <motion.div
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              variants={{
-                hidden: { opacity: 0 },
-                visible: {
-                  opacity: 1,
-                  transition: { staggerChildren: 0.15 },
-                },
-              }}
-              className="flex flex-col items-center justify-center h-full text-center space-y-8 mt-12"
-            >
-              <motion.div
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
                 variants={{
-                  hidden: { opacity: 0, scale: 0.8, filter: "blur(10px)" },
+                  hidden: { opacity: 0 },
                   visible: {
                     opacity: 1,
-                    scale: 1,
-                    filter: "blur(0px)",
-                    transition: {
-                      type: "spring",
-                      damping: 20,
-                      stiffness: 100,
-                    },
+                    transition: { staggerChildren: 0.15 },
                   },
                 }}
-                className="relative"
+                className="flex flex-col items-center justify-center h-full text-center space-y-8 mt-12"
               >
-                <Image
-                  src="/rivo/RIVO2-remove.png"
-                  alt="Rivo Avatar"
-                  className="w-24 h-24 p-0.5 rounded-full border-4 border-eatrivo-purple/20 shadow-lg"
-                  width={96}
-                  height={96}
-                />
-              </motion.div>
-
-              <motion.div
-                variants={{
-                  hidden: { opacity: 0, y: 15 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                }}
-                className="space-y-2 relative z-20"
-              >
-                <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-br from-eatrivo-purple to-eatrivo-pink bg-clip-text text-transparent">
-                  Ahoj! Som Rivo 👋
-                </h2>
-                <p className="text-eatrivo-black-secondary max-w-[280px] mx-auto text-[15px] leading-relaxed">
-                  Som tu, aby som ti pomohol s tvojím jedálničkom, kalóriami a
-                  špajzou.
-                </p>
-              </motion.div>
-
-              <motion.div
-                variants={{
-                  hidden: { opacity: 0, y: 15 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                }}
-                className="grid grid-cols-1 gap-3 w-full max-w-[320px] relative z-20 top-2"
-              >
-                <motion.button
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleSuggestedPrompt("Aké mám dnes makrá?")}
-                  className="group flex items-center gap-4 p-3.5 rounded-2xl bg-white shadow-sm hover:shadow-md border border-eatrivo-purple/10 hover:border-eatrivo-purple/30 hover:shadow-eatrivo-purple/10 transition-all text-left"
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, scale: 0.8, filter: "blur(10px)" },
+                    visible: {
+                      opacity: 1,
+                      scale: 1,
+                      filter: "blur(0px)",
+                      transition: {
+                        type: "spring",
+                        damping: 20,
+                        stiffness: 100,
+                      },
+                    },
+                  }}
+                  className="relative"
                 >
-                  <div className="p-2.5 bg-eatrivo-purple/10 rounded-xl shadow-sm text-eatrivo-purple group-hover:scale-110 group-hover:bg-eatrivo-purple group-hover:text-white transition-all">
-                    <Target className="w-4 h-4" />
-                  </div>
-                  <span className="text-[15px] font-medium text-eatrivo-black-primary transition-colors">
-                    Aké mám dnes makrá?
-                  </span>
-                </motion.button>
+                  <Image
+                    src="/rivo/RIVO2-remove.png"
+                    alt="Rivo Avatar"
+                    className="w-24 h-24 p-0.5 rounded-full border-4 border-eatrivo-purple/20 shadow-lg"
+                    width={96}
+                    height={96}
+                  />
+                </motion.div>
 
-                <motion.button
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() =>
-                    handleSuggestedPrompt("Daj mi recept na dnešný obed")
-                  }
-                  className="group flex items-center gap-4 p-3.5 rounded-2xl bg-white shadow-sm hover:shadow-md border border-eatrivo-green/10 hover:border-eatrivo-green/30 hover:shadow-eatrivo-green/10 transition-all text-left"
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: 15 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                  }}
+                  className="space-y-2 relative z-20"
                 >
-                  <div className="p-2.5 bg-eatrivo-green/10 rounded-xl shadow-sm text-eatrivo-green group-hover:scale-110 group-hover:bg-eatrivo-green group-hover:text-white transition-all">
-                    <Sprout className="w-4 h-4" />
-                  </div>
-                  <span className="text-[15px] font-medium text-eatrivo-black-primary transition-colors">
-                    Daj mi recept na dnešný obed
-                  </span>
-                </motion.button>
-              </motion.div>
+                  <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-br from-eatrivo-purple to-eatrivo-pink bg-clip-text text-transparent">
+                    Ahoj! Som Rivo 👋
+                  </h2>
+                  <p className="text-eatrivo-black-secondary max-w-[280px] mx-auto text-[15px] leading-relaxed">
+                    Som tu, aby som ti pomohol s tvojím jedálničkom, kalóriami a
+                    špajzou.
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: 15 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                  }}
+                  className="grid grid-cols-1 gap-3 w-full max-w-[320px] relative z-20 top-2"
+                >
+                  <motion.button
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleSuggestedPrompt("Aké mám dnes makrá?")}
+                    className="group flex items-center gap-4 p-3.5 rounded-2xl bg-white shadow-sm hover:shadow-md border border-eatrivo-purple/10 hover:border-eatrivo-purple/30 hover:shadow-eatrivo-purple/10 transition-all text-left"
+                  >
+                    <div className="p-2.5 bg-eatrivo-purple/10 rounded-xl shadow-sm text-eatrivo-purple group-hover:scale-110 group-hover:bg-eatrivo-purple group-hover:text-white transition-all">
+                      <Target className="w-4 h-4" />
+                    </div>
+                    <span className="text-[15px] font-medium text-eatrivo-black-primary transition-colors">
+                      Aké mám dnes makrá?
+                    </span>
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() =>
+                      handleSuggestedPrompt("Daj mi recept na dnešný obed")
+                    }
+                    className="group flex items-center gap-4 p-3.5 rounded-2xl bg-white shadow-sm hover:shadow-md border border-eatrivo-green/10 hover:border-eatrivo-green/30 hover:shadow-eatrivo-green/10 transition-all text-left"
+                  >
+                    <div className="p-2.5 bg-eatrivo-green/10 rounded-xl shadow-sm text-eatrivo-green group-hover:scale-110 group-hover:bg-eatrivo-green group-hover:text-white transition-all">
+                      <Sprout className="w-4 h-4" />
+                    </div>
+                    <span className="text-[15px] font-medium text-eatrivo-black-primary transition-colors">
+                      Daj mi recept na dnešný obed
+                    </span>
+                  </motion.button>
+                </motion.div>
               </motion.div>
             </>
           )}
@@ -501,10 +487,8 @@ export default function ChatWithRivoPage() {
         <div ref={bottomRef} className="h-4" />
       </div>
 
-      {/* Input bar */}
       <div className="pt-2 pb-2 md:pb-6 mt-auto relative z-20 md:max-w-4xl md:mx-auto md:w-full">
         {chatLimit?.limited && chatLimit.remaining === 0 ? (
-          /* Limit reached — show upgrade prompt */
           <div className="flex flex-col items-center gap-3 py-4">
             <div className="text-center px-4">
               <p className="text-sm font-semibold text-gray-700">
@@ -529,8 +513,7 @@ export default function ChatWithRivoPage() {
               placeholder="Opýtaj sa na svoj jedálniček..."
               value={input}
               onChange={(e) => {
-                if (e.target.value.length <= MAX_INPUT_CHARS)
-                  setInput(e.target.value);
+                if (e.target.value.length <= MAX_INPUT_CHARS) setInput(e.target.value);
               }}
               onKeyDown={(e) =>
                 e.key === "Enter" && !e.shiftKey && sendMessage()

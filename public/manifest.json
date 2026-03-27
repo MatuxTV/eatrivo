@@ -7,7 +7,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "/dashboard?source=pwa",
+  "start_url": "/home?source=pwa",
   "icons": [
     {
       "src": "/logo/favicon_io/android-chrome-192x192.png",

@@ -190,14 +190,12 @@ export default function NutritionPreferencesSection({
               </p>
             </div>
 
-            {/* Physical Parameters */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <Scale className="w-5 h-5 text-eatrivo-purple" />
                 {t("nutrition.sections.physical")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Sex */}
                 <FormField
                   control={form.control}
                   name="sex"
@@ -225,7 +223,6 @@ export default function NutritionPreferencesSection({
                   )}
                 />
 
-                {/* Height */}
                 <FormField
                   control={form.control}
                   name="height"
@@ -258,7 +255,6 @@ export default function NutritionPreferencesSection({
                   )}
                 />
 
-                {/* Weight */}
                 <FormField
                   control={form.control}
                   name="weight"
@@ -292,7 +288,6 @@ export default function NutritionPreferencesSection({
                   )}
                 />
 
-                {/* Meals per day */}
                 <FormField
                   control={form.control}
                   name="meal_per_day"
@@ -329,14 +324,12 @@ export default function NutritionPreferencesSection({
               </div>
             </div>
 
-            {/* Activity & Goals */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <Activity className="w-5 h-5 text-eatrivo-purple" />
                 {t("nutrition.sections.activityGoals")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Activity Level */}
                 <FormField
                   control={form.control}
                   name="activity_level"
@@ -368,7 +361,6 @@ export default function NutritionPreferencesSection({
                   )}
                 />
 
-                {/* Goal */}
                 <FormField
                   control={form.control}
                   name="goal"
@@ -400,14 +392,12 @@ export default function NutritionPreferencesSection({
               </div>
             </div>
 
-            {/* Dietary Preferences */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <UtensilsCrossed className="w-5 h-5 text-eatrivo-purple" />
                 {t("nutrition.sections.diet")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Diet Preferences */}
                 <FormField
                   control={form.control}
                   name="diet_preferences"
@@ -440,7 +430,6 @@ export default function NutritionPreferencesSection({
                   )}
                 />
 
-                {/* Cooking Time */}
                 <FormField
                   control={form.control}
                   name="cooking_time_pref"
@@ -470,7 +459,6 @@ export default function NutritionPreferencesSection({
                   )}
                 />
 
-                {/* Budget */}
                 <FormField
                   control={form.control}
                   name="budget_preference"
@@ -501,9 +489,7 @@ export default function NutritionPreferencesSection({
                 />
               </div>
 
-              {/* Meal Prep Section */}
               <div className="space-y-4 pt-4 border-t border-gray-100">
-                {/* Info Note */}
                 <div className="flex gap-3 p-4 bg-eatrivo-green/5 border border-eatrivo-green/20 rounded-xl">
                   <ChefHat className="w-5 h-5 text-eatrivo-green flex-shrink-0 mt-0.5" />
                   <div className="space-y-1">
@@ -593,14 +579,12 @@ export default function NutritionPreferencesSection({
               </div>
             </div>
 
-            {/* Food Preferences */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <Heart className="w-5 h-5 text-eatrivo-purple" />
                 {t("nutrition.sections.preferences")}
               </h3>
               <div className="space-y-4">
-                {/* Likes */}
                 <FormField
                   control={form.control}
                   name="likes"
@@ -622,7 +606,6 @@ export default function NutritionPreferencesSection({
                   )}
                 />
 
-                {/* Dislikes */}
                 <FormField
                   control={form.control}
                   name="dislikes"
@@ -643,7 +626,6 @@ export default function NutritionPreferencesSection({
                   )}
                 />
 
-                {/* Allergies */}
                 <FormField
                   control={form.control}
                   name="allergies"
@@ -670,7 +652,6 @@ export default function NutritionPreferencesSection({
               </div>
             </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
               disabled={!form.formState.isDirty || isSaving}
