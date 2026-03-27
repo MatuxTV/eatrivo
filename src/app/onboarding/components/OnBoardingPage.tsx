@@ -6,7 +6,7 @@ import FoodPreferences from "./FoodPreferences";
 import type { UserProfileOnboarding, UserFoodPreferences } from "../../../lib/schemas/user";
 import type { OnboardingConsents } from "./FoodPreferences";
 import { logger } from "@/lib/logger";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 interface OnboardingClientProps {
@@ -15,7 +15,6 @@ interface OnboardingClientProps {
 
 export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
   const t = useTranslations("onboarding");
-  const locale = useLocale();
   const router = useRouter();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -79,7 +78,7 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
         }
 
         // Redirect to home
-        router.push(`/${locale}/home`);
+        router.push("/home");
       } else {
         throw new Error("Failed to save onboarding data");
       }

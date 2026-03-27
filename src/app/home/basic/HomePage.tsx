@@ -15,7 +15,7 @@ import type { CustomRecipeHeroSnapshot } from "../components/RivoCustomRecipeExp
 import type {
   BasicHomePantrySummary,
   BasicHomeRecipePreview,
-} from "@/app/[locale]/home/page";
+} from "@/app/home/types/data";
 import {
   type AppHomeSection,
   getPrimaryAppHomeSection,
@@ -23,9 +23,9 @@ import {
 } from "../types/navigation";
 
 /* ---- Layout shells ---- */
-import WelcomeDialog from "../premium/WelcomeDialog";
+import WelcomeDialog from "../components/WelcomeDialog";
 import HomeSidebar from "../components/HomeSidebar";
-import HomeHeader from "../premium/HomeHeader";
+import HomeHeader from "../components/HomeHeader";
 import MobileNavigation from "../components/MobileNavigation";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
 import { NotificationBanner } from "@/components/pwa/NotificationBanner";
@@ -36,12 +36,12 @@ import { usePantrySync } from "@/hooks/usePantrySync";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import RecipesSection from "../components/RecipesSection";
 
-const PantrySection = dynamic(() => import("../premium/PantrySection"));
+const PantrySection = dynamic(() => import("@/app/pantry/components/PantryPage"));
 const ProfilePageClient = dynamic(
-  () => import("@/app/profile/components/ProfilePageClient"),
+  () => import("@/app/home/components/profile/ProfilePageClient"),
 );
 const ChatWithRivoPage = dynamic(
-  () => import("@/app/[locale]/chat-with-rivo/ChatWithRivoPage"),
+  () => import("@/app/chat-with-rivo/ChatWithRivoPage"),
   {
     ssr: false,
   },
@@ -309,17 +309,19 @@ export default function HomePage({
             >
               {/* ---- Section switcher ---- */}
               <div className="mb-6">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                  {t("greeting.title", {
-                    name: session?.user?.name?.split(" ")[0] || "",
-                  })}
-                </h1>
+                <div className="flex flex-wrap items-center gap-2 justify-between">
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                    {t("greeting.title", {
+                      name: session?.user?.name?.split(" ")[0] || "",
+                    })}
+                  </h1>
+                </div>
                 <div className="mt-4 w-full rounded-2xl border border-eatrivo-black-primary/10 bg-white/80 p-1 shadow-sm backdrop-blur-sm">
                   <div className="grid grid-cols-2 gap-1">
                     <Button
                       type="button"
                       variant="ghost"
-                      className="relative h-12 overflow-hidden rounded-xl px-4 text-sm font-semibold active:scale-[0.98]"
+                      className="relative h-10 overflow-hidden rounded-xl px-4 text-sm font-semibold active:scale-[0.98]"
                       onClick={() => handleHomeSectionChange("home.recipes")}
                     >
                       {activeHomeSection === "home.recipes" ? (
@@ -347,7 +349,7 @@ export default function HomePage({
                     <Button
                       type="button"
                       variant="ghost"
-                      className="relative h-12 overflow-hidden rounded-xl px-4 text-sm font-semibold active:scale-[0.98]"
+                      className="relative h-10 overflow-hidden rounded-xl px-4 text-sm font-semibold active:scale-[0.98]"
                       onClick={() =>
                         handleHomeSectionChange("home.shoppingList")
                       }

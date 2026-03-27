@@ -18,9 +18,9 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import InlineEditPanel from "./InlineEditPanel";
-import InlineEditToggleButton from "./InlineEditToggleButton";
-import QuantityUnitEditor from "./QuantityUnitEditor";
+import InlineEditPanel from "@/components/inline-edit/InlineEditPanel";
+import InlineEditToggleButton from "@/components/inline-edit/InlineEditToggleButton";
+import QuantityUnitEditor from "@/components/inline-edit/QuantityUnitEditor";
 import type { useShoppingList } from "@/hooks/useShoppingList";
 
 /* ------------------------------------------------------------------ */

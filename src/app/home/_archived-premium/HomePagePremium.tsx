@@ -15,19 +15,12 @@ import {
   CookingPot,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { isLocale, replaceLocaleInPathname } from "@/i18n/routing";
+import { useSearchParams } from "next/navigation";
 
 // Components
 import WelcomeDialog from "./WelcomeDialog";
 import HomeSidebar from "../components/HomeSidebar";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 import HomeHeader from "./HomeHeader";
 import MobileNavigation from "../components/MobileNavigation";
 import DailyNutritionSummary from "./DailyNutritionSummary";
@@ -38,16 +31,16 @@ import ComingSoonPage from "./ComingSoonPage";
 import PantrySection from "./PantrySection";
 import BodyHealthCircle from "./BodyHealtCircle";
 import WeightTracker from "./WeightTracker";
-import ProfilePageClient from "@/app/profile/components/ProfilePageClient";
+import ProfilePageClient from "@/app/home/components/profile/ProfilePageClient";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
 import { NotificationBanner } from "@/components/pwa/NotificationBanner";
 import FeedbackButton from "@/components/FeedbackButton";
 
 import { UpgradePopup } from "@/components/billing/UpgradePopup";
-import ChatWithRivoPage from "@/app/[locale]/chat-with-rivo/ChatWithRivoPage";
+import ChatWithRivoPage from "@/app/chat-with-rivo/ChatWithRivoPage";
 import { FeatureFlag } from "@/components/ui/FeatureFlag";
 import KitchenCounterPage from "@/app/kitchen-counter/KitchenCounterPage";
-import type { BasicHomeRecipePreview } from "@/app/[locale]/home/page";
+import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import type { AppHomeSection } from "@/app/home/types/navigation";
 import { normalizeRecipeInstructions } from "@/lib/recipe-instructions";
 
@@ -128,8 +121,6 @@ function readStoredKitchenCounterRecipe(): BasicHomeRecipePreview | null {
 export default function HomePagePremium() {
   const t = useTranslations("home");
   const locale = useLocale();
-  const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
@@ -162,19 +153,20 @@ export default function HomePagePremium() {
   // Toggle to trigger manual meal-plan re-fetches without reloading the page
   const [generationIteration, setGenerationIteration] = useState(0);
 
-  // ... inside HomePagePremium component ...
   const [activeSection, setActiveSection] = useState<AppHomeSection>("home");
 
-  const [selectedKitchenCounter, setSelectedKitchenCounter] = useState<BasicHomeRecipePreview | null>(null);
+  const [selectedKitchenCounter, setSelectedKitchenCounter] =
+    useState<BasicHomeRecipePreview | null>(null);
 
-  // Restore selected kitchen counter recipe from sessionStorage (survives page refresh)
   useEffect(() => {
     setSelectedKitchenCounter(readStoredKitchenCounterRecipe());
   }, []);
 
   const handleKitchenCounterBack = useCallback(() => {
     if (typeof window !== "undefined") {
-      window.sessionStorage.removeItem(KITCHEN_COUNTER_SELECTED_RECIPE_STORAGE_KEY);
+      window.sessionStorage.removeItem(
+        KITCHEN_COUNTER_SELECTED_RECIPE_STORAGE_KEY,
+      );
     }
     setSelectedKitchenCounter(null);
     setActiveSection("home");
@@ -231,15 +223,6 @@ export default function HomePagePremium() {
     setWelcomeCheckDone(true);
   }, [session?.user]);
 
-  // Show upgrade popup for basic users on every home visit — temporarily disabled
-  // useEffect(() => {
-  //   if (!welcomeCheckDone || !session?.user) return;
-  //   if (session.user.membership !== "basic") return;
-  //   if (showWelcomeDialog) return;
-  //   const timer = setTimeout(() => setShowUpgradePopup(true), 500);
-  //   return () => clearTimeout(timer);
-  // }, [welcomeCheckDone]);
-
   const handleCloseDialog = async () => {
     setShowWelcomeDialog(false);
     try {
@@ -256,11 +239,6 @@ export default function HomePagePremium() {
         metadata: { userId: session?.user?.id },
       });
     }
-
-    // Show upgrade popup for basic users after welcome dialog closes — temporarily disabled
-    // if (session?.user?.membership === "basic") {
-    //   setTimeout(() => setShowUpgradePopup(true), 500);
-    // }
   };
 
   // FETCH SHOPPING LISTS
@@ -609,36 +587,7 @@ export default function HomePagePremium() {
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <Select
-                    value={locale}
-                    onValueChange={(value) => {
-                      if (!isLocale(value)) return;
-                      const nextPathname = replaceLocaleInPathname(
-                        pathname,
-                        value,
-                      );
-                      const queryString = searchParams.toString();
-                      const hash =
-                        typeof window !== "undefined"
-                          ? window.location.hash
-                          : "";
-                      router.push(
-                        `${nextPathname}${queryString ? `?${queryString}` : ""}${hash}`,
-                      );
-                    }}
-                  >
-                    <SelectTrigger
-                      size="sm"
-                      aria-label={t("navbar.language")}
-                      className="h-9 w-[4.5rem] rounded-full border-transparent bg-transparent px-2 shadow-none hover:bg-gray-100 focus:ring-eatrivo-purple/15"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sk">SK</SelectItem>
-                      <SelectItem value="en">EN</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <LanguageSwitcher />
                 </div>
               </div>
 

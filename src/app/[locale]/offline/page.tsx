@@ -2,14 +2,10 @@
 
 import { WifiOff } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { getLocaleFromPathname } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 
 export default function OfflinePage() {
-  const pathname = usePathname();
-  const locale = getLocaleFromPathname(pathname);
   const t = useTranslations("offline");
 
   return (
@@ -54,7 +50,7 @@ export default function OfflinePage() {
             {t("tryAgain")}
           </Button>
 
-          <Link href={`/${locale}/home`}>
+          <Link href="/home">
             <Button variant="outline" className="w-full">
               {t("goToHome")}
             </Button>

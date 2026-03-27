@@ -7,7 +7,7 @@ import { normalizeRecipeInstructions } from "@/lib/recipe-instructions";
 import type {
   BasicHomePantrySummary,
   BasicHomeRecipePreview,
-} from "@/app/[locale]/home/page";
+} from "@/app/home/types/data";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */

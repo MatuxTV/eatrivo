@@ -51,7 +51,6 @@ export default function ProfilePageClient({ onBack: _onBack }: ProfilePageClient
     const fetchProfileData = async () => {
       try {
         setIsLoading(true);
-        // Fetch user profile and nutrition data
         const response = await fetch("/api/user/profile");
         if (!response.ok) throw new Error("Failed to fetch profile");
 
@@ -77,7 +76,6 @@ export default function ProfilePageClient({ onBack: _onBack }: ProfilePageClient
   return (
     <div className="bg-eatrivo-white-primary min-h-full">
       <div className="max-w-5xl mx-auto p-6">
-        {/* Navigation Tabs */}
         <div className="mb-8">
           <div className="flex p-1 bg-white rounded-xl border border-gray-200 shadow-sm w-fit">
             {tabs.map((tab) => (
@@ -104,7 +102,6 @@ export default function ProfilePageClient({ onBack: _onBack }: ProfilePageClient
           </div>
         </div>
 
-        {/* Content */}
         <AnimatePresence mode="wait">
           {activeTab === "personal" && (
             <PersonalInfoSection

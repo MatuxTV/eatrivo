@@ -288,7 +288,7 @@ import { NUTRITION_KEYWORDS, INTENT_CLASSIFY_PROMPT } from "../constants";
 import type { Intent } from "../types";
 
 const intentModel = new ChatGoogleGenerativeAI({
-  model: "gemini-3-flash-preview",
+  model: "gemini-3.1-flash-lite-preview",
   temperature: 0,
   apiKey: process.env.GOOGLE_AI_API_KEY,
 });
@@ -486,7 +486,7 @@ import { AIMessage } from "@langchain/core/messages";
 import { ChatState } from "../state";
 
 const rivoModel = new ChatGoogleGenerativeAI({
-  model: "gemini-3-flash-preview",
+  model: "gemini-3.1-flash-lite-preview",
   temperature: 0.7,
   maxOutputTokens: 1024,
   apiKey: process.env.GOOGLE_AI_API_KEY,
