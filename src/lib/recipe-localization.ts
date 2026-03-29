@@ -9,7 +9,6 @@ export interface RecipeTranslationRecord {
 export interface IngredientTranslationRecord {
   locale: string;
   displayName: string;
-  ingredientName: string | null;
 }
 
 const DEFAULT_RECIPE_LOCALE = "en";
@@ -87,17 +86,12 @@ export function resolveIngredientTranslation(
 }
 
 export function resolveIngredientDisplayName(
-  translation: Pick<IngredientTranslationRecord, "displayName" | "ingredientName"> | null | undefined,
+  translation: Pick<IngredientTranslationRecord, "displayName"> | null | undefined,
   fallbackName?: string | null,
 ): string | null {
   const displayName = translation?.displayName?.trim();
   if (displayName) {
     return displayName;
-  }
-
-  const ingredientName = translation?.ingredientName?.trim();
-  if (ingredientName) {
-    return ingredientName;
   }
 
   const fallback = fallbackName?.trim();

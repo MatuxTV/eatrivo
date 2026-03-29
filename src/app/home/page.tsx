@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
+import { asc, count, desc, eq, inArray } from "drizzle-orm";
 
 import { auth } from "../../../auth";
 import HomePage from "@/app/home/basic/HomePage";
@@ -35,61 +35,10 @@ import {
 import { guessFoodCategory } from "@/lib/units";
 import {
   normalizeRecipeLocale,
+  resolveRecipeTranslation,
   resolveIngredientDisplayName,
   resolveIngredientTranslation,
 } from "@/lib/recipe-localization";
-
-type StoredIngredientTranslation = {
-  display_name: string;
-  ingredient_name: string | null;
-};
-
-type StoredRecipeIngredient = {
-  translations?: Record<string, StoredIngredientTranslation>;
-};
-
-function resolveStoredIngredientDisplayName(
-  translation: StoredIngredientTranslation | undefined,
-): string | null {
-  const displayName = translation?.display_name?.trim();
-  if (displayName) {
-    return displayName;
-  }
-
-  const ingredientName = translation?.ingredient_name?.trim();
-  return ingredientName || null;
-}
-
-function extractAllIngredientNames(
-  ingredients: unknown,
-  locale: string,
-): string[] {
-  if (!Array.isArray(ingredients)) {
-    return [];
-  }
-
-  const normalizedLocale = locale.toLowerCase();
-
-  return ingredients.flatMap((ingredient) => {
-    if (!ingredient || typeof ingredient !== "object") {
-      return [];
-    }
-
-    const translations = (ingredient as StoredRecipeIngredient).translations;
-    if (!translations || typeof translations !== "object") {
-      return [];
-    }
-
-    const translation =
-      translations[normalizedLocale] ??
-      translations.en ??
-      Object.values(translations)[0];
-
-    const label = resolveStoredIngredientDisplayName(translation);
-
-    return label ? [label] : [];
-  });
-}
 
 async function getBasicHomeData(
   userId: string,
@@ -117,50 +66,49 @@ async function getBasicHomeData(
     .select({
       id: recipes.id,
       slug: recipes.slug,
-      fallbackName: recipes.name,
-      fallbackCategory: recipes.category,
       categoryKey: recipes.categoryKey,
+      defaultLocale: recipes.defaultLocale,
+      servings: recipes.servings,
       totalTimeMin: recipes.totalTimeMin,
       calories: recipes.calories,
       proteinG: recipes.proteinG,
       carbsG: recipes.carbohydratesG,
       fatG: recipes.fatG,
+      restrictionFlags: recipes.restrictionFlags,
       dietTags: recipes.dietTags,
-      ingredients: recipes.ingredients,
-      fallbackInstructions: recipes.instructions,
       mealPrepFriendly: recipes.mealPrepFriendly,
-      localizedName: recipeTranslations.name,
-      localizedCategory: recipeTranslations.categoryLabel,
-      localizedInstructions: recipeTranslations.instructions,
     })
     .from(recipes)
-    .leftJoin(
-      recipeTranslations,
-      and(
-        eq(recipeTranslations.recipeId, recipes.id),
-        eq(recipeTranslations.locale, locale),
-      ),
-    )
     .where(dietFilterCondition ? dietFilterCondition : undefined)
     .orderBy(
       desc(recipes.proteinG),
       asc(recipes.totalTimeMin),
-      asc(recipes.name),
+      asc(recipes.slug),
     )
     .limit(8);
 
   const featuredRecipeIds = featuredRecipeRows.map((row) => row.id);
-  const [featuredIngredientRows, featuredIngredientTranslationRows] =
+  const [featuredRecipeTranslationRows, featuredIngredientRows, featuredIngredientTranslationRows] =
     featuredRecipeIds.length === 0
-      ? [[], []]
+      ? [[], [], []]
       : await Promise.all([
+          db
+            .select({
+              recipeId: recipeTranslations.recipeId,
+              locale: recipeTranslations.locale,
+              name: recipeTranslations.name,
+              categoryLabel: recipeTranslations.categoryLabel,
+              servingUnitLabel: recipeTranslations.servingUnitLabel,
+              instructions: recipeTranslations.instructions,
+            })
+            .from(recipeTranslations)
+            .where(inArray(recipeTranslations.recipeId, featuredRecipeIds)),
           db
             .select({
               recipeId: recipeIngredients.recipeId,
               recipeIngredientId: recipeIngredients.id,
               defaultLocale: recipes.defaultLocale,
-              ingredientName: recipeIngredients.ingredientName,
-              displayName: recipeIngredients.displayName,
+              canonicalName: recipeIngredients.canonicalName,
               ingredientKey: recipeIngredients.ingredientKey,
               ingredientSpecificKey: recipeIngredients.ingredientSpecificKey,
               quantity: recipeIngredients.quantity,
@@ -176,14 +124,37 @@ async function getBasicHomeData(
               recipeIngredientId: recipeIngredientTranslations.recipeIngredientId,
               locale: recipeIngredientTranslations.locale,
               displayName: recipeIngredientTranslations.displayName,
-              ingredientName: recipeIngredientTranslations.ingredientName,
             })
             .from(recipeIngredientTranslations),
         ]);
 
+  const recipeTranslationMap = new Map<
+    string,
+    Map<
+      string,
+      {
+        locale: string;
+        name: string;
+        categoryLabel: string | null;
+        servingUnitLabel: string | null;
+        instructions: unknown;
+      }
+    >
+  >();
+
+  for (const row of featuredRecipeTranslationRows) {
+    let translationMap = recipeTranslationMap.get(row.recipeId);
+    if (!translationMap) {
+      translationMap = new Map();
+      recipeTranslationMap.set(row.recipeId, translationMap);
+    }
+
+    translationMap.set(normalizeRecipeLocale(row.locale), row);
+  }
+
   const ingredientTranslationMap = new Map<
     string,
-    Map<string, { locale: string; displayName: string; ingredientName: string | null }>
+    Map<string, { locale: string; displayName: string }>
   >();
 
   for (const row of featuredIngredientTranslationRows) {
@@ -213,12 +184,12 @@ async function getBasicHomeData(
 
     const existingItems = ingredientItemsByRecipeId.get(row.recipeId) ?? [];
     const ingredientName =
-      resolveIngredientDisplayName(localizedIngredient, row.displayName) ??
-      row.ingredientName ??
-      row.displayName;
+      resolveIngredientDisplayName(localizedIngredient, row.canonicalName) ??
+      row.canonicalName ??
+      row.ingredientKey ??
+      "ingredient";
     const ingredientCategoryName =
-      localizedIngredient?.ingredientName?.trim() ||
-      row.ingredientName?.trim() ||
+      row.canonicalName?.trim() ||
       ingredientName;
 
     existingItems.push({
@@ -234,11 +205,6 @@ async function getBasicHomeData(
     ingredientItemsByRecipeId.set(row.recipeId, existingItems);
   }
 
-  const allIngredients = featuredRecipeRows.map((row) => ({
-    id: row.id,
-    allNames: extractAllIngredientNames(row.ingredients, locale),
-  }));
-
   const buildFeaturedRecipes = (
     availabilityByRecipeId?: Map<
       string,
@@ -250,25 +216,36 @@ async function getBasicHomeData(
         : never
     >,
   ): BasicHomeRecipePreview[] =>
-    featuredRecipeRows.map((row) => {
+    featuredRecipeRows.flatMap((row) => {
+      const localizedRecipe = resolveRecipeTranslation(
+        recipeTranslationMap.get(row.id),
+        locale,
+        row.defaultLocale,
+      );
+      if (!localizedRecipe) {
+        return [];
+      }
+
       const fullIngredients =
-        allIngredients.find((r) => r.id === row.id)?.allNames ?? [];
+        ingredientItemsByRecipeId.get(row.id)?.map((ingredient) => ingredient.name) ?? [];
       const availability = availabilityByRecipeId?.get(row.id);
 
-      return {
+      return [{
         id: row.id,
         slug: row.slug,
-        title: row.localizedName ?? row.fallbackName,
-        category: row.localizedCategory ?? row.fallbackCategory,
+        title: localizedRecipe.name,
+        category: localizedRecipe.categoryLabel ?? row.categoryKey,
         categoryKey: row.categoryKey,
+        servings: row.servings,
         totalTimeMin: row.totalTimeMin,
         calories: row.calories,
         proteinG: row.proteinG,
         carbsG: row.carbsG,
         fatG: row.fatG,
-        instructions: normalizeRecipeInstructions(
-          row.localizedInstructions ?? row.fallbackInstructions,
-        ),
+        restrictionFlags: Array.isArray(row.restrictionFlags)
+          ? row.restrictionFlags
+          : [],
+        instructions: normalizeRecipeInstructions(localizedRecipe.instructions),
         dietTags: Array.isArray(row.dietTags) ? row.dietTags : [],
         ingredientItems:
           availability?.ingredientItems ??
@@ -278,7 +255,7 @@ async function getBasicHomeData(
         matchedIngredients: availability?.matchedIngredients,
         mealPrepFriendly: row.mealPrepFriendly,
         missingIngredients: availability?.missingIngredientNames,
-      };
+      }];
     });
 
   const featuredRecipes = buildFeaturedRecipes();
@@ -340,11 +317,13 @@ async function getBasicHomeData(
       title: match.name,
       category: match.category,
       categoryKey: match.categoryKey,
+      servings: match.servings,
       totalTimeMin: match.totalTimeMin,
       calories: match.calories,
       proteinG: match.proteinG,
       carbsG: match.carbohydratesG,
       fatG: match.fatG,
+      restrictionFlags: match.restrictionFlags,
       instructions: match.instructions,
       dietTags: [],
       ingredientItems: match.ingredientItems,
@@ -358,11 +337,13 @@ async function getBasicHomeData(
       title: match.name,
       category: match.category,
       categoryKey: match.categoryKey,
+      servings: match.servings,
       totalTimeMin: match.totalTimeMin,
       calories: match.calories,
       proteinG: match.proteinG,
       carbsG: match.carbohydratesG,
       fatG: match.fatG,
+      restrictionFlags: match.restrictionFlags,
       instructions: match.instructions,
       dietTags: [],
       ingredientItems: match.ingredientItems,

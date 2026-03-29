@@ -7,11 +7,13 @@ export interface BasicHomeRecipePreview {
   title: string;
   category: string;
   categoryKey: string;
+  servings: number;
   totalTimeMin: number;
   calories: number;
   proteinG: number;
   carbsG: number;
   fatG: number;
+  restrictionFlags: string[];
   instructions: RecipeInstruction[];
   dietTags: string[];
   ingredientItems: RecipeIngredientItem[];

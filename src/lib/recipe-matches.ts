@@ -56,6 +56,7 @@ export interface MatchedRecipe {
   proteinG: number;
   carbohydratesG: number;
   fatG: number;
+  restrictionFlags: string[];
   instructions: RecipeInstruction[];
   ingredientItems: RecipeIngredientItem[];
   mealPrepFriendly: boolean;
@@ -384,24 +385,20 @@ async function analyzeRecipeMatchesForUserProfile(
           recipeId: recipes.id,
           slug: recipes.slug,
           externalKey: recipes.externalKey,
-          name: recipes.name,
-          category: recipes.category,
           categoryKey: recipes.categoryKey,
           defaultLocale: recipes.defaultLocale,
           servings: recipes.servings,
-          servingUnit: recipes.servingUnit,
           prepTimeMin: recipes.prepTimeMin,
           totalTimeMin: recipes.totalTimeMin,
           calories: recipes.calories,
           proteinG: recipes.proteinG,
           carbohydratesG: recipes.carbohydratesG,
           fatG: recipes.fatG,
-          instructions: recipes.instructions,
+          restrictionFlags: recipes.restrictionFlags,
           mealPrepFriendly: recipes.mealPrepFriendly,
+          canonicalName: recipeIngredients.canonicalName,
           ingredientKey: recipeIngredients.ingredientKey,
           ingredientSpecificKey: recipeIngredients.ingredientSpecificKey,
-          ingredientName: recipeIngredients.ingredientName,
-          displayName: recipeIngredients.displayName,
           quantity: recipeIngredients.quantity,
           unit: recipeIngredients.unit,
           optional: recipeIngredients.optional,
@@ -431,7 +428,6 @@ async function analyzeRecipeMatchesForUserProfile(
           recipeIngredientId: recipeIngredientTranslations.recipeIngredientId,
           locale: recipeIngredientTranslations.locale,
           displayName: recipeIngredientTranslations.displayName,
-          ingredientName: recipeIngredientTranslations.ingredientName,
         })
         .from(recipeIngredientTranslations),
     ]);
@@ -469,7 +465,7 @@ async function analyzeRecipeMatchesForUserProfile(
 
   const ingredientTranslationMap = new Map<
     string,
-    Map<string, { locale: string; displayName: string; ingredientName: string | null }>
+    Map<string, { locale: string; displayName: string }>
   >();
 
   for (const row of ingredientTranslationRows) {
@@ -500,25 +496,30 @@ async function analyzeRecipeMatchesForUserProfile(
         row.defaultLocale,
       );
 
+      if (!localizedRecipe) {
+        continue;
+      }
+
       bucket = {
         recipe: {
           id: row.recipeId,
           slug: row.slug,
           externalKey: row.externalKey,
-          name: localizedRecipe?.name ?? row.name,
-          category: localizedRecipe?.categoryLabel ?? row.category,
+          name: localizedRecipe.name,
+          category: localizedRecipe.categoryLabel ?? row.categoryKey,
           categoryKey: row.categoryKey,
           servings: row.servings,
-          servingUnit: localizedRecipe?.servingUnitLabel ?? row.servingUnit,
+          servingUnit: localizedRecipe.servingUnitLabel ?? null,
           prepTimeMin: row.prepTimeMin,
           totalTimeMin: row.totalTimeMin,
           calories: row.calories,
           proteinG: row.proteinG,
           carbohydratesG: row.carbohydratesG,
           fatG: row.fatG,
-          instructions: normalizeRecipeInstructions(
-            localizedRecipe?.instructions ?? row.instructions,
-          ),
+          restrictionFlags: Array.isArray(row.restrictionFlags)
+            ? row.restrictionFlags
+            : [],
+          instructions: normalizeRecipeInstructions(localizedRecipe.instructions),
           ingredientItems: [],
           mealPrepFriendly: row.mealPrepFriendly,
         },
@@ -535,6 +536,14 @@ async function analyzeRecipeMatchesForUserProfile(
         requestedLocale,
         row.defaultLocale,
       );
+      const fallbackName =
+        resolveIngredientDisplayName(localizedIngredient, row.canonicalName) ??
+        row.canonicalName ??
+        row.ingredientKey ??
+        "ingredient";
+      const categoryLabel =
+        row.canonicalName?.trim() ||
+        fallbackName;
 
       bucket.requiredIngredients.set(
         recipeMatchKey,
@@ -542,15 +551,8 @@ async function analyzeRecipeMatchesForUserProfile(
           recipeMatchKey,
           ingredientKey,
           ingredientSpecificKey: row.ingredientSpecificKey,
-          fallbackName:
-            resolveIngredientDisplayName(localizedIngredient, row.displayName) ??
-            row.ingredientName ??
-            row.displayName,
-          category: guessFoodCategory(
-            localizedIngredient?.ingredientName?.trim() ||
-              row.ingredientName?.trim() ||
-              row.displayName,
-          ),
+          fallbackName,
+          category: guessFoodCategory(categoryLabel),
           recipeIngredientId: row.recipeIngredientId,
           amount: formatRecipeIngredientAmount(
             row.quantity,

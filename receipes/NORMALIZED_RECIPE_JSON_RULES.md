@@ -4,6 +4,8 @@ This document defines the canonical upstream contract for any language model or 
 
 **Goal:** produce recipe files that are already normalized into the canonical multilingual product shape so the application only needs to validate and persist them.
 
+The importer now enforces this canonical multilingual shape strictly. Legacy english-only recipe payloads and flat ingredient payloads are no longer accepted.
+
 This document is intentionally stricter than legacy importer compatibility. Where a temporary compatibility alias is still needed by existing tooling, that alias is called out explicitly as transitional and must not be treated as the semantic source of truth.
 
 ---
@@ -56,8 +58,7 @@ Each recipe object inside the `recipes` array must use exactly these recipe-leve
       "sort_order": 0,
       "translations": {
         "en": {
-          "display_name": "string",
-          "ingredient_name": "string or null"
+          "display_name": "string"
         }
       }
     }
@@ -76,8 +77,6 @@ Each recipe object inside the `recipes` array must use exactly these recipe-leve
 ```
 
 No extra recipe-level keys are allowed.
-
-Ingredient translation objects may include the transitional compatibility alias `ingredient_name` while the importer still depends on it. The semantic source of truth remains `canonical_name` on the ingredient object itself.
 
 ---
 
@@ -266,8 +265,6 @@ Each ingredient must already be structured. Raw ingredient strings are not allow
 
 Each ingredient translation must contain `display_name`. Use a concise UI-friendly localized ingredient label in the target language.
 
-During the migration period, each ingredient translation should also include `ingredient_name` as a compatibility alias for current import tooling. When present, `ingredient_name` must equal `canonical_name` or `null`; it must never diverge semantically from the ingredient-level canonical identity.
-
 Do not include unrelated commentary, nutrition notes, or source annotations.
 
 ### Localized label contract for `display_name`
@@ -325,11 +322,11 @@ The recipe JSON itself must keep these pieces separate.
 
 ```json
 "translations": {
-  "en": { "display_name": "olive oil", "ingredient_name": "olive oil" },
-  "sk": { "display_name": "olivový olej", "ingredient_name": "olive oil" },
-  "cs": { "display_name": "olivový olej", "ingredient_name": "olive oil" },
-  "de": { "display_name": "Olivenöl", "ingredient_name": "olive oil" },
-  "hu": { "display_name": "olívaolaj", "ingredient_name": "olive oil" }
+  "en": { "display_name": "olive oil" },
+  "sk": { "display_name": "olivový olej" },
+  "cs": { "display_name": "olivový olej" },
+  "de": { "display_name": "Olivenöl" },
+  "hu": { "display_name": "olívaolaj" }
 }
 ```
 
@@ -337,11 +334,11 @@ The recipe JSON itself must keep these pieces separate.
 
 ```json
 "translations": {
-  "en": { "display_name": "egg", "ingredient_name": "egg" },
-  "sk": { "display_name": "vajce", "ingredient_name": "egg" },
-  "cs": { "display_name": "vejce", "ingredient_name": "egg" },
-  "de": { "display_name": "Ei", "ingredient_name": "egg" },
-  "hu": { "display_name": "tojás", "ingredient_name": "egg" }
+  "en": { "display_name": "egg" },
+  "sk": { "display_name": "vajce" },
+  "cs": { "display_name": "vejce" },
+  "de": { "display_name": "Ei" },
+  "hu": { "display_name": "tojás" }
 }
 ```
 
@@ -510,18 +507,6 @@ Apply these transformations consistently:
 - Derive `ingredient_specific_key` only when the exact variant is confidently known and useful for pantry matching.
 - Generate locale translations from the same canonical ingredient and recipe identity.
 
-### Migration compatibility with current importer
-
-The canonical contract is centered on `canonical_name`.
-
-However, while the current importer still consumes `ingredient_name` inside ingredient translation objects, upstream payloads should emit the following compatibility mirror during migration:
-
-- `translations.{locale}.ingredient_name = canonical_name`
-
-This alias is transitional only. New downstream logic must treat `canonical_name` as the semantic source of truth.
-
----
-
 ## Forbidden output patterns
 
 Do not output:
@@ -554,7 +539,7 @@ Before returning the final JSON, verify all of the following:
 - [ ] Every ingredient has `ingredient_key`, `ingredient_specific_key`, `canonical_name`, `quantity`, `unit`, `optional`, `sort_order`, and `translations`.
 - [ ] The `default_locale` exists inside each recipe `translations` map.
 - [ ] Each ingredient `translations` map contains the locales needed by the recipe.
-- [ ] Each ingredient translation contains `display_name`; during migration it also mirrors `canonical_name` into `ingredient_name`.
+- [ ] Each ingredient translation contains `display_name`.
 - [ ] Each `display_name` contains only the localized ingredient label, not the quantity or unit.
 - [ ] Each localized `display_name` is normalized to the locale-appropriate base ingredient form.
 - [ ] `sort_order` is continuous from `0`.

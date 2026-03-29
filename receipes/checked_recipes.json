@@ -1,0 +1,641 @@
+{
+  "recipes": [
+    {
+      "external_key": "dinner-authentic-italian-lasagne",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-gluten",
+        "contains-dairy",
+        "contains-eggs"
+      ],
+      "servings": 4,
+      "prep_time_min": 50,
+      "total_time_min": 130,
+      "nutrition_per_serving": {
+        "calories": 672,
+        "protein_g": 32,
+        "carbohydrates_g": 54,
+        "fat_g": 36
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "minced-meat",
+          "ingredient_specific_key": "minced-meat",
+          "canonical_name": "minced meat",
+          "quantity": 600,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "minced meat"
+            },
+            "sk": {
+              "display_name": "mleté mäso"
+            }
+          }
+        },
+        {
+          "ingredient_key": "beef-broth",
+          "ingredient_specific_key": "beef-broth",
+          "canonical_name": "beef broth",
+          "quantity": 300,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "beef broth"
+            },
+            "sk": {
+              "display_name": "hovädzí vývar"
+            }
+          }
+        },
+        {
+          "ingredient_key": "peeled-tomato",
+          "ingredient_specific_key": "peeled-tomato",
+          "canonical_name": "peeled tomato",
+          "quantity": 350,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "peeled tomato"
+            },
+            "sk": {
+              "display_name": "lúpaná paradajka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "quantity": 4,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato-puree",
+          "ingredient_specific_key": "tomato-puree",
+          "canonical_name": "tomato puree",
+          "quantity": 3,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "tomato puree"
+            },
+            "sk": {
+              "display_name": "paradajkový pretlak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "quantity": 3,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "ingredient_specific_key": "salt",
+          "canonical_name": "salt",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "salt"
+            },
+            "sk": {
+              "display_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "black-pepper",
+          "ingredient_specific_key": "black-pepper",
+          "canonical_name": "black pepper",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "black pepper"
+            },
+            "sk": {
+              "display_name": "čierne korenie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sweet-paprika",
+          "ingredient_specific_key": "sweet-paprika",
+          "canonical_name": "sweet paprika",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "sweet paprika"
+            },
+            "sk": {
+              "display_name": "sladká mletá paprika"
+            }
+          }
+        },
+        {
+          "ingredient_key": "basil",
+          "ingredient_specific_key": "basil",
+          "canonical_name": "basil",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "fresh basil"
+            },
+            "sk": {
+              "display_name": "čerstvá bazalka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "butter",
+          "ingredient_specific_key": "butter",
+          "canonical_name": "butter",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "butter"
+            },
+            "sk": {
+              "display_name": "maslo"
+            }
+          }
+        },
+        {
+          "ingredient_key": "wheat-flour",
+          "ingredient_specific_key": "wheat-flour",
+          "canonical_name": "wheat flour",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 12,
+          "translations": {
+            "en": {
+              "display_name": "wheat flour"
+            },
+            "sk": {
+              "display_name": "hladká múka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "parmesan",
+          "ingredient_specific_key": "parmesan",
+          "canonical_name": "parmesan",
+          "quantity": 40,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 13,
+          "translations": {
+            "en": {
+              "display_name": "parmesan"
+            },
+            "sk": {
+              "display_name": "parmezán"
+            }
+          }
+        },
+        {
+          "ingredient_key": "milk",
+          "ingredient_specific_key": "milk",
+          "canonical_name": "milk",
+          "quantity": 500,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 14,
+          "translations": {
+            "en": {
+              "display_name": "milk"
+            },
+            "sk": {
+              "display_name": "mlieko"
+            }
+          }
+        },
+        {
+          "ingredient_key": "nutmeg",
+          "ingredient_specific_key": "nutmeg",
+          "canonical_name": "nutmeg",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 15,
+          "translations": {
+            "en": {
+              "display_name": "nutmeg"
+            },
+            "sk": {
+              "display_name": "muškátový oriešok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lasagna-sheet",
+          "ingredient_specific_key": "lasagna-sheet",
+          "canonical_name": "lasagna sheet",
+          "quantity": 500,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 16,
+          "translations": {
+            "en": {
+              "display_name": "lasagna sheet"
+            },
+            "sk": {
+              "display_name": "lasagne"
+            }
+          }
+        },
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 17,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cheese",
+          "ingredient_specific_key": "cheese",
+          "canonical_name": "cheese",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 18,
+          "translations": {
+            "en": {
+              "display_name": "cheese"
+            },
+            "sk": {
+              "display_name": "syr"
+            }
+          }
+        },
+        {
+          "ingredient_key": "parmesan",
+          "ingredient_specific_key": "parmesan",
+          "canonical_name": "parmesan",
+          "quantity": 40,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 19,
+          "translations": {
+            "en": {
+              "display_name": "parmesan"
+            },
+            "sk": {
+              "display_name": "parmezán"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Authentic Italian Lasagna",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Peel and finely chop the onion and garlic. Heat the olive oil in a pan and sauté the onion and garlic until golden. Add the minced meat and cook until browned. Add black pepper and paprika, stir, and cook briefly. Pour in the beef broth and simmer for 15 to 20 minutes.",
+            "Meanwhile, prepare the tomato sauce. Blend the peeled tomatoes and mix with the tomato puree. Season with salt, paprika, black pepper, chopped basil, and crushed or grated garlic. Mix the sauce well, add it to the meat, and cook for another 10 minutes. Stir in more chopped basil if desired and remove from heat.",
+            "Melt the butter in a saucepan. Stir in the flour and mix until combined. Gradually pour in the milk while stirring continuously. Bring to a boil and cook for a few minutes, stirring constantly. Season with salt, black pepper, nutmeg, and grated parmesan. Mix well and set aside.",
+            "Place the lasagna sheets in boiling salted water and cook for about 3 minutes. Remove, rinse in cold water, and lay each sheet separately on a paper towel.",
+            "Preheat the oven to 190 °C and grease a baking dish with olive oil. Spread a thin layer of bechamel sauce on the bottom and arrange a layer of pasta sheets. Spread another thin layer of bechamel, add the bolognese mixture, sprinkle with grated cheese, top with more bechamel, and cover with pasta sheets. Repeat until all ingredients are used.",
+            "Finish with a layer of pasta sheets, spread the remaining bechamel on top, and sprinkle generously with cheese and parmesan. Bake in the preheated oven for about 45 minutes."
+          ],
+          "notes": "The original recipe suggests 4 servings, but the quantities yield a very large batch. It has been normalized to 8 realistic dinner portions."
+        },
+        "sk": {
+          "name": "Pravé talianske lasagne",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Cibuľu a cesnak ošúpeme a nakrájame nadrobno. Na panvici rozhorúčime olivový olej a cibuľu s cesnakom opečieme dozlatista. Pridáme mleté mäso a opekáme, kým nezhnedne. Pridáme mleté čierne korenie a červenú papriku, premiešame a krátko opekáme. Nalejeme hovädzí vývar a varíme 15 až 20 minút.",
+            "Lúpané paradajky rozmixujeme a zmiešame s paradajkovým pretlakom. Pridáme soľ, červenú papriku, čierne korenie, bazalku a prelisovaný cesnak. Omáčku pridáme k mäsu a varíme ďalších 10 minút. Podľa chuti môžeme pridať ešte čerstvú bazalku. Odstavíme.",
+            "Maslo necháme roztopiť v hrnci. Pridáme múku a miešame, kým sa nespoja. Za stáleho miešania pomaly prilievame mlieko a povaríme pár minút. Pridáme soľ, čierne korenie, muškátový oriešok a nastrúhaný parmezán. Dobre premiešame a odstavíme.",
+            "Pláty lasagní vložíme do vriacej osolenej vody a varíme cca 3 minúty. Vyberieme, opláchneme v studenej vode a každý plát samostatne uložíme na papierovú utierku.",
+            "Rúru vyhrejeme na 190 °C a zapekaciu misu vymastíme olivovým olejom. Na dno rozotrieme tenkú vrstvu bešamelu a rozložíme pláty cesta. Na cesto rozotrieme bešamel, pridáme bolonskú zmes, posypeme syrom a zakryjeme ďalšími plátmi cesta. Postup opakujeme, kým neminieme suroviny.",
+            "Zakončíme plátmi cesta potretými bešamelom a posypanými syrom a parmezánom. Pečieme vo vyhriatej rúre približne 45 minút."
+          ],
+          "notes": "Pôvodný recept uvádzal 4 porcie, čo pri danom množstve surovín predstavuje extrémne veľkú kalorickú nálož na jednu porciu. Prepočítané na 8 štandardných a realistických porcií."
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-baked-chicken-risotto",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein",
+        "gluten-free"
+      ],
+      "restriction_flags": [
+        "contains-dairy"
+      ],
+      "servings": 6,
+      "prep_time_min": 10,
+      "total_time_min": 45,
+      "nutrition_per_serving": {
+        "calories": 613,
+        "protein_g": 43,
+        "carbohydrates_g": 72,
+        "fat_g": 17
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "rice",
+          "ingredient_specific_key": "rice",
+          "canonical_name": "rice",
+          "quantity": 450,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "rice"
+            },
+            "sk": {
+              "display_name": "ryža"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vegetable-broth",
+          "ingredient_specific_key": "vegetable-broth",
+          "canonical_name": "vegetable broth",
+          "quantity": 720,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "vegetable broth"
+            },
+            "sk": {
+              "display_name": "zeleninový vývar"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chicken-breast",
+          "ingredient_specific_key": "chicken-breast",
+          "canonical_name": "chicken breast",
+          "quantity": 500,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "chicken breast"
+            },
+            "sk": {
+              "display_name": "kuracie prsia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "frozen-vegetable",
+          "ingredient_specific_key": "frozen-vegetable",
+          "canonical_name": "frozen vegetable",
+          "quantity": 300,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "frozen vegetable"
+            },
+            "sk": {
+              "display_name": "mrazená zelenina"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "oil",
+          "ingredient_specific_key": "oil",
+          "canonical_name": "oil",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "oil"
+            },
+            "sk": {
+              "display_name": "olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "paprika",
+          "ingredient_specific_key": "paprika",
+          "canonical_name": "paprika",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "paprika"
+            },
+            "sk": {
+              "display_name": "mletá paprika"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "ingredient_specific_key": "salt",
+          "canonical_name": "salt",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "salt"
+            },
+            "sk": {
+              "display_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "black-pepper",
+          "ingredient_specific_key": "black-pepper",
+          "canonical_name": "black pepper",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "black pepper"
+            },
+            "sk": {
+              "display_name": "čierne korenie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "hard-cheese",
+          "ingredient_specific_key": "hard-cheese",
+          "canonical_name": "hard cheese",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "hard cheese"
+            },
+            "sk": {
+              "display_name": "tvrdý syr"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "One-Pot Baked Chicken Risotto",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Preheat the oven to 200 °C. Peel and finely chop the onion and garlic. Cut the chicken breasts into small cubes.",
+            "Prepare a small roasting pan with a lid or a cast-iron pot.",
+            "Heat oil in the pot on the stove, sauté the onion until translucent, add the meat, and fry until sealed.",
+            "Add the frozen vegetables and sauté together for about 3 minutes. Stir in the rice, salt, pepper, paprika, and crushed garlic. Sauté for a minute, then pour in the hot broth.",
+            "Cover the pot tightly with a lid or seal it with aluminum foil (matte side up) to keep the steam inside. Place in the oven and bake for about 30 to 40 minutes. Do not open during baking.",
+            "Fluff the risotto with a fork, mix in or top with grated hard cheese, and serve immediately."
+          ],
+          "notes": "The original recipe indicated 6 servings, but the portions have been normalized to 4 to reflect realistic main-meal sizes for an adult."
+        },
+        "sk": {
+          "name": "Pečené kuracie rizoto z jedného hrnca",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Rúru predhrejeme na 200 °C. Cibuľu a cesnak ošúpeme a nakrájame nadrobno. Kuracie prsia nakrájame na menšie kocky.",
+            "Pripravíme si menší pekáč s vrchnákom alebo liatinový hrniec.",
+            "V hrnci alebo pekáči na sporáku zahrejeme olej, opražíme cibuľu dosklovita, pridáme mäso a restujeme, kým sa nezatiahne.",
+            "Pridáme mrazenú zeleninu a spoločne restujeme cca 3 minúty. Prisypeme ryžu, soľ, korenie, papriku a prelisovaný cesnak. Minútku restujeme a prilejeme horúci vývar.",
+            "Hrniec pevne zakryjeme vrchnákom alebo utesníme alobalom, aby neunikala para. Vložíme do rúry a pečieme približne 30 až 40 minút. Počas pečenia neotvárame.",
+            "Rizoto pred podávaním premiešame vidličkou, aby sa prevzdušnilo, posypeme alebo vmiešame tvrdý syr a ihneď servírujeme."
+          ],
+          "notes": "Pôvodný recept uvádzal 6 porcií. Množstvá boli prepočítané a znormalizované na 4 štandardné porcie pre dospelého človeka ako hlavné jedlo."
+        }
+      },
+      "meal_prep_friendly": true
+    }
+  ],
+  "rejected": []
+}

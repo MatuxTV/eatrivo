@@ -117,12 +117,9 @@ export const recipes = pgTable("recipes", {
     onDelete: "set null",
   }),
   sourceJobId: uuid("source_job_id"),
-  name: text("name").notNull(),
-  category: text("category").notNull(),
   categoryKey: text("category_key").notNull(),
   defaultLocale: text("default_locale").default("en").notNull(),
   servings: integer("servings").notNull(),
-  servingUnit: text("serving_unit"),
   prepTimeMin: integer("prep_time_min").notNull(),
   totalTimeMin: integer("total_time_min").notNull(),
   calories: integer("calories").notNull(),
@@ -131,9 +128,6 @@ export const recipes = pgTable("recipes", {
   fatG: integer("fat_g").notNull(),
   dietTags: jsonb("diet_tags").$type<string[]>().default([]).notNull(),
   restrictionFlags: jsonb("restriction_flags").$type<string[]>().default([]).notNull(),
-  ingredients: jsonb("ingredients").notNull(),
-  instructions: jsonb("instructions").notNull(),
-  notes: text("notes"),
   mealPrepFriendly: boolean("meal_prep_friendly").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
@@ -148,8 +142,7 @@ export const recipeIngredients = pgTable("recipe_ingredients", {
   recipeId: uuid("recipe_id")
     .notNull()
     .references(() => recipes.id, { onDelete: "cascade" }),
-  displayName: text("display_name").notNull(),
-  ingredientName: text("ingredient_name"),
+  canonicalName: text("canonical_name"),
   ingredientKey: text("ingredient_key"),
   ingredientSpecificKey: text("ingredient_specific_key"),
   quantity: numeric("quantity", { precision: 8, scale: 3 }),
@@ -196,7 +189,6 @@ export const recipeIngredientTranslations = pgTable(
       .references(() => recipeIngredients.id, { onDelete: "cascade" }),
     locale: text("locale").notNull(),
     displayName: text("display_name").notNull(),
-    ingredientName: text("ingredient_name"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

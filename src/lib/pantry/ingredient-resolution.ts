@@ -224,7 +224,7 @@ export async function loadIngredientAliasIndex(
     .select({
       ingredientKey: recipeIngredients.ingredientKey,
       locale: recipeIngredientTranslations.locale,
-      ingredientName: recipeIngredientTranslations.ingredientName,
+      ingredientName: recipeIngredients.canonicalName,
       displayName: recipeIngredientTranslations.displayName,
     })
     .from(recipeIngredientTranslations)

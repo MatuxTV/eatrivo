@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -46,6 +45,7 @@ import {
   type UserFoodPreferences,
 } from "@/lib/schemas/user";
 import { useTranslations } from "next-intl";
+import { motion } from "framer-motion";
 
 interface UserNutritionData {
   sex: "man" | "woman";
@@ -145,57 +145,49 @@ export default function NutritionPreferencesSection({
 
   if (isLoading) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.3 }}
-      >
-        <Card className="p-8">
+      <div>
+        <Card className="rounded-[1.8rem] border-[#efe2fb] bg-white p-8 shadow-[0_18px_40px_rgba(121,78,171,0.08)]">
           <div className="space-y-6">
             {[1, 2, 3, 4, 5].map((i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
         </Card>
-      </motion.div>
+      </div>
     );
   }
 
   const inputClasses =
-    "bg-white border-gray-200 focus:border-eatrivo-purple focus:ring-eatrivo-purple/20 h-12 rounded-xl";
+    "h-12 rounded-2xl border-[#e8d9fb] bg-white text-base focus:border-eatrivo-purple focus:ring-eatrivo-purple/20 sm:text-sm";
   const selectTriggerClasses =
-    "bg-white border-gray-200 focus:border-eatrivo-purple focus:ring-eatrivo-purple/20 h-12 rounded-xl";
+    "h-12 rounded-2xl border-[#e8d9fb] bg-white text-base focus:border-eatrivo-purple focus:ring-eatrivo-purple/20 sm:text-sm";
   const textareaClasses =
-    "bg-white border-gray-200 focus:border-eatrivo-purple focus:ring-eatrivo-purple/20 min-h-[100px] rounded-xl resize-none";
+    "min-h-[110px] resize-none rounded-2xl border-[#e8d9fb] bg-white text-base focus:border-eatrivo-purple focus:ring-eatrivo-purple/20 sm:text-sm";
   const labelClasses =
-    "text-sm font-semibold text-gray-700 flex items-center gap-2 mb-1.5";
+    "mb-1.5 flex items-center gap-2 text-sm font-semibold text-[#584a6a]";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Card className="p-8 bg-eatrivo-light">
+    <div>
+      <Card className="rounded-[1.8rem] border-[#efe2fb] bg-white p-4 shadow-[0_18px_40px_rgba(121,78,171,0.08)] sm:p-6 lg:p-8">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 sm:space-y-6 lg:space-y-8">
+            <div className="space-y-2">
+              <h2 className="text-xl font-black tracking-[-0.04em] text-[#35204f] sm:text-2xl">
                 {t("nutrition.title")}
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm font-medium text-[#87739f]">
                 {t("nutrition.description")}
               </p>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <Scale className="w-5 h-5 text-eatrivo-purple" />
+            <div className="space-y-4 rounded-[1.6rem] bg-[linear-gradient(180deg,#fdf8ff_0%,#f7eeff_100%)] p-4 ring-1 ring-[#eedfff] sm:p-5">
+              <h3 className="flex items-center gap-2 text-lg font-black tracking-[-0.03em] text-[#35204f]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-eatrivo-purple ring-1 ring-[#eadcff]">
+                  <Scale className="w-5 h-5" />
+                </span>
                 {t("nutrition.sections.physical")}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="sex"
@@ -324,12 +316,14 @@ export default function NutritionPreferencesSection({
               </div>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-eatrivo-purple" />
+            <div className="space-y-4 rounded-[1.6rem] bg-white p-4 ring-1 ring-[#efe3fb] sm:p-5">
+              <h3 className="flex items-center gap-2 text-lg font-black tracking-[-0.03em] text-[#35204f]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#faf3ff] text-eatrivo-purple ring-1 ring-[#eadcff]">
+                  <Activity className="w-5 h-5" />
+                </span>
                 {t("nutrition.sections.activityGoals")}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="activity_level"
@@ -392,12 +386,14 @@ export default function NutritionPreferencesSection({
               </div>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <UtensilsCrossed className="w-5 h-5 text-eatrivo-purple" />
+            <div className="space-y-4 rounded-[1.6rem] bg-white p-4 ring-1 ring-[#efe3fb] sm:p-5">
+              <h3 className="flex items-center gap-2 text-lg font-black tracking-[-0.03em] text-[#35204f]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#faf3ff] text-eatrivo-purple ring-1 ring-[#eadcff]">
+                  <UtensilsCrossed className="w-5 h-5" />
+                </span>
                 {t("nutrition.sections.diet")}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="diet_preferences"
@@ -489,8 +485,8 @@ export default function NutritionPreferencesSection({
                 />
               </div>
 
-              <div className="space-y-4 pt-4 border-t border-gray-100">
-                <div className="flex gap-3 p-4 bg-eatrivo-green/5 border border-eatrivo-green/20 rounded-xl">
+              <div className="space-y-4 border-t border-[#f1e8fb] pt-4">
+                <div className="flex gap-3 rounded-2xl border border-eatrivo-green/20 bg-eatrivo-green/5 p-4">
                   <ChefHat className="w-5 h-5 text-eatrivo-green flex-shrink-0 mt-0.5" />
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-gray-800">{t("nutrition.fields.mealPrep.noteTitle")}</p>
@@ -513,13 +509,13 @@ export default function NutritionPreferencesSection({
                           value={field.value ? "true" : "false"}
                           className="flex flex-col space-y-2"
                         >
-                          <div className="flex items-center space-x-3 p-3 border-2 border-gray-200 rounded-xl hover:border-eatrivo-purple/50 transition-colors cursor-pointer">
+                          <div className="flex cursor-pointer items-center space-x-3 rounded-2xl border-2 border-[#eadcff] bg-white p-3 transition-colors hover:border-eatrivo-purple/50">
                             <RadioGroupItem value="true" id="profile-mealPrep-yes" />
                             <label htmlFor="profile-mealPrep-yes" className="flex-1 cursor-pointer text-sm font-medium text-gray-700">
                               {t("nutrition.fields.mealPrep.yes")}
                             </label>
                           </div>
-                          <div className="flex items-center space-x-3 p-3 border-2 border-gray-200 rounded-xl hover:border-eatrivo-purple/50 transition-colors cursor-pointer">
+                          <div className="flex cursor-pointer items-center space-x-3 rounded-2xl border-2 border-[#eadcff] bg-white p-3 transition-colors hover:border-eatrivo-purple/50">
                             <RadioGroupItem value="false" id="profile-mealPrep-no" />
                             <label htmlFor="profile-mealPrep-no" className="flex-1 cursor-pointer text-sm font-medium text-gray-700">
                               {t("nutrition.fields.mealPrep.no")}
@@ -579,9 +575,11 @@ export default function NutritionPreferencesSection({
               </div>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <Heart className="w-5 h-5 text-eatrivo-purple" />
+            <div className="space-y-4 rounded-[1.6rem] bg-white p-4 ring-1 ring-[#efe3fb] sm:p-5">
+              <h3 className="flex items-center gap-2 text-lg font-black tracking-[-0.03em] text-[#35204f]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#faf3ff] text-eatrivo-purple ring-1 ring-[#eadcff]">
+                  <Heart className="w-5 h-5" />
+                </span>
                 {t("nutrition.sections.preferences")}
               </h3>
               <div className="space-y-4">
@@ -652,26 +650,28 @@ export default function NutritionPreferencesSection({
               </div>
             </div>
 
-            <Button
-              type="submit"
-              disabled={!form.formState.isDirty || isSaving}
-              className="w-full bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink hover:opacity-90 transition-opacity"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t("nutrition.actions.saving")}
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  {t("nutrition.actions.save")}
-                </>
-              )}
-            </Button>
+            <div className="pt-2">
+              <Button
+                type="submit"
+                disabled={!form.formState.isDirty || isSaving}
+                className="h-12 w-full rounded-2xl bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink text-base shadow-[0_14px_28px_rgba(125,73,207,0.25)] transition-opacity hover:opacity-90 sm:text-sm"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t("nutrition.actions.saving")}
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    {t("nutrition.actions.save")}
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
         </Form>
       </Card>
-    </motion.div>
+    </div>
   );
 }

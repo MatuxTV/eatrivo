@@ -24,21 +24,16 @@ function slugify(value: string): string {
     .replace(/-{2,}/g, "-");
 }
 
-function buildRecipeDisplayIngredient(
-  ingredient: CustomRecipeGeneratedRecipe["ingredientItems"][number],
-): string {
-  const amount = ingredient.amount?.trim();
-  const name = ingredient.name.trim();
-  return amount ? `${amount} ${name}` : name;
-}
-
 function buildPersistedIngredient(
   ingredient: CustomRecipeGeneratedRecipe["ingredientItems"][number],
   locale: "en" | "sk",
   sortOrder: number,
 ) {
-  const displayName = buildRecipeDisplayIngredient(ingredient);
-  const parsedIngredient = parseRecipeIngredient(displayName);
+  const canonicalInputName = ingredient.name.trim();
+  const displayName = canonicalInputName;
+  const parsedIngredient = parseRecipeIngredient(
+    ingredient.amount?.trim() ? `${ingredient.amount.trim()} ${canonicalInputName}` : canonicalInputName,
+  );
   const normalizedQuantity =
     typeof ingredient.quantityValue === "number" &&
     Number.isFinite(ingredient.quantityValue)
@@ -54,25 +49,8 @@ function buildPersistedIngredient(
 
   return {
     category,
-    json: {
-      ingredient_key: ingredient.ingredientKey ?? parsedIngredient.ingredientKey,
-      ingredient_specific_key: ingredient.ingredientSpecificKey ?? null,
-      canonical_name: ingredient.name.trim() ? ingredient.name.trim() : ingredientName,
-      quantity: normalizedQuantity,
-      unit: normalizedUnit,
-      optional: false,
-      sort_order: sortOrder,
-      category,
-      translations: {
-        [locale]: {
-          display_name: displayName,
-          ingredient_name: ingredientName,
-        },
-      },
-    },
     row: {
-      displayName,
-      ingredientName,
+      canonicalName: ingredient.name.trim() ? ingredient.name.trim() : ingredientName,
       ingredientKey: ingredient.ingredientKey ?? parsedIngredient.ingredientKey,
       ingredientSpecificKey: ingredient.ingredientSpecificKey ?? null,
       quantity: normalizedQuantity !== null ? String(normalizedQuantity) : null,
@@ -83,7 +61,6 @@ function buildPersistedIngredient(
     translation: {
       locale,
       displayName,
-      ingredientName,
     },
   };
 }
@@ -157,12 +134,9 @@ export async function persistAcceptedCustomRecipe(
     userGenerated: true,
     createdByUserId: input.userId,
     sourceJobId: input.sourceJobId ?? null,
-    name: input.recipe.name,
-    category: input.recipe.category,
     categoryKey,
     defaultLocale: input.locale,
     servings: input.recipe.servings,
-    servingUnit: input.recipe.servingUnit,
     prepTimeMin: input.recipe.prepTimeMin,
     totalTimeMin: input.recipe.totalTimeMin,
     calories: input.recipe.calories,
@@ -171,9 +145,6 @@ export async function persistAcceptedCustomRecipe(
     fatG: Math.round(input.recipe.fatG),
     dietTags: input.recipe.tags,
     restrictionFlags: [],
-    ingredients: persistedIngredients.map((ingredient) => ingredient.json),
-    instructions: input.recipe.instructions,
-    notes: input.recipe.description,
     mealPrepFriendly: input.recipe.mealPrepFriendly,
   };
 
@@ -188,12 +159,9 @@ export async function persistAcceptedCustomRecipe(
         userGenerated: recipePayload.userGenerated,
         createdByUserId: recipePayload.createdByUserId,
         sourceJobId: recipePayload.sourceJobId,
-        name: recipePayload.name,
-        category: recipePayload.category,
         categoryKey: recipePayload.categoryKey,
         defaultLocale: recipePayload.defaultLocale,
         servings: recipePayload.servings,
-        servingUnit: recipePayload.servingUnit,
         prepTimeMin: recipePayload.prepTimeMin,
         totalTimeMin: recipePayload.totalTimeMin,
         calories: recipePayload.calories,
@@ -202,9 +170,6 @@ export async function persistAcceptedCustomRecipe(
         fatG: recipePayload.fatG,
         dietTags: recipePayload.dietTags,
         restrictionFlags: recipePayload.restrictionFlags,
-        ingredients: recipePayload.ingredients,
-        instructions: recipePayload.instructions,
-        notes: recipePayload.notes,
         mealPrepFriendly: recipePayload.mealPrepFriendly,
         updatedAt: new Date(),
       },
@@ -234,10 +199,9 @@ export async function persistAcceptedCustomRecipe(
       .insert(recipeIngredients)
       .values({
         recipeId: upsertedRecipe.id,
-        displayName: ingredient.row.displayName,
-        ingredientName: ingredient.row.ingredientName,
+        canonicalName: ingredient.row.canonicalName,
         ingredientKey: ingredient.row.ingredientKey,
-          ingredientSpecificKey: ingredient.row.ingredientSpecificKey,
+        ingredientSpecificKey: ingredient.row.ingredientSpecificKey,
         quantity: ingredient.row.quantity,
         unit: ingredient.row.unit,
         optional: ingredient.row.optional,
@@ -250,7 +214,6 @@ export async function persistAcceptedCustomRecipe(
       recipeIngredientId: insertedIngredient.id,
       locale: ingredient.translation.locale,
       displayName: ingredient.translation.displayName,
-      ingredientName: ingredient.translation.ingredientName,
       updatedAt: new Date(),
     });
   }

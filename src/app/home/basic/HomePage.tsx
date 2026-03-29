@@ -27,6 +27,7 @@ import WelcomeDialog from "../components/WelcomeDialog";
 import HomeSidebar from "../components/HomeSidebar";
 import HomeHeader from "../components/HomeHeader";
 import MobileNavigation from "../components/MobileNavigation";
+import AppShellViewport from "../components/AppShellViewport";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
 import { NotificationBanner } from "@/components/pwa/NotificationBanner";
 import FeedbackButton from "@/components/FeedbackButton";
@@ -290,11 +291,17 @@ export default function HomePage({
         onSectionChange={setActiveSection}
       />
       <HomeHeader onSectionChange={setActiveSection} />
-      <main
+      <AppShellViewport
+        as="main"
+        includeBottomNavOffset={
+          primaryActiveSection !== "chatWithRivo" &&
+          primaryActiveSection !== "profile" &&
+          primaryActiveSection !== "kitchenCounter"
+        }
         className={`flex-1 w-full md:max-w-[calc(100vw-256px)] h-[100dvh] ${
           primaryActiveSection === "chatWithRivo"
             ? "overflow-hidden p-0"
-            : "pt-20 md:pt-8 pb-[calc(100px+env(safe-area-inset-bottom))] md:pb-8 px-4 md:px-8 overflow-y-auto"
+            : "overflow-x-hidden overflow-y-auto overscroll-y-contain pt-20 md:pt-8 px-4 md:px-8"
         }`}
       >
         <AnimatePresence mode="wait">
@@ -420,7 +427,7 @@ export default function HomePage({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="h-full -mx-4 md:-mx-8 md:-my-8"
+              className="-mx-4 md:-mx-8 md:-my-8"
             >
               <ProfilePageClient onBack={() => setActiveSection("home")} />
             </motion.div>
@@ -451,7 +458,7 @@ export default function HomePage({
             </motion.div>
           ) : null}
         </AnimatePresence>
-      </main>
+      </AppShellViewport>
       <MobileNavigation
         activeSection={activeSection}
         onSectionChange={setActiveSection}
