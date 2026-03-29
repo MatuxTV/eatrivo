@@ -14,22 +14,8 @@ import {
 } from "../src/db/schema";
 import {
   createIngredientKey,
-  normalizeIngredientName,
-  parseRecipeIngredient,
 } from "../src/lib/ingredients";
 import { pantryKeySatisfiesRecipeKey } from "../src/lib/ingredient-family";
-
-interface StructuredRecipeIngredient {
-  display_name: string;
-  ingredient_name?: string | null;
-  canonical_name?: string | null;
-  ingredient_key: string | null;
-  ingredient_specific_key?: string | null;
-  quantity: number | null;
-  unit: string | null;
-  optional?: boolean;
-  sort_order?: number;
-}
 
 interface RecipeTranslationJson {
   name: string;
@@ -41,7 +27,6 @@ interface RecipeTranslationJson {
 
 interface IngredientTranslationJson {
   display_name: string;
-  ingredient_name?: string | null;
 }
 
 interface MultilingualRecipeIngredient {
@@ -57,14 +42,11 @@ interface MultilingualRecipeIngredient {
 
 interface RecipeJson {
   external_key?: string;
-  default_locale?: string;
-  name?: string;
-  category?: string;
+  default_locale: string;
   category_key?: string;
   diet_tags?: string[];
   restriction_flags?: string[];
   servings: number;
-  serving_unit?: string | null;
   prep_time_min: number;
   total_time_min: number;
   nutrition_per_serving: {
@@ -74,11 +56,9 @@ interface RecipeJson {
     fat_g: number;
   };
   ingredients: Array<
-    string | StructuredRecipeIngredient | MultilingualRecipeIngredient
+    MultilingualRecipeIngredient
   >;
-  instructions?: string[];
-  notes?: string | null;
-  translations?: Record<string, RecipeTranslationJson>;
+  translations: Record<string, RecipeTranslationJson>;
   meal_prep_friendly: boolean;
 }
 
@@ -89,12 +69,10 @@ interface RecipeFile {
 interface NormalizedIngredientTranslation {
   locale: string;
   displayName: string;
-  ingredientName: string | null;
 }
 
 interface NormalizedRecipeIngredientRow {
-  displayName: string;
-  ingredientName: string | null;
+  canonicalName: string | null;
   ingredientKey: string | null;
   ingredientSpecificKey: string | null;
   quantity: string | null;
@@ -116,7 +94,6 @@ interface NormalizedRecipeIngredient {
       string,
       {
         display_name: string;
-        ingredient_name: string | null;
       }
     >;
   };
@@ -202,18 +179,6 @@ function loadRecipes(filePath: string): RecipeJson[] {
   return readJsonFile(filePath).recipes;
 }
 
-function isMultilingualStructuredIngredient(
-  ingredient: string | StructuredRecipeIngredient | MultilingualRecipeIngredient,
-): ingredient is MultilingualRecipeIngredient {
-  return typeof ingredient !== "string" && "translations" in ingredient;
-}
-
-function isStructuredIngredient(
-  ingredient: string | StructuredRecipeIngredient | MultilingualRecipeIngredient,
-): ingredient is StructuredRecipeIngredient {
-  return typeof ingredient !== "string" && !isMultilingualStructuredIngredient(ingredient);
-}
-
 function assertRecipeTranslation(
   translation: RecipeTranslationJson,
   recipeKey: string,
@@ -268,16 +233,6 @@ function assertIngredientTranslation(
       `Recipe \"${recipeKey}\" has ingredient with invalid display_name for locale \"${locale}\".`,
     );
   }
-
-  if (
-    translation.ingredient_name !== undefined &&
-    translation.ingredient_name !== null &&
-    typeof translation.ingredient_name !== "string"
-  ) {
-    throw new Error(
-      `Recipe \"${recipeKey}\" has ingredient with invalid ingredient_name for locale \"${locale}\".`,
-    );
-  }
 }
 
 function assertIngredientSpecificKeyHierarchy(
@@ -300,7 +255,6 @@ function resolveCanonicalIngredientName(
   value:
     | {
         canonical_name?: string | null;
-        ingredient_name?: string | null;
         display_name?: string | null;
       }
     | undefined,
@@ -310,14 +264,9 @@ function resolveCanonicalIngredientName(
     return canonicalName;
   }
 
-  const ingredientName = value?.ingredient_name?.trim();
-  if (ingredientName) {
-    return ingredientName;
-  }
-
   const displayName = value?.display_name?.trim();
   if (displayName) {
-    return normalizeIngredientName(displayName);
+    return displayName;
   }
 
   return null;
@@ -328,90 +277,6 @@ function buildIngredientMachineKey(
   fallbackValue: string,
 ): string | null {
   return createIngredientKey(canonicalName ?? fallbackValue);
-}
-
-function assertStructuredIngredient(
-  ingredient: StructuredRecipeIngredient,
-  recipeName: string,
-): void {
-  if (!ingredient.display_name || typeof ingredient.display_name !== "string") {
-    throw new Error(
-      `Recipe \"${recipeName}\" has ingredient with invalid display_name.`,
-    );
-  }
-
-  if (
-    ingredient.ingredient_name !== undefined &&
-    ingredient.ingredient_name !== null &&
-    typeof ingredient.ingredient_name !== "string"
-  ) {
-    throw new Error(
-      `Recipe \"${recipeName}\" has ingredient with invalid ingredient_name.`,
-    );
-  }
-
-  if (
-    ingredient.canonical_name !== undefined &&
-    ingredient.canonical_name !== null &&
-    typeof ingredient.canonical_name !== "string"
-  ) {
-    throw new Error(
-      `Recipe \"${recipeName}\" has ingredient with invalid canonical_name.`,
-    );
-  }
-
-  if (
-    ingredient.ingredient_key !== null &&
-    typeof ingredient.ingredient_key !== "string"
-  ) {
-    throw new Error(
-      `Recipe \"${recipeName}\" has ingredient with invalid ingredient_key.`,
-    );
-  }
-
-  if (
-    ingredient.ingredient_specific_key !== undefined &&
-    ingredient.ingredient_specific_key !== null &&
-    typeof ingredient.ingredient_specific_key !== "string"
-  ) {
-    throw new Error(
-      `Recipe \"${recipeName}\" has ingredient with invalid ingredient_specific_key.`,
-    );
-  }
-
-  assertIngredientSpecificKeyHierarchy(
-    ingredient.ingredient_key,
-    ingredient.ingredient_specific_key ?? null,
-    recipeName,
-  );
-
-  if (ingredient.quantity !== null && typeof ingredient.quantity !== "number") {
-    throw new Error(
-      `Recipe \"${recipeName}\" has ingredient with invalid quantity.`,
-    );
-  }
-
-  if (ingredient.unit !== null && typeof ingredient.unit !== "string") {
-    throw new Error(`Recipe \"${recipeName}\" has ingredient with invalid unit.`);
-  }
-
-  if (
-    ingredient.optional !== undefined &&
-    typeof ingredient.optional !== "boolean"
-  ) {
-    throw new Error(
-      `Recipe \"${recipeName}\" has ingredient with invalid optional flag.`,
-    );
-  }
-
-  if (
-    ingredient.sort_order !== undefined &&
-    (!Number.isInteger(ingredient.sort_order) || ingredient.sort_order < 0)
-  ) {
-    throw new Error(
-      `Recipe \"${recipeName}\" has ingredient with invalid sort_order.`,
-    );
-  }
 }
 
 function assertMultilingualIngredient(
@@ -492,43 +357,32 @@ function assertMultilingualIngredient(
 }
 
 function getRecipeTranslations(recipe: RecipeJson): Record<string, RecipeTranslationJson> {
-  if (recipe.translations && Object.keys(recipe.translations).length > 0) {
-    return recipe.translations;
+  if (!recipe.translations || Object.keys(recipe.translations).length === 0) {
+    throw new Error(
+      `Recipe \"${recipe.external_key ?? "unknown"}\" must include translations.`,
+    );
   }
 
-  if (!recipe.name || !recipe.category || !recipe.instructions) {
-    throw new Error("Legacy recipe is missing name, category, or instructions.");
-  }
-
-  return {
-    en: {
-      name: recipe.name,
-      category_label: recipe.category,
-      serving_unit_label: recipe.serving_unit ?? null,
-      instructions: recipe.instructions,
-      notes: recipe.notes ?? null,
-    },
-  };
+  return recipe.translations;
 }
 
 function getDefaultLocale(
   recipe: RecipeJson,
   translations: Record<string, RecipeTranslationJson>,
 ): string {
-  if (recipe.default_locale && translations[recipe.default_locale]) {
-    return recipe.default_locale;
+  if (!recipe.default_locale) {
+    throw new Error(
+      `Recipe \"${recipe.external_key ?? "unknown"}\" is missing default_locale.`,
+    );
   }
 
-  if (translations.en) {
-    return "en";
+  if (!translations[recipe.default_locale]) {
+    throw new Error(
+      `Recipe \"${recipe.external_key ?? "unknown"}\" is missing translation for default_locale \"${recipe.default_locale}\".`,
+    );
   }
 
-  const firstLocale = Object.keys(translations)[0];
-  if (!firstLocale) {
-    throw new Error("Recipe has no translations.");
-  }
-
-  return firstLocale;
+  return recipe.default_locale;
 }
 
 function normalizeRecipeIngredients(
@@ -537,150 +391,55 @@ function normalizeRecipeIngredients(
   defaultLocale: string,
 ): NormalizedRecipeIngredient[] {
   return recipe.ingredients.map((ingredient, index) => {
-    if (isMultilingualStructuredIngredient(ingredient)) {
-      assertMultilingualIngredient(ingredient, recipeKey);
+    assertMultilingualIngredient(ingredient, recipeKey);
 
-      const fallbackLocale = ingredient.translations[defaultLocale]
-        ? defaultLocale
-        : Object.keys(ingredient.translations)[0];
-      const fallbackTranslation = ingredient.translations[fallbackLocale];
-      const canonicalName = resolveCanonicalIngredientName({
-        canonical_name: ingredient.canonical_name,
-        ingredient_name: fallbackTranslation?.ingredient_name,
-        display_name: fallbackTranslation?.display_name,
-      });
-      const ingredientKey =
-        ingredient.ingredient_key ??
-        buildIngredientMachineKey(canonicalName, fallbackTranslation.display_name);
-      const ingredientSpecificKey = ingredient.ingredient_specific_key ?? null;
-      const translations = Object.entries(ingredient.translations).map(
-        ([locale, translation]) => ({
-          locale,
-          displayName: translation.display_name,
-          ingredientName: translation.ingredient_name?.trim() || canonicalName,
-        }),
-      );
-
-      return {
-        json: {
-          ingredient_key: ingredientKey,
-          ingredient_specific_key: ingredientSpecificKey,
-          canonical_name: canonicalName,
-          quantity: ingredient.quantity,
-          unit: ingredient.unit,
-          optional: ingredient.optional ?? false,
-          sort_order: ingredient.sort_order ?? index,
-          translations: Object.fromEntries(
-            translations.map((translation) => [
-              translation.locale,
-              {
-                display_name: translation.displayName,
-                ingredient_name: translation.ingredientName,
-              },
-            ]),
-          ),
-        },
-        row: {
-          displayName: fallbackTranslation.display_name,
-          ingredientName: canonicalName,
-          ingredientKey,
-          ingredientSpecificKey,
-          quantity: ingredient.quantity !== null ? String(ingredient.quantity) : null,
-          unit: ingredient.unit,
-          optional: ingredient.optional ?? false,
-          sortOrder: ingredient.sort_order ?? index,
-        },
-        translations,
-      };
-    }
-
-    if (isStructuredIngredient(ingredient)) {
-      assertStructuredIngredient(ingredient, recipeKey);
-      const canonicalName = resolveCanonicalIngredientName({
-        canonical_name: ingredient.canonical_name,
-        ingredient_name: ingredient.ingredient_name,
-        display_name: ingredient.display_name,
-      });
-      const ingredientKey =
-        ingredient.ingredient_key ??
-        buildIngredientMachineKey(canonicalName, ingredient.display_name);
-      const ingredientSpecificKey = ingredient.ingredient_specific_key ?? null;
-
-      return {
-        json: {
-          ingredient_key: ingredientKey,
-          ingredient_specific_key: ingredientSpecificKey,
-          canonical_name: canonicalName,
-          quantity: ingredient.quantity,
-          unit: ingredient.unit,
-          optional: ingredient.optional ?? false,
-          sort_order: ingredient.sort_order ?? index,
-          translations: {
-            [defaultLocale]: {
-              display_name: ingredient.display_name,
-              ingredient_name: canonicalName,
-            },
-          },
-        },
-        row: {
-          displayName: ingredient.display_name,
-          ingredientName: canonicalName,
-          ingredientKey,
-          ingredientSpecificKey,
-          quantity:
-            ingredient.quantity !== null ? String(ingredient.quantity) : null,
-          unit: ingredient.unit,
-          optional: ingredient.optional ?? false,
-          sortOrder: ingredient.sort_order ?? index,
-        },
-        translations: [
-          {
-            locale: defaultLocale,
-            displayName: ingredient.display_name,
-            ingredientName: canonicalName,
-          },
-        ],
-      };
-    }
-
-    const parsedIngredient = parseRecipeIngredient(ingredient);
+    const fallbackLocale = ingredient.translations[defaultLocale]
+      ? defaultLocale
+      : Object.keys(ingredient.translations)[0];
+    const fallbackTranslation = ingredient.translations[fallbackLocale];
+    const canonicalName = resolveCanonicalIngredientName({
+      canonical_name: ingredient.canonical_name,
+      display_name: fallbackTranslation?.display_name,
+    });
+    const ingredientKey =
+      ingredient.ingredient_key ??
+      buildIngredientMachineKey(canonicalName, fallbackTranslation.display_name);
+    const ingredientSpecificKey = ingredient.ingredient_specific_key ?? null;
+    const translations = Object.entries(ingredient.translations).map(
+      ([locale, translation]) => ({
+        locale,
+        displayName: translation.display_name,
+      }),
+    );
 
     return {
       json: {
-        ingredient_key: parsedIngredient.ingredientKey,
-        ingredient_specific_key: null,
-        canonical_name: parsedIngredient.ingredientName,
-        quantity: parsedIngredient.quantity,
-        unit: parsedIngredient.unit,
-        optional: parsedIngredient.optional,
-        sort_order: index,
-        translations: {
-          [defaultLocale]: {
-            display_name: parsedIngredient.displayName,
-            ingredient_name: parsedIngredient.ingredientName,
-          },
-        },
+        ingredient_key: ingredientKey,
+        ingredient_specific_key: ingredientSpecificKey,
+        canonical_name: canonicalName,
+        quantity: ingredient.quantity,
+        unit: ingredient.unit,
+        optional: ingredient.optional ?? false,
+        sort_order: ingredient.sort_order ?? index,
+        translations: Object.fromEntries(
+          translations.map((translation) => [
+            translation.locale,
+            {
+              display_name: translation.displayName,
+            },
+          ]),
+        ),
       },
       row: {
-        displayName: parsedIngredient.displayName,
-        ingredientName: parsedIngredient.ingredientName,
-        ingredientKey: parsedIngredient.ingredientKey,
-        ingredientSpecificKey: null,
-        quantity:
-          parsedIngredient.quantity !== null
-            ? String(parsedIngredient.quantity)
-            : null,
-        unit: parsedIngredient.unit,
-        optional: parsedIngredient.optional,
-        sortOrder: index,
+        canonicalName: canonicalName,
+        ingredientKey,
+        ingredientSpecificKey,
+        quantity: ingredient.quantity !== null ? String(ingredient.quantity) : null,
+        unit: ingredient.unit,
+        optional: ingredient.optional ?? false,
+        sortOrder: ingredient.sort_order ?? index,
       },
-      translations: [
-        {
-          locale: defaultLocale,
-          displayName: parsedIngredient.displayName,
-          ingredientName: parsedIngredient.ingredientName,
-        },
-      ],
+      translations,
     };
   });
 }
@@ -702,7 +461,7 @@ async function main() {
 
   const rows = rawRecipes.map((recipe) => {
     const translations = getRecipeTranslations(recipe);
-    const recipeKey = recipe.external_key ?? recipe.name ?? "unknown";
+    const recipeKey = recipe.external_key ?? "unknown";
     for (const [locale, translation] of Object.entries(translations)) {
       assertRecipeTranslation(
         translation,
@@ -726,7 +485,7 @@ async function main() {
     const fallbackTranslation = translations[defaultLocale];
     const categoryKey =
       recipe.category_key ??
-      slugify(recipe.category ?? fallbackTranslation.category_label ?? "other");
+      slugify(fallbackTranslation.category_label ?? "other");
     const baseExternalKey =
       recipe.external_key ?? slugify(`${categoryKey}-${fallbackTranslation.name}`);
     const externalKey = buildUniqueSlug(baseExternalKey, seenSlugs);
@@ -741,12 +500,9 @@ async function main() {
       recipe: {
         slug,
         externalKey,
-        name: recipe.name ?? fallbackTranslation.name,
-        category: recipe.category ?? fallbackTranslation.category_label ?? categoryKey,
         categoryKey,
         defaultLocale,
         servings: recipe.servings,
-        servingUnit: recipe.serving_unit ?? fallbackTranslation.serving_unit_label ?? null,
         prepTimeMin: recipe.prep_time_min,
         totalTimeMin: recipe.total_time_min,
         calories: recipe.nutrition_per_serving.calories,
@@ -755,9 +511,6 @@ async function main() {
         fatG: recipe.nutrition_per_serving.fat_g,
         dietTags,
         restrictionFlags,
-        ingredients: parsedIngredients.map((ingredient) => ingredient.json),
-        instructions: recipe.instructions ?? fallbackTranslation.instructions,
-        notes: recipe.notes ?? fallbackTranslation.notes,
         mealPrepFriendly: recipe.meal_prep_friendly,
         updatedAt: new Date(),
       },
@@ -776,18 +529,20 @@ async function main() {
   });
 
   if (dryRun) {
-    console.log(
-      `Dry run: prepared ${rows.length} recipes for import from ${recipeFilePath}.`,
+    process.stdout.write(
+      `Dry run: prepared ${rows.length} recipes for import from ${recipeFilePath}.\n`,
     );
-    console.log(
-      JSON.stringify(
+    process.stdout.write(
+      `${JSON.stringify(
         rows.slice(0, 2).map((row) => ({
           recipe: row.recipe,
-          recipeIngredients: row.recipeIngredients.slice(0, 5).map((ingredient) => ingredient.row),
+          recipeIngredients: row.recipeIngredients
+            .slice(0, 5)
+            .map((ingredient) => ingredient.row),
         })),
         null,
         2,
-      ),
+      )}\n`,
     );
     return;
   }
@@ -800,12 +555,9 @@ async function main() {
         target: recipes.externalKey,
         set: {
           slug: row.recipe.slug,
-          name: row.recipe.name,
-          category: row.recipe.category,
           categoryKey: row.recipe.categoryKey,
           defaultLocale: row.recipe.defaultLocale,
           servings: row.recipe.servings,
-          servingUnit: row.recipe.servingUnit,
           prepTimeMin: row.recipe.prepTimeMin,
           totalTimeMin: row.recipe.totalTimeMin,
           calories: row.recipe.calories,
@@ -814,9 +566,6 @@ async function main() {
           fatG: row.recipe.fatG,
           dietTags: row.recipe.dietTags,
           restrictionFlags: row.recipe.restrictionFlags,
-          ingredients: row.recipe.ingredients,
-          instructions: row.recipe.instructions,
-          notes: row.recipe.notes,
           mealPrepFriendly: row.recipe.mealPrepFriendly,
           updatedAt: new Date(),
         },
@@ -855,8 +604,7 @@ async function main() {
         .insert(recipeIngredients)
         .values({
           recipeId: upsertedRecipe.id,
-          displayName: ingredient.row.displayName,
-          ingredientName: ingredient.row.ingredientName,
+          canonicalName: ingredient.row.canonicalName,
           ingredientKey: ingredient.row.ingredientKey,
           ingredientSpecificKey: ingredient.row.ingredientSpecificKey,
           quantity: ingredient.row.quantity,
@@ -873,7 +621,6 @@ async function main() {
             recipeIngredientId: insertedIngredient.id,
             locale: translation.locale,
             displayName: translation.displayName,
-            ingredientName: translation.ingredientName,
             updatedAt: new Date(),
           })),
         );
@@ -881,7 +628,7 @@ async function main() {
     }
   }
 
-  console.log(`Imported ${rows.length} recipes from ${recipeFilePath}.`);
+  process.stdout.write(`Imported ${rows.length} recipes from ${recipeFilePath}.\n`);
 }
 
 main().catch((error) => {

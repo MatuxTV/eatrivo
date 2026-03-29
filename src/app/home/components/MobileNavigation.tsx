@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { FeedbackDialog } from "@/components/FeedbackButton";
+import { MOBILE_BOTTOM_NAV_HEIGHT_CLASS } from "@/app/home/constants/app-shell";
 import {
   type AppHomeSection,
   getPrimaryAppHomeSection,
@@ -45,7 +46,7 @@ export default function MobileNavigation({
   // navItems removed
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 pointer-events-none h-[calc(100px+env(safe-area-inset-bottom))]">
+    <div className={`md:hidden fixed bottom-0 left-0 right-0 z-50 pointer-events-none ${MOBILE_BOTTOM_NAV_HEIGHT_CLASS}`}>
       {/* Floating Feedback Button — only on home section */}
       {primaryActiveSection === "home" && (
         <div className="absolute bottom-[90px] mb-2 right-4 z-50 flex flex-row items-center gap-4 pointer-events-none">

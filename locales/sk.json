@@ -604,11 +604,22 @@
       "recipeDialog": {
         "mealPrep": "Meal prep",
         "detail": "Detail receptu",
-        "servings": "{count} porcia",
+        "oneServing": "{count} porcia",
+        "servings": "{count} porcie",
         "addToPantry": "Pridať do špajze",
         "addToShoppingList": "Pridať do nákupného zoznamu",
         "cookThisRecipe": "Chcem variť tento recept",
         "haveAmountInline": "máme {amount}"
+      },
+      "restrictionFlags": {
+        "contains-dairy": "Obsahuje mlieko",
+        "contains-eggs": "Obsahuje vajcia",
+        "contains-fish": "Obsahuje ryby",
+        "contains-gluten": "Obsahuje lepok",
+        "contains-nuts": "Obsahuje orechy",
+        "contains-peanuts": "Obsahuje arašidy",
+        "contains-shellfish": "Obsahuje mäkkýše",
+        "contains-soy": "Obsahuje sóju"
       },
       "shoppingList": {
         "description": "Ťukni na chýbajúce suroviny v recepte a zobrazia sa tu.",
@@ -710,7 +721,7 @@
       "fats": "Tuky"
     },
     "recipe": {
-      "nutritionValues": "Nutričné hodnoty",
+      "nutritionValues": "Nutričné hodnoty (na porciu)",
       "ingredients": "Ingrediencie",
       "noIngredients": "Zoznam ingrediencií nie je k dispozícii"
     },
@@ -996,11 +1007,48 @@
       "nutrition": "Nutričné preferencie"
     },
     "navigation": {
-      "backToHome": "Späť na domov"
+      "backToHome": "Späť na domov",
+      "backToProfile": "Späť na profil"
     },
     "header": {
+      "kicker": "Tvoj profil",
+      "fallbackName": "Člen Eatrivo",
+      "badgesCount": "{count} odznak(ov)",
       "title": "Môj profil",
       "description": "Spravujte svoje osobné údaje a preferencie"
+    },
+    "stats": {
+      "placeholder": "placeholder",
+      "cookedMeals": {
+        "label": "Uvarené jedlá"
+      },
+      "dayStreak": {
+        "label": "Dňový streak"
+      }
+    },
+    "menu": {
+      "personal": {
+        "title": "Osobné informácie",
+        "description": "Spravuj svoje osobné údaje"
+      },
+      "nutrition": {
+        "title": "Nutričné preferencie",
+        "description": "Diéty, alergie a ciele"
+      },
+      "billing": {
+        "title": "Predplatné",
+        "description": "Spravuj svoj prémiový plán"
+      },
+      "logout": {
+        "title": "Odhlásenie",
+        "description": "Odhlásiť sa zo svojho účtu"
+      }
+    },
+    "billingPlaceholder": {
+      "title": "Predplatné pripravujeme",
+      "description": "Tento stav je zatiaľ placeholder. Billing flow doladíme v ďalšom kroku bez zásahu do zvyšku profilu.",
+      "helper": "Zatiaľ môžeš používať existujúcu pricing stránku alebo sa vrátiť späť do profilu.",
+      "cta": "Otvoriť pricing"
     },
     "personal": {
       "title": "Osobné informácie",
@@ -1019,7 +1067,9 @@
       },
       "membership": {
         "label": "Členstvo",
-        "helper": "Váš súčasný plán"
+        "helper": "Váš súčasný plán",
+        "premiumBadge": "Prémiový člen",
+        "freeBadge": "Free plán"
       },
       "validation": {
         "fullNameMin": "Meno musí mať aspoň 2 znaky",

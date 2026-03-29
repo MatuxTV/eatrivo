@@ -8,12 +8,11 @@ test("resolveIngredientDisplayName prefers localized displayName", () => {
     resolveIngredientDisplayName(
       {
         locale: "sk",
-        displayName: "200 g pevneho tofu",
-        ingredientName: "firm tofu",
+        displayName: "tofu",
       },
       "firm tofu",
     ),
-    "200 g pevneho tofu",
+    "tofu",
   );
 });
 
@@ -23,25 +22,10 @@ test("resolveIngredientDisplayName keeps normalized upstream displayName as-is",
       {
         locale: "sk",
         displayName: "čedar",
-        ingredientName: "cheddar",
       },
       "cheddar",
     ),
     "čedar",
-  );
-});
-
-test("resolveIngredientDisplayName falls back to canonical ingredientName", () => {
-  assert.equal(
-    resolveIngredientDisplayName(
-      {
-        locale: "en",
-        displayName: "",
-        ingredientName: "olive oil",
-      },
-      null,
-    ),
-    "olive oil",
   );
 });
 

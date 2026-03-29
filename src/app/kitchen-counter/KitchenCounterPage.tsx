@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
+import AppShellViewport from "@/app/home/components/AppShellViewport";
 import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 
@@ -363,7 +364,7 @@ export default function KitchenCounterPage({
   }
 
   return (
-    <div className="min-h-[100dvh] bg-eatrivo-white-primary overflow-hidden relative pb-[240px] md:pb-28">
+    <AppShellViewport className="min-h-[100dvh] bg-eatrivo-white-primary overflow-hidden relative">
       <Dialog
         open={isMissingIngredientsDialogOpen}
         onOpenChange={setIsMissingIngredientsDialogOpen}
@@ -610,6 +611,6 @@ export default function KitchenCounterPage({
           </Button>
         </div>
       </div>
-    </div>
+    </AppShellViewport>
   );
 }

@@ -580,11 +580,22 @@
       "recipeDialog": {
         "mealPrep": "Meal prep",
         "detail": "Recipe detail",
-        "servings": "{count} serving",
+        "oneServing": "{count} serving",
+        "servings": "{count} servings",
         "addToPantry": "Add to pantry",
         "addToShoppingList": "Add to shopping list",
         "cookThisRecipe": "I want to cook this recipe",
         "haveAmountInline": "have {amount}"
+      },
+      "restrictionFlags": {
+        "contains-dairy": "Contains dairy",
+        "contains-eggs": "Contains eggs",
+        "contains-fish": "Contains fish",
+        "contains-gluten": "Contains gluten",
+        "contains-nuts": "Contains nuts",
+        "contains-peanuts": "Contains peanuts",
+        "contains-shellfish": "Contains shellfish",
+        "contains-soy": "Contains soy"
       },
       "shoppingList": {
         "description": "Tap missing ingredients in a recipe and they will appear here.",
@@ -686,7 +697,7 @@
       "fats": "Fat"
     },
     "recipe": {
-      "nutritionValues": "Nutrition Values",
+      "nutritionValues": "Nutrition Values (per serving)",
       "ingredients": "Ingredients",
       "noIngredients": "Ingredients list not available"
     },
@@ -960,11 +971,48 @@
       "nutrition": "Nutrition preferences"
     },
     "navigation": {
-      "backToHome": "Back to home"
+      "backToHome": "Back to home",
+      "backToProfile": "Back to profile"
     },
     "header": {
+      "kicker": "Your profile",
+      "fallbackName": "Eatrivo member",
+      "badgesCount": "{count} badge(s)",
       "title": "My profile",
       "description": "Manage your personal details and preferences"
+    },
+    "stats": {
+      "placeholder": "placeholder",
+      "cookedMeals": {
+        "label": "Cooked meals"
+      },
+      "dayStreak": {
+        "label": "Day streak"
+      }
+    },
+    "menu": {
+      "personal": {
+        "title": "Personal information",
+        "description": "Manage your personal data"
+      },
+      "nutrition": {
+        "title": "Nutrition preferences",
+        "description": "Diets, allergies, and goals"
+      },
+      "billing": {
+        "title": "Billing",
+        "description": "Manage your premium plan"
+      },
+      "logout": {
+        "title": "Sign out",
+        "description": "Sign out of your account"
+      }
+    },
+    "billingPlaceholder": {
+      "title": "Billing is coming next",
+      "description": "This state is only a placeholder for now. We will wire the full billing flow in a later step without changing the rest of the profile experience.",
+      "helper": "For now you can use the existing pricing page or jump back to the main profile dashboard.",
+      "cta": "Open pricing"
     },
     "personal": {
       "title": "Personal information",
@@ -983,7 +1031,9 @@
       },
       "membership": {
         "label": "Membership",
-        "helper": "Your current plan"
+        "helper": "Your current plan",
+        "premiumBadge": "Premium member",
+        "freeBadge": "Free plan"
       },
       "validation": {
         "fullNameMin": "Name must be at least 2 characters",

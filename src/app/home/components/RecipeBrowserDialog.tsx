@@ -28,6 +28,17 @@ import {
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import { Button } from "@/components/ui/button";
 
+const RESTRICTION_FLAG_TRANSLATION_KEYS: Record<string, string> = {
+  "contains-dairy": "basic.restrictionFlags.contains-dairy",
+  "contains-eggs": "basic.restrictionFlags.contains-eggs",
+  "contains-fish": "basic.restrictionFlags.contains-fish",
+  "contains-gluten": "basic.restrictionFlags.contains-gluten",
+  "contains-nuts": "basic.restrictionFlags.contains-nuts",
+  "contains-peanuts": "basic.restrictionFlags.contains-peanuts",
+  "contains-shellfish": "basic.restrictionFlags.contains-shellfish",
+  "contains-soy": "basic.restrictionFlags.contains-soy",
+};
+
 /* ────────────────────────────────────────────── */
 /*  Props                                         */
 /* ────────────────────────────────────────────── */
@@ -154,6 +165,14 @@ export default function RecipeBrowserDialog({
 
   if (!recipe) return null;
 
+  const restrictionFlagLabels = recipe.restrictionFlags.map((flag) => ({
+    key: flag,
+    label:
+      flag in RESTRICTION_FLAG_TRANSLATION_KEYS
+        ? t(RESTRICTION_FLAG_TRANSLATION_KEYS[flag]!)
+        : flag.replace(/-/g, " "),
+  }));
+
   const slideVariants = {
     enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
     center: { x: 0, opacity: 1 },
@@ -229,6 +248,14 @@ export default function RecipeBrowserDialog({
                       {t("basic.recipeDialog.mealPrep")}
                     </span>
                   )}
+                  {restrictionFlagLabels.map((flag) => (
+                    <span
+                      key={flag.key}
+                      className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white/90 ring-1 ring-white/20 backdrop-blur-md"
+                    >
+                      {flag.label}
+                    </span>
+                  ))}
                 </div>
 
                 {/* Title */}
@@ -244,14 +271,14 @@ export default function RecipeBrowserDialog({
                   <span className="flex items-center gap-1.5">
                     <Clock className="w-4 h-4" />
                     {recipe.totalTimeMin} {t("time.minutesShort")}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Flame className="w-4 h-4" />
-                    {recipe.calories} kcal
-                  </span>
+                  </span>   
                   <span className="flex items-center gap-1.5">
                     <Users className="w-4 h-4" />
-                    {t("basic.recipeDialog.servings", { count: 1 })}
+                    {recipe.servings == 1 ? (
+                      t("basic.recipeDialog.oneServing", { count: recipe.servings })
+                    ) : (
+                      t("basic.recipeDialog.servings", { count: recipe.servings })
+                    )}
                   </span>
                 </div>
               </div>

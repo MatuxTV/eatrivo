@@ -19,11 +19,13 @@ interface RecipeMatchPayloadItem {
   name: string;
   category: string;
   categoryKey: string;
+  servings: number;
   totalTimeMin: number;
   calories: number;
   proteinG: number;
   carbohydratesG: number;
   fatG: number;
+  restrictionFlags: string[];
   instructions?: BasicHomeRecipePreview["instructions"];
   ingredientItems?: BasicHomeRecipePreview["ingredientItems"];
   mealPrepFriendly: boolean;
@@ -123,11 +125,13 @@ export function usePantrySync({
             title: match.name,
             category: match.category,
             categoryKey: match.categoryKey,
+            servings: match.servings,
             totalTimeMin: match.totalTimeMin,
             calories: match.calories,
             proteinG: match.proteinG,
             carbsG: match.carbohydratesG,
             fatG: match.fatG,
+            restrictionFlags: match.restrictionFlags,
             instructions: normalizeRecipeInstructions(match.instructions),
             dietTags: [],
             ingredientItems: match.ingredientItems ?? [],
@@ -146,11 +150,13 @@ export function usePantrySync({
             title: match.name,
             category: match.category,
             categoryKey: match.categoryKey,
+            servings: match.servings,
             totalTimeMin: match.totalTimeMin,
             calories: match.calories,
             proteinG: match.proteinG,
             carbsG: match.carbohydratesG,
             fatG: match.fatG,
+            restrictionFlags: match.restrictionFlags,
             instructions: normalizeRecipeInstructions(match.instructions),
             dietTags: [],
             ingredientItems: match.ingredientItems ?? [],

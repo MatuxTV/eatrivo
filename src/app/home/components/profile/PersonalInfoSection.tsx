@@ -4,17 +4,14 @@ import { useMemo, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Loader2, Save, User, Mail, Calendar, CreditCard } from "lucide-react";
+import { Loader2, Save, User, Mail, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
-import { useLocale } from "next-intl";
 import { UserBadge } from "@/components/ui/UserBadge";
 
 type PersonalInfoFormData = {
@@ -45,8 +42,6 @@ export default function PersonalInfoSection({
   onUpdate,
 }: PersonalInfoSectionProps) {
   const t = useTranslations("profile");
-  const tBilling = useTranslations("billing");
-  const locale = useLocale();
   const [isSaving, setIsSaving] = useState(false);
 
   const personalInfoSchema = useMemo(
@@ -107,156 +102,174 @@ export default function PersonalInfoSection({
 
   if (isLoading) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.3 }}
-      >
-        <Card className="p-8">
+      <div>
+        <Card className="rounded-[1.8rem] border-[#efe2fb] bg-white p-8 shadow-[0_18px_40px_rgba(121,78,171,0.08)]">
           <div className="space-y-6">
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
           </div>
         </Card>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Card className="p-8 bg-eatrivo-white">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {t("personal.title")}
-              </h2>
-              {profileData?.badges?.map((badgeStr) => (
-                <UserBadge key={badgeStr} type={badgeStr} />
-              ))}
-            </div>
-            <p className="text-sm text-gray-500">{t("personal.description")}</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label
-              htmlFor="fullName"
-              className="flex items-center gap-2 text-sm font-medium"
-            >
-              <User className="w-4 h-4 text-eatrivo-purple" />
-              {t("personal.fields.fullName.label")}
-            </Label>
-            <Input
-              id="fullName"
-              {...register("fullName")}
-              placeholder={t("personal.fields.fullName.placeholder")}
-              defaultValue={profileData?.fullName || ""}
-              autoComplete="name"
-              className={errors.fullName ? "border-red-500" : ""}
-            />
-            {errors.fullName && (
-              <p className="text-sm text-red-500">{errors.fullName.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label
-              htmlFor="dateOfBirth"
-              className="flex items-center gap-2 text-sm font-medium"
-            >
-              <Calendar className="w-4 h-4 text-eatrivo-purple" />
-              {t("personal.fields.dateOfBirth.label")}
-            </Label>
-            <Input
-              id="dateOfBirth"
-              type="date"
-              {...register("dateOfBirth")}
-              defaultValue={profileData?.dateOfBirth || ""}
-              autoComplete="bday"
-              className={errors.dateOfBirth ? "border-red-500" : ""}
-            />
-            {errors.dateOfBirth && (
-              <p className="text-sm text-red-500">
-                {errors.dateOfBirth.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label
-              htmlFor="email"
-              className="flex items-center gap-2 text-sm font-medium"
-            >
-              <Mail className="w-4 h-4 text-eatrivo-purple" />
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={profileData?.email || ""}
-              disabled
-              autoComplete="email"
-              className="bg-gray-50 cursor-not-allowed"
-            />
-            <p className="text-xs text-gray-500">
-              {t("personal.fields.email.helper")}
-            </p>
-          </div>
-
-          <div className="p-4 bg-gradient-to-br from-eatrivo-purple/5 to-eatrivo-pink/5 rounded-xl border border-eatrivo-purple/10">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-700">
-                  {t("personal.membership.label")}
-                </p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {t("personal.membership.helper")}
-                </p>
+    <div>
+      <Card className="overflow-hidden rounded-[1.8rem] border-[#efe2fb] bg-white p-4 shadow-[0_18px_40px_rgba(121,78,171,0.08)] sm:p-6 lg:p-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 sm:space-y-6">
+          <div className="space-y-4">
+            <div>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <h2 className="text-xl font-black tracking-[-0.04em] text-[#35204f] sm:text-2xl">
+                  {t("personal.title")}
+                </h2>
+                {profileData?.badges?.map((badgeStr) => (
+                  <UserBadge key={badgeStr} type={badgeStr} />
+                ))}
               </div>
+              <p className="text-sm font-medium text-[#87739f]">{t("personal.description")}</p>
+            </div>
 
-              <div
-                className={`px-4 py-2 bg-eatrivo-white-primary ${profileData?.membership === "premium" ? "border-eatrivo-yellow/40 text-eatrivo-yellow" : "text-eatrivo-black-secondary"} border-2 font-bold text-sm rounded-lg`}
-              >
-                {profileData?.membership?.toUpperCase() || "FREE"}
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+              <div className="rounded-[1.5rem] bg-[linear-gradient(180deg,#fdf8ff_0%,#f7eeff_100%)] p-4 ring-1 ring-[#eedfff] sm:p-5">
+                  <div className="mb-4 flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#7d49cf] ring-1 ring-[#eadcff]">
+                      <User className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#9b84b6]">
+                        {t("personal.fields.fullName.label")}
+                      </p>
+                      <p className="text-lg font-black tracking-[-0.04em] text-[#35204f]">
+                        {profileData?.fullName || t("header.fallbackName")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="fullName"
+                      className="flex items-center gap-2 text-sm font-semibold text-[#584a6a]"
+                    >
+                      <User className="w-4 h-4 text-eatrivo-purple" />
+                      {t("personal.fields.fullName.label")}
+                    </Label>
+                    <Input
+                      id="fullName"
+                      {...register("fullName")}
+                      placeholder={t("personal.fields.fullName.placeholder")}
+                      defaultValue={profileData?.fullName || ""}
+                      autoComplete="name"
+                      className={`h-12 rounded-2xl border-[#e8d9fb] bg-white text-base sm:text-sm ${errors.fullName ? "border-red-500" : ""}`}
+                    />
+                    {errors.fullName && (
+                      <p className="text-sm text-red-500">{errors.fullName.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-[1.5rem] bg-white p-4 ring-1 ring-[#efe3fb] sm:p-5">
+                  <div className="mb-4 flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#faf3ff] text-[#7d49cf] ring-1 ring-[#eadcff]">
+                      <Calendar className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#9b84b6]">
+                        {t("personal.fields.dateOfBirth.label")}
+                      </p>
+                      <p className="text-lg font-black tracking-[-0.04em] text-[#35204f]">
+                        {profileData?.dateOfBirth || "-"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="dateOfBirth"
+                      className="flex items-center gap-2 text-sm font-semibold text-[#584a6a]"
+                    >
+                      <Calendar className="w-4 h-4 text-eatrivo-purple" />
+                      {t("personal.fields.dateOfBirth.label")}
+                    </Label>
+                    <Input
+                      id="dateOfBirth"
+                      type="date"
+                      {...register("dateOfBirth")}
+                      defaultValue={profileData?.dateOfBirth || ""}
+                      autoComplete="bday"
+                      className={`h-12 rounded-2xl border-[#e8d9fb] bg-white text-base sm:text-sm ${errors.dateOfBirth ? "border-red-500" : ""}`}
+                    />
+                    {errors.dateOfBirth && (
+                      <p className="text-sm text-red-500">
+                        {errors.dateOfBirth.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-            <Link href={`/${locale}/pricing`} className="block mt-3">
-              <Button
-                type="button"
-                className="w-full flex items-center justify-center gap-2"
-              >
-                <CreditCard className="w-4 h-4" />
-                {tBilling("managePlan")}
-              </Button>
-            </Link>
-          </div>
 
-          <Button
-            type="submit"
-            disabled={!isDirty || isSaving}
-            className="w-full bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink hover:opacity-90 transition-opacity"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {t("personal.actions.saving")}
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                {t("personal.actions.save")}
-              </>
-            )}
-          </Button>
+          <div className="grid gap-3 sm:gap-4 lg:grid-cols-[1fr_1fr]">
+            <div className="rounded-[1.5rem] bg-white p-4 ring-1 ring-[#efe3fb] sm:p-5">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#faf3ff] text-[#7d49cf] ring-1 ring-[#eadcff]">
+                    <Mail className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#9b84b6]">
+                      Email
+                    </p>
+                    <p className="break-all text-sm font-semibold text-[#35204f]">
+                      {profileData?.email || "-"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="email"
+                    className="flex items-center gap-2 text-sm font-semibold text-[#584a6a]"
+                  >
+                    <Mail className="w-4 h-4 text-eatrivo-purple" />
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={profileData?.email || ""}
+                    disabled
+                    autoComplete="email"
+                    className="h-12 cursor-not-allowed rounded-2xl border-[#eee4fa] bg-[#faf7fe] text-base sm:text-sm"
+                  />
+                  <p className="text-xs text-[#8a78a2]">
+                    {t("personal.fields.email.helper")}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          <div className="pt-2">
+            <Button
+              type="submit"
+              disabled={!isDirty || isSaving}
+              className="h-12 w-full rounded-2xl bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink text-base shadow-[0_14px_28px_rgba(125,73,207,0.25)] transition-opacity hover:opacity-90 sm:text-sm"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("personal.actions.saving")}
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  {t("personal.actions.save")}
+                </>
+              )}
+            </Button>
+          </div>
         </form>
       </Card>
-    </motion.div>
+    </div>
   );
 }

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { FeedbackDialog } from "@/components/FeedbackButton";
 import Link from "next/link";
+import AppShellViewport from "@/app/home/components/AppShellViewport";
 
 interface Message {
   role: "user" | "assistant";
@@ -243,7 +244,7 @@ export default function ChatWithRivoPage() {
   }
 
   return (
-    <div className="flex flex-col h-full flex-1 w-full mx-auto px-4 md:px-8 bg-eatrivo-white-primary relative overflow-hidden pt-20 pb-[88px] md:pt-0 md:pb-0">
+    <AppShellViewport className="flex h-full w-full flex-1 flex-col mx-auto bg-eatrivo-white-primary relative overflow-hidden px-4 pt-20 md:px-8 md:pt-0">
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-eatrivo-purple/10 blur-[100px] rounded-full opacity-60"></div>
         <div className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] bg-eatrivo-pink/5 blur-[120px] rounded-full opacity-40"></div>
@@ -536,6 +537,6 @@ export default function ChatWithRivoPage() {
           Rivo môže robiť chyby. Odporúčame overovať dôležité informácie.
         </p>
       </div>
-    </div>
+    </AppShellViewport>
   );
 }
