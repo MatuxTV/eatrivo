@@ -26,6 +26,7 @@ import {
   type UserProfileOnboarding,
   type UserProfileOnboardingFormValues,
 } from "@/lib/schemas/user";
+import { trackClientEvent } from "@/lib/analytics-client";
 import { motion } from "framer-motion";
 import { User, Calendar, ArrowRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -57,6 +58,17 @@ export default function ProfileSetup({
   useEffect(() => {
     form.setValue("language", language, { shouldValidate: true });
   }, [form, language]);
+
+  useEffect(() => {
+    trackClientEvent({
+      eventName: "onboarding_step_viewed",
+      metadata: {
+        locale,
+        step_name: "profile",
+        step_index: 1,
+      },
+    });
+  }, [locale]);
 
   const onSubmit = async (data: UserProfileOnboardingFormValues) => {
     setIsSubmitting(true);

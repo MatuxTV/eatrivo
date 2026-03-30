@@ -513,6 +513,27 @@
         "cta": "Spýtať sa Riva na vlastný recept",
         "ctaGenerating": "Rivo generuje...",
         "ctaRetry": "Skúsiť znova",
+        "setup": {
+          "title": "Najprv spresni recept",
+          "description": "Povedz Rivovi, na aké jedlo má recept sedieť a pre koľko porcií ho má pripraviť, ešte pred samotným generovaním.",
+          "servingsLabel": "Počet porcií",
+          "servingsHint": "Nastav, pre koľko ľudí má Rivo recept vyskladať.",
+          "mealTypeLabel": "Typ jedla",
+          "mealTypeHint": "Vyber, na aký moment dňa má recept sedieť.",
+          "mealTypePlaceholder": "Vyber typ jedla",
+          "mealTypes": {
+            "breakfast": "Raňajky",
+            "lunch": "Obed",
+            "dinner": "Večera",
+            "snack": "Snack"
+          },
+          "mealPrepLabel": "Chcem meal prep variant",
+          "mealPrepDescription": "Uprednostni recepty, ktoré sa dajú dobre odložiť a chutia dobre aj po ohriatí.",
+          "profileHintLabel": "Profil klienta",
+          "profileHint": "Rivo bude stále rešpektovať tvoju diétu, alergie a jedlá, ktoré nemáš rád.",
+          "submit": "Generovať recept",
+          "cancel": "Zrušiť"
+        },
         "loading": {
           "badge": "Práve generujem",
           "title": "Rivo skladá tvoj ďalší najlepší recept",
@@ -609,7 +630,13 @@
         "addToPantry": "Pridať do špajze",
         "addToShoppingList": "Pridať do nákupného zoznamu",
         "cookThisRecipe": "Chcem variť tento recept",
-        "haveAmountInline": "máme {amount}"
+        "haveAmountInline": "máme {amount}",
+        "fallbackUsing": "Máme: {ingredient}",
+        "saveRecipe": "Uložiť recept",
+        "removeBookmark": "Odstrániť záložku",
+        "bookmarkSaved": "Recept bol uložený do záložiek.",
+        "bookmarkRemoved": "Recept bol odstránený zo záložiek.",
+        "bookmarkError": "Záložku sa nepodarilo upraviť."
       },
       "restrictionFlags": {
         "contains-dairy": "Obsahuje mlieko",
@@ -687,7 +714,18 @@
       },
       "filters": {
         "title": "Filtre receptov",
-        "empty": "Žiadne recepty pre tento filter"
+        "empty": "Žiadne recepty pre tento filter",
+        "openButton": "Filtre",
+        "closeButton": "Zavrieť filtre",
+        "save": "Uložiť",
+        "clearAll": "Vymazať",
+        "noSelection": "Bez vybraného filtra",
+        "selectedValue": "Vybrané: {value}",
+        "sections": {
+          "popular": "Začni tu",
+          "preferences": "Preferuj",
+          "special": "Vyhni sa / špeciálne"
+        }
       },
       "toasts": {
         "pantryDraftReady": "\"{ingredientName}\" je pripravené na potvrdenie v špajzi.",
@@ -1035,6 +1073,10 @@
         "title": "Nutričné preferencie",
         "description": "Diéty, alergie a ciele"
       },
+      "bookmarks": {
+        "title": "Uložené recepty",
+        "description": "Všetky tvoje záložky na jednom mieste"
+      },
       "billing": {
         "title": "Predplatné",
         "description": "Spravuj svoj prémiový plán"
@@ -1049,6 +1091,32 @@
       "description": "Tento stav je zatiaľ placeholder. Billing flow doladíme v ďalšom kroku bez zásahu do zvyšku profilu.",
       "helper": "Zatiaľ môžeš používať existujúcu pricing stránku alebo sa vrátiť späť do profilu.",
       "cta": "Otvoriť pricing"
+    },
+    "bookmarks": {
+      "title": "Uložené recepty",
+      "description": "Všetko, čo si si uložil do záložiek, nájdeš tu pripravené na rýchly návrat alebo meal prep opakovanie.",
+      "helper": "{count, plural, =0 {Zatiaľ nemáš uložené žiadne recepty.} one {Uložený # recept.} few {Uložené # recepty.} other {Uložených # receptov.}}",
+      "empty": {
+        "title": "Zatiaľ nemáš uložené recepty",
+        "description": "Ulož si recept zo recipe dialogu a automaticky sa zobrazí tu v profile."
+      },
+      "card": {
+        "mealPrep": "Meal prep",
+        "savedOn": "Uložené {date}",
+        "remove": "Odstrániť záložku",
+        "minutes": "Minúty",
+        "servings": "Porcie",
+        "proteinLabel": "Proteín"
+      },
+      "actions": {
+        "loadMore": "Načítať ďalšie recepty",
+        "loadingMore": "Načítavam ďalšie"
+      },
+      "toast": {
+        "loadError": "Nepodarilo sa načítať uložené recepty",
+        "removed": "Recept bol odstránený zo záložiek",
+        "removeError": "Nepodarilo sa odstrániť záložku"
+      }
     },
     "personal": {
       "title": "Osobné informácie",

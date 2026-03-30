@@ -204,6 +204,7 @@ export async function POST(_req: NextRequest) {
         metadata: { userId: (await auth())?.user?.id },
       },
     );
+
     return NextResponse.json(
       { error: "Failed to generate shopping list. Please try again." },
       { status: 500 },

@@ -77,6 +77,7 @@ export const pantryConsumeRecipeSchema = z.object({
   recipeTitle: z.string().trim().min(1).max(200),
   ingredientItems: z.array(pantryConsumeRecipeIngredientSchema).min(1).max(50),
   matchedIngredients: z.array(pantryConsumeRecipeMatchSchema).max(50).default([]),
+  finishedWithMissingIngredients: z.boolean().optional().default(false),
 });
 
 export const pantryCreateItemSchema = z

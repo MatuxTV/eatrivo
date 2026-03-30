@@ -9,6 +9,7 @@ import { getLocaleFromPathname } from "@/i18n/routing";
 import { useFadeInUp, useStaggerContainer } from "@/hooks/useAnimations";
 import type { SectionProps } from "@/types/landing";
 import { Button } from "@/components/ui/button";
+import { trackClientEvent } from "@/lib/analytics-client";
 
 interface PricingTier {
   tier: "basic" | "premium";
@@ -189,6 +190,32 @@ function PricingCard({
             href={
               tier.tier === "basic" ? `/${locale}/signin` : `/${locale}/pricing`
             }
+            onClick={() => {
+              if (tier.tier === "premium") {
+                trackClientEvent({
+                  eventName: "pricing_plan_selected",
+                  metadata: {
+                    tier: tier.tier,
+                    billing_period: "monthly",
+                    source_page: "landing",
+                    surface: "landing_pricing",
+                    locale,
+                  },
+                });
+                return;
+              }
+
+              trackClientEvent({
+                eventName: "landing_cta_clicked",
+                metadata: {
+                  cta_id: `pricing_${tier.tier}_cta`,
+                  cta_label: "get_started",
+                  destination: "signin",
+                  section: "pricing",
+                  locale,
+                },
+              });
+            }}
           >
             {tier.tier === "basic" ? t("getStarted") : t("upgrade")}
           </Link>

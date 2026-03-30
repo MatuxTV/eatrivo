@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
+import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -259,6 +260,7 @@ export default function KitchenCounterPage({
           recipeTitle: activeRecipe.title,
           ingredientItems: activeRecipe.ingredientItems ?? [],
           matchedIngredients: activeRecipe.matchedIngredients ?? [],
+          finishedWithMissingIngredients: missingIngredients.length > 0,
         }),
       });
       const payload = (await response.json().catch(() => null)) as {
@@ -365,6 +367,15 @@ export default function KitchenCounterPage({
 
   return (
     <AppShellViewport className="min-h-[100dvh] bg-eatrivo-white-primary overflow-hidden relative">
+      <TrackPageEvent
+        eventName="kitchen_counter_viewed"
+        metadata={{
+          recipeId: activeRecipe.id,
+          recipeTitle: activeRecipe.title,
+          stepCount: steps.length,
+          missingIngredientCount: missingIngredients.length,
+        }}
+      />
       <Dialog
         open={isMissingIngredientsDialogOpen}
         onOpenChange={setIsMissingIngredientsDialogOpen}
@@ -575,41 +586,40 @@ export default function KitchenCounterPage({
               <p className="text-sm text-gray-500">{t("basic.kitchenCounter.stepsTitle")}</p>
             )}
           </div>
-        </section>
-      </div>
 
-      {/* ─── Bottom Floating Action ────────────────────────────── */}
-      <div className="fixed bottom-[calc(90px+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 p-3 md:p-6 bg-gradient-to-t from-[#FDFCFE] via-[#FDFCFE]/95 to-transparent flex justify-center pb-4 pt-8 md:pb-[max(12px,env(safe-area-inset-bottom))] pointer-events-none z-40">
-        <div className="max-w-4xl w-full pointer-events-auto grid grid-cols-2 gap-3 md:flex md:justify-end md:items-center">
-          <Button
-            onClick={canGoToPreviousStep ? handlePreviousStep : onBack}
-            disabled={isFinishingRecipe}
-            className="h-12 bg-eatrivo-white-primary transform transition-all active:scale-95 rounded-xl text-sm font-semibold border-eatrivo-black-secondary/30 border-1 text-eatrivo-purple md:hidden"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            {canGoToPreviousStep
-              ? t("basic.kitchenCounter.previousStep")
-              : t("basic.kitchenCounter.backToHome")}
-          </Button>
-          <Button
-            onClick={steps.length > 0 ? handleNextStep : () => void handleFinishAttempt()}
-            disabled={isFinishingRecipe}
-            className={`${canGoToNextStep ? "bg-eatrivo-black-primary" : " bg-eatrivo-green"} text-white h-12 md:h-auto w-full transform active:scale-95 md:w-auto text-base md:text-lg font-bold py-3 md:py-6 px-5 md:px-8 rounded-2xl md:rounded-full hover:shadow-[0_12px_25px_rgba(0,0,0,0.25)] transition-all flex items-center justify-center gap-2 col-span-1 md:col-auto`}
-          >
-            {isFinishingRecipe
-              ? t("basic.kitchenCounter.finishPending")
-              : canGoToNextStep
-                ? t("basic.kitchenCounter.nextStep")
-                : t("basic.kitchenCounter.finishRecipe")}
-            {isFinishingRecipe ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : canGoToNextStep ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <Check className="w-5 h-5" />
-            )}
-          </Button>
-        </div>
+          <div className="mt-6 border-t border-eatrivo-purple/10 pt-5">
+            <div className="grid grid-cols-2 gap-3 md:flex md:justify-end md:items-center">
+              <Button
+                onClick={canGoToPreviousStep ? handlePreviousStep : onBack}
+                disabled={isFinishingRecipe}
+                className="h-12 rounded-xl border border-eatrivo-black-secondary/20 bg-eatrivo-white-primary text-sm font-semibold text-eatrivo-purple transition-all active:scale-95 hover:bg-eatrivo-purple/5 md:h-11 md:w-auto md:px-5"
+              >
+                <ChevronLeft className="mr-1 h-4 w-4" />
+                {canGoToPreviousStep
+                  ? t("basic.kitchenCounter.previousStep")
+                  : t("basic.kitchenCounter.backToHome")}
+              </Button>
+              <Button
+                onClick={steps.length > 0 ? handleNextStep : () => void handleFinishAttempt()}
+                disabled={isFinishingRecipe}
+                className={`${canGoToNextStep ? "bg-eatrivo-black-primary" : "bg-eatrivo-green"} h-12 items-center justify-center rounded-xl text-center text-sm font-bold text-white transition-all active:scale-95 hover:shadow-[0_12px_25px_rgba(0,0,0,0.16)] md:h-11 md:w-auto md:px-5`}
+              >
+                {isFinishingRecipe
+                  ? t("basic.kitchenCounter.finishPending")
+                  : canGoToNextStep
+                    ? t("basic.kitchenCounter.nextStep")
+                    : t("basic.kitchenCounter.finishRecipe")}
+                {isFinishingRecipe ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : canGoToNextStep ? (
+                  <ChevronRight className="h-4 w-4" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </section>
       </div>
     </AppShellViewport>
   );

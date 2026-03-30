@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ import {
   userFoodPreferencesSchema,
   type UserFoodPreferences,
 } from "@/lib/schemas/user";
+import { trackClientEvent } from "@/lib/analytics-client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Utensils,
@@ -85,6 +86,17 @@ export default function FoodPreferences({
     consents.termsAndPrivacy &&
     consents.medicalDisclaimer &&
     consents.healthDataProcessing;
+
+  useEffect(() => {
+    trackClientEvent({
+      eventName: "onboarding_step_viewed",
+      metadata: {
+        locale,
+        step_name: "preferences",
+        step_index: 2,
+      },
+    });
+  }, [locale]);
 
   const form = useForm<UserFoodPreferences>({
     resolver: zodResolver(userFoodPreferencesSchema),

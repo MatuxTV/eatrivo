@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SubscriptionStatus } from "@/components/billing/SubscriptionStatus";
 import { PricingCard } from "@/components/billing/PricingCard";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
+import { trackClientEvent } from "@/lib/analytics-client";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 
 interface SubscriptionData {
   membership: "basic" | "premium" | "pro" | "trainer";
@@ -23,6 +24,7 @@ interface SubscriptionData {
 export default function BillingPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const hasTrackedPageView = useRef(false);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<SubscriptionData | null>(null);
   const [toast, setToast] = useState<{
@@ -46,6 +48,22 @@ export default function BillingPageClient() {
     fetchSubscription();
   }, []);
 
+  useEffect(() => {
+    if (loading || hasTrackedPageView.current) {
+      return;
+    }
+
+    trackClientEvent({
+      eventName: "billing_page_viewed",
+      metadata: {
+        locale,
+        membership: data?.membership || "basic",
+        has_active_subscription: Boolean(data?.subscription),
+      },
+    });
+    hasTrackedPageView.current = true;
+  }, [data?.membership, data?.subscription, loading, locale]);
+
   const fetchSubscription = async () => {
     try {
       const res = await fetch("/api/user/subscription");
@@ -62,7 +80,20 @@ export default function BillingPageClient() {
 
   const handleManageSubscription = async () => {
     try {
-      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      trackClientEvent({
+        eventName: "billing_portal_opened",
+        metadata: {
+          locale,
+          membership: data?.membership || "basic",
+          surface: "billing_page",
+        },
+      });
+
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale }),
+      });
       const { url, error } = await res.json();
       if (url) {
         window.location.href = url;
@@ -83,7 +114,12 @@ export default function BillingPageClient() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier, locale }),
+        body: JSON.stringify({
+          tier,
+          locale,
+          sourcePage: "billing",
+          surface: "billing_page",
+        }),
       });
       const { url, error } = await res.json();
       if (url) {

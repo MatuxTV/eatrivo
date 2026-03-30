@@ -4,10 +4,11 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Send, Sprout, Target, MessageSquarePlus, Crown } from "lucide-react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { FeedbackDialog } from "@/components/FeedbackButton";
 import Link from "next/link";
 import AppShellViewport from "@/app/home/components/AppShellViewport";
+import { trackClientEvent } from "@/lib/analytics-client";
 
 interface Message {
   role: "user" | "assistant";
@@ -63,6 +64,7 @@ const MAX_INPUT_CHARS = 600;
 
 export default function ChatWithRivoPage() {
   const t = useTranslations("home.comingSoon.chatWithRivo");
+  const locale = useLocale();
   const [messages, setMessages] = useState<Message[]>(loadCachedMessages);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -82,9 +84,25 @@ export default function ChatWithRivoPage() {
   }, []);
 
   const sessionId = useRef(loadSessionId() || crypto.randomUUID());
+  const hasTrackedSessionStart = useRef(false);
+
   useEffect(() => {
     saveSessionId(sessionId.current);
   }, []);
+
+  useEffect(() => {
+    if (hasTrackedSessionStart.current) return;
+
+    hasTrackedSessionStart.current = true;
+    trackClientEvent({
+      eventName: "chat_session_started",
+      metadata: {
+        sessionId: sessionId.current,
+        locale,
+        restoredMessages: messages.length,
+      },
+    });
+  }, [locale, messages.length]);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 

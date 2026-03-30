@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Bookmark,
   Clock,
   Flame,
   Beef,
@@ -24,6 +26,7 @@ import {
   Check,
   Plus,
   Minus,
+  Loader2,
 } from "lucide-react";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import { Button } from "@/components/ui/button";
@@ -89,11 +92,14 @@ export default function RecipeBrowserDialog({
   onCookRecipe,
 }: RecipeBrowserDialogProps) {
   const t = useTranslations("home");
+  const locale = useLocale();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [direction, setDirection] = useState(0); // -1 left, 1 right
   const [selectedMissingIngredients, setSelectedMissingIngredients] = useState<Set<string>>(
     new Set(),
   );
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarkPending, setIsBookmarkPending] = useState(false);
 
   // Sync when dialog opens with a different initialIndex
   useEffect(() => {
@@ -103,12 +109,60 @@ export default function RecipeBrowserDialog({
   useEffect(() => {
     if (!open) {
       setSelectedMissingIngredients(new Set());
+      setIsBookmarked(false);
+      setIsBookmarkPending(false);
     }
   }, [open]);
 
   const recipe = recipes[currentIndex] ?? null;
   const hasNext = currentIndex < recipes.length - 1;
   const hasPrev = currentIndex > 0;
+
+  useEffect(() => {
+    if (!open || !recipe?.id) {
+      return;
+    }
+
+    let isCancelled = false;
+    setIsBookmarkPending(true);
+
+    void fetch(`/api/recipes/${recipe.id}/bookmark`, {
+      method: "GET",
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as
+          | { bookmarked?: boolean; error?: string }
+          | null;
+
+        if (!response.ok) {
+          throw new Error(payload?.error ?? "Bookmark status request failed.");
+        }
+
+        if (isCancelled) {
+          return;
+        }
+
+        setIsBookmarked(Boolean(payload?.bookmarked));
+      })
+      .catch((error) => {
+        if (isCancelled) {
+          return;
+        }
+
+        console.error("[RecipeBrowserDialog] bookmark status failed", error);
+        setIsBookmarked(false);
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsBookmarkPending(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [open, recipe?.id]);
 
   const goNext = useCallback(() => {
     if (!hasNext) return;
@@ -162,6 +216,44 @@ export default function RecipeBrowserDialog({
 
     onCookRecipe(recipe);
   }, [onCookRecipe, recipe]);
+
+  const handleToggleBookmark = useCallback(async () => {
+    if (!recipe?.id || isBookmarkPending) {
+      return;
+    }
+
+    const previousBookmarked = isBookmarked;
+    setIsBookmarkPending(true);
+
+    try {
+      const response = await fetch(`/api/recipes/${recipe.id}/bookmark`, {
+        method: previousBookmarked ? "DELETE" : "POST",
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "Bookmark request failed.");
+      }
+
+      setIsBookmarked(!previousBookmarked);
+      toast.success(
+        t(
+          previousBookmarked
+            ? "basic.recipeDialog.bookmarkRemoved"
+            : "basic.recipeDialog.bookmarkSaved",
+        ),
+      );
+    } catch (error) {
+      setIsBookmarked(previousBookmarked);
+      toast.error(t("basic.recipeDialog.bookmarkError"));
+      console.error("[RecipeBrowserDialog] bookmark toggle failed", error);
+    } finally {
+      setIsBookmarkPending(false);
+    }
+  }, [isBookmarked, isBookmarkPending, recipe?.id, t]);
 
   if (!recipe) return null;
 
@@ -237,25 +329,57 @@ export default function RecipeBrowserDialog({
             >
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.3),transparent_45%)]" />
               <div className="relative z-10 space-y-4">
-                {/* Category + Meal prep badges */}
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] backdrop-blur-md">
-                    {recipe.category}
-                  </span>
-                  {recipe.mealPrepFriendly && (
-                    <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] backdrop-blur-md flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
-                      {t("basic.recipeDialog.mealPrep")}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] backdrop-blur-md">
+                      {recipe.category}
                     </span>
-                  )}
-                  {restrictionFlagLabels.map((flag) => (
-                    <span
-                      key={flag.key}
-                      className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white/90 ring-1 ring-white/20 backdrop-blur-md"
-                    >
-                      {flag.label}
-                    </span>
-                  ))}
+                    {recipe.mealPrepFriendly && (
+                      <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] backdrop-blur-md flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        {t("basic.recipeDialog.mealPrep")}
+                      </span>
+                    )}
+                    {restrictionFlagLabels.map((flag) => (
+                      <span
+                        key={flag.key}
+                        className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white/90 ring-1 ring-white/20 backdrop-blur-md"
+                      >
+                        {flag.label}
+                      </span>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleToggleBookmark();
+                    }}
+                    disabled={isBookmarkPending}
+                    aria-label={
+                      isBookmarked
+                        ? t("basic.recipeDialog.removeBookmark")
+                        : t("basic.recipeDialog.saveRecipe")
+                    }
+                    title={
+                      isBookmarked
+                        ? t("basic.recipeDialog.removeBookmark")
+                        : t("basic.recipeDialog.saveRecipe")
+                    }
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-lg ring-1 ring-white/30 backdrop-blur-md transition-all active:scale-95 disabled:cursor-wait disabled:opacity-70 ${
+                      isBookmarked
+                        ? "bg-white text-eatrivo-purple"
+                        : "bg-white/18 text-white hover:bg-white/26"
+                    }`}
+                  >
+                    {isBookmarkPending ? (
+                      <Loader2 className="h-4.5 w-4.5 animate-spin" />
+                    ) : (
+                      <Bookmark
+                        className={`h-4.5 w-4.5 ${isBookmarked ? "fill-current" : ""}`}
+                      />
+                    )}
+                  </button>
                 </div>
 
                 {/* Title */}
@@ -414,7 +538,16 @@ export default function RecipeBrowserDialog({
                   const available = (recipe.matchedIngredients ?? []).map(
                     (ingredient) => ({
                       key: ingredient.recipeIngredientName,
-                      name: ingredient.displayName,
+                      name: ingredient.recipeIngredientName,
+                      note:
+                        ingredient.matchType === "fallback" &&
+                        ingredient.pantryIngredientName &&
+                        ingredient.pantryIngredientName.trim().toLowerCase() !==
+                          ingredient.recipeIngredientName.trim().toLowerCase()
+                          ? t("basic.recipeDialog.fallbackUsing", {
+                              ingredient: ingredient.pantryIngredientName,
+                            })
+                          : null,
                       amount: resolveAmountLabel(
                         ingredient.recipeIngredientName,
                         ingredient.amount,
@@ -434,6 +567,7 @@ export default function RecipeBrowserDialog({
                       ? recipe.ingredientItems.map((ingredient) => ({
                           key: ingredient.name,
                           name: ingredient.name,
+                          note: null,
                           amount: resolveAmountLabel(
                             ingredient.name,
                             ingredient.amount,
@@ -448,6 +582,7 @@ export default function RecipeBrowserDialog({
                     (ing) => ({
                       key: ing,
                       name: ing,
+                      note: null,
                       amount: resolveAmountLabel(ing, null),
                       category:
                         ingredientByName.get(ing.trim().toLowerCase())?.category ??
@@ -533,17 +668,24 @@ export default function RecipeBrowserDialog({
                             </button>
                           )}
                           <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
-                            <span
-                              className={`truncate text-[13px] font-bold ${
-                                item.tone === "green"
-                                  ? "text-[#1a1a2e]"
-                                  : item.tone === "orange"
-                                    ? "text-amber-800"
-                                    : "text-red-700"
-                              }`}
-                            >
-                              {item.name}
-                            </span>
+                            <div className="min-w-0 flex-1">
+                              <span
+                                className={`block truncate text-[13px] font-bold ${
+                                  item.tone === "green"
+                                    ? "text-[#1a1a2e]"
+                                    : item.tone === "orange"
+                                      ? "text-amber-800"
+                                      : "text-red-700"
+                                }`}
+                              >
+                                {item.name}
+                              </span>
+                              {item.note ? (
+                                <span className="mt-1 block truncate text-[11px] font-semibold text-amber-700/80">
+                                  {item.note}
+                                </span>
+                              ) : null}
+                            </div>
                             {item.amount ? (
                               <span className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500 ring-1 ring-gray-200/70">
                                 {item.amount}

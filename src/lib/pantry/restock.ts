@@ -3,6 +3,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/index";
 import { pantryRestockItems, userProfiles } from "@/db/schema";
 import type { pantryItems } from "@/db/schema";
+import { pantrySnapshotCacheKey } from "@/lib/cache-keys";
 import { CacheService } from "@/lib/redis";
 import { normalizeUnit } from "@/lib/units";
 
@@ -28,6 +29,8 @@ export async function invalidatePantryCaches(userProfileId: string): Promise<voi
   await Promise.all([
     CacheService.del(pantryCacheKey(userProfileId)),
     CacheService.del(pantryRestockCacheKey(userProfileId)),
+    CacheService.del(pantrySnapshotCacheKey(userProfileId, false)),
+    CacheService.del(pantrySnapshotCacheKey(userProfileId, true)),
   ]);
 }
 

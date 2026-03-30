@@ -11,6 +11,7 @@ import {
   LOCALE_COOKIE_MAX_AGE,
   type Locale,
 } from "@/i18n/routing";
+import { invalidateUserContextCaches } from "@/lib/user-context-cache";
 
 /**
  * Update the user's locale preference.
@@ -43,6 +44,8 @@ export async function updateLocale(locale: string) {
           .update(userInfoTable)
           .set({ language: locale as Locale })
           .where(eq(userInfoTable.userProfileId, profile.id));
+
+        await invalidateUserContextCaches(session.user.id);
       }
     } catch (error) {
       console.error("Failed to persist locale to DB:", error);

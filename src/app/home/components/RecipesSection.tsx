@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import {
   CookingPot,
+  Check,
   ChefHat,
   Clock,
   Flame,
@@ -13,19 +14,23 @@ import {
   Beef,
   Salad,
   Sparkles,
+  SlidersHorizontal,
+  X,
   ChevronLeft,
   ChevronRight,
   Droplets,
   AlertCircle,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import type {
   CustomRecipeHeroSnapshot,
   RivoCustomRecipeExperienceHandle,
 } from "./RivoCustomRecipeExperience";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { trackClientEvent } from "@/lib/analytics-client";
 
 const RivoCustomRecipeExperience = dynamic(
   () => import("./RivoCustomRecipeExperience"),
@@ -71,6 +76,8 @@ interface RecipesSectionProps {
   onOpenPantrySection: () => void;
   onAddToShoppingList: (name: string, qty: string | null, cat: string | null) => Promise<void>;
   onCookRecipe: (recipe: BasicHomeRecipePreview) => void;
+  pendingExternalRecipe: BasicHomeRecipePreview | null;
+  onPendingExternalRecipeHandled: () => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -90,20 +97,35 @@ export default function RecipesSection({
   onOpenPantrySection,
   onAddToShoppingList,
   onCookRecipe,
+  pendingExternalRecipe,
+  onPendingExternalRecipeHandled,
 }: RecipesSectionProps) {
   const t = useTranslations("home");
+  const locale = useLocale();
   const triggerHaptic = useHapticFeedback();
-  const almostCookableScrollRef = useRef<HTMLDivElement | null>(null);
   const rivoCustomRecipeRef = useRef<RivoCustomRecipeExperienceHandle | null>(null);
+  const cookableTouchStartXRef = useRef<number | null>(null);
+  const almostCookableTouchStartXRef = useRef<number | null>(null);
+  const suppressCookableTapRef = useRef(false);
+  const suppressAlmostCookableTapRef = useRef(false);
 
   /* ---- internal browser state ---- */
 
   const [browserOpen, setBrowserOpen] = useState(false);
-  const [browserSource, setBrowserSource] = useState<"featured" | "cookable" | "almost" | "filtered" | null>(null);
+  const [browserSource, setBrowserSource] = useState<"featured" | "cookable" | "almost" | "filtered" | "external" | null>(null);
   const [browserIndex, setBrowserIndex] = useState(0);
+  const [externalBrowserRecipe, setExternalBrowserRecipe] =
+    useState<BasicHomeRecipePreview | null>(null);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [draftSelectedFilter, setDraftSelectedFilter] = useState(selectedFilter);
+  const [cookableSpotlightIndex, setCookableSpotlightIndex] = useState(0);
+  const [almostCookableSpotlightIndex, setAlmostCookableSpotlightIndex] = useState(0);
 
   const openRecipeBrowser = useCallback(
-    (source: "featured" | "cookable" | "almost" | "filtered", index: number) => {
+    (
+      source: "featured" | "cookable" | "almost" | "filtered" | "external",
+      index: number,
+    ) => {
       setBrowserSource(source);
       setBrowserIndex(index);
       setBrowserOpen(true);
@@ -155,12 +177,147 @@ export default function RecipesSection({
     return [...tagSet].slice(0, 6);
   }, [enrichedFeaturedRecipes]);
 
+  const filterSections = useMemo(
+    () => [
+      {
+        key: "popular",
+        title: t("basic.filters.sections.popular"),
+        filters: ["all", "quick", "high-protein"],
+      },
+      {
+        key: "preferences",
+        title: t("basic.filters.sections.preferences"),
+        filters: ["vegetarian", "vegan", "pescatarian"],
+      },
+      {
+        key: "special",
+        title: t("basic.filters.sections.special"),
+        filters: ["ketogenic", "paleo", "gluten-free", "dairy-free"],
+      },
+    ]
+      .map((section) => ({
+        ...section,
+        filters: section.filters.filter((filter) => availableFilters.includes(filter)),
+      }))
+      .filter((section) => section.filters.length > 0),
+    [availableFilters, t],
+  );
+
   const getRecipeTagLabel = useCallback(
     (tag: string): string => {
       const key = RECIPE_TAG_TRANSLATION_KEYS[tag as keyof typeof RECIPE_TAG_TRANSLATION_KEYS];
       return key ? t(key) : tag.replace(/-/g, " ");
     },
     [t],
+  );
+
+  const getRecipeTagIcon = useCallback((filter: string) => {
+    if (filter === "quick") return Clock;
+    if (filter === "high-protein") return Beef;
+    if (filter === "vegetarian" || filter === "vegan") return Leaf;
+    if (filter === "all") return Salad;
+    return Flame;
+  }, []);
+
+  const selectedFilterLabel = useMemo(
+    () => getRecipeTagLabel(selectedFilter),
+    [getRecipeTagLabel, selectedFilter],
+  );
+
+  useEffect(() => {
+    if (filterDialogOpen) {
+      setDraftSelectedFilter(selectedFilter);
+    }
+  }, [filterDialogOpen, selectedFilter]);
+
+  useEffect(() => {
+    setCookableSpotlightIndex((current) => {
+      if (enrichedCookableRecipes.length === 0) {
+        return 0;
+      }
+      return Math.min(current, enrichedCookableRecipes.length - 1);
+    });
+  }, [enrichedCookableRecipes.length]);
+
+  useEffect(() => {
+    setAlmostCookableSpotlightIndex((current) => {
+      if (enrichedAlmostCookableRecipes.length === 0) {
+        return 0;
+      }
+      return Math.min(current, enrichedAlmostCookableRecipes.length - 1);
+    });
+  }, [enrichedAlmostCookableRecipes.length]);
+
+  const handleOpenFilterDialog = useCallback(() => {
+    triggerHaptic("light");
+    setDraftSelectedFilter(selectedFilter);
+    setFilterDialogOpen(true);
+  }, [selectedFilter, triggerHaptic]);
+
+  const handleApplyFilter = useCallback(() => {
+    triggerHaptic("medium");
+    onFilterChange(draftSelectedFilter);
+    setFilterDialogOpen(false);
+  }, [draftSelectedFilter, onFilterChange, triggerHaptic]);
+
+  const handleClearFilter = useCallback(() => {
+    triggerHaptic("light");
+    setDraftSelectedFilter("all");
+  }, [triggerHaptic]);
+
+  const stepSpotlightIndex = useCallback(
+    (
+      recipeCount: number,
+      setIndex: React.Dispatch<React.SetStateAction<number>>,
+      direction: 1 | -1,
+      hapticType: "light" | "medium" = "light",
+    ) => {
+      if (recipeCount <= 1) {
+        return;
+      }
+
+      triggerHaptic(hapticType);
+      setIndex((current) => (current + direction + recipeCount) % recipeCount);
+    },
+    [triggerHaptic],
+  );
+
+  const handleSpotlightTouchStart = useCallback(
+    (
+      startRef: React.MutableRefObject<number | null>,
+      suppressTapRef: React.MutableRefObject<boolean>,
+    ) => (event: React.TouchEvent<HTMLButtonElement>) => {
+      startRef.current = event.changedTouches[0]?.clientX ?? null;
+      suppressTapRef.current = false;
+    },
+    [],
+  );
+
+  const handleSpotlightTouchEnd = useCallback(
+    (
+      recipeCount: number,
+      setIndex: React.Dispatch<React.SetStateAction<number>>,
+      startRef: React.MutableRefObject<number | null>,
+      suppressTapRef: React.MutableRefObject<boolean>,
+    ) => (event: React.TouchEvent<HTMLButtonElement>) => {
+      const startX = startRef.current;
+      const endX = event.changedTouches[0]?.clientX;
+
+      startRef.current = null;
+
+      if (startX === null || typeof endX !== "number") {
+        return;
+      }
+
+      const deltaX = endX - startX;
+      if (Math.abs(deltaX) < 40) {
+        return;
+      }
+
+      suppressTapRef.current = true;
+      stepSpotlightIndex(recipeCount, setIndex, deltaX < 0 ? 1 : -1, "medium");
+    },
+    [stepSpotlightIndex],
   );
 
   /* ---- browser recipes ---- */
@@ -171,9 +328,29 @@ export default function RecipesSection({
       case "cookable": return enrichedCookableRecipes;
       case "almost": return enrichedAlmostCookableRecipes;
       case "filtered": return filteredRecipes;
+      case "external": return externalBrowserRecipe ? [externalBrowserRecipe] : [];
       default: return [];
     }
-  }, [browserSource, enrichedFeaturedRecipes, enrichedCookableRecipes, enrichedAlmostCookableRecipes, filteredRecipes]);
+  }, [browserSource, enrichedFeaturedRecipes, enrichedCookableRecipes, enrichedAlmostCookableRecipes, externalBrowserRecipe, filteredRecipes]);
+
+  useEffect(() => {
+    if (!pendingExternalRecipe) {
+      return;
+    }
+
+    setExternalBrowserRecipe(pendingExternalRecipe);
+    setBrowserSource("external");
+    setBrowserIndex(0);
+
+    const openTimeout = window.setTimeout(() => {
+      setBrowserOpen(true);
+      onPendingExternalRecipeHandled();
+    }, 180);
+
+    return () => {
+      window.clearTimeout(openTimeout);
+    };
+  }, [onPendingExternalRecipeHandled, pendingExternalRecipe]);
 
   const handleCookRecipeInternal = useCallback(
     (recipe: BasicHomeRecipePreview) => {
@@ -193,6 +370,9 @@ export default function RecipesSection({
     const sourceRecipes = activeRecipeBrowserSource === "filtered" ? filteredRecipes : enrichedFeaturedRecipes;
     return sourceRecipes.findIndex((r) => r.id === activeRecipe.id);
   }, [activeRecipe, activeRecipeBrowserSource, enrichedFeaturedRecipes, filteredRecipes]);
+
+  const activeCookableRecipe = enrichedCookableRecipes[cookableSpotlightIndex] ?? null;
+  const activeAlmostCookableRecipe = enrichedAlmostCookableRecipes[almostCookableSpotlightIndex] ?? null;
 
   /* ---- custom recipe hero derivations ---- */
 
@@ -279,10 +459,6 @@ export default function RecipesSection({
     }
     onOpenPantrySection();
   }, [onOpenPantrySection]);
-
-  const scrollAlmostCookableRecipes = useCallback((direction: 1 | -1) => {
-    almostCookableScrollRef.current?.scrollBy({ left: direction * 220, behavior: "smooth" });
-  }, []);
 
   /* ---- render ---- */
 
@@ -599,31 +775,77 @@ export default function RecipesSection({
           </div>
         </div>
 
-        {/* Cookable Recipes Carousel */}
+        {/* Cookable Recipes Spotlight */}
         <div className="relative z-10 -mx-6 sm:-mx-8 px-6 sm:px-8">
           {enrichedCookableRecipes.length > 0 ? (
-            <div className="flex overflow-x-auto gap-4 pb-6 snap-x hide-scrollbar" style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}>
-              {enrichedCookableRecipes.map((recipe) => (
-                <div
-                  key={recipe.id}
-                  className="min-w-[140px] max-w-[140px] flex flex-col gap-3 snap-start cursor-pointer group/recipe"
+            <div className="pb-6">
+              <div className="mb-4 flex items-center justify-between gap-3 px-1">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">
+                    {t("basic.pantryDashboard.cookablePrefix")}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-gray-900">
+                    {cookableSpotlightIndex + 1} / {enrichedCookableRecipes.length}
+                  </p>
+                </div>
+                {enrichedCookableRecipes.length > 1 ? (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => stepSpotlightIndex(enrichedCookableRecipes.length, setCookableSpotlightIndex, -1)}
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-eatrivo-purple/20 bg-white text-eatrivo-purple shadow-sm transition-all hover:-translate-y-0.5 hover:bg-eatrivo-purple/5 active:scale-95"
+                      aria-label={t("basic.almostCookable.scrollLeft")}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stepSpotlightIndex(enrichedCookableRecipes.length, setCookableSpotlightIndex, 1)}
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-eatrivo-purple/20 bg-white text-eatrivo-purple shadow-sm transition-all hover:-translate-y-0.5 hover:bg-eatrivo-purple/5 active:scale-95"
+                      aria-label={t("basic.almostCookable.scrollRight")}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+
+              {activeCookableRecipe ? (
+                <motion.button
+                  key={activeCookableRecipe.id}
+                  type="button"
+                  initial={{ opacity: 0, y: 12, scale: 0.985 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                  onTouchStart={handleSpotlightTouchStart(cookableTouchStartXRef, suppressCookableTapRef)}
+                  onTouchEnd={handleSpotlightTouchEnd(
+                    enrichedCookableRecipes.length,
+                    setCookableSpotlightIndex,
+                    cookableTouchStartXRef,
+                    suppressCookableTapRef,
+                  )}
                   onClick={() => {
-                    const idx = enrichedCookableRecipes.findIndex((r) => r.id === recipe.id);
+                    if (suppressCookableTapRef.current) {
+                      suppressCookableTapRef.current = false;
+                      return;
+                    }
+                    const idx = enrichedCookableRecipes.findIndex((recipe) => recipe.id === activeCookableRecipe.id);
                     openRecipeBrowser("cookable", idx !== -1 ? idx : 0);
                   }}
+                  className="group/recipe relative flex w-full overflow-hidden rounded-[1.15rem] border border-gray-100 bg-white px-4 py-3 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-gray-200 hover:shadow-md sm:px-5 sm:py-3.5"
                 >
-                  <div className="w-full aspect-[4/5] rounded-2xl bg-white border border-gray-100 shadow-sm p-4 flex flex-col justify-between group-hover/recipe:scale-[1.03] group-hover/recipe:-translate-y-1 group-hover/recipe:border-gray-200 group-hover/recipe:shadow-md transition-all duration-300 ease-out">
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-eatrivo-purple bg-eatrivo-purple/10 px-2 py-1 rounded-md">{recipe.category}</span>
-                      <div className="flex items-center gap-1 text-[11px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-md"><Clock className="w-3 h-3 text-gray-400" />{recipe.totalTimeMin}</div>
-                    </div>
-                    <div className="mt-auto">
-                      <h4 className="text-[13px] font-bold text-gray-900 leading-tight line-clamp-2 mb-3 group-hover/recipe:text-eatrivo-purple transition-colors">{recipe.title}</h4>
-                      <div className="flex items-baseline gap-1.5"><p className="text-xl font-bold leading-none text-gray-900">{recipe.proteinG}g</p></div>
+                  <div className="absolute inset-x-0 top-0 h-1 bg-eatrivo-purple/80" />
+                  <div className="flex w-full items-center justify-between gap-4 pt-1">
+                    <h3 className="min-w-0 text-[15px] font-black leading-tight tracking-tight text-gray-900 transition-colors group-hover/recipe:text-eatrivo-purple sm:text-base">
+                      <span className="line-clamp-2">{activeCookableRecipe.title}</span>
+                    </h3>
+                    <div className="shrink-0 text-right text-eatrivo-purple">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-gray-400">{t("nutrition.protein")}</p>
+                      <p className="text-[1.65rem] font-black leading-none sm:text-[1.8rem]">{activeCookableRecipe.proteinG}g</p>
                     </div>
                   </div>
-                </div>
-              ))}
+                </motion.button>
+              ) : null}
             </div>
           ) : (
             <div className="mb-6 rounded-2xl bg-white border border-gray-100 shadow-sm p-8 flex flex-col items-center justify-center text-center">
@@ -645,47 +867,58 @@ export default function RecipesSection({
               </div>
               {enrichedAlmostCookableRecipes.length > 1 ? (
                 <div className="flex items-center gap-2 shrink-0">
-                  <button type="button" onClick={() => scrollAlmostCookableRecipes(-1)} className="h-7 w-7 rounded-full border border-amber-200 bg-white text-amber-600 shadow-sm transition-all hover:bg-amber-50 active:scale-95 flex items-center justify-center" aria-label={t("basic.almostCookable.scrollLeft")}>
+                  <button type="button" onClick={() => stepSpotlightIndex(enrichedAlmostCookableRecipes.length, setAlmostCookableSpotlightIndex, -1)} className="h-8 w-8 rounded-full border border-amber-200 bg-white text-amber-600 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-amber-50 active:scale-95 flex items-center justify-center" aria-label={t("basic.almostCookable.scrollLeft")}>
                     <ChevronLeft className="h-3.5 w-3.5" />
                   </button>
-                  <button type="button" onClick={() => scrollAlmostCookableRecipes(1)} className="h-7 w-7 rounded-full border border-amber-200 bg-white text-amber-600 shadow-sm transition-all hover:bg-amber-50 active:scale-95 flex items-center justify-center" aria-label={t("basic.almostCookable.scrollRight")}>
+                  <div className="min-w-[3rem] text-center text-[11px] font-bold text-gray-400">
+                    {almostCookableSpotlightIndex + 1}/{enrichedAlmostCookableRecipes.length}
+                  </div>
+                  <button type="button" onClick={() => stepSpotlightIndex(enrichedAlmostCookableRecipes.length, setAlmostCookableSpotlightIndex, 1)} className="h-8 w-8 rounded-full border border-amber-200 bg-white text-amber-600 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-amber-50 active:scale-95 flex items-center justify-center" aria-label={t("basic.almostCookable.scrollRight")}>
                     <ChevronRight className="h-3.5 w-3.5" />
                   </button>
                 </div>
-              ) : null}
+              ) : (
+                <div className="text-[11px] font-bold text-gray-400">
+                  1/1
+                </div>
+              )}
             </div>
-            <div ref={almostCookableScrollRef} className="flex overflow-x-auto gap-4 pb-4 -mx-6 sm:-mx-8 px-6 sm:px-8 snap-x hide-scrollbar" style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}>
-              {enrichedAlmostCookableRecipes.map((recipe) => (
-                <div
-                  key={recipe.id}
-                  className="min-w-[160px] max-w-[160px] flex flex-col gap-3 snap-start cursor-pointer group/almost"
-                  onClick={() => {
-                    const idx = enrichedAlmostCookableRecipes.findIndex((r) => r.id === recipe.id);
-                    openRecipeBrowser("almost", idx !== -1 ? idx : 0);
-                  }}
-                >
-                  <div className="w-full aspect-[4/5] rounded-2xl bg-white border border-amber-100 shadow-sm p-4 flex flex-col justify-between group-hover/almost:scale-[1.03] group-hover/almost:-translate-y-1 group-hover/almost:border-amber-200 transition-all duration-300 ease-out">
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-amber-600 bg-amber-50 px-2 py-1 rounded-md">{recipe.category}</span>
-                      <div className="flex items-center gap-1 text-[11px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-md"><Clock className="w-3 h-3 text-gray-400" />{recipe.totalTimeMin}</div>
-                    </div>
-                    <div className="mt-auto">
-                      <h4 className="text-[13px] font-bold text-gray-900 leading-tight line-clamp-2 mb-2 group-hover/almost:text-amber-600 transition-colors">{recipe.title}</h4>
-                      {recipe.missingIngredients && recipe.missingIngredients.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {recipe.missingIngredients.slice(0, 2).map((ing) => (
-                            <span key={ing} className="text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-md truncate max-w-[90px]">&minus; {ing}</span>
-                          ))}
-                          {recipe.missingIngredients.length > 2 && (
-                            <span className="text-[9px] font-bold text-amber-500">+{recipe.missingIngredients.length - 2}</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
+            {activeAlmostCookableRecipe ? (
+              <motion.button
+                key={activeAlmostCookableRecipe.id}
+                type="button"
+                initial={{ opacity: 0, y: 12, scale: 0.985 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                onTouchStart={handleSpotlightTouchStart(almostCookableTouchStartXRef, suppressAlmostCookableTapRef)}
+                onTouchEnd={handleSpotlightTouchEnd(
+                  enrichedAlmostCookableRecipes.length,
+                  setAlmostCookableSpotlightIndex,
+                  almostCookableTouchStartXRef,
+                  suppressAlmostCookableTapRef,
+                )}
+                onClick={() => {
+                  if (suppressAlmostCookableTapRef.current) {
+                    suppressAlmostCookableTapRef.current = false;
+                    return;
+                  }
+                  const idx = enrichedAlmostCookableRecipes.findIndex((recipe) => recipe.id === activeAlmostCookableRecipe.id);
+                  openRecipeBrowser("almost", idx !== -1 ? idx : 0);
+                }}
+                className="group/almost relative mx-6 mb-4 flex w-auto overflow-hidden rounded-[1.15rem] border border-amber-100 bg-white px-4 py-3 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-amber-200 hover:shadow-md sm:mx-8 sm:px-5 sm:py-3.5"
+              >
+                <div className="absolute inset-x-0 top-0 h-1 bg-amber-400/90" />
+                <div className="flex w-full items-center justify-between gap-4 pt-1">
+                  <h3 className="min-w-0 text-[15px] font-black leading-tight tracking-tight text-gray-900 transition-colors group-hover/almost:text-amber-600 sm:text-base">
+                    <span className="line-clamp-2">{activeAlmostCookableRecipe.title}</span>
+                  </h3>
+                  <div className="shrink-0 text-right text-amber-700">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-amber-400">{t("nutrition.protein")}</p>
+                    <p className="text-[1.65rem] font-black leading-none sm:text-[1.8rem]">{activeAlmostCookableRecipe.proteinG}g</p>
                   </div>
                 </div>
-              ))}
-            </div>
+              </motion.button>
+            ) : null}
           </div>
         )}
 
@@ -701,30 +934,33 @@ export default function RecipesSection({
         </div>
       </div>
 
-      {/* ---- Quick Filters ---- */}
+      {/* ---- Filters Trigger ---- */}
       <div className="pb-4">
-        <h3 className="text-sm font-bold text-gray-900 mb-3 px-1">{t("basic.filters.title")}</h3>
-        <div className="flex overflow-x-auto gap-2 pb-2 hide-scrollbar whitespace-nowrap px-1" style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}>
-          {availableFilters.map((filter) => {
-            const isSelected = selectedFilter === filter;
-            const icon = filter === "quick" ? Clock : filter === "high-protein" ? Beef : filter === "vegetarian" || filter === "vegan" ? Leaf : filter === "all" ? Salad : Flame;
-            const Icon = icon;
-            return (
-              <button
-                key={filter}
-                type="button"
-                onClick={() => onFilterChange(filter)}
-                className={`px-5 py-2.5 rounded-full text-[13px] font-bold flex items-center gap-2 transition-all duration-300 ease-out active:scale-95 border ${
-                  isSelected
-                    ? "bg-eatrivo-purple text-white border-eatrivo-purple shadow-lg shadow-eatrivo-purple/20"
-                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm"
-                }`}
-              >
-                {getRecipeTagLabel(filter)}
-                <Icon className={`w-4 h-4 ${isSelected ? "text-white" : "text-gray-400"}`} />
-              </button>
-            );
-          })}
+        <div className="flex items-center justify-between gap-3 rounded-[1.35rem] border border-gray-100 bg-white/90 px-4 py-3 shadow-sm">
+          <div className="min-w-0">
+            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">
+              {t("basic.filters.title")}
+            </p>
+            <p className="mt-1 truncate text-sm font-bold text-gray-900">
+              {selectedFilter === "all"
+                ? t("basic.filters.noSelection")
+                : t("basic.filters.selectedValue", { value: selectedFilterLabel })}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleOpenFilterDialog}
+            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-eatrivo-purple px-4 py-2.5 text-sm font-bold text-eatrivo-white-primary transition-all hover:translate-y-[-1px] active:scale-95"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            {t("basic.filters.openButton")}
+            {selectedFilter !== "all" ? (
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-black text-[#111014]">
+                1
+              </span>
+            ) : null}
+          </button>
         </div>
       </div>
 
@@ -764,12 +1000,114 @@ export default function RecipesSection({
       {/* ---- Recipe Browser Dialog ---- */}
       <RecipeBrowserDialog
         open={browserOpen}
-        onOpenChange={setBrowserOpen}
+        onOpenChange={(open) => {
+          setBrowserOpen(open);
+          if (!open && browserSource === "external") {
+            setExternalBrowserRecipe(null);
+          }
+        }}
         recipes={browserRecipes}
         initialIndex={browserIndex}
         onAddToShoppingList={onAddToShoppingList}
         onCookRecipe={handleCookRecipeInternal}
       />
+
+      <Dialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
+        <DialogContent
+          showCloseButton={false}
+          className="w-[calc(100vw-1.5rem)] max-w-sm gap-0 overflow-hidden rounded-[2rem] border border-white/10 bg-eatrivo-white-primary p-0 shadow-[0_28px_70px_rgba(0,0,0,0.55)] duration-300 data-[state=closed]:translate-y-3 data-[state=closed]:scale-[0.98] data-[state=closed]:opacity-0 data-[state=open]:translate-y-0 data-[state=open]:scale-100 data-[state=open]:opacity-100"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            className="px-5 pb-5 pt-4 text-white"
+          >
+            <div className="mb-6 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFilterDialogOpen(false)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-eatrivo-black-primary/80 transition-colors hover:bg-white/10 hover:text-white"
+                  aria-label={t("basic.filters.closeButton")}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <DialogTitle className="text-xl font-black tracking-[-0.04em] text-eatrivo-black-primary">
+                  {t("basic.filters.title")}
+                </DialogTitle>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              {filterSections.map((section) => (
+                <motion.div
+                  key={section.key}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.22, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
+                  className="border-b border-white/8 pb-5 last:border-b-0 last:pb-0"
+                >
+                  <p className="mb-3 text-[11px] font-black uppercase tracking-[0.18em] text-eatrivo-black-secondary">
+                    {section.title}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {section.filters.map((filter) => {
+                      const isSelected = draftSelectedFilter === filter;
+                      const Icon = getRecipeTagIcon(filter);
+
+                      return (
+                        <button
+                          key={filter}
+                          type="button"
+                          onClick={() => setDraftSelectedFilter(filter)}
+                          className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-[13px] font-bold transition-all duration-200 active:scale-95 ${
+                            isSelected
+                              ? "border-eatrivo-white-primary/20 bg-eatrivo-purple/70 text-eatrivo-white-primary"
+                              : "border-eatrivo-black-primary/8 text-eatrivo-black-primary hover:translate-y-[-1px] hover:bg-white/10"
+                          }`}
+                        >
+                          <Icon className={`h-3.5 w-3.5 ${isSelected ? "text-eatrivo-white-primary" : "text-eatrivo-black-primary/55"}`} />
+                          <span>{getRecipeTagLabel(filter)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.22, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-6 flex items-center gap-2"
+            >
+              <Button
+                type="button"
+                onClick={handleApplyFilter}
+                className="h-11 flex-1 rounded-full bg-eatrivo-purple text-sm font-black text-eatrivo-white-primary hover:bg-eatrivo-white-primary/90"
+              >
+                {t("basic.filters.save")}
+                {draftSelectedFilter !== "all" ? (
+                  <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-eatrivo-black-primary px-1.5 text-[11px] font-black text-eatrivo-white-primary">
+                    1
+                  </span>
+                ) : null}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleClearFilter}
+                className="h-11 rounded-full border border-eatrivo-black-primary/8 bg-white/6 px-4 text-sm font-bold text-eatrivo-black-primary hover:bg-eatrivo-white-primary/78  hover:text-white"
+              >
+                <X className="mr-2 h-4 w-4" />
+                {t("basic.filters.clearAll")}
+              </Button>
+            </motion.div>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

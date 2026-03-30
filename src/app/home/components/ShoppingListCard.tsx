@@ -569,16 +569,6 @@ export default function ShoppingListCard({
     try {
       setIsDownloading(true);
 
-      fetch("/api/analytics/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventType: "feature",
-          eventName: "shopping_list_downloaded",
-          metadata: { shoppingListId: id },
-        }),
-      }).catch(console.error);
-
       // Open print-ready page — browser saves as PDF via system dialog
       window.open(
         `/api/shopping-lists/${id}/view?print=1&locale=${encodeURIComponent(locale)}`,
@@ -600,16 +590,6 @@ export default function ShoppingListCard({
     try {
       setIsViewing(true);
       setShoppingItems(null);
-
-      fetch("/api/analytics/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventType: "feature",
-          eventName: "shopping_list_viewed",
-          metadata: { shoppingListId: id },
-        }),
-      }).catch(console.error);
 
       // Fetch structured shopping items and show inline
       const res = await fetch(`/api/shopping-lists/${id}`);

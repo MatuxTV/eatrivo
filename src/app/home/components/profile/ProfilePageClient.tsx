@@ -8,6 +8,7 @@ import {
   ChefHat,
   Flame,
   UtensilsCrossed,
+  Bookmark,
   CreditCard,
   LogOut,
   ChevronRight,
@@ -16,9 +17,11 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import PersonalInfoSection from "./PersonalInfoSection";
 import NutritionPreferencesSection from "./NutritionPreferencesSection";
+import BookmarkedRecipesSection from "./BookmarkedRecipesSection";
 import AppShellViewport from "@/app/home/components/AppShellViewport";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 
 interface UserProfileData {
   fullName: string;
@@ -47,11 +50,15 @@ interface UserNutritionData {
 
 interface ProfilePageClientProps {
   onBack?: () => void;
+  onOpenBookmarkedRecipe?: (recipe: BasicHomeRecipePreview) => void;
 }
 
-type ProfileView = "default" | "personal" | "nutrition" | "billing";
+type ProfileView = "default" | "personal" | "nutrition" | "bookmarks" | "billing";
 
-export default function ProfilePageClient({ onBack: _onBack }: ProfilePageClientProps) {
+export default function ProfilePageClient({
+  onBack: _onBack,
+  onOpenBookmarkedRecipe,
+}: ProfilePageClientProps) {
   const t = useTranslations("profile");
   const locale = useLocale();
   const router = useRouter();
@@ -130,6 +137,17 @@ export default function ProfilePageClient({ onBack: _onBack }: ProfilePageClient
       action: () => {
         setNavDirection(1);
         setActiveView("nutrition");
+      },
+    },
+    {
+      key: "bookmarks",
+      title: t("menu.bookmarks.title"),
+      description: t("menu.bookmarks.description"),
+      icon: Bookmark,
+      iconClassName: "text-[#7d49cf] bg-eatrivo-purple/10",
+      action: () => {
+        setNavDirection(1);
+        setActiveView("bookmarks");
       },
     },
     {
@@ -352,6 +370,15 @@ export default function ProfilePageClient({ onBack: _onBack }: ProfilePageClient
               </button>
             </div>
           </section>,
+        );
+      case "bookmarks":
+        return renderDetailShell(
+          <BookmarkedRecipesSection
+            isProfileLoading={isLoading}
+            onOpenRecipe={(recipe) => {
+              onOpenBookmarkedRecipe?.(recipe);
+            }}
+          />
         );
       case "default":
       default:

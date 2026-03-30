@@ -141,6 +141,13 @@
       "when": 1774803458877,
       "tag": "0019_closed_klaw",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1774870553119,
+      "tag": "0020_elite_jamie_braddock",
+      "breakpoints": true
     }
   ]
 }

@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import { getLocaleFromPathname } from "@/i18n/routing";
 import { useFadeInUp } from "@/hooks/useAnimations";
 import type { SectionProps } from "@/types/landing";
-import { trackInteraction } from "@/lib/analytics-client";
+import { trackClientEvent, trackInteraction } from "@/lib/analytics-client";
 
 export function DownloadCTA({ className = "" }: SectionProps) {
   const t = useTranslations("landing.downloadCta");
@@ -79,13 +79,24 @@ export function DownloadCTA({ className = "" }: SectionProps) {
             >
               <Link
                 href={`/${locale}/signin`}
-                onClick={() =>
+                onClick={() => {
+                  trackClientEvent({
+                    eventName: "landing_cta_clicked",
+                    metadata: {
+                      cta_id: "download_cta_primary",
+                      cta_label: "start_free",
+                      destination: "signin",
+                      section: "download_cta",
+                      locale,
+                    },
+                  });
+
                   trackInteraction({
                     componentName: "DownloadCTA",
                     action: "click",
                     metadata: { destination: "signin" },
-                  })
-                }
+                  });
+                }}
               >
                 <Button
                   size="lg"

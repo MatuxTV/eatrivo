@@ -1,11 +1,11 @@
 "use client";
 
-import { Analytics } from "@vercel/analytics/next";
 import { useCookieConsent } from "./CookieConsent";
+import { GaProvider } from "@/components/analytics/GaProvider";
+import { PostHogProvider } from "@/components/analytics/PostHogProvider";
 
 /**
- * Wrapper around Vercel Analytics that only loads when the user
- * has given cookie consent for analytics cookies.
+ * Consent-aware analytics provider gate for all third-party analytics.
  */
 export function ConditionalAnalytics() {
   const { consent, loaded } = useCookieConsent();
@@ -16,5 +16,10 @@ export function ConditionalAnalytics() {
   // Only render Analytics if user has opted in
   if (!consent?.analytics) return null;
 
-  return <Analytics />;
+  return (
+    <>
+      <GaProvider />
+      <PostHogProvider />
+    </>
+  );
 }

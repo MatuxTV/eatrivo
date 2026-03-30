@@ -1,20 +1,14 @@
-// Analytics tracking utility
-import { db } from "@/index";
-import { analyticsEvents } from "@/db/schema";
+import {
+  getAnalyticsEventDefinition,
+  type AnalyticsEventName,
+} from "@/lib/analytics-events";
+import { captureServerAnalyticsEvent } from "@/lib/analytics-server";
+import type {
+  AnalyticsEventType,
+  TrackEventParams as BaseTrackEventParams,
+} from "@/lib/analytics-types";
 
-export type AnalyticsEventType =
-  | "auth"
-  | "feature"
-  | "subscription"
-  | "page_view"
-  | "engagement";
-
-export interface TrackEventParams {
-  userId?: string | null;
-  eventType: AnalyticsEventType;
-  eventName: string;
-  metadata?: Record<string, unknown>;
-}
+export type TrackEventParams = BaseTrackEventParams<AnalyticsEventName>;
 
 /**
  * Track an analytics event
@@ -26,17 +20,16 @@ export async function trackEvent({
   eventName,
   metadata,
 }: TrackEventParams): Promise<void> {
-  try {
-    await db.insert(analyticsEvents).values({
-      userId: userId || null,
-      eventType,
+  const definition = getAnalyticsEventDefinition(eventName);
+  if (eventType && eventType !== definition.eventType) {
+    console.warn("[Analytics] Ignoring mismatched eventType for event:", {
       eventName,
-      metadata: metadata || null,
+      provided: eventType,
+      expected: definition.eventType,
     });
-  } catch (error) {
-    // Don't let analytics errors break the app
-    console.error("[Analytics] Failed to track event:", error);
   }
+
+  await captureServerAnalyticsEvent({ userId, eventName, metadata });
 }
 
 /**
@@ -45,13 +38,13 @@ export async function trackEvent({
 export const Analytics = {
   // Auth events
   login: (userId: string, metadata?: { provider?: string; locale?: string }) =>
-    trackEvent({ userId, eventType: "auth", eventName: "login", metadata }),
+    trackEvent({ userId, eventName: "account_logged_in", metadata }),
 
   signup: (userId: string, metadata?: { provider?: string; locale?: string }) =>
-    trackEvent({ userId, eventType: "auth", eventName: "signup", metadata }),
+    trackEvent({ userId, eventName: "account_signed_up", metadata }),
 
   logout: (userId: string) =>
-    trackEvent({ userId, eventType: "auth", eventName: "logout" }),
+    trackEvent({ userId, eventName: "account_logged_out" }),
 
   // Feature events
   mealPlanGenerated: (
@@ -60,7 +53,6 @@ export const Analytics = {
   ) =>
     trackEvent({
       userId,
-      eventType: "feature",
       eventName: "meal_plan_generated",
       metadata,
     }),
@@ -68,7 +60,6 @@ export const Analytics = {
   shoppingListCreated: (userId: string, metadata?: { source?: string }) =>
     trackEvent({
       userId,
-      eventType: "feature",
       eventName: "shopping_list_created",
       metadata,
     }),
@@ -76,7 +67,6 @@ export const Analytics = {
   aiRequest: (userId: string, metadata?: { type?: string }) =>
     trackEvent({
       userId,
-      eventType: "feature",
       eventName: "ai_request",
       metadata,
     }),
@@ -88,8 +78,7 @@ export const Analytics = {
   ) =>
     trackEvent({
       userId,
-      eventType: "subscription",
-      eventName: "upgrade",
+      eventName: "subscription_upgraded",
       metadata,
     }),
 
@@ -99,16 +88,14 @@ export const Analytics = {
   ) =>
     trackEvent({
       userId,
-      eventType: "subscription",
-      eventName: "downgrade",
+      eventName: "subscription_downgraded",
       metadata,
     }),
 
   subscriptionCancel: (userId: string, metadata?: { tier?: string }) =>
     trackEvent({
       userId,
-      eventType: "subscription",
-      eventName: "cancel",
+      eventName: "subscription_cancelled",
       metadata,
     }),
 
@@ -116,14 +103,12 @@ export const Analytics = {
   onboardingComplete: (userId: string) =>
     trackEvent({
       userId,
-      eventType: "engagement",
-      eventName: "onboarding_complete",
+      eventName: "onboarding_completed",
     }),
 
   pushSubscribed: (userId: string) =>
     trackEvent({
       userId,
-      eventType: "engagement",
       eventName: "push_subscribed",
     }),
 };

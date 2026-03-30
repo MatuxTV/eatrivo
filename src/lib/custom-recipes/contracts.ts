@@ -7,6 +7,12 @@ import { guessFoodCategory } from "@/lib/units";
 
 const localeSchema = z.enum(["en", "sk"]);
 const customRecipeJobIdSchema = z.string().uuid();
+export const customRecipeMealTypeSchema = z.enum([
+  "breakfast",
+  "lunch",
+  "dinner",
+  "snack",
+]);
 
 const messageValuesSchema = z.record(
   z.string(),
@@ -21,6 +27,9 @@ export const messageDescriptorSchema = z.object({
 export const customRecipeStartRequestSchema = z.object({
   locale: localeSchema.optional(),
   fallbackSuggestionLimit: z.coerce.number().int().min(1).max(6).default(4),
+  servings: z.coerce.number().int().min(1).max(8).default(2),
+  mealType: customRecipeMealTypeSchema.default("dinner"),
+  mealPrep: z.coerce.boolean().default(false),
 });
 
 export const customRecipeInstructionSchema = z.object({
@@ -217,6 +226,14 @@ export const customRecipeGeneratedRecipeSchema = z.object({
 export const customRecipeAcceptRequestSchema = z.object({
   locale: localeSchema,
   recipe: customRecipeGeneratedRecipeSchema,
+  waitForPersist: z.coerce.boolean().default(false),
+});
+
+export const customRecipeAcceptResponseSchema = z.object({
+  accepted: z.literal(true),
+  recipeId: z.string().uuid().optional(),
+  slug: z.string().min(1).optional(),
+  externalKey: z.string().min(1).optional(),
 });
 
 export const customRecipeSuggestionSchema = z.object({

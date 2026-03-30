@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { CUSTOM_RECIPE_AI_TIMEOUT_MS } from "../constants";
 import {
+  type CustomRecipeAiOutput,
   type CustomRecipePantryContextItem,
 } from "@/lib/custom-recipes/contracts";
 import { apiLogger } from "@/lib/logger";
@@ -12,27 +13,26 @@ import { getRecipeMatchesForUserProfile } from "@/lib/recipe-matches";
 import type { CustomRecipeState } from "../state";
 
 setMaxListeners(30);
-
-const customRecipeGeminiIngredientSchema = z.object({
-  name: z.string(),
-  amount: z.string().nullable().optional(),
+const customRecipeProviderIngredientSchema = z.object({
+  name: z.string().min(1).max(120),
+  amount: z.string().max(80).nullable(),
   pantryStatus: z.enum(["pantry", "missing"]),
-  pantryMatchName: z.string().nullable().optional(),
+  pantryMatchName: z.string().min(1).max(120).nullable(),
 });
 
-const customRecipeGeminiInstructionSchema = z.object({
-  title: z.string(),
-  text: z.string(),
+const customRecipeProviderInstructionSchema = z.object({
+  title: z.string().max(120),
+  text: z.string().min(1).max(500),
 });
 
-const customRecipeGeminiNutritionSchema = z.object({
-  calories: z.number(),
-  proteinG: z.number(),
-  carbohydratesG: z.number(),
-  fatG: z.number(),
+const customRecipeProviderNutritionSchema = z.object({
+  calories: z.number().int().min(0).max(3000),
+  proteinG: z.number().min(0).max(300),
+  carbohydratesG: z.number().min(0).max(500),
+  fatG: z.number().min(0).max(200),
 });
 
-const customRecipeGeminiCandidateSchema = z.object({
+const customRecipeProviderCandidateSchema = z.object({
   status: z.enum(["available", "unavailable"]),
   reason: z
     .enum([
@@ -42,24 +42,96 @@ const customRecipeGeminiCandidateSchema = z.object({
       "DIETARY_CONSTRAINTS",
     ])
     .optional(),
-  name: z.string().optional(),
-  category: z.string().optional(),
-  description: z.string().optional(),
-  servings: z.number().optional(),
-  servingUnit: z.string().nullable().optional(),
-  prepTimeMin: z.number().optional(),
-  totalTimeMin: z.number().optional(),
+  name: z.string().min(1).max(120).optional(),
+  category: z.string().min(1).max(80).optional(),
+  description: z.string().min(1).max(280).optional(),
+  servings: z.number().int().min(1).max(12).optional(),
+  servingUnit: z.string().max(40).nullable().optional(),
+  prepTimeMin: z.number().int().min(1).max(240).optional(),
+  totalTimeMin: z.number().int().min(1).max(360).optional(),
   difficulty: z.enum(["easy", "medium", "hard"]).optional(),
   mealPrepFriendly: z.boolean().optional(),
-  tags: z.array(z.string()).optional(),
-  nutrition: customRecipeGeminiNutritionSchema.optional(),
-  ingredients: z.array(customRecipeGeminiIngredientSchema).optional(),
-  instructions: z.array(customRecipeGeminiInstructionSchema).optional(),
+  tags: z.array(z.string().min(1).max(40)).max(8).optional(),
+  nutrition: customRecipeProviderNutritionSchema.optional(),
+  ingredients: z.array(customRecipeProviderIngredientSchema).min(1).max(20).optional(),
+  instructions: z.array(customRecipeProviderInstructionSchema).min(1).max(12).optional(),
 });
 
+type CustomRecipeProviderCandidate = z.infer<
+  typeof customRecipeProviderCandidateSchema
+>;
+
 const customRecipeGeminiSingleCandidateSchema = z.object({
-  recipe: customRecipeGeminiCandidateSchema,
+  recipe: customRecipeProviderCandidateSchema,
 });
+
+function summarizeCandidate(
+  candidate: CustomRecipeProviderCandidate | null | undefined,
+) {
+  if (!candidate) {
+    return {
+      status: "missing_candidate",
+    };
+  }
+
+  if (candidate.status === "unavailable") {
+    return {
+      status: candidate.status,
+      reason: candidate.reason,
+    };
+  }
+
+  if (!candidate.ingredients || !candidate.instructions || !candidate.tags) {
+    return {
+      status: candidate.status,
+      name: candidate.name,
+      missingRequiredFields: [
+        candidate.ingredients ? null : "ingredients",
+        candidate.instructions ? null : "instructions",
+        candidate.tags ? null : "tags",
+        candidate.nutrition ? null : "nutrition",
+        candidate.servings !== undefined ? null : "servings",
+        candidate.servingUnit !== undefined ? null : "servingUnit",
+        candidate.prepTimeMin !== undefined ? null : "prepTimeMin",
+        candidate.totalTimeMin !== undefined ? null : "totalTimeMin",
+        candidate.difficulty ? null : "difficulty",
+        candidate.mealPrepFriendly !== undefined ? null : "mealPrepFriendly",
+      ].filter(Boolean),
+    };
+  }
+
+  const missingIngredientCount = candidate.ingredients.filter(
+    (ingredient) => ingredient.pantryStatus === "missing",
+  ).length;
+  const pantryIngredientCount = candidate.ingredients.filter(
+    (ingredient) => ingredient.pantryStatus === "pantry",
+  ).length;
+
+  return {
+    status: candidate.status,
+    name: candidate.name,
+    servings: candidate.servings,
+    servingUnit: candidate.servingUnit,
+    prepTimeMin: candidate.prepTimeMin,
+    totalTimeMin: candidate.totalTimeMin,
+    ingredientCount: candidate.ingredients.length,
+    pantryIngredientCount,
+    missingIngredientCount,
+    instructionCount: candidate.instructions.length,
+    tagCount: candidate.tags.length,
+    allIngredientsHaveAmount: candidate.ingredients.every(
+      (ingredient) => ingredient.amount !== undefined,
+    ),
+    pantryIngredientsMissingMatchName: candidate.ingredients
+      .filter((ingredient) => ingredient.pantryStatus === "pantry")
+      .map((ingredient) => ingredient.pantryMatchName)
+      .filter((matchName) => !matchName || matchName.trim().length === 0).length,
+    missingIngredientsWithMatchName: candidate.ingredients.filter(
+      (ingredient) =>
+        ingredient.pantryStatus === "missing" && ingredient.pantryMatchName !== null,
+    ).length,
+  };
+}
 
 function extractJson(content: string): string {
   const cleaned = content
@@ -133,15 +205,32 @@ function buildReferenceRecipesSection(
   return `\nReference recipes from our database:\n${references.join("\n\n")}\n\nUse these only as guidance for realism, structure, and naming style. Do not copy them verbatim.`;
 }
 
+function formatMealType(mealType: typeof CustomRecipeState.State.requestedMealType) {
+  switch (mealType) {
+    case "breakfast":
+      return "breakfast";
+    case "lunch":
+      return "lunch";
+    case "dinner":
+      return "dinner";
+    case "snack":
+      return "snack";
+    default:
+      return "meal";
+  }
+}
+
+function getDefaultServingUnit(locale: typeof CustomRecipeState.State.locale) {
+  return locale === "sk" ? "porcia" : "serving";
+}
+
 function buildBasePrompt(
   state: typeof CustomRecipeState.State,
   firstName: string,
   pantrySummary: string,
   diet: string,
   allergies: string,
-  likes: string,
   dislikes: string,
-  kitchenEquipment: string,
   referenceRecipesSection: string,
 ): string {
   return `
@@ -152,20 +241,26 @@ Return one recipe candidate only.
 Hard rules:
 - For pantry ingredients, pantryMatchName must exactly match one pantry item from the list below.
 - Never invent pantryMatchName values.
-- Respect allergies, dislikes, diet preference, goal, activity, and kitchen equipment.
+- Respect allergies, dislikes, and diet preference.
 - Keep the recipe realistic and concise.
+- If status is "available", include all required fields: name, category, description, servings, servingUnit, prepTimeMin, totalTimeMin, difficulty, mealPrepFriendly, tags, nutrition, ingredients, instructions.
+- If status is "unavailable", return only status and reason.
+- Always include amount for every ingredient. Use null when amount is unknown.
+- Pantry ingredients must use pantryStatus "pantry" with a non-null pantryMatchName.
+- Missing ingredients must use pantryStatus "missing" with pantryMatchName null.
+- Never omit servingUnit. Use "${getDefaultServingUnit(state.locale)}" unless there is a better explicit serving label.
+- Always include instruction title and text. Title may be an empty string when no short label fits.
 
-User profile:
+Request preferences:
 - Name: ${firstName}
-- Goal: ${state.userInfo?.goal ?? "unknown"}
-- Activity: ${state.userInfo?.activity_level ?? "unknown"}
+- Servings requested: ${state.requestedServings}
+- Meal type: ${formatMealType(state.requestedMealType)}
+- Meal prep friendly: ${state.requestedMealPrep ? "yes" : "no"}
+
+Client food preferences:
 - Diet: ${diet}
 - Allergies: ${allergies}
-- Likes: ${likes}
 - Dislikes: ${dislikes}
-- Cooking time preference: ${state.userInfo?.cooking_time_pref ?? "unknown"}
-- Cooking skill: ${state.userInfo?.cooking_skill_level ?? "unknown"}
-- Kitchen equipment: ${kitchenEquipment}
 
 Pantry items:
 ${pantrySummary}${referenceRecipesSection}
@@ -183,7 +278,10 @@ Generate a pantry recipe candidate.
 - It must be fully cookable from pantry ingredients only.
 - If not possible, return status unavailable with the best matching reason.
 - Keep ingredients focused, ideally 4 to 10 items.
-- Keep instructions to 2 to 6 steps.`;
+- Keep instructions to 2 to 6 steps.
+- Every ingredient in this candidate must have pantryStatus "pantry".
+- Match the requested meal type and requested number of servings.
+- When meal prep friendly is requested, prefer recipes that store and reheat well.`;
   }
 
   return `${basePrompt}
@@ -193,11 +291,14 @@ Generate an almost-cookable recipe candidate.
 - Missing ingredients must be marked as missing and pantryMatchName must be null for them.
 - If not possible, return status unavailable with the best matching reason.
 - Keep ingredients focused, ideally 4 to 10 items.
-- Keep instructions to 2 to 6 steps.`;
+- Keep instructions to 2 to 6 steps.
+- Use no more than 3 ingredients with pantryStatus "missing".
+- Match the requested meal type and requested number of servings.
+- When meal prep friendly is requested, prefer recipes that store and reheat well.`;
 }
 
 function normalizeUnavailableCandidate(
-  candidate: z.infer<typeof customRecipeGeminiCandidateSchema> | null | undefined,
+  candidate: CustomRecipeProviderCandidate | null | undefined,
 ) {
   if (!candidate || candidate.status !== "unavailable") {
     return candidate;
@@ -206,6 +307,23 @@ function normalizeUnavailableCandidate(
   return {
     ...candidate,
     reason: candidate.reason ?? "AI_UNABLE_TO_COMPOSE",
+  };
+}
+
+function normalizeCandidate(
+  candidate: CustomRecipeProviderCandidate | null | undefined,
+  locale: typeof CustomRecipeState.State.locale,
+) {
+  const normalizedUnavailable = normalizeUnavailableCandidate(candidate);
+
+  if (!normalizedUnavailable || normalizedUnavailable.status !== "available") {
+    return normalizedUnavailable;
+  }
+
+  return {
+    ...normalizedUnavailable,
+    servingUnit:
+      normalizedUnavailable.servingUnit ?? getDefaultServingUnit(locale),
   };
 }
 
@@ -248,10 +366,7 @@ export async function recipeRequest(
     : "No pantry items available.";
   const diet = state.userInfo?.diet_preferences ?? "none";
   const allergies = state.userInfo?.allergies?.trim() || "none";
-  const likes = state.userInfo?.likes?.trim() || "none";
   const dislikes = state.userInfo?.dislikes?.trim() || "none";
-  const kitchenEquipment =
-    state.userInfo?.kitchen_equipment?.filter(Boolean).join(", ") || "unknown";
   const referenceRecipeMatches = await getRecipeMatchesForUserProfile(
     state.userProfileId,
     {
@@ -285,16 +400,14 @@ export async function recipeRequest(
     pantrySummary,
     diet,
     allergies,
-    likes,
     dislikes,
-    kitchenEquipment,
     referenceRecipesSection,
   );
   const pantryPrompt = buildCandidatePrompt("pantry", basePrompt);
   const almostCookablePrompt = buildCandidatePrompt("almost_cookable", basePrompt);
 
   const model = new ChatGoogleGenerativeAI({
-    model: "gemini-3.1-pro-preview",
+    model: "gemini-3.1-flash-lite-preview",
     temperature: 0.3,
     maxOutputTokens: 2048,
     apiKey,
@@ -312,11 +425,11 @@ export async function recipeRequest(
 
     const pantryParsed =
       pantryResponse.status === "fulfilled"
-        ? normalizeUnavailableCandidate(pantryResponse.value.parsed?.recipe)
+        ? normalizeCandidate(pantryResponse.value.parsed?.recipe, state.locale)
         : null;
     const almostCookableParsed =
       almostCookableResponse.status === "fulfilled"
-        ? normalizeUnavailableCandidate(almostCookableResponse.value.parsed?.recipe)
+        ? normalizeCandidate(almostCookableResponse.value.parsed?.recipe, state.locale)
         : null;
     const response =
       pantryParsed || almostCookableParsed
@@ -401,6 +514,8 @@ export async function recipeRequest(
         endsWithBrace: trimmed.endsWith("}"),
         pantryCallSucceeded: pantryResponse.status === "fulfilled",
         almostCookableCallSucceeded: almostCookableResponse.status === "fulfilled",
+        pantryCandidateSummary: summarizeCandidate(pantryParsed),
+        almostCookableCandidateSummary: summarizeCandidate(almostCookableParsed),
         retryCount: state.retryCount,
       },
     });

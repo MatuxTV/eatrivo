@@ -9,7 +9,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import type { Ingredient } from "@/types/meal-plan";
 import { useTranslations } from "next-intl";
-import { trackInteraction } from "@/lib/analytics-client";
+import { trackClientEvent } from "@/lib/analytics-client";
 
 interface ReceiptCardProps {
   icon?: React.ReactNode;
@@ -50,10 +50,13 @@ export default function ReceiptCard({
         <Card
           className="group relative overflow-hidden border-none shadow-md hover:shadow-xl transition-all duration-300 bg-white cursor-pointer h-full flex flex-col"
           onClick={() => {
-            trackInteraction({
-              componentName: "MealReceiptCard",
-              action: "click",
-              metadata: { mealTitle: title, mealType: meal_type },
+            trackClientEvent({
+              eventName: "recipe_opened",
+              metadata: {
+                recipeTitle: title,
+                mealType: meal_type,
+                surface: "home_recipe_card",
+              },
             });
             setIsDialogOpen(true);
           }}

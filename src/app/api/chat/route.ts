@@ -8,6 +8,7 @@ import {
   AIMessage,
 } from "@langchain/core/messages";
 import { buildChatGraph } from "@/lib/langgraph/chat";
+import { trackEvent } from "@/lib/analytics";
 import { unauthorizedError } from "@/lib/safeError";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
@@ -55,6 +56,17 @@ export async function POST(req: NextRequest) {
         );
 
       if (todayCount >= DAILY_MESSAGE_LIMIT_BASIC) {
+        await trackEvent({
+          userId: session.user.id,
+          eventName: "chat_limit_reached",
+          metadata: {
+            limit: DAILY_MESSAGE_LIMIT_BASIC,
+            used: todayCount,
+            membership: user.membership,
+            source: "chat_api",
+          },
+        });
+
         return new Response(
           JSON.stringify({
             error: "daily_limit_reached",
@@ -104,6 +116,18 @@ export async function POST(req: NextRequest) {
     return new Response("Profile not found", { status: 404 });
   }
 
+  await trackEvent({
+    userId: session.user.id,
+    eventName: "chat_message_sent",
+    metadata: {
+      sessionId: sessionId ?? null,
+      membership: user?.membership ?? null,
+      messageLength: lastUserMsg?.content.length ?? 0,
+      historyCount: safeMessages.length,
+      source: "chat_api",
+    },
+  });
+
   // ⑦ Map frontend messages to LangChain message classes
   const langchainMessages = safeMessages.map((m) =>
     m.role === "assistant" ? new AIMessage(m.content) : new HumanMessage(m.content),
@@ -125,6 +149,8 @@ export async function POST(req: NextRequest) {
   return new Response(
     new ReadableStream({
       async start(controller) {
+        let accumulated = "";
+
         try {
           for await (const [chunk, metadata] of stream) {
             if (
@@ -132,8 +158,21 @@ export async function POST(req: NextRequest) {
               (chunk as { getType?: () => string }).getType?.() === "ai" &&
               typeof chunk.content === "string"
             ) {
+              accumulated += chunk.content;
               controller.enqueue(encoder.encode(chunk.content));
             }
+          }
+
+          if (accumulated.length > 0) {
+            await trackEvent({
+              userId: session.user.id,
+              eventName: "chat_response_received",
+              metadata: {
+                sessionId: sessionId ?? null,
+                responseLength: accumulated.length,
+                source: "chat_api",
+              },
+            });
           }
         } catch (err) {
           console.error("🚨 [Chat API Stream Error]:", err);

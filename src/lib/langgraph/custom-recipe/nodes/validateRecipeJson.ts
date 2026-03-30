@@ -6,6 +6,102 @@ import { apiLogger } from "@/lib/logger";
 import type { CustomRecipeState } from "../state";
 import { ZodError } from "zod";
 
+function formatIssuePath(path: PropertyKey[]): string {
+  return path.length > 0 ? path.map(String).join(".") : "root";
+}
+
+function extractNestedZodIssues(error: ZodError): Array<{
+  path: string;
+  message: string;
+  code: string;
+}> {
+  const nestedIssues: Array<{
+    path: string;
+    message: string;
+    code: string;
+  }> = [];
+
+  const visitIssue = (issue: Record<string, unknown>, parentPath: PropertyKey[] = []) => {
+    const currentPath = Array.isArray(issue.path)
+      ? [...parentPath, ...issue.path]
+      : parentPath;
+
+    nestedIssues.push({
+      path: formatIssuePath(currentPath),
+      message:
+        typeof issue.message === "string" ? issue.message : "Validation error",
+      code: typeof issue.code === "string" ? issue.code : "unknown",
+    });
+
+    const unionErrors = issue.errors;
+    if (Array.isArray(unionErrors)) {
+      for (const unionBranch of unionErrors) {
+        if (!Array.isArray(unionBranch)) {
+          continue;
+        }
+
+        for (const nestedIssue of unionBranch) {
+          if (
+            nestedIssue &&
+            typeof nestedIssue === "object" &&
+            !Array.isArray(nestedIssue)
+          ) {
+            visitIssue(nestedIssue as Record<string, unknown>, currentPath);
+          }
+        }
+      }
+    }
+  };
+
+  for (const issue of error.issues) {
+    visitIssue(issue as unknown as Record<string, unknown>);
+  }
+
+  return nestedIssues;
+}
+
+function summarizeParsedAiOutput(rawAiOutput: string) {
+  try {
+    const parsed = JSON.parse(rawAiOutput) as Record<string, unknown>;
+
+    const summarizeCandidate = (value: unknown) => {
+      if (!value || typeof value !== "object") {
+        return {
+          type: typeof value,
+        };
+      }
+
+      const candidate = value as Record<string, unknown>;
+      const ingredients = Array.isArray(candidate.ingredients)
+        ? candidate.ingredients
+        : [];
+      const instructions = Array.isArray(candidate.instructions)
+        ? candidate.instructions
+        : [];
+
+      return {
+        status: candidate.status,
+        reason: candidate.reason,
+        name: candidate.name,
+        servings: candidate.servings,
+        servingUnit: candidate.servingUnit,
+        difficulty: candidate.difficulty,
+        ingredientCount: ingredients.length,
+        instructionCount: instructions.length,
+        ingredientPreview: ingredients.slice(0, 3),
+      };
+    };
+
+    return {
+      topLevelKeys: Object.keys(parsed),
+      pantryRecipe: summarizeCandidate(parsed.pantryRecipe),
+      almostCookableRecipe: summarizeCandidate(parsed.almostCookableRecipe),
+    };
+  } catch {
+    return null;
+  }
+}
+
 function buildPantryNameSet(state: typeof CustomRecipeState.State): Set<string> {
   return new Set(
     state.pantryRows
@@ -140,6 +236,7 @@ export async function validateRecipeJson(
         message: e.message,
         code: e.code,
       }));
+      errorDetails.nestedZodIssues = extractNestedZodIssues(error);
       errorDetails.firstError = error.issues[0]?.message;
     } else if (error instanceof SyntaxError) {
       errorDetails.validationType = "json_parse";
@@ -171,6 +268,7 @@ export async function validateRecipeJson(
           ? state.rawAiOutput.slice(0, maxLength) + "..."
           : state.rawAiOutput;
       errorDetails.rawAiOutputLength = state.rawAiOutput.length;
+      errorDetails.parsedAiOutputSummary = summarizeParsedAiOutput(state.rawAiOutput);
     }
 
     apiLogger.warn("[customRecipe.validateRecipeJson] validation failed", {

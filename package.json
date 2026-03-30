@@ -52,6 +52,7 @@
     "nodemailer": "^7.0.7",
     "pdf-parse": "^2.3.12",
     "pdfmake": "^0.2.20",
+    "posthog-js": "^1.364.1",
     "radix-ui": "^1.4.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
