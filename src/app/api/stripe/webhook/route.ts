@@ -7,14 +7,15 @@ import {
   users,
   subscriptions,
   invoices,
-  userProfiles,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Analytics } from "@/lib/analytics";
+import { captureServerAnalyticsEvent } from "@/lib/analytics-server";
 
 import { sendRenewalReminderEmail } from "@/lib/emailService";
 
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
+import { invalidateUserContextCaches } from "@/lib/user-context-cache";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -117,6 +118,13 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       await stripe.subscriptions.retrieve(subscriptionId);
     const priceId = stripeSubscription.items.data[0].price.id;
     const membership = getMembershipFromPriceId(priceId);
+    const existingSubscription = await db.query.subscriptions.findFirst({
+      where: eq(subscriptions.stripeSubscriptionId, subscriptionId),
+      columns: {
+        id: true,
+        stripePriceId: true,
+      },
+    });
 
     // Access current_period_end safely
     const rawSubscription = stripeSubscription as unknown as Record<
@@ -127,27 +135,25 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       | number
       | undefined;
 
-    // Get user's profile before updating
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [userProfile] = await db
-      .select()
-      .from(userProfiles)
-      .where(eq(userProfiles.userId, userId));
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    if (!user) {
+      console.error("No user found with id:", userId);
+      return;
+    }
+
+    const previousMembership = user.membership;
 
     // Update user with Stripe customer ID and membership
-    const updateResult = await db
+    await db
       .update(users)
       .set({
         stripeCustomerId: customerId,
         membership: membership,
       })
-      .where(eq(users.id, userId))
-      .returning({ id: users.id, membership: users.membership });
-
-    if (updateResult.length === 0) {
-      console.error("No user found with id:", userId);
-      return;
-    }
+      .where(eq(users.id, userId));
 
     // Calculate currentPeriodEnd date - use 30 days from now as fallback
     const periodEndDate = currentPeriodEnd
@@ -180,11 +186,36 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       },
     });
 
-    // Track subscription upgrade event
-    Analytics.subscriptionUpgrade(userId, {
-      from: "basic",
-      to: membership,
-    });
+    await invalidateUserContextCaches(userId);
+
+    if (!existingSubscription) {
+      const locale = session.metadata?.locale || "en";
+      const sourcePage = session.metadata?.sourcePage || "unknown";
+      const surface = session.metadata?.surface || "checkout";
+      const discountCodePresent = session.metadata?.discountCodePresent === "true";
+      const trialApplied = session.metadata?.trialApplied === "true";
+
+      await captureServerAnalyticsEvent({
+        userId,
+        eventName: "purchase_completed",
+        metadata: {
+          tier: membership,
+          price_id: priceId,
+          locale,
+          source_page: sourcePage,
+          surface,
+          discount_code_present: discountCodePresent,
+          trial_applied: trialApplied,
+        },
+      });
+
+      if (previousMembership !== membership) {
+        await Analytics.subscriptionUpgrade(userId, {
+          from: previousMembership,
+          to: membership,
+        });
+      }
+    }
   } catch (error) {
     console.error("Error in handleCheckoutComplete:", error);
     throw error;
@@ -344,6 +375,8 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     .update(subscriptions)
     .set(updateData)
     .where(eq(subscriptions.stripeSubscriptionId, subscriptionId));
+
+  await invalidateUserContextCaches(userId);
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -397,6 +430,8 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       })
       .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
   }
+
+  await invalidateUserContextCaches(userId);
 
   // Track cancellation event
   Analytics.subscriptionCancel(userId, {

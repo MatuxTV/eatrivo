@@ -76,11 +76,11 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""} https://cdnjs.cloudflare.com`,
+      `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""} https://cdnjs.cloudflare.com https://www.googletagmanager.com`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: https: blob:",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://api.stripe.com https://*.upstash.io https://*.neon.tech https://*.vercel-analytics.com",
+      "connect-src 'self' https://api.stripe.com https://*.upstash.io https://*.neon.tech https://*.vercel-analytics.com https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://*.posthog.com https://*.i.posthog.com",
       "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",

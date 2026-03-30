@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProfileSetup from "./ProfileSetup";
 import FoodPreferences from "./FoodPreferences";
 import type { UserProfileOnboarding, UserFoodPreferences } from "../../../lib/schemas/user";
 import type { OnboardingConsents } from "./FoodPreferences";
+import { trackClientEvent } from "@/lib/analytics-client";
 import { logger } from "@/lib/logger";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 interface OnboardingClientProps {
@@ -15,13 +16,33 @@ interface OnboardingClientProps {
 
 export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
   const t = useTranslations("onboarding");
+  const locale = useLocale();
   const router = useRouter();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [profileData, setProfileData] = useState<UserProfileOnboarding | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    trackClientEvent({
+      eventName: "onboarding_started",
+      metadata: {
+        locale,
+        entrypoint: "onboarding_page",
+      },
+    });
+  }, [locale]);
+
   const handleProfileComplete = (data: UserProfileOnboarding) => {
+    trackClientEvent({
+      eventName: "onboarding_step_completed",
+      metadata: {
+        locale,
+        step_name: "profile",
+        step_index: 1,
+      },
+    });
+
     setProfileData(data);
     setCurrentStep(2);
   };
@@ -48,6 +69,23 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
       });
 
       if (response.ok) {
+        trackClientEvent({
+          eventName: "onboarding_step_completed",
+          metadata: {
+            locale,
+            step_name: "preferences",
+            step_index: 2,
+          },
+        });
+
+        trackClientEvent({
+          eventName: "onboarding_completed",
+          metadata: {
+            locale,
+            profile_created: true,
+          },
+        });
+
         // Send welcome email after successful onboarding (non-blocking)
         if (userEmail && profileData?.fullName) {
           try {
@@ -83,6 +121,14 @@ export default function OnboardingClient({ userEmail }: OnboardingClientProps) {
         throw new Error("Failed to save onboarding data");
       }
     } catch (error) {
+      trackClientEvent({
+        eventName: "onboarding_save_failed",
+        metadata: {
+          locale,
+          step_name: currentStep === 2 ? "preferences" : "profile",
+        },
+      });
+
       logger.error("Error saving onboarding", error, {
         context: "OnBoardingPage"
       });

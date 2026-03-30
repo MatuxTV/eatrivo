@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { PricingCard } from "@/components/billing/PricingCard";
+import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -72,7 +73,12 @@ export default function PricingPage() {
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier, locale }),
+        body: JSON.stringify({
+          tier,
+          locale,
+          sourcePage: "pricing",
+          surface: "pricing_page",
+        }),
       });
 
       const data = await response.json();
@@ -128,6 +134,10 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-eatrivo-white-primary relative overflow-hidden">
+      <TrackPageEvent
+        eventName="pricing_viewed"
+        metadata={{ locale, entrypoint: "direct", surface: "pricing_page" }}
+      />
       {/* Subtle background ambient blobs */}
       <div className="absolute top-0 left-0 w-80 h-80 bg-eatrivo-purple/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-eatrivo-pink/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none" />

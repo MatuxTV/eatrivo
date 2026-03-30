@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, Crown, Zap, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { trackInteraction } from "@/lib/analytics-client";
+import { trackClientEvent, trackInteraction } from "@/lib/analytics-client";
 
 interface PricingCardProps {
   tier: "basic" | "premium" | "pro";
@@ -32,10 +33,28 @@ export function PricingCard({
   ctaOverride,
 }: PricingCardProps) {
   const [loading, setLoading] = useState(false);
+  const pathname = usePathname();
   const t = useTranslations("pricing");
 
   const handleClick = async () => {
     if (disabled || isCurrentPlan || tier === "basic") return;
+
+    const isPricingPage = pathname.includes("/pricing");
+
+    trackClientEvent({
+      eventName: isPricingPage ? "pricing_plan_selected" : "upgrade_cta_clicked",
+      metadata: isPricingPage
+        ? {
+            tier,
+            billing_period: "monthly",
+            source_page: pathname,
+          }
+        : {
+            tier,
+            source_page: pathname,
+            surface: "billing",
+          },
+    });
 
     trackInteraction({
       componentName: "PricingCard",

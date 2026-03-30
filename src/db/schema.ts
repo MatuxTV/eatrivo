@@ -9,6 +9,8 @@ import {
   numeric,
   primaryKey,
   boolean,
+  index,
+  unique,
 } from "drizzle-orm/pg-core";
 
 // Define the role enum
@@ -236,6 +238,33 @@ export const userProfiles = pgTable("user_profiles", {
     .defaultNow()
     .notNull(),
 });
+
+export const recipeBookmarks = pgTable(
+  "recipe_bookmarks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userProfileId: uuid("user_profile_id")
+      .notNull()
+      .references(() => userProfiles.id, { onDelete: "cascade" }),
+    recipeId: uuid("recipe_id")
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    userProfileIdx: index("recipe_bookmarks_user_profile_idx").on(table.userProfileId),
+    recipeIdx: index("recipe_bookmarks_recipe_idx").on(table.recipeId),
+    userRecipeUnique: unique("recipe_bookmarks_user_recipe_unique").on(
+      table.userProfileId,
+      table.recipeId,
+    ),
+  }),
+);
 
 // Extended user info for food preferences
 export const userInfoTable = pgTable("user_info", {

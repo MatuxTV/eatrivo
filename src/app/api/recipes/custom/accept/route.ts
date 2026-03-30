@@ -46,8 +46,24 @@ export async function POST(request: NextRequest) {
         locale: parsedBody.data.locale,
         recipeName: parsedBody.data.recipe.name,
         recipeKind: parsedBody.data.recipe.kind,
+        waitForPersist: parsedBody.data.waitForPersist,
       },
     });
+
+    if (parsedBody.data.waitForPersist) {
+      const persistedRecipe = await persistAcceptedCustomRecipe({
+        userId: session.user.id,
+        locale: parsedBody.data.locale,
+        recipe: parsedBody.data.recipe,
+      });
+
+      return NextResponse.json({
+        accepted: true,
+        recipeId: persistedRecipe.id,
+        slug: persistedRecipe.slug,
+        externalKey: persistedRecipe.externalKey,
+      });
+    }
 
     after(async () => {
       try {

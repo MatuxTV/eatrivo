@@ -6,6 +6,7 @@ import { userProfiles, userInfoTable, weightHistory } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { invalidateUserContextCaches } from "@/lib/user-context-cache";
 
 const weightSchema = z.object({
   weight: z.number().min(20).max(500),
@@ -105,6 +106,8 @@ export async function POST(request: NextRequest) {
       .update(userInfoTable)
       .set({ weight: String(validation.data.weight) })
       .where(eq(userInfoTable.userProfileId, userProfile.id));
+
+    await invalidateUserContextCaches(session.user.id);
 
     return NextResponse.json({
       success: true,

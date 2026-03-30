@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { auth } from "../../../../../auth";
+import { trackEvent } from "@/lib/analytics";
 import { apiLogger } from "@/lib/logger";
 import { consumeRecipeFromPantry } from "@/lib/pantry/consumption";
 import { getUserProfileByUserId } from "@/lib/pantry/restock";
@@ -68,6 +69,23 @@ export async function POST(req: NextRequest) {
         userProfileId: userProfile.id,
         recipeId: parsedBody.data.recipeId ?? null,
         recipeTitle: parsedBody.data.recipeTitle,
+        updatedItems: summary.updatedItems,
+        deletedItems: summary.deletedItems,
+        consumedIngredients: summary.consumedIngredients,
+        skippedIngredients: summary.skippedIngredients,
+      },
+    });
+
+    await trackEvent({
+      userId: session.user.id,
+      eventName: parsedBody.data.finishedWithMissingIngredients
+        ? "kitchen_counter_completed_with_missing_ingredients"
+        : "kitchen_counter_completed",
+      metadata: {
+        recipeId: parsedBody.data.recipeId ?? null,
+        recipeTitle: parsedBody.data.recipeTitle,
+        ingredientCount: parsedBody.data.ingredientItems.length,
+        matchedIngredientCount: parsedBody.data.matchedIngredients.length,
         updatedItems: summary.updatedItems,
         deletedItems: summary.deletedItems,
         consumedIngredients: summary.consumedIngredients,

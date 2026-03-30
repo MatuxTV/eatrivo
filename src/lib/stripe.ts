@@ -42,6 +42,9 @@ export async function createCheckoutSession({
   cancelUrl,
   discountCode,
   trialPeriodDays,
+  locale,
+  sourcePage,
+  surface,
 }: {
   userId: string;
   email: string;
@@ -50,7 +53,19 @@ export async function createCheckoutSession({
   cancelUrl: string;
   discountCode?: string;
   trialPeriodDays?: number;
+  locale?: string;
+  sourcePage?: string;
+  surface?: string;
 }) {
+  const metadata = {
+    userId,
+    locale: locale || "en",
+    sourcePage: sourcePage || "unknown",
+    surface: surface || "checkout",
+    discountCodePresent: String(Boolean(discountCode)),
+    trialApplied: String(Boolean(trialPeriodDays && trialPeriodDays > 0)),
+  };
+
   const sessionParams: Stripe.Checkout.SessionCreateParams = {
     mode: "subscription",
     payment_method_types: ["card"],
@@ -58,9 +73,9 @@ export async function createCheckoutSession({
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: successUrl,
     cancel_url: cancelUrl,
-    metadata: { userId },
+    metadata,
     subscription_data: {
-      metadata: { userId },
+      metadata,
     },
   };
 

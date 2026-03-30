@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { APP_CONFIG } from "@/app/config/app";
+import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
 import { logger } from "@/lib/logger";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
@@ -120,6 +121,7 @@ export default function HomePage({
   pantryNames = [],
 }: HomePageProps) {
   const t = useTranslations("home");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const triggerHaptic = useHapticFeedback();
@@ -157,6 +159,8 @@ export default function HomePage({
       userMessage: null,
       fallbackRecommendations: [],
     });
+  const [pendingProfileRecipe, setPendingProfileRecipe] =
+    useState<BasicHomeRecipePreview | null>(null);
 
   /* ---- Kitchen counter ---- */
 
@@ -187,6 +191,15 @@ export default function HomePage({
     setSelectedKitchenCounter(null);
     setActiveSection("home");
   }, []);
+
+  const handleOpenBookmarkedRecipeFromProfile = useCallback(
+    (recipe: BasicHomeRecipePreview) => {
+      triggerHaptic("medium");
+      setPendingProfileRecipe(recipe);
+      setActiveSection("home");
+    },
+    [triggerHaptic],
+  );
 
   /* ---- Welcome dialog ---- */
 
@@ -278,6 +291,10 @@ export default function HomePage({
 
   return (
     <div className="min-h-screen bg-eatrivo-white-primary flex">
+      <TrackPageEvent
+        eventName="home_viewed"
+        metadata={{ locale, surface: "home" }}
+      />
       <WelcomeDialog
         open={showWelcomeDialog}
         onOpenChange={handleCloseDialog}
@@ -405,6 +422,10 @@ export default function HomePage({
                     onOpenPantrySection={openPantrySection}
                     onAddToShoppingList={shopping.handleAddToShoppingList}
                     onCookRecipe={handleCookRecipe}
+                    pendingExternalRecipe={pendingProfileRecipe}
+                    onPendingExternalRecipeHandled={() => {
+                      setPendingProfileRecipe(null);
+                    }}
                   />
                 )}
               </AnimatePresence>
@@ -429,7 +450,10 @@ export default function HomePage({
               transition={{ duration: 0.3 }}
               className="-mx-4 md:-mx-8 md:-my-8"
             >
-              <ProfilePageClient onBack={() => setActiveSection("home")} />
+              <ProfilePageClient
+                onBack={() => setActiveSection("home")}
+                onOpenBookmarkedRecipe={handleOpenBookmarkedRecipeFromProfile}
+              />
             </motion.div>
           ) : primaryActiveSection === "chatWithRivo" ? (
             <motion.div

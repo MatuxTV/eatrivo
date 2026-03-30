@@ -23,6 +23,7 @@ import {
   NODE_PROGRESS,
 } from "@/lib/langgraph/custom-recipe/constants";
 import type { CustomRecipeState } from "@/lib/langgraph/custom-recipe/state";
+import { trackEvent } from "@/lib/analytics";
 import { apiLogger } from "@/lib/logger";
 import { RequestLock } from "@/lib/redis";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
@@ -154,6 +155,9 @@ export async function POST(request: NextRequest) {
       userId: session.user.id,
       locale: parsedBody.data.locale ?? "en",
       fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
+      servings: parsedBody.data.servings,
+      mealType: parsedBody.data.mealType,
+      mealPrep: parsedBody.data.mealPrep,
     },
   });
 
@@ -196,6 +200,20 @@ export async function POST(request: NextRequest) {
 
   const jobId = crypto.randomUUID();
 
+  await trackEvent({
+    userId,
+    eventName: "custom_recipe_generation_started",
+    metadata: {
+      locale: parsedBody.data.locale ?? "en",
+      fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
+      servings: parsedBody.data.servings,
+      mealType: parsedBody.data.mealType,
+      mealPrep: parsedBody.data.mealPrep,
+      source: "custom_recipe_generator",
+      jobId,
+    },
+  });
+
   await CustomRecipeGenerationStore.initializeGeneration(userId, jobId, {
     progress: INITIAL_PROGRESS.progress,
     label: INITIAL_PROGRESS.label,
@@ -210,6 +228,9 @@ export async function POST(request: NextRequest) {
       jobId,
       locale: parsedBody.data.locale ?? "en",
       fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
+      servings: parsedBody.data.servings,
+      mealType: parsedBody.data.mealType,
+      mealPrep: parsedBody.data.mealPrep,
     },
   });
 
@@ -237,6 +258,9 @@ export async function POST(request: NextRequest) {
               userProfileId: userProfile.id,
               locale: parsedBody.data.locale ?? "en",
               fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
+              requestedServings: parsedBody.data.servings,
+              requestedMealType: parsedBody.data.mealType,
+              requestedMealPrep: parsedBody.data.mealPrep,
             },
             { streamMode: "updates" },
           );
@@ -281,6 +305,23 @@ export async function POST(request: NextRequest) {
                 errorCode,
                 errorMessage,
               );
+
+              await trackEvent({
+                userId,
+                eventName: "custom_recipe_generation_failed",
+                metadata: {
+                  locale: parsedBody.data.locale ?? "en",
+                  fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
+                  servings: parsedBody.data.servings,
+                  mealType: parsedBody.data.mealType,
+                  mealPrep: parsedBody.data.mealPrep,
+                  reason: errorMessage,
+                  code: errorCode,
+                  node: nodeName,
+                  source: "custom_recipe_generator",
+                  jobId,
+                },
+              });
 
               writeEvent(controller, encoder, customRecipeErrorStreamEventSchema.parse({
                 type: "error",
@@ -346,6 +387,28 @@ export async function POST(request: NextRequest) {
 
               const retryCount = nodeState.retryCount ?? 0;
 
+              await trackEvent({
+                userId,
+                eventName: "custom_recipe_generated",
+                metadata: {
+                  locale: parsedBody.data.locale ?? "en",
+                  fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
+                  servings: parsedBody.data.servings,
+                  mealType: parsedBody.data.mealType,
+                  mealPrep: parsedBody.data.mealPrep,
+                  fallbackUsed: nodeState.finalResult.meta.fallbackUsed,
+                  retryCount,
+                  pantryRecipeStatus: nodeState.finalResult.pantryRecipe.status,
+                  almostCookableStatus:
+                    nodeState.finalResult.almostCookableRecipe.status,
+                  fallbackSuggestionCount:
+                    nodeState.finalResult.fallbackDatabaseSuggestions.length,
+                  pantryItemCount: nodeState.finalResult.meta.pantryItemCount,
+                  source: "custom_recipe_generator",
+                  jobId,
+                },
+              });
+
               await Promise.all([
                 CustomRecipeGenerationStore.setResult(
                   userId,
@@ -391,6 +454,21 @@ export async function POST(request: NextRequest) {
             "Custom recipe generation completed without a final result",
           );
 
+          await trackEvent({
+            userId,
+            eventName: "custom_recipe_generation_failed",
+            metadata: {
+              locale: parsedBody.data.locale ?? "en",
+              fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
+              servings: parsedBody.data.servings,
+              mealType: parsedBody.data.mealType,
+              mealPrep: parsedBody.data.mealPrep,
+              reason: "missing_final_result",
+              source: "custom_recipe_generator",
+              jobId,
+            },
+          });
+
           writeEvent(controller, encoder, customRecipeErrorStreamEventSchema.parse({
             type: "error",
             jobId,
@@ -419,6 +497,21 @@ export async function POST(request: NextRequest) {
             "GENERATION_FAILED",
             errorMessage,
           );
+
+          await trackEvent({
+            userId,
+            eventName: "custom_recipe_generation_failed",
+            metadata: {
+              locale: parsedBody.data.locale ?? "en",
+              fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
+              servings: parsedBody.data.servings,
+              mealType: parsedBody.data.mealType,
+              mealPrep: parsedBody.data.mealPrep,
+              reason: errorMessage,
+              source: "custom_recipe_generator",
+              jobId,
+            },
+          });
 
           writeEvent(controller, encoder, customRecipeErrorStreamEventSchema.parse({
             type: "error",

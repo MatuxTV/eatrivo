@@ -10,6 +10,8 @@ type ConsentAwareWindow = Window & {
   gtag?: (...args: unknown[]) => void;
 };
 
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
 function updateConsent(analyticsEnabled: boolean) {
   if (typeof window === "undefined") {
     return;
@@ -39,12 +41,16 @@ export function GoogleConsentMode() {
   const { consent, loaded } = useCookieConsent();
 
   useEffect(() => {
-    if (!loaded) {
+    if (!GA_MEASUREMENT_ID || !loaded) {
       return;
     }
 
     updateConsent(Boolean(consent?.analytics));
   }, [loaded, consent?.analytics]);
+
+  if (!GA_MEASUREMENT_ID) {
+    return null;
+  }
 
   return (
     <Script id="google-consent-mode" strategy="beforeInteractive">

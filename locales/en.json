@@ -489,6 +489,27 @@
         "cta": "Ask Rivo for a custom recipe",
         "ctaGenerating": "Rivo is generating...",
         "ctaRetry": "Generate again",
+        "setup": {
+          "title": "Shape the recipe first",
+          "description": "Tell Rivo what kind of meal you want and how many portions to prepare before generation starts.",
+          "servingsLabel": "Portions",
+          "servingsHint": "Set how many servings Rivo should plan for.",
+          "mealTypeLabel": "Meal type",
+          "mealTypeHint": "Choose the moment this recipe should fit.",
+          "mealTypePlaceholder": "Select a meal type",
+          "mealTypes": {
+            "breakfast": "Breakfast",
+            "lunch": "Lunch",
+            "dinner": "Dinner",
+            "snack": "Snack"
+          },
+          "mealPrepLabel": "Make it meal prep friendly",
+          "mealPrepDescription": "Favor recipes that store well and still taste good after reheating.",
+          "profileHintLabel": "Client profile",
+          "profileHint": "Rivo will still respect your diet, allergies, and the foods you do not like.",
+          "submit": "Generate recipe",
+          "cancel": "Cancel"
+        },
         "loading": {
           "badge": "Generating now",
           "title": "Rivo is building your next best recipe",
@@ -585,7 +606,13 @@
         "addToPantry": "Add to pantry",
         "addToShoppingList": "Add to shopping list",
         "cookThisRecipe": "I want to cook this recipe",
-        "haveAmountInline": "have {amount}"
+        "haveAmountInline": "have {amount}",
+        "fallbackUsing": "We have: {ingredient}",
+        "saveRecipe": "Save recipe",
+        "removeBookmark": "Remove bookmark",
+        "bookmarkSaved": "Recipe saved to bookmarks.",
+        "bookmarkRemoved": "Recipe removed from bookmarks.",
+        "bookmarkError": "Could not update bookmark."
       },
       "restrictionFlags": {
         "contains-dairy": "Contains dairy",
@@ -663,7 +690,18 @@
       },
       "filters": {
         "title": "Recipe filters",
-        "empty": "No recipes for this filter"
+        "empty": "No recipes for this filter",
+        "openButton": "Filters",
+        "closeButton": "Close filters",
+        "save": "Save",
+        "clearAll": "Clear all",
+        "noSelection": "No filter selected",
+        "selectedValue": "Selected: {value}",
+        "sections": {
+          "popular": "Start here",
+          "preferences": "Prefer",
+          "special": "Avoid / special"
+        }
       },
       "toasts": {
         "pantryDraftReady": "\"{ingredientName}\" is ready for confirmation in pantry.",
@@ -999,6 +1037,10 @@
         "title": "Nutrition preferences",
         "description": "Diets, allergies, and goals"
       },
+      "bookmarks": {
+        "title": "Saved recipes",
+        "description": "Your bookmarked recipes in one place"
+      },
       "billing": {
         "title": "Billing",
         "description": "Manage your premium plan"
@@ -1013,6 +1055,32 @@
       "description": "This state is only a placeholder for now. We will wire the full billing flow in a later step without changing the rest of the profile experience.",
       "helper": "For now you can use the existing pricing page or jump back to the main profile dashboard.",
       "cta": "Open pricing"
+    },
+    "bookmarks": {
+      "title": "Saved recipes",
+      "description": "Everything you've bookmarked lives here, ready when you want a fast fallback or a meal-prep repeat.",
+      "helper": "{count, plural, =0 {No saved recipes yet.} one {# recipe saved.} other {# recipes saved.}}",
+      "empty": {
+        "title": "No saved recipes yet",
+        "description": "Bookmark a recipe from the recipe dialog and it will show up here automatically."
+      },
+      "card": {
+        "mealPrep": "Meal prep",
+        "savedOn": "Saved {date}",
+        "remove": "Remove bookmark",
+        "minutes": "Minutes",
+        "servings": "Servings",
+        "proteinLabel": "Protein"
+      },
+      "actions": {
+        "loadMore": "Load more recipes",
+        "loadingMore": "Loading more"
+      },
+      "toast": {
+        "loadError": "Couldn't load saved recipes",
+        "removed": "Recipe removed from bookmarks",
+        "removeError": "Couldn't remove bookmark"
+      }
     },
     "personal": {
       "title": "Personal information",

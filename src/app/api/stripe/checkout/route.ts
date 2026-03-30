@@ -12,6 +12,7 @@ import { eq } from "drizzle-orm";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import { unauthorizedError } from "@/lib/safeError";
 import { getTrialPeriodForUser } from "@/lib/subscription";
+import { captureServerAnalyticsEvent } from "@/lib/analytics-server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,10 +32,18 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { tier, discountCode, locale = "en" } = body as {
+    const {
+      tier,
+      discountCode,
+      locale = "en",
+      sourcePage = "unknown",
+      surface = "checkout",
+    } = body as {
       tier: "premium" | "pro";
       discountCode?: string;
       locale?: string;
+      sourcePage?: string;
+      surface?: string;
     };
 
     // Validate tier
@@ -89,6 +98,23 @@ export async function POST(req: NextRequest) {
       cancelUrl: `${origin}/${locale}/pricing?canceled=true`,
       discountCode,
       trialPeriodDays,
+      locale,
+      sourcePage,
+      surface,
+    });
+
+    await captureServerAnalyticsEvent({
+      userId: session.user.id,
+      eventName: "checkout_started",
+      metadata: {
+        tier,
+        price_id: priceId,
+        locale,
+        source_page: sourcePage,
+        surface,
+        discount_code_present: Boolean(discountCode),
+        trial_applied: trialPeriodDays > 0,
+      },
     });
 
     return NextResponse.json({ url: checkoutSession.url });

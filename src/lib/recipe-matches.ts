@@ -171,6 +171,18 @@ function buildMatchedIngredientDisplayName(
   return recipeIngredientName;
 }
 
+function resolvePantryIngredientDisplayName(
+  pantryRow: PantryIngredientMatchCandidate,
+): string | null {
+  const preferredName = pantryRow.name?.trim();
+  if (preferredName) {
+    return preferredName;
+  }
+
+  const normalizedIngredientName = pantryRow.ingredientName?.trim();
+  return normalizedIngredientName || null;
+}
+
 function resolveMatchedIngredient(
   pantryRows: PantryIngredientMatchCandidate[],
   recipeIngredientKey: string,
@@ -186,7 +198,7 @@ function resolveMatchedIngredient(
   const exactRows: PantryIngredientMatchCandidate[] = [];
 
   for (const pantryRow of pantryRows) {
-    const pantryIngredientName = pantryRow.ingredientName ?? pantryRow.name;
+    const pantryIngredientName = resolvePantryIngredientDisplayName(pantryRow);
 
     if (
       pantryRow.ingredientSpecificKey &&
@@ -252,8 +264,9 @@ function resolveMatchedIngredient(
     return {
       match: {
         recipeIngredientName,
-        pantryIngredientName:
-          exactRows[0]?.ingredientName ?? exactRows[0]?.name ?? null,
+        pantryIngredientName: exactRows[0]
+          ? resolvePantryIngredientDisplayName(exactRows[0])
+          : null,
         matchType: "exact",
         displayName: recipeIngredientName,
         amount: null,

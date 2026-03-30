@@ -1,6 +1,7 @@
 import { db } from "@/index";
 import { users, subscriptions, userProfiles, badges } from "@/db/schema";
 import { eq, and, lt, or } from "drizzle-orm";
+import { invalidateUserContextCaches } from "@/lib/user-context-cache";
 
 // Trial period configuration
 export const TRIAL_PERIODS = {
@@ -149,6 +150,8 @@ export async function validateAndUpdateSubscription(
         ),
       );
 
+    await invalidateUserContextCaches(userId);
+
     return {
       ...status,
       isActive: false,
@@ -205,6 +208,8 @@ export async function cleanupExpiredSubscriptions(): Promise<{
     .update(subscriptions)
     .set({ status: "canceled", updatedAt: new Date() })
     .where(or(...subscriptionIds.map((id) => eq(subscriptions.id, id))));
+
+  await Promise.all(userIds.map((userId) => invalidateUserContextCaches(userId)));
 
   console.warn(
     `[Subscription Cleanup] Downgraded ${userIds.length} users with expired subscriptions`,

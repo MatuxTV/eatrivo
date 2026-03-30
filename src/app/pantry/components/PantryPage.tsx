@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
+import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,6 +25,7 @@ import {
   type PantryItem,
   type PantryRestockItem,
 } from "@/hooks/usePantry";
+import { trackClientEvent } from "@/lib/analytics-client";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { guessFoodCategory } from "@/lib/units";
 import { cn } from "@/lib/utils";
@@ -346,8 +348,17 @@ export default function PantrySection({
         );
 
   async function handleConfirmDrafts() {
+    const draftCount = pendingDrafts.length;
     const success = await confirmDrafts();
     if (success) {
+      trackClientEvent({
+        eventName: "pantry_checkout_completed",
+        metadata: {
+          locale,
+          draftCount,
+          surface: "pantry_page",
+        },
+      });
       triggerHaptic("success");
     }
   }
@@ -470,6 +481,10 @@ export default function PantrySection({
 
   return (
     <AnimatePresence mode="wait">
+      <TrackPageEvent
+        eventName="pantry_viewed"
+        metadata={{ locale, surface: "pantry" }}
+      />
       {!isMounted || isLoading ? (
         <motion.div
           key="loading"

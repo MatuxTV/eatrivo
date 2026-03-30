@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { isLocale, type Locale } from "@/i18n/routing";
+import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -42,6 +43,10 @@ export default async function SignInPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-eatrivo-white-primary px-4">
+      <TrackPageEvent
+        eventName="signin_viewed"
+        metadata={{ locale, surface: "signin_page", entrypoint: "direct" }}
+      />
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Link href={`/${locale}`} className="inline-block">

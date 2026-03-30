@@ -4,6 +4,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import type { pantryItems, userInfoTable, userProfiles } from "@/db/schema";
 import type {
   CustomRecipeAiOutput,
+  CustomRecipeStartRequest,
   CustomRecipePantryContextItem,
   CustomRecipeResult,
   CustomRecipeSuggestion,
@@ -25,6 +26,18 @@ export const CustomRecipeState = Annotation.Root({
   fallbackSuggestionLimit: Annotation<number>({
     value: (current, update) => (update !== undefined ? update : current),
     default: () => 4,
+  }),
+  requestedServings: Annotation<CustomRecipeStartRequest["servings"]>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => 2,
+  }),
+  requestedMealType: Annotation<CustomRecipeStartRequest["mealType"]>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => "dinner",
+  }),
+  requestedMealPrep: Annotation<CustomRecipeStartRequest["mealPrep"]>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => false,
   }),
 
   userProfile: Annotation<InferSelectModel<typeof userProfiles> | null>({
