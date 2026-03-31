@@ -1,9 +1,12 @@
-﻿import {
+﻿"use client";
+
+import {
   Mail,
   BarChart3,
   Bell,
   type LucideIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type TabId =
   | "emails"
@@ -12,7 +15,6 @@ type TabId =
 
 interface Tab {
   id: TabId;
-  label: string;
   icon: LucideIcon;
 }
 
@@ -22,12 +24,14 @@ interface AdminTabsProps {
 }
 
 const tabs: Tab[] = [
-  { id: "analytics", label: "Analytics", icon: BarChart3 },
-  { id: "emails", label: "Emaily", icon: Mail },
-  { id: "notifications", label: "Notifikácie", icon: Bell },
+  { id: "analytics", icon: BarChart3 },
+  { id: "emails", icon: Mail },
+  { id: "notifications", icon: Bell },
 ];
 
 export default function AdminTabs({ activeTab, onTabChange }: AdminTabsProps) {
+  const t = useTranslations("admin.dashboard.tabs");
+
   return (
     <div className="mb-5 sm:mb-8">
       <div className="grid grid-cols-3 gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
@@ -42,7 +46,7 @@ export default function AdminTabs({ activeTab, onTabChange }: AdminTabsProps) {
             }`}
           >
             <tab.icon className="w-4 h-4" />
-            <span>{tab.label}</span>
+            <span>{t(tab.id)}</span>
           </button>
         ))}
       </div>

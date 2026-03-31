@@ -4,10 +4,8 @@ import { useEffect, useState } from "react";
 import {
   CheckCircle2,
   Loader2,
-  Minus,
   PackagePlus,
   Pin,
-  Plus,
   Trash2,
   XCircle,
 } from "lucide-react";
@@ -18,6 +16,7 @@ import InlineEditPanel from "@/components/inline-edit/InlineEditPanel";
 import InlineEditToggleButton from "@/components/inline-edit/InlineEditToggleButton";
 import QuantityUnitEditor from "@/components/inline-edit/QuantityUnitEditor";
 import type { PantryItem } from "@/hooks/usePantry";
+import { guessFoodCategory } from "@/lib/units";
 import { cn } from "@/lib/utils";
 import { formatLocalizedAmountLabel } from "@/lib/pantry/format";
 
@@ -25,6 +24,9 @@ interface PantryItemRowProps {
   item: PantryItem;
   locale: string;
   categoryLabel: string;
+  categoryValue: string;
+  categoryFieldLabel: string;
+  categoryOptions: Array<{ value: string; label: string }>;
   expiryLabel: string | null;
   isExpiring: boolean;
   isLowStock: boolean;
@@ -45,11 +47,11 @@ interface PantryItemRowProps {
   unitPlaceholder: string;
   quantityCaption: string;
   availabilityCaption: string;
+  trackingModeToggleLabel: string;
+  trackingModeHelpText: string;
   availableLabel: string;
   unavailableLabel: string;
   toggleAvailabilityLabel: string;
-  decreaseLabel: string;
-  increaseLabel: string;
   deleteLabel: string;
   addPackageLabel: string;
   addPackageCtaLabel: string;
@@ -57,14 +59,14 @@ interface PantryItemRowProps {
   addPackageReadyLabel: string;
   showAddPackageAction: boolean;
   isPendingAddPackage: boolean;
-  onIncrease: () => void;
-  onDecrease: () => void;
   onDelete: () => void;
   onSaveEdit: (updates: {
     quantity: number | null;
     unit: string | null;
+    category: string | null;
+    trackingMode: "quantity" | "availability";
+    inStock?: boolean;
   }) => Promise<boolean>;
-  onToggleAvailability: () => void;
   onToggleRecurring: () => void;
   onAddPackage: () => void;
 }
@@ -93,10 +95,42 @@ function formatQuantity(
   return formatLocalizedAmountLabel(quantity, unit, locale) ?? "—";
 }
 
+function formatDraftQuantityForEditor(
+  quantity: string | null,
+  unit: string | null,
+): string {
+  if (!quantity) {
+    return "";
+  }
+
+  const parsedValue = Number.parseFloat(quantity);
+  if (!Number.isFinite(parsedValue)) {
+    return quantity;
+  }
+
+  const normalizedUnit = (unit ?? "").toLowerCase();
+  if (normalizedUnit === "kg" || normalizedUnit === "l") {
+    return quantity;
+  }
+
+  const roundedValue = Math.round(parsedValue * 1000) / 1000;
+  if (Number.isInteger(roundedValue)) {
+    return String(roundedValue);
+  }
+
+  return roundedValue
+    .toFixed(3)
+    .replace(/\.0+$/, "")
+    .replace(/(\.\d*?)0+$/, "$1");
+}
+
 export default function PantryItemRow({
   item,
   locale,
   categoryLabel,
+  categoryValue,
+  categoryFieldLabel,
+  categoryOptions,
   expiryLabel,
   isExpiring,
   isLowStock,
@@ -117,11 +151,11 @@ export default function PantryItemRow({
   unitPlaceholder,
   quantityCaption,
   availabilityCaption,
+  trackingModeToggleLabel,
+  trackingModeHelpText,
   availableLabel,
   unavailableLabel,
   toggleAvailabilityLabel,
-  decreaseLabel,
-  increaseLabel,
   deleteLabel,
   addPackageLabel,
   addPackageCtaLabel,
@@ -129,28 +163,34 @@ export default function PantryItemRow({
   addPackageReadyLabel,
   showAddPackageAction,
   isPendingAddPackage,
-  onIncrease,
-  onDecrease,
   onDelete,
   onSaveEdit,
-  onToggleAvailability,
   onToggleRecurring,
   onAddPackage,
 }: PantryItemRowProps) {
   const shouldReduceMotion = useReducedMotion();
-  const quantityValue = parseStoredNumber(item.quantity) ?? 0;
-  const isAvailabilityMode = item.trackingMode === "availability";
   const [isEditing, setIsEditing] = useState(false);
-  const [draftQuantity, setDraftQuantity] = useState(item.quantity ?? "");
+  const [draftQuantity, setDraftQuantity] = useState(
+    formatDraftQuantityForEditor(item.quantity, item.unit),
+  );
   const [draftUnit, setDraftUnit] = useState(item.unit ?? "ks");
+  const [draftCategory, setDraftCategory] = useState(
+    item.category ?? categoryValue ?? guessFoodCategory(item.name),
+  );
+  const [draftTrackingMode, setDraftTrackingMode] = useState<"quantity" | "availability">(
+    item.trackingMode,
+  );
   const [draftInStock, setDraftInStock] = useState(item.inStock);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const isAvailabilityMode = draftTrackingMode === "availability";
 
   useEffect(() => {
-    setDraftQuantity(item.quantity ?? "");
+    setDraftQuantity(formatDraftQuantityForEditor(item.quantity, item.unit));
     setDraftUnit(item.unit ?? "ks");
+    setDraftCategory(item.category ?? categoryValue ?? guessFoodCategory(item.name));
+    setDraftTrackingMode(item.trackingMode);
     setDraftInStock(item.inStock);
-  }, [item.inStock, item.quantity, item.unit]);
+  }, [categoryValue, item.category, item.inStock, item.name, item.quantity, item.trackingMode, item.unit]);
 
   return (
     <motion.article
@@ -207,9 +247,9 @@ export default function PantryItemRow({
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="space-y-1">
               <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                {isAvailabilityMode ? availabilityCaption : quantityCaption}
+                {item.trackingMode === "availability" ? availabilityCaption : quantityCaption}
               </p>
-              {isAvailabilityMode ? (
+              {item.trackingMode === "availability" ? (
                 <Badge
                   className={cn(
                     "rounded-full border px-3 py-1 text-sm font-semibold",
@@ -256,30 +296,6 @@ export default function PantryItemRow({
                         : addPackageCtaLabel}
                   </span>
                 </button>
-              ) : null}
-
-              {!isAvailabilityMode ? (
-                <div className="flex items-center gap-1 rounded-full border border-gray-100 bg-eatrivo-white-secondary p-1">
-                  <button
-                    type="button"
-                    onClick={onDecrease}
-                    disabled={isPendingQuantity || quantityValue <= 0}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-600 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                    aria-label={decreaseLabel}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={onIncrease}
-                    disabled={isPendingQuantity}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-eatrivo-purple text-white transition-colors hover:bg-eatrivo-purple/90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                    aria-label={increaseLabel}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
               ) : null}
 
               <InlineEditToggleButton
@@ -332,121 +348,73 @@ export default function PantryItemRow({
               className="pt-1"
               panelClassName="border-gray-100 bg-none bg-eatrivo-white-secondary shadow-none"
             >
-              {isAvailabilityMode ? (
-                <div className="space-y-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
-                    {toggleAvailabilityLabel}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setDraftInStock(true)}
-                      className={cn(
-                        "inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2",
-                        draftInStock
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                          : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50",
-                      )}
-                      aria-pressed={draftInStock}
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span>{availableLabel}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDraftInStock(false)}
-                      className={cn(
-                        "inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2",
-                        !draftInStock
-                          ? "border-gray-300 bg-gray-100 text-gray-700"
-                          : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50",
-                      )}
-                      aria-pressed={!draftInStock}
-                    >
-                      <XCircle className="h-4 w-4" />
-                      <span>{unavailableLabel}</span>
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDraftInStock(item.inStock);
-                        setIsEditing(false);
-                      }}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                      aria-label={cancelLabel}
-                      title={cancelLabel}
-                    >
-                      <XCircle className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isSavingEdit}
-                      onClick={async () => {
-                        setIsSavingEdit(true);
-                        try {
-                          if (draftInStock !== item.inStock) {
-                            await onToggleAvailability();
-                          }
-                          setIsEditing(false);
-                        } finally {
-                          setIsSavingEdit(false);
-                        }
-                      }}
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-eatrivo-purple text-white transition-colors hover:bg-eatrivo-purple/90 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                      aria-label={saveLabel}
-                      title={saveLabel}
-                    >
-                      {isSavingEdit ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <CheckCircle2 className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <QuantityUnitEditor
-                  quantityLabel={quantityLabel}
-                  unitLabel={unitLabel}
-                  quantityPlaceholder={quantityPlaceholder}
-                  unitPlaceholder={unitPlaceholder}
-                  cancelLabel={cancelLabel}
-                  saveLabel={saveLabel}
-                  quantityValue={draftQuantity}
-                  unitValue={draftUnit}
-                  isSaving={isSavingEdit}
-                  onQuantityChange={setDraftQuantity}
-                  onUnitChange={setDraftUnit}
-                  onCancel={() => {
-                    setDraftQuantity(item.quantity ?? "");
-                    setDraftUnit(item.unit ?? "ks");
-                    setIsEditing(false);
-                  }}
-                  onSave={async () => {
-                    setIsSavingEdit(true);
-                    try {
-                      const parsedQuantity = draftQuantity.trim()
-                        ? Number.parseFloat(draftQuantity)
-                        : null;
-                      const success = await onSaveEdit({
-                        quantity:
-                          parsedQuantity !== null && Number.isFinite(parsedQuantity)
-                            ? parsedQuantity
-                            : null,
-                        unit: draftUnit || null,
-                      });
+              <QuantityUnitEditor
+                quantityLabel={quantityLabel}
+                unitLabel={unitLabel}
+                categoryLabel={categoryFieldLabel}
+                trackingModeToggleLabel={trackingModeToggleLabel}
+                trackingModeHelpText={trackingModeHelpText}
+                availabilityLabel={toggleAvailabilityLabel}
+                availableLabel={availableLabel}
+                unavailableLabel={unavailableLabel}
+                quantityPlaceholder={quantityPlaceholder}
+                unitPlaceholder={unitPlaceholder}
+                cancelLabel={cancelLabel}
+                saveLabel={saveLabel}
+                quantityValue={draftQuantity}
+                unitValue={draftUnit}
+                categoryValue={draftCategory}
+                trackingModeValue={draftTrackingMode}
+                inStockValue={draftInStock}
+                isSaving={isSavingEdit}
+                categoryOptions={categoryOptions}
+                onQuantityChange={setDraftQuantity}
+                onUnitChange={(nextUnit) => {
+                  setDraftUnit(nextUnit);
+                  setDraftQuantity((current) =>
+                    formatDraftQuantityForEditor(current, nextUnit),
+                  );
+                }}
+                onCategoryChange={setDraftCategory}
+                onTrackingModeChange={setDraftTrackingMode}
+                onAvailabilityChange={setDraftInStock}
+                onCancel={() => {
+                  setDraftQuantity(formatDraftQuantityForEditor(item.quantity, item.unit));
+                  setDraftUnit(item.unit ?? "ks");
+                  setDraftCategory(item.category ?? categoryValue ?? guessFoodCategory(item.name));
+                  setDraftTrackingMode(item.trackingMode);
+                  setDraftInStock(item.inStock);
+                  setIsEditing(false);
+                }}
+                onSave={async () => {
+                  setIsSavingEdit(true);
+                  try {
+                    const parsedQuantity = draftQuantity.trim()
+                      ? Number.parseFloat(draftQuantity)
+                      : null;
+                    const success = await onSaveEdit({
+                      quantity:
+                        draftTrackingMode === "quantity" &&
+                        parsedQuantity !== null &&
+                        Number.isFinite(parsedQuantity)
+                          ? parsedQuantity
+                          : null,
+                      unit: draftTrackingMode === "quantity" ? draftUnit || null : null,
+                      category: draftCategory || null,
+                      trackingMode: draftTrackingMode,
+                      ...(draftTrackingMode === "availability"
+                        ? { inStock: draftInStock }
+                        : {}),
+                    });
 
-                      if (success) {
-                        setIsEditing(false);
-                      }
-                    } finally {
-                      setIsSavingEdit(false);
+                    if (success) {
+                      setIsEditing(false);
                     }
-                  }}
-                />
-              )}
+                  } finally {
+                    setIsSavingEdit(false);
+                  }
+                }}
+              />
             </InlineEditPanel>
           ) : null}
         </div>

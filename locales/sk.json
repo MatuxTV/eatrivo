@@ -737,7 +737,7 @@
       "mealPlanReady": "Jedálny plán je pripravený!",
       "mealPlanLoadError": "Nepodarilo sa načítať jedálny plán",
       "shoppingListsLoadError": "Nepodarilo sa načítať nákupné zoznamy",
-      "premiumOnly": "Táto funkcia je dostupná iba pre prémiových členov",
+        "premiumOnly": "Táto funkcia je dostupná iba pre členov Plus",
       "generatingShoppingList": "Generujem váš personalizovaný nákupný zoznam...",
       "shoppingListAndMealPlanGenerated": "Nákupný zoznam a jedálny lístok úspešne vygenerované! 🎉",
       "shoppingListGenerated": "Nákupný zoznam úspešne vygenerovaný!",
@@ -810,21 +810,21 @@
       "showActiveOnly": "Zobraziť iba aktívny",
       "empty": {
         "title": "Žiadne nákupné zoznamy",
-        "description": "Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Kliknite na tlačítko 'Nechaj ma varit' pre vygenerovanie noveho nákupného zoznamu pre tento týžden."
+        "description": "Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Kliknite na tlačidlo 'Nechaj ma variť' a vytvorte nový nákupný zoznam na tento týždeň."
       },
       "noActive": {
         "title": "Žiadne aktívne nákupné zoznamy",
         "description": "Momentálne nemáte žiadny aktívny nákupný zoznam. Zobrazte všetky zoznamy pre dokončené alebo zrušené."
       },
       "premiumCTA": {
-        "title": "Upgradnite na Premium a splnťe si svoje ciele rýchlejšie! 🚀",
-        "description": "Vygenerujte si personalizovaný nákupný zoznam na tento týžden",
+        "title": "Prejdite na Plus a plňte si svoje ciele rýchlejšie! 🚀",
+        "description": "Vygenerujte si personalizovaný nákupný zoznam na tento týždeň",
         "button": "Zobraziť plány"
       },
       "createNew": {
         "title": "Nechaj ma variť! 🍳",
         "subtitle": "Vytvorím personalizovaný plán len pre teba",
-        "locked": "Odomkni s Premium 🔒",
+        "locked": "Odomkni s Plus 🔒",
         "lockedSubtitle": "Vygeneruj si personalizovaný nákupný zoznam prispôsobený tvojim cieľom",
         "completeActiveError": "Najprv dokončite svoj aktívny nákupný zoznam! 🛒",
         "activeListExists": "Najprv dokonči aktívny zoznam! 🛒",
@@ -1136,7 +1136,7 @@
       "membership": {
         "label": "Členstvo",
         "helper": "Váš súčasný plán",
-        "premiumBadge": "Prémiový člen",
+        "premiumBadge": "Člen Plus",
         "freeBadge": "Free plán"
       },
       "validation": {
@@ -1345,6 +1345,221 @@
       "types": {
         "welcome": "Welcome Email",
         "shoppingList": "Shopping List Notification"
+      },
+      "dashboard": {
+        "common": {
+          "membership": {
+            "plus": "Plus",
+            "basic": "Basic",
+            "trainer": "Trainer",
+            "free": "Free"
+          },
+          "noName": "Bez mena",
+          "notSpecified": "Neuvedené",
+          "status": {
+            "active": "Aktívny",
+            "completed": "Dokončený",
+            "cancelled": "Zrušený"
+          },
+          "sex": {
+            "man": "Muž",
+            "woman": "Žena"
+          },
+          "units": {
+            "years": "r."
+          },
+          "profile": {
+            "complete": "OK",
+            "incomplete": "Neúplný"
+          }
+        },
+        "statsCard": {
+          "title": "Prehľad používateľov",
+          "totalUsers": "Celkovo používateľov"
+        },
+        "tabs": {
+          "analytics": "Analytics",
+          "emails": "Emaily",
+          "notifications": "Notifikácie"
+        },
+        "userInfoCard": {
+          "loading": "Načítavam údaje používateľa...",
+          "empty": "Používateľ nemá vyplnené nutričné údaje",
+          "title": "Info o používateľovi",
+          "labels": {
+            "allergies": "Alergie:",
+            "dislikes": "Neobľúbené:"
+          }
+        },
+        "usersTab": {
+          "title": "Zoznam používateľov",
+          "description": "Prehľad registrovaných používateľov",
+          "loading": "Načítavajú sa používatelia...",
+          "emptyTitle": "Žiadni používatelia",
+          "emptyDescription": "V systéme ešte nie sú registrovaní žiadni používatelia",
+          "details": {
+            "id": "ID:",
+            "profile": "Profil:",
+            "username": "Username:"
+          },
+          "actions": {
+            "create": "Vytvoriť",
+            "list": "zoznam",
+            "copy": "Kopírovať",
+            "email": "email",
+            "emailCopied": "Email skopírovaný"
+          }
+        },
+        "shoppingListTab": {
+          "title": "Nový nákupný zoznam",
+          "description": "Vytvorte a priraďte nákupný zoznam používateľovi.",
+          "loadingUsers": "Načítavajú sa používatelia...",
+          "sections": {
+            "basicInfo": "Základné informácie",
+            "planning": "Plánovanie",
+            "assignment": "Priradenie",
+            "content": "Obsah (Markdown)"
+          },
+          "fields": {
+            "title": {
+              "label": "Názov zoznamu",
+              "placeholder": "Napr. Nákupný zoznam - Týždeň 42"
+            },
+            "description": {
+              "label": "Popis (voliteľné)",
+              "placeholder": "Krátky popis zoznamu..."
+            },
+            "startDate": "Začiatok",
+            "endDate": "Koniec",
+            "user": "Používateľ",
+            "userPlaceholder": "Vyberte používateľa",
+            "searchPlaceholder": "Hľadať...",
+            "unassignedTest": "Bez priradenia (Test)",
+            "status": {
+              "label": "Stav zoznamu",
+              "placeholder": "Vyberte stav"
+            },
+            "markdownPlaceholder": "# Nákupný zoznam...\n\nAlebo kliknite na 'Generovať AI' pre automatické vytvorenie."
+          },
+          "actions": {
+            "generateAi": "Generovať AI",
+            "generatingAi": "Generuje AI...",
+            "creating": "Vytvára sa...",
+            "createList": "Vytvoriť nákupný zoznam",
+            "createListShort": "Vytvoriť zoznam"
+          },
+          "tips": {
+            "title": "Rýchle tipy",
+            "markdown": "Používajte <strong>Markdown</strong> pre formátovanie zoznamov.",
+            "assignment": "Zoznamy priraďujte konkrétnemu používateľovi."
+          }
+        },
+        "emailsTab": {
+          "title": "Odoslať update email",
+          "description": "Informujte používateľov o nových funkciách a vylepšeniach",
+          "sections": {
+            "basicInfo": "Základné informácie",
+            "changes": "Zoznam zmien",
+            "testEmail": "Test email"
+          },
+          "fields": {
+            "version": {
+              "label": "Verzia *",
+              "placeholder": "napr. 1.2.0"
+            },
+            "updateTitle": {
+              "label": "Názov aktualizácie *",
+              "placeholder": "napr. Nové funkcie pre váš dashboard"
+            },
+            "updateDescription": {
+              "label": "Úvodný text *",
+              "placeholder": "Krátky úvodný text pre email..."
+            },
+            "changeType": "Typ",
+            "changeTitle": "Názov",
+            "changeTitlePlaceholder": "napr. Sledovanie váhy",
+            "changeDescription": "Popis",
+            "changeDescriptionPlaceholder": "Stručný popis zmeny...",
+            "testEmail": {
+              "label": "Testovacia adresa",
+              "placeholder": "vas@email.com"
+            }
+          },
+          "types": {
+            "feature": "Novinka",
+            "improvement": "Vylepšenie",
+            "fix": "Oprava"
+          },
+          "changeItem": "Zmena #{index}",
+          "result": {
+            "successTitle": "Úspech",
+            "errorTitle": "Chyba",
+            "sent": "Odoslaných: {count}",
+            "failed": "Zlyhalo: {count}",
+            "errors": "Chyby:"
+          },
+          "actions": {
+            "add": "Pridať",
+            "sending": "Odosielam...",
+            "sendTest": "Odoslať test",
+            "sendAll": "Odoslať všetkým"
+          },
+          "stats": {
+            "title": "Email štatistiky",
+            "totalUsers": "Celkový počet používateľov",
+            "withEmail": "S emailom"
+          },
+          "tips": {
+            "title": "Tipy pre emaily",
+            "first": "Najprv odošlite test na svoju adresu",
+            "second": "Používajte prehľadný zoznam zmien",
+            "third": "Rozdeľte zmeny podľa typu (novinka/vylepšenie/oprava)"
+          }
+        },
+        "profilesTab": {
+          "title": "Profil používateľa",
+          "description": "Zobrazenie detailných informácií o používateľovi",
+          "selectUser": "Vybrať používateľa",
+          "selectPlaceholder": "Vyberte používateľa...",
+          "selectOption": "-- Vyberte používateľa --",
+          "loading": "Načítavam údaje...",
+          "emptySelection": {
+            "title": "Žiadny používateľ nevybratý",
+            "description": "Vyberte používateľa pre zobrazenie jeho profilu"
+          },
+          "sections": {
+            "basicInfo": "Základné údaje",
+            "goals": "Ciele a aktivita",
+            "preferences": "Stravovacie preferencie",
+            "foodPreferences": "Preferencie jedál"
+          },
+          "fields": {
+            "sex": "Pohlavie",
+            "age": "Vek",
+            "height": "Výška",
+            "weight": "Váha",
+            "goal": "Cieľ",
+            "activityLevel": "Úroveň aktivity",
+            "diet": "Diéta",
+            "cookingTime": "Čas na varenie",
+            "budget": "Rozpočet",
+            "mealsPerDay": "Jedál denne",
+            "likes": "Obľúbené jedlá",
+            "dislikes": "Neobľúbené jedlá",
+            "allergies": "Alergie"
+          },
+          "yearsSuffix": "rokov",
+          "notSpecified": "Neuvedené",
+          "noData": {
+            "title": "Žiadne údaje",
+            "description": "Tento používateľ nemá vyplnené nutričné informácie"
+          },
+          "stats": {
+            "title": "Štatistiky profilov",
+            "completedProfiles": "Kompletných profilov",
+            "successRate": "Úspešnosť"
+          }
+        }
       }
     },
     "feedback": {
@@ -1485,16 +1700,17 @@
     },
     "title": "Investuj do seba",
     "subtitle": "Menej ako káva týždenne za plán, ktorý naozaj funguje.",
+    "freeLabel": "Zadarmo",
     "perMonth": "/mesiac",
     "features": "Funkcie",
     "currentPlan": "Aktuálny plán",
-    "upgrade": "Získať Premium",
+    "upgrade": "Upgrade",
     "getStarted": "Začať zadarmo",
     "popular": "Najlepšia hodnota",
     "signInToUpgrade": "Prihláste sa a odomknite plán",
     "valueAnchor": "Menej ako káva týždenne",
     "guarantee": "30-dňová garancia spokojnosti",
-    "manageSubscription": "Spravovať predplatné",
+    "manageSubscription": "Spravovať membership",
     "managingSubscription": "Otváram portál...",
     "back": "Späť",
     "trustCancel": "Zrušiť kedykoľvek",
@@ -1511,16 +1727,12 @@
         ]
       },
       "premium": {
-        "name": "Premium",
+        "name": "Plus",
         "description": "Všetky funkcie, ktoré vám pomôžu dosiahnuť vaše ciele",
         "features": [
-          "Úprava jedál podľa vašich chutí",
-          "Označovanie obľúbených a neoblíbených jedál pre lepšie prispôsobenie",
-          "Jedálničky vytvorené z jedál overených našimi odborníkmi a prispôsobené vašim preferenciám",
-          "Týždenné výzvy",
-          "Pokročilé sledovanie pokroku",
-          "Prednostný prístup k novým funkciam a vylepšeniam",
-          "Rivo ako váš osobní asistent bez obmedzení"
+          "Podpora nášho vývojového týmu pre rychlejší vývoj",
+          "(PRIPRAVUJEME) Skenovanie nákupného bločku pre rýchlejšie a pohodlnejšie pridanie potravín do Špajze",
+          "(PRIPRAVUJEME) Prispôsobenie jednotlivých receptov pre lepšiu personalizáciu založenú na vašich cieľoch, chutiach a vašej diéte"
         ]
       }
     },
@@ -1534,8 +1746,8 @@
     "title": "Fakturácia",
     "back": "Späť",
     "currentPlan": "Aktuálny plán",
-    "managePlan": "Spravovať predplatné",
-    "upgradePlan": "Upgradovať plán",
+    "managePlan": "Spravovať membership",
+    "upgradePlan": "Upgrade plánu",
     "upgradeToProTitle": "Upgradovať na Pro",
     "status": {
       "active": "Aktívne",
@@ -1550,6 +1762,22 @@
     "noSubscription": "Žiadne aktívne predplatné",
     "freeAccount": "Používate bezplatný plán",
     "successMessage": "Predplatné bolo úspešne aktivované! 🎉",
+    "profileSection": {
+      "membershipEyebrow": "Membership",
+      "description": "Spravuj svoj membership, skontroluj aktívne členstvo a zisti, čo máš práve odomknuté.",
+      "currentPlanLabel": "Aktuálny plán",
+      "yourMembershipLabel": "Tvoje membership",
+      "paidDescription": "Máš aktívny platený plán a správu membershipu vybavíš jedným klikom.",
+      "basicDescription": "Momentálne si na základnom pláne. Ak chceš viac, nižšie nájdeš dostupný upgrade.",
+      "upgradeReady": "Upgrade je pripravený",
+      "availableUpgradesEyebrow": "Dostupné upgrady",
+      "availableUpgradesTitle": "Vyššie tiery pre tvoj účet",
+      "noUpgradeEyebrow": "Vyššie tiery",
+      "noUpgradeTitle": "Momentálne nemáš k dispozícii ďalší upgrade",
+      "noUpgradeDescription": "Tvoj aktuálny membership je najvyšší plán, ktorý v tejto časti aplikácie ponúkame.",
+      "consentEyebrow": "Checkout consent",
+      "consentTitle": "Potvrď právne súhlasy pred upgradeom"
+    },
     "errorMessages": {
       "portalFailed": "Nepodarilo sa otvoriť fakturačný portál",
       "checkoutFailed": "Nepodarilo sa spustiť platbu",
@@ -1590,12 +1818,12 @@
     "autoRefresh": "Po obnovení pripojenia sa stránka automaticky aktualizuje"
   },
   "upgrade": {
-    "title": "Získaj Premium prístup",
+    "title": "Získaj Plus prístup",
     "description": "Odomkni všetky funkcie a získaj neobmedzené AI jedálničky.",
     "feature1": "Neobmedzené AI jedálničky",
     "feature2": "Personalizované nutričné sledovanie",
     "feature3": "Pokročilé nákupné zoznamy",
-    "upgradeButton": "Prejsť na Premium",
+    "upgradeButton": "Upgrade na Plus",
     "maybeLater": "Možno neskôr",
     "socialProof": "Pridaj sa k 2 400+ členom, ktorí jedia múdrejšie",
     "trialDays": "{days} Dní Zadarmo"
@@ -1623,7 +1851,7 @@
       "termsAgree": "Oboznámil som sa s <terms>Všeobecnými obchodnými podmienkami</terms> a <privacy>Zásadami ochrany osobných údajov</privacy>",
       "digitalConsent": "Žiadam o okamžité začatie poskytovania digitálnej služby a beriem na vedomie, že tým strácam právo na odstúpenie od zmluvy v 14-dňovej lehote",
       "mustAgree": "Pre pokračovanie musíte súhlasiť s podmienkami",
-      "orderWithPayment": "Záväzne predplatiť"
+      "orderWithPayment": "Upgrade"
     }
   },
   "pantry": {
@@ -1695,6 +1923,8 @@
     "tracking_mode_quantity": "Sledovať množstvo",
     "tracking_mode_availability": "Sledovať dostupnosť",
     "tracking_mode_availability_hint": "Režim dostupnosti uloží položku ako vec, ktorú máš doma, bez sledovania gramov alebo kusov.",
+    "tracking_mode_toggle_label": "Sledovanie množstva",
+    "tracking_mode_toggle_help": "Prepínač vypnutý znamená sledovanie presného množstva. Prepínač zapnutý prepne položku len na sledovanie dostupnosti v špajzi.",
     "field_availability": "Dostupnosť",
     "availability_in_stock": "V špajzi",
     "availability_out_of_stock": "Minuté",

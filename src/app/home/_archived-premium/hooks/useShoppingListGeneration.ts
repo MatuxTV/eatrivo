@@ -26,7 +26,6 @@ export function useShoppingListGeneration() {
   const [result, setResult] = useState<GenerationState["result"]>(null);
   const pollerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  /** Stop any active polling interval */
   const stopPolling = useCallback(() => {
     if (pollerRef.current) {
       clearInterval(pollerRef.current);
@@ -34,15 +33,10 @@ export function useShoppingListGeneration() {
     }
   }, []);
 
-  /** Clean up on unmount */
   useEffect(() => {
     return () => stopPolling();
   }, [stopPolling]);
 
-  /**
-   * Start polling the status endpoint until generation completes or errors.
-   * Sets result state on completion; consumer reacts via useEffect.
-   */
   const startPolling = useCallback(
     () => {
       stopPolling();
@@ -54,45 +48,34 @@ export function useShoppingListGeneration() {
           const data = await res.json();
 
           if (data.isGenerating) {
-            // Still generating — update progress state
             setProgress(data.progress ?? 0);
             setCurrentLabel(data.label ?? "");
             setRetryCount(data.retryCount ?? 0);
             return;
           }
 
-          // Generation finished
           stopPolling();
 
           if (data.error) {
-            // Generation failed
             setError(data.error);
             setIsGenerating(false);
             return;
           }
 
-          // Generation completed successfully — set result so the consumer's
-          // generationResult effect handles any follow-up actions (single call site).
           setProgress(100);
           setCurrentLabel("loader.done");
           setResult({ done: true });
           setIsGenerating(false);
-          // onDone intentionally NOT called here — consumer should react to result state
         } catch {
-          // Ignore transient network errors — keep polling
+          // Ignore transient network errors and keep polling.
         }
       }, POLL_INTERVAL_MS);
     },
     [stopPolling],
   );
 
-  /**
-   * Kick off a new shopping list generation.
-   * POST fires the background job, then we poll for progress.
-   */
   const generate = useCallback(
     async () => {
-      // Reset state
       setIsGenerating(true);
       setProgress(0);
       setCurrentNode("");
@@ -113,7 +96,6 @@ export function useShoppingListGeneration() {
           );
         }
 
-        // Backend accepted — start polling for progress
         startPolling();
       } catch (err) {
         setError(
@@ -127,11 +109,6 @@ export function useShoppingListGeneration() {
     [startPolling],
   );
 
-  /**
-   * On page load, check if a generation was already in progress (e.g. user refreshed).
-   * If the Redis lock is active, restores the generating UI and polls until done.
-   * Completion sets result state, which the consumer's generationResult effect handles.
-   */
   const checkAndResume = useCallback(
     async () => {
       try {
@@ -140,8 +117,6 @@ export function useShoppingListGeneration() {
         const data = await res.json();
 
         if (!data.isGenerating) {
-          // If generation just completed while page was loading, fire result
-          // so the generationResult effect picks it up
           if (data.done) {
             setProgress(100);
             setCurrentLabel("loader.done");
@@ -150,7 +125,6 @@ export function useShoppingListGeneration() {
           return;
         }
 
-        // Generation is in progress — resume UI
         console.debug("[Generation] Lock detected on mount — resuming UI", {
           progress: data.progress,
           label: data.label,
@@ -159,11 +133,9 @@ export function useShoppingListGeneration() {
         setProgress(data.progress ?? 5);
         setCurrentLabel(data.label ?? "loader.fetchingProfile");
         setRetryCount(data.retryCount ?? 0);
-
-        // Start polling
         startPolling();
       } catch {
-        // Ignore
+        // Ignore.
       }
     },
     [startPolling],

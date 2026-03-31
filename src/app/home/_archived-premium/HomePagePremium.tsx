@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { getCurrentDay, getDayIndex } from "@/lib/functions";
 import { APP_CONFIG } from "@/app/config/app";
 import { logger } from "@/lib/logger";
-import { useShoppingListGeneration } from "@/hooks/useShoppingListGeneration";
+import { useShoppingListGeneration } from "./hooks/useShoppingListGeneration";
 import {
   ReceiptText,
   ChevronLeft,

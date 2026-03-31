@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Check, Loader2, Crown, Zap, Star } from "lucide-react";
+import { Check, Loader2, Crown,  Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
@@ -88,15 +88,15 @@ export function PricingCard({
         "bg-eatrivo-purple text-white hover:bg-eatrivo-purple/90 shadow-lg shadow-eatrivo-purple/25",
       glowColor: "rgba(123, 63, 242, 0.15)",
     },
-    pro: {
-      icon: Zap,
-      accent: "violet-600",
-      badgeBg: "bg-violet-100 text-violet-600",
-      checkColor: "text-violet-500",
-      buttonClass:
-        "bg-violet-600 text-white hover:bg-violet-700 shadow-lg shadow-violet-600/25",
-      glowColor: "rgba(124, 58, 237, 0.15)",
-    },
+    // pro: {
+    //   icon: Zap,
+    //   accent: "violet-600",
+    //   badgeBg: "bg-violet-100 text-violet-600",
+    //   checkColor: "text-violet-500",
+    //   buttonClass:
+    //     "bg-violet-600 text-white hover:bg-violet-700 shadow-lg shadow-violet-600/25",
+    //   glowColor: "rgba(124, 58, 237, 0.15)",
+    // },
   };
 
   const config = tierConfig[tier];
@@ -110,8 +110,6 @@ export function PricingCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      whileTap={{ scale: 0.98 }}
       className="relative"
     >
       {/* Popular glow ring */}
@@ -185,7 +183,7 @@ export function PricingCard({
           {price === "Free" ? (
             <div className="flex items-baseline gap-1">
               <span className="text-4xl font-extrabold text-eatrivo-black-primary tracking-tight">
-                {t("tiers.basic.name") === "Basic" ? "Free" : "Zadarmo"}
+                {t("freeLabel")}
               </span>
             </div>
           ) : (
@@ -247,7 +245,7 @@ export function PricingCard({
         <Button
           size="lg"
           className={cn(
-            "w-full rounded-xl font-bold text-sm h-12 transition-all duration-200",
+            "w-full rounded-xl font-bold text-sm h-12 transition-all duration-200 active:scale-95",
             config.buttonClass,
             loading && "opacity-80",
           )}

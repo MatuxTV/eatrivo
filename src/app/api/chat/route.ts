@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
         return new Response(
           JSON.stringify({
             error: "daily_limit_reached",
-            message: "Dosiahol si denný limit správ. Prejdi na Premium pre neobmedzený chat.",
+            message: "Dosiahol si denný limit správ. Prejdi na Plus pre neobmedzeny chat.",
             limit: DAILY_MESSAGE_LIMIT_BASIC,
             used: todayCount,
           }),

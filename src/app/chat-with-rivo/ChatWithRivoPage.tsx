@@ -192,7 +192,7 @@ export default function ChatWithRivoPage() {
                   updated[updated.length - 1] = {
                     role: "assistant",
                     content:
-                      "Dosiahol si denný limit správ. Prejdi na Premium pre neobmedzený chat s Rivom! 💜",
+                      "Dosiahol si denný limit správ. Prejdi na Plus pre neobmedzeny chat s Rivom! 💜",
                   };
                   return updated;
                 }
@@ -201,7 +201,7 @@ export default function ChatWithRivoPage() {
                   {
                     role: "assistant",
                     content:
-                      "Dosiahol si denný limit správ. Prejdi na Premium pre neobmedzený chat s Rivom! 💜",
+                      "Dosiahol si denný limit správ. Prejdi na Plus pre neobmedzeny chat s Rivom! 💜",
                   },
                 ];
               });
@@ -514,7 +514,7 @@ export default function ChatWithRivoPage() {
                 Dosiahol si denný limit {chatLimit.limit} správ
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                Prejdi na Premium pre neobmedzený chat s Rivom
+                Prejdi na Plus pre neobmedzeny chat s Rivom
               </p>
             </div>
             <Link
@@ -522,7 +522,7 @@ export default function ChatWithRivoPage() {
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink text-white text-sm font-semibold rounded-full shadow-md shadow-eatrivo-purple/25 hover:shadow-lg hover:shadow-eatrivo-purple/40 hover:-translate-y-0.5 transition-all"
             >
               <Crown className="w-4 h-4" />
-              Upgradni na Premium
+              Upgrade na Plus
             </Link>
           </div>
         ) : (

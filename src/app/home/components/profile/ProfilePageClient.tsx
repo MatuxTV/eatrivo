@@ -5,8 +5,8 @@ import { toast } from "sonner";
 import {
   User,
   Settings,
-  ChefHat,
-  Flame,
+  // ChefHat,
+  // Flame,
   UtensilsCrossed,
   Bookmark,
   CreditCard,
@@ -18,39 +18,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import PersonalInfoSection from "./PersonalInfoSection";
 import NutritionPreferencesSection from "./NutritionPreferencesSection";
 import BookmarkedRecipesSection from "./BookmarkedRecipesSection";
+import ProfileBillingSection from "./ProfileBillingSection";
 import AppShellViewport from "@/app/home/components/AppShellViewport";
-import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import type {
+  UserNutritionSnapshot,
+  UserProfileSnapshot,
+} from "@/app/home/types/section-data";
+import { useTranslations } from "next-intl";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
-
-interface UserProfileData {
-  fullName: string;
-  email: string;
-  dateOfBirth: string;
-  membership: string;
-  badges?: string[];
-}
-
-interface UserNutritionData {
-  sex: "man" | "woman";
-  height: number;
-  weight: string | number;
-  activity_level: string | null;
-  goal: string | null;
-  meal_per_day: number | null;
-  cooking_time_pref: string | null;
-  meal_prep: boolean | null;
-  meal_prep_days: number | null;
-  diet_preferences: string | null;
-  budget_preference: string | null;
-  likes: string | null;
-  dislikes: string | null;
-  allergies: string | null;
-}
 
 interface ProfilePageClientProps {
   onBack?: () => void;
   onOpenBookmarkedRecipe?: (recipe: BasicHomeRecipePreview) => void;
+  initialProfileData?: UserProfileSnapshot | null;
+  initialNutritionData?: UserNutritionSnapshot | null;
+  initialView?: ProfileView;
 }
 
 type ProfileView = "default" | "personal" | "nutrition" | "bookmarks" | "billing";
@@ -58,22 +41,31 @@ type ProfileView = "default" | "personal" | "nutrition" | "bookmarks" | "billing
 export default function ProfilePageClient({
   onBack: _onBack,
   onOpenBookmarkedRecipe,
+  initialProfileData = null,
+  initialNutritionData = null,
+  initialView = "default",
 }: ProfilePageClientProps) {
   const t = useTranslations("profile");
-  const locale = useLocale();
   const router = useRouter();
-  const [activeView, setActiveView] = useState<ProfileView>("default");
+  const searchParams = useSearchParams();
+  const [activeView, setActiveView] = useState<ProfileView>(initialView);
   const [navDirection, setNavDirection] = useState<1 | -1>(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [profileData, setProfileData] = useState<UserProfileData | null>(null);
-  const [nutritionData, setNutritionData] = useState<UserNutritionData | null>(
-    null,
+  const hasInitialData = Boolean(initialProfileData || initialNutritionData);
+  const [isLoading, setIsLoading] = useState(!hasInitialData);
+  const [profileData, setProfileData] = useState<UserProfileSnapshot | null>(
+    initialProfileData,
+  );
+  const [nutritionData, setNutritionData] = useState<UserNutritionSnapshot | null>(
+    initialNutritionData,
   );
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        setIsLoading(true);
+        if (!hasInitialData) {
+          setIsLoading(true);
+        }
+
         const response = await fetch("/api/user/profile");
         if (!response.ok) throw new Error("Failed to fetch profile");
 
@@ -88,8 +80,32 @@ export default function ProfilePageClient({
       }
     };
 
-    fetchProfileData();
-  }, [t]);
+    if (!hasInitialData) {
+      void fetchProfileData();
+    }
+  }, [hasInitialData, t]);
+
+  useEffect(() => {
+    const profileViewParam = searchParams.get("profileView");
+    const validViews: ProfileView[] = [
+      "default",
+      "personal",
+      "nutrition",
+      "bookmarks",
+      "billing",
+    ];
+
+    if (!profileViewParam || !validViews.includes(profileViewParam as ProfileView)) {
+      return;
+    }
+
+    setNavDirection(1);
+    setActiveView(profileViewParam as ProfileView);
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("profileView");
+    window.history.replaceState({}, "", url.toString());
+  }, [searchParams]);
 
   const displayName = profileData?.fullName?.trim() || t("header.fallbackName");
   const initials = displayName
@@ -99,22 +115,22 @@ export default function ProfilePageClient({
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("");
 
-  const summaryStats = [
-    {
-      key: "cookedMeals",
-      icon: ChefHat,
-      value: 18,
-      label: t("stats.cookedMeals.label"),
-      helper: t("stats.placeholder"),
-    },
-    {
-      key: "dayStreak",
-      icon: Flame,
-      value: 24,
-      label: t("stats.dayStreak.label"),
-      helper: t("stats.placeholder"),
-    },
-  ];
+  // const summaryStats = [
+  //   {
+  //     key: "cookedMeals",
+  //     icon: ChefHat,
+  //     value: 18,
+  //     label: t("stats.cookedMeals.label"),
+  //     helper: t("stats.placeholder"),
+  //   },
+  //   {
+  //     key: "dayStreak",
+  //     icon: Flame,
+  //     value: 24,
+  //     label: t("stats.dayStreak.label"),
+  //     helper: t("stats.placeholder"),
+  //   },
+  // ];
 
   const menuCards = [
     {
@@ -243,7 +259,7 @@ export default function ProfilePageClient({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {summaryStats.map((stat) => (
               <div
                 key={stat.key}
@@ -267,7 +283,7 @@ export default function ProfilePageClient({
                 </div>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -343,33 +359,7 @@ export default function ProfilePageClient({
         );
       case "billing":
         return renderDetailShell(
-          <section
-            className="rounded-[1.8rem] border border-[#efe2fb] bg-white p-6 shadow-[0_18px_40px_rgba(121,78,171,0.08)] sm:p-8"
-          >
-            <div className="space-y-4 rounded-[1.5rem] bg-[linear-gradient(180deg,#fdf8ff_0%,#f7eeff_100%)] p-5 ring-1 ring-[#eedfff]">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#7d49cf] ring-1 ring-[#eadcff]">
-                <CreditCard className="h-5 w-5" />
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-2xl font-black tracking-[-0.04em] text-[#35204f]">
-                  {t("billingPlaceholder.title")}
-                </h2>
-                <p className="max-w-xl text-sm font-medium leading-6 text-[#87739f]">
-                  {t("billingPlaceholder.description")}
-                </p>
-              </div>
-              <div className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#6f6184] ring-1 ring-[#ece2f8]">
-                {t("billingPlaceholder.helper")}
-              </div>
-              <button
-                type="button"
-                onClick={() => router.push(`/${locale}/pricing`)}
-                className="inline-flex h-11 items-center justify-center rounded-2xl bg-[#7d49cf] px-5 text-sm font-bold text-white shadow-[0_14px_28px_rgba(125,73,207,0.25)] transition-colors hover:bg-[#6f3fc0]"
-              >
-                {t("billingPlaceholder.cta")}
-              </button>
-            </div>
-          </section>,
+          <ProfileBillingSection embedded />,
         );
       case "bookmarks":
         return renderDetailShell(

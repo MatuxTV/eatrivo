@@ -12,6 +12,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 interface SubscriptionData {
   membership: "basic" | "premium" | "pro" | "trainer";
+  trialDaysLeft: number;
   subscription: {
     status: "active" | "canceled" | "past_due" | "gifted";
     currentPeriodEnd: string | null;
@@ -205,7 +206,8 @@ export default function BillingPageClient() {
           <div className="grid gap-6 md:grid-cols-1 max-w-md">
             <PricingCard
               tier="premium"
-              price={5}
+              price={3.99}
+              trialDays={data?.trialDaysLeft}
               onSelect={() => handleUpgrade("premium")}
             />
           </div>

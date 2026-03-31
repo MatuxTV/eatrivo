@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { ChefHat, ShoppingCart, Sparkles } from "lucide-react";
 import ReceiptCard from "@/app/home/components/ReceiptCard";
-import ShoppingListCard from "@/app/home/components/ShoppingListCard";
+import ShoppingListCard from "./ShoppingListCard";
 import type { Ingredient } from "@/types/meal-plan";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";

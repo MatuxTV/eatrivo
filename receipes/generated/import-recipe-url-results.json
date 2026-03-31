@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-03-31T09:36:27.964Z",
+  "processedCount": 1,
+  "successCount": 0,
+  "failureCount": 1,
+  "recipes": [],
+  "rejected": [],
+  "results": [
+    {
+      "url": "https://www.bbcgoodfood.com/recipes/bean-enchiladas",
+      "outputPath": "/Users/matuxtv/Code/my_projects/eatrivo-full/eatrivo/receipes/generated/www-bbcgoodfood-com-recipes-bean-enchiladas.json",
+      "importCompleted": false,
+      "recipesCount": 0,
+      "rejectedCount": 0,
+      "error": "Invalid AI JSON output: root: Invalid input: expected object, received null"
+    }
+  ]
+}

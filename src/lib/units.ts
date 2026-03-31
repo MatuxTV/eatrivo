@@ -77,6 +77,36 @@ export const PANTRY_UNIT_OPTIONS = [
 
 export type PantryUnitOption = (typeof PANTRY_UNIT_OPTIONS)[number];
 
+export type QuantityQuickAdjustPreset = "small-metric" | "large-metric" | "count";
+
+const QUICK_ADJUSTMENT_ROWS: Record<QuantityQuickAdjustPreset, [number, number][]> = {
+  "small-metric": [
+    [-10, 10],
+    [-100, 100],
+  ],
+  "large-metric": [
+    [-0.1, 0.1],
+    [-1, 1],
+  ],
+  count: [
+    [-1, 1],
+    [-10, 10],
+  ],
+};
+
+const UNIT_QUICK_ADJUSTMENT_PRESET: Record<string, QuantityQuickAdjustPreset> = {
+  g: "small-metric",
+  ml: "small-metric",
+  kg: "large-metric",
+  l: "large-metric",
+  dl: "large-metric",
+  cup: "large-metric",
+  tbsp: "large-metric",
+  tsp: "large-metric",
+  ks: "count",
+  bal: "count",
+};
+
 export type CanonicalUnitDimension = "mass" | "volume" | "count";
 
 export interface CanonicalQuantity {
@@ -106,6 +136,15 @@ const CANONICAL_UNIT_CONVERSIONS: Record<
 export function normalizeUnit(rawUnit: string): string {
   const lower = rawUnit.toLowerCase().trim();
   return UNIT_ALIASES[lower] ?? lower;
+}
+
+export function getQuantityQuickAdjustmentRows(
+  unit: string | null | undefined,
+): [number, number][] {
+  const normalizedUnit = unit ? normalizeUnit(unit) : "ks";
+  const preset = UNIT_QUICK_ADJUSTMENT_PRESET[normalizedUnit] ?? "count";
+
+  return QUICK_ADJUSTMENT_ROWS[preset];
 }
 
 /**

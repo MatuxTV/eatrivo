@@ -33,7 +33,7 @@ import { logger } from "@/lib/logger";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import { formatDate } from "@/lib/formatters";
-import { MealPlanViewerModal } from "@/app/home/components/MealPlanViewerModal";
+import { MealPlanViewerModal } from "./MealPlanViewerModal";
 import { localizeAmountForDisplay } from "@/lib/pantry/format";
 import InlineEditPanel from "@/components/inline-edit/InlineEditPanel";
 import InlineEditToggleButton from "@/components/inline-edit/InlineEditToggleButton";

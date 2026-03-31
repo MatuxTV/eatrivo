@@ -252,6 +252,15 @@ export async function PUT(
       quantity: nextQuantityValue,
       unit: nextUnitValue,
     });
+    const hasExplicitQuantityMutation =
+      quantityOperation !== undefined ||
+      quantityDelta !== undefined ||
+      (quantity !== undefined && quantity !== null) ||
+      (unit !== undefined && unit !== null);
+    const shouldDeleteForZeroQuantity =
+      resolvedTrackingMode === "quantity" &&
+      nextQuantityValue === 0 &&
+      (quantity !== undefined || steppedQuantity !== undefined);
 
     apiLogger.debug("[pantry.update] resolved mutation", {
       metadata: {
@@ -270,7 +279,7 @@ export async function PUT(
 
     if (
       resolvedTrackingMode === "availability" &&
-      (quantity !== undefined || quantityOperation !== undefined || quantityDelta !== undefined) &&
+      hasExplicitQuantityMutation &&
       !canMutateQuantity
     ) {
       apiLogger.warn("[pantry.update] rejected quantity mutation for availability item", {
@@ -278,6 +287,7 @@ export async function PUT(
           pantryItemId: id,
           userProfileId: result.userProfile.id,
           resolvedTrackingMode,
+          requestedUnit: unit ?? null,
           quantityOperation: quantityOperation ?? null,
           quantityDelta: quantityDelta ?? null,
           requestedQuantity: quantity ?? null,
@@ -294,6 +304,27 @@ export async function PUT(
         },
       });
       return validationError("inStock is only valid for availability mode");
+    }
+
+    if (shouldDeleteForZeroQuantity) {
+      await db.delete(pantryItems).where(eq(pantryItems.id, id));
+      await invalidatePantryCaches(result.userProfile.id);
+
+      apiLogger.info("[pantry.update] pantry item deleted because quantity reached zero", {
+        metadata: {
+          pantryItemId: id,
+          userProfileId: result.userProfile.id,
+          previousTrackingMode: result.item.trackingMode,
+          requestedQuantity: quantity ?? null,
+          quantityOperation: quantityOperation ?? null,
+          quantityDelta: quantityDelta ?? null,
+        },
+      });
+
+      return NextResponse.json({
+        deleted: true,
+        deletedItemId: id,
+      });
     }
 
     const [updatedItem] = await db

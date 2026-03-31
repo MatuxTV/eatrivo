@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
 import { Button } from "@/components/ui/button";
 import {
@@ -137,6 +138,7 @@ export default function KitchenCounterPage({
   onBack,
 }: KitchenCounterPageProps) {
   const t = useTranslations("home");
+  const shouldReduceMotion = useReducedMotion();
   const activeRecipe = recipe ?? null;
   const ingredients = useMemo(
     () => (activeRecipe ? buildKitchenCounterIngredients(activeRecipe, t) : []),
@@ -381,7 +383,7 @@ export default function KitchenCounterPage({
         onOpenChange={setIsMissingIngredientsDialogOpen}
       >
         <DialogContent
-          className="max-w-[calc(100%-1.5rem)] rounded-2xl border border-eatrivo-black-primary/20 bg-eatrivo-white-primary p-2 sm:max-w-md"
+          className="max-h-[90dvh] max-w-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl border border-eatrivo-black-primary/20 bg-eatrivo-white-primary p-2 sm:max-w-md"
           showCloseButton={false}
         >
           <div className="border-b border-red-100/80 bg-gradient-to-br from-red-50 via-white to-orange-50 px-6 py-5">
@@ -396,7 +398,7 @@ export default function KitchenCounterPage({
                 <DialogDescription className="text-sm font-medium leading-6 text-eatrivo-black-secondary">
                   {t("basic.kitchenCounter.missingIngredientsDescription")}
                 </DialogDescription>
-              </DialogHeader>
+              </DialogHeader> 
             </div>
           </div>
 
@@ -533,7 +535,7 @@ export default function KitchenCounterPage({
           </h2>
           <div className="md:hidden mb-4">
             {activeStep ? (
-              <div className="inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold bg-eatrivo-purple/10 text-eatrivo-purple">
+              <div className="flex h-9 w-[9.5rem] items-center justify-center rounded-full bg-eatrivo-purple/10 px-3 py-1.5 text-center text-xs font-semibold text-eatrivo-purple">
                 {t("basic.kitchenCounter.stepProgress", {
                   current: currentStepIndex + 1,
                   total: steps.length,
@@ -567,21 +569,55 @@ export default function KitchenCounterPage({
 
           <div className="md:hidden">
             {activeStep ? (
-              <div className="bg-white rounded-2xl p-5 flex gap-4 shadow-sm items-center border-2 border-eatrivo-purple/20">
-                <div className="w-[44px] h-[44px] rounded-[14px] bg-[#D4BBFF] text-[#5527A1] text-lg font-bold flex items-center justify-center shrink-0">
-                  {activeStep.id}
-                </div>
-                <div className="flex-1">
-                  {activeStep.title && (
-                    <h3 className="text-base font-semibold text-gray-800 mb-1">
-                      {activeStep.title}
-                    </h3>
-                  )}
-                  <p className="text-base text-gray-700 font-medium leading-7">
-                    {activeStep.text}
-                  </p>
-                </div>
-              </div>
+              <motion.div
+                layout
+                transition={
+                  shouldReduceMotion
+                    ? undefined
+                    : {
+                        layout: {
+                          duration: 0.3,
+                          ease: [0.22, 1, 0.36, 1],
+                        },
+                      }
+                }
+                className="overflow-hidden"
+              >
+                <AnimatePresence initial={false} mode="wait">
+                  <motion.div
+                    key={activeStep.id}
+                    layout
+                    initial={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
+                    animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                    exit={shouldReduceMotion ? undefined : { opacity: 0, y: -10 }}
+                    transition={
+                      shouldReduceMotion
+                        ? undefined
+                        : {
+                            duration: 0.24,
+                            ease: [0.22, 1, 0.36, 1],
+                          }
+                    }
+                    className="bg-white rounded-2xl border-2 border-eatrivo-purple/20 p-5 shadow-sm"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-[14px] bg-[#D4BBFF] text-lg font-bold text-[#5527A1]">
+                        {activeStep.id}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        {activeStep.title && (
+                          <h3 className="mb-1 text-base font-semibold text-gray-800">
+                            {activeStep.title}
+                          </h3>
+                        )}
+                        <p className="text-base font-medium leading-7 text-gray-700">
+                          {activeStep.text}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
             ) : (
               <p className="text-sm text-gray-500">{t("basic.kitchenCounter.stepsTitle")}</p>
             )}
@@ -614,7 +650,7 @@ export default function KitchenCounterPage({
                 ) : canGoToNextStep ? (
                   <ChevronRight className="h-4 w-4" />
                 ) : (
-                  <Check className="h-4 w-4" />
+                  null
                 )}
               </Button>
             </div>

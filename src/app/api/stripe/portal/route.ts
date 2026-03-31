@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     const portalSession = await createPortalSession({
       customerId: user.stripeCustomerId,
-      returnUrl: `${origin}/${locale}/profile/billing`,
+      returnUrl: `${origin}/home?section=profile&profileView=billing`,
     });
 
     return NextResponse.json({ url: portalSession.url });
