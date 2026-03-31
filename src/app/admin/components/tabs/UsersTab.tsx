@@ -1,4 +1,6 @@
-﻿import {
+﻿"use client";
+
+import {
   Card,
   CardContent,
   CardHeader,
@@ -7,6 +9,7 @@
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Plus, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { User as UserType } from "../types";
 
@@ -21,6 +24,9 @@ export default function UsersTab({
   isLoadingUsers,
   onSelectUser,
 }: UsersTabProps) {
+  const t = useTranslations("admin.dashboard.usersTab");
+  const tCommon = useTranslations("admin.dashboard.common");
+
   return (
     <Card className="border-none shadow-lg bg-eatrivo-light">
       <CardHeader className="p-4 sm:p-6">
@@ -28,10 +34,10 @@ export default function UsersTab({
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-eatrivo-purple/10 flex items-center justify-center text-eatrivo-purple">
             <Users className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          Zoznam používateľov
+          {t("title")}
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          Prehľad registrovaných používateľov
+          {t("description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0">
@@ -40,7 +46,7 @@ export default function UsersTab({
             <div className="flex flex-col items-center gap-3">
               <div className="w-6 h-6 sm:w-8 sm:h-8 border-3 border-eatrivo-purple/30 border-t-eatrivo-purple rounded-full animate-spin" />
               <p className="text-xs sm:text-sm text-gray-500">
-                Načítavajú sa používatelia...
+                {t("loading")}
               </p>
             </div>
           </div>
@@ -50,10 +56,10 @@ export default function UsersTab({
               <Users className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
             </div>
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
-              Žiadni používatelia
+              {t("emptyTitle")}
             </h3>
             <p className="text-xs sm:text-sm text-gray-500">
-              V systéme ešte nie sú registrovaní žiadni používatelia
+              {t("emptyDescription")}
             </p>
           </div>
         ) : (
@@ -74,7 +80,7 @@ export default function UsersTab({
                     <div className="flex items-start justify-between gap-2 mb-1 sm:mb-2">
                       <div className="min-w-0 flex-1">
                         <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
-                          {user.fullName || "Bez mena"}
+                          {user.fullName || tCommon("noName")}
                         </h3>
                         <p className="text-xs sm:text-sm text-gray-500 truncate">
                           {user.email}
@@ -86,13 +92,13 @@ export default function UsersTab({
                         )}
                         {user.membership === "premium" && (
                           <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs bg-yellow-200 text-eatrivo-black-secondary font-semibold rounded-full capitalize">
-                          {user.membership || "free"}
-                        </span>
+                            {tCommon("membership.plus")}
+                          </span>
                         )}
                         {user.membership === "trainer" && (
                           <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs bg-eatrivo-green font-semibold rounded-full capitalize">
-                          {user.membership || "free"}
-                        </span>
+                            {tCommon("membership.trainer")}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -100,20 +106,20 @@ export default function UsersTab({
                     {/* Details Grid */}
                     <div className="hidden xs:grid grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-1 sm:gap-y-2 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100">
                       <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
-                        <span className="text-gray-500">ID:</span>
+                        <span className="text-gray-500">{t("details.id")}</span>
                         <span className="font-mono text-gray-700 truncate">
                           {user.id.slice(0, 8)}...
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
-                        <span className="text-gray-500">Profil:</span>
+                        <span className="text-gray-500">{t("details.profile")}</span>
                         <span className="px-1 sm:px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium">
-                          {user.isProfileComplete ? "OK" : "Neúplný"}
+                          {user.isProfileComplete ? tCommon("profile.complete") : tCommon("profile.incomplete")}
                         </span>
                       </div>
                       {user.username && (
                         <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs col-span-2">
-                          <span className="text-gray-500">Username:</span>
+                          <span className="text-gray-500">{t("details.username")}</span>
                           <span className="text-gray-700">
                             @{user.username}
                           </span>
@@ -136,19 +142,19 @@ export default function UsersTab({
                         }}
                       >
                         <Plus className="w-3 h-3 mr-0.5 sm:mr-1" />
-                        <span className="hidden sm:inline">Vytvoriť</span>{" "}
-                        zoznam
+                        <span className="hidden sm:inline">{t("actions.create")}</span>{" "}
+                        {t("actions.list")}
                       </Button>
                       <Button
                         size="sm"
                         className="h-7 bg-eatrivo-white-primary text-eatrivo-purple border-2 sm:h-8 text-[10px] sm:text-xs px-2 sm:px-3"
                         onClick={() => {
                           navigator.clipboard.writeText(user.email);
-                          toast.success("Email skopírovaný");
+                          toast.success(t("actions.emailCopied"));
                         }}
                       >
-                        <span className="hidden sm:inline">Kopírovať</span>{" "}
-                        email
+                        <span className="hidden sm:inline">{t("actions.copy")}</span>{" "}
+                        {t("actions.email")}
                       </Button>
                     </div>
                   </div>

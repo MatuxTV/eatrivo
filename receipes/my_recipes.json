@@ -3009,9 +3009,587 @@
         }
       },
       "meal_prep_friendly": true
-    }
-    
-    
+    },
+     
+   {
+      "external_key": "dinner-easy-butter-chicken",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-nuts"
+      ],
+      "servings": 4,
+      "prep_time_min": 15,
+      "total_time_min": 50,
+      "nutrition_per_serving": {
+        "calories": 395,
+        "protein_g": 34,
+        "carbohydrates_g": 13,
+        "fat_g": 23
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "chicken-thigh",
+          "ingredient_specific_key": "chicken-thigh",
+          "canonical_name": "chicken thigh",
+          "quantity": 500,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "chicken thigh"
+            },
+            "sk": {
+              "display_name": "kuracie stehno"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lemon",
+          "ingredient_specific_key": "lemon",
+          "canonical_name": "lemon",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "lemon"
+            },
+            "sk": {
+              "display_name": "citrón"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cumin",
+          "ingredient_specific_key": "cumin",
+          "canonical_name": "cumin",
+          "quantity": 2,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "cumin"
+            },
+            "sk": {
+              "display_name": "rímska rasca"
+            }
+          }
+        },
+        {
+          "ingredient_key": "paprika",
+          "ingredient_specific_key": "paprika",
+          "canonical_name": "paprika",
+          "quantity": 2,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "paprika"
+            },
+            "sk": {
+              "display_name": "mletá paprika"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chili-powder",
+          "ingredient_specific_key": "chili-powder",
+          "canonical_name": "chili powder",
+          "quantity": 1.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "chili powder"
+            },
+            "sk": {
+              "display_name": "čili prášok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "natural-yogurt",
+          "ingredient_specific_key": "natural-yogurt",
+          "canonical_name": "natural yogurt",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "natural yogurt"
+            },
+            "sk": {
+              "display_name": "biely jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vegetable-oil",
+          "ingredient_specific_key": "vegetable-oil",
+          "canonical_name": "vegetable oil",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "vegetable oil"
+            },
+            "sk": {
+              "display_name": "rastlinný olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "quantity": 3,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "green-chili",
+          "ingredient_specific_key": "green-chili",
+          "canonical_name": "green chili",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": true,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "green chili"
+            },
+            "sk": {
+              "display_name": "zelená čili paprička"
+            }
+          }
+        },
+        {
+          "ingredient_key": "ginger",
+          "ingredient_specific_key": "ginger",
+          "canonical_name": "ginger",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "ginger"
+            },
+            "sk": {
+              "display_name": "zázvor"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garam-masala",
+          "ingredient_specific_key": "garam-masala",
+          "canonical_name": "garam masala",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "garam masala"
+            },
+            "sk": {
+              "display_name": "garam masala"
+            }
+          }
+        },
+        {
+          "ingredient_key": "fenugreek",
+          "ingredient_specific_key": "ground-fenugreek",
+          "canonical_name": "ground fenugreek",
+          "quantity": 2,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 12,
+          "translations": {
+            "en": {
+              "display_name": "ground fenugreek"
+            },
+            "sk": {
+              "display_name": "mletá senovka grécka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato-puree",
+          "ingredient_specific_key": "tomato-puree",
+          "canonical_name": "tomato puree",
+          "quantity": 3,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 13,
+          "translations": {
+            "en": {
+              "display_name": "tomato puree"
+            },
+            "sk": {
+              "display_name": "paradajkový pretlak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chicken-stock",
+          "ingredient_specific_key": "chicken-stock",
+          "canonical_name": "chicken stock",
+          "quantity": 300,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 14,
+          "translations": {
+            "en": {
+              "display_name": "chicken stock"
+            },
+            "sk": {
+              "display_name": "kurací vývar"
+            }
+          }
+        },
+        {
+          "ingredient_key": "almond",
+          "ingredient_specific_key": "flaked-almond",
+          "canonical_name": "flaked almond",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 15,
+          "translations": {
+            "en": {
+              "display_name": "flaked almond"
+            },
+            "sk": {
+              "display_name": "plátková mandľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "basmati-rice",
+          "ingredient_specific_key": "basmati-rice",
+          "canonical_name": "basmati rice",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 16,
+          "translations": {
+            "en": {
+              "display_name": "basmati rice"
+            },
+            "sk": {
+              "display_name": "basmati ryža"
+            }
+          }
+        },
+        {
+          "ingredient_key": "naan-bread",
+          "ingredient_specific_key": "naan-bread",
+          "canonical_name": "naan bread",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 17,
+          "translations": {
+            "en": {
+              "display_name": "naan bread"
+            },
+            "sk": {
+              "display_name": "chlieb naan"
+            }
+          }
+        },
+        {
+          "ingredient_key": "mango-chutney",
+          "ingredient_specific_key": "mango-chutney",
+          "canonical_name": "mango chutney",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 18,
+          "translations": {
+            "en": {
+              "display_name": "mango chutney"
+            },
+            "sk": {
+              "display_name": "mangové chutney"
+            }
+          }
+        },
+        {
+          "ingredient_key": "coriander",
+          "ingredient_specific_key": "coriander",
+          "canonical_name": "coriander",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 19,
+          "translations": {
+            "en": {
+              "display_name": "coriander"
+            },
+            "sk": {
+              "display_name": "koriander"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lime",
+          "ingredient_specific_key": "lime",
+          "canonical_name": "lime",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 20,
+          "translations": {
+            "en": {
+              "display_name": "lime"
+            },
+            "sk": {
+              "display_name": "limetka"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Easy Butter Chicken",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "In a medium bowl, mix all the marinade ingredients with some seasoning. Chop the chicken into bite-sized pieces and toss with the marinade. Cover and chill in the fridge for 1 hr or overnight.",
+            "In a large, heavy saucepan, heat the oil. Add the onion, garlic, green chilli, ginger and some seasoning. Fry on a medium heat for 10 mins or until soft.",
+            "Add the spices with the tomato purée, cook for a further 2 mins until fragrant, then add the stock and marinated chicken. Cook for 15 mins, then add any remaining marinade left in the bowl. Simmer for 5 mins, then sprinkle with the toasted almonds.",
+            "Serve with rice, naan bread, chutney, coriander and lime wedges, if you like."
+          ],
+          "notes": "The meat can be marinaded the day before so you can get ahead on your prep."
+        },
+        "sk": {
+          "name": "Jednoduché maslové kura (Butter chicken)",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "V stredne veľkej miske zmiešajte všetky prísady na marinádu a dochuťte soľou a korením. Kuracie mäso nakrájajte na kúsky veľkosti sústa a obaľte v marináde. Prikryte a nechajte v chladničke odpočívať aspoň 1 hodinu, ideálne však cez noc.",
+            "Vo veľkom hrnci s hrubým dnom zohrejte olej. Pridajte cibuľu, cesnak, zelenú čili papričku, zázvor a trochu korenia. Restujte na strednom ohni asi 10 minút, kým zelenina nezmäkne.",
+            "Pridajte koreniny a paradajkový pretlak, opekajte ďalšie 2 minúty, kým zmes nezačne rozvoniavať. Potom prilejte vývar a pridajte marinované kura. Varte 15 minút, následne pridajte aj zvyšok marinády, ktorá ostala v miske. Duste na miernom ohni ešte 5 minút a nakoniec posypte opraženými plátkami mandlí.",
+            "Podávajte s uvarenou ryžou, chlebom naan, chutney, posypané lístkami koriandra a doplnené o mesiačiky limetky."
+          ],
+          "notes": "Mäso si môžete naložiť do marinády už deň vopred a ušetriť tak čas pri samotnej príprave."
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dessert-authentic-italian-tiramisu",
+      "default_locale": "sk",
+      "category_key": "dessert",
+      "diet_tags": [
+        "vegetarian"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-eggs",
+        "contains-gluten",
+        "contains-alcohol"
+      ],
+      "servings": 10,
+      "prep_time_min": 15,
+      "total_time_min": 255,
+      "nutrition_per_serving": {
+        "calories": 383,
+        "protein_g": 7,
+        "carbohydrates_g": 28,
+        "fat_g": 27
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "quantity": 5,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "egg"
+            },
+            "sk": {
+              "display_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sugar",
+          "ingredient_specific_key": "sugar",
+          "canonical_name": "sugar",
+          "quantity": 5,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "granulated sugar"
+            },
+            "sk": {
+              "display_name": "kryštálový cukor"
+            }
+          }
+        },
+        {
+          "ingredient_key": "mascarpone",
+          "ingredient_specific_key": "mascarpone",
+          "canonical_name": "mascarpone",
+          "quantity": 500,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "mascarpone"
+            },
+            "sk": {
+              "display_name": "mascarpone"
+            }
+          }
+        },
+        {
+          "ingredient_key": "ladyfinger",
+          "ingredient_specific_key": "ladyfinger",
+          "canonical_name": "ladyfinger",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "ladyfinger"
+            },
+            "sk": {
+              "display_name": "cukrárska piškóta"
+            }
+          }
+        },
+        {
+          "ingredient_key": "coffee",
+          "ingredient_specific_key": "coffee",
+          "canonical_name": "coffee",
+          "quantity": 240,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "strong coffee"
+            },
+            "sk": {
+              "display_name": "silná káva"
+            }
+          }
+        },
+        {
+          "ingredient_key": "amaretto",
+          "ingredient_specific_key": "amaretto",
+          "canonical_name": "amaretto",
+          "quantity": 100,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "amaretto"
+            },
+            "sk": {
+              "display_name": "amaretto"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cocoa-powder",
+          "ingredient_specific_key": "cocoa-powder",
+          "canonical_name": "cocoa powder",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "cocoa powder"
+            },
+            "sk": {
+              "display_name": "kakao"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Authentic Italian Tiramisu",
+          "category_label": "Dessert",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Separate the egg yolks from the whites into two bowls. Whip the egg whites until stiff peaks form.",
+            "Add sugar to the yolks and beat until the sugar dissolves. Add the mascarpone and gently whisk it into the yolk mixture. Finally, carefully fold in the egg whites to keep as much air in the mixture as possible.",
+            "Mix the cooled coffee with Amaretto and pour it into a wide-bottomed bowl. Briefly dip the ladyfingers one by one into the coffee mixture on both sides so they don't get soggy, and arrange them in a square dish (approx. 30x30 cm).",
+            "Once the first layer of ladyfingers is arranged, spread half of the mascarpone cream over it. Arrange another layer of dipped ladyfingers and cover with the remaining cream. Dust the top with cocoa powder using a sieve and refrigerate for at least 4 hours (ideally overnight)."
+          ],
+          "notes": "The original recipe indicated 4 servings, but the portions have been normalized to 10 standard dessert servings to meet caloric guidelines for a typical adult."
+        },
+        "sk": {
+          "name": "Pravé talianske tiramisu",
+          "category_label": "Dezert",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Do dvoch misiek oddeľte žĺtky od bielkov. Z bielkov vyšľahajte tuhý sneh.",
+            "K žĺtkom pridajte cukor a šľahajte, kým sa cukor nerozpustí. Pridajte mascarpone a jemne ho zašľahajte do žĺtkového krému. Nakoniec opatrne vmiešajte sneh tak, aby v ňom zostalo čo najviac vzduchu.",
+            "Vychladnutú kávu zmiešajte s amarettom a nalejte do širšej misky. Piškóty jednu po druhej z oboch strán krátko namáčajte v kávovej zmesi, aby sa nerozmočili, a ukladajte ich na dno hranatej formy (cca 30x30 cm).",
+            "Na prvú vrstvu piškót naneste polovicu krému. Potom uložte ďalšiu vrstvu namočených piškót a zakryte ich druhou polovicou krému. Povrch posypte kakaom preosiatym cez sitko a uložte do chladničky aspoň na 4 hodiny (ideálne cez noc)."
+          ],
+          "notes": "Pôvodný recept na Aktuality.sk rátal so 4 porciami. Pre dodržanie štandardov zdravej výživy bola veľkosť porcií prepočítaná a znormalizovaná na 10 dezertných porcií."
+        }
+      },
+      "meal_prep_friendly": true
+    }  
+  
   ],
   "rejected": []
 }

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { ShoppingBag, Sparkles, Plus, Lock } from "lucide-react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
-import ShoppingListCard from "@/app/home/components/ShoppingListCard";
+import ShoppingListCard from "./ShoppingListCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -90,12 +90,14 @@ export async function POST(req: NextRequest) {
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
 
+    const billingHomeUrl = `${origin}/home?section=profile&profileView=billing`;
+
     const checkoutSession = await createCheckoutSession({
       userId: session.user.id,
       email: session.user.email,
       priceId,
-      successUrl: `${origin}/${locale}/profile/billing?success=true`,
-      cancelUrl: `${origin}/${locale}/pricing?canceled=true`,
+      successUrl: `${billingHomeUrl}&success=true`,
+      cancelUrl: `${billingHomeUrl}&canceled=true`,
       discountCode,
       trialPeriodDays,
       locale,

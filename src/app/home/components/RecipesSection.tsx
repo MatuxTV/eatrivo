@@ -473,10 +473,11 @@ export default function RecipesSection({
       {/* ---- Hero Card ---- */}
       <div className="relative mb-6 overflow-hidden rounded-[1.75rem] border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-gray-200 hover:shadow-md sm:mb-8 xl:min-h-[380px]">
         {isCustomRecipeHeroActive ? (
-          <div className="relative flex h-full min-h-[300px] w-full flex-col bg-white text-gray-900 sm:min-h-[360px]">
+          <div className="relative flex h-full min-h-[300px] w-full flex-col bg-white text-eatrivo-black-primary sm:min-h-[360px]">
             <div className="flex h-full flex-col gap-5 px-4 pb-4 pt-5 sm:gap-6 sm:px-7 sm:pb-7 sm:pt-7">
+
               {customRecipeState.status !== "success" && customRecipeState.status !== "fallback-empty" ? (
-                <div className="flex items-start gap-3">
+                <div className="flex items-start ">
                   <div className={`rounded-[1.1rem] p-2 shadow-sm ${customRecipeHeroIconClasses}`}>
                     <CustomRecipeHeroIcon className="h-5 w-5" />
                   </div>
@@ -485,7 +486,7 @@ export default function RecipesSection({
                       {customRecipeHeroBadge}
                     </span>
                     <div className="space-y-1">
-                      <h2 className="text-xl font-black tracking-tight text-[#172033] sm:text-3xl lg:text-4xl">
+                      <h2 className="text-xl font-black tracking-tight text-eatrivo-black-primary sm:text-3xl lg:text-4xl">
                         {customRecipeHeroTitle}
                       </h2>
                       <p className="max-w-2xl text-sm text-gray-600 sm:text-[15px]">
@@ -675,15 +676,15 @@ export default function RecipesSection({
               className="relative flex flex-1 flex-col gap-4 px-4 pb-3 pt-5 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-eatrivo-purple/20 sm:gap-6 sm:px-7 sm:pb-4 sm:pt-7"
             >
               <div className="flex items-start justify-between gap-4">
-                <div className="max-w-[12rem] space-y-2 sm:max-w-[20rem] sm:space-y-3 lg:max-w-[24rem]">
+                <div className="min-w-0 flex-1 space-y-2 sm:space-y-3">
                   <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold tracking-[0.12em] text-emerald-700 sm:px-3 sm:py-1.5 sm:text-[11px]">
                     {t("basic.hero.badge")}
                   </span>
-                  <h2 className="text-2xl font-black tracking-tight text-balance text-[#172033] sm:text-4xl lg:text-5xl">
+                  <h2 className="text-2xl font-black tracking-tight text-[#172033] sm:text-4xl lg:text-5xl">
                     {activeRecipe.title}
                   </h2>
                 </div>
-                <div className="rounded-[1.1rem] border border-gray-200 bg-eatrivo-white-secondary/50 p-1.5 shadow-sm sm:rounded-[1.4rem] sm:p-2">
+                <div className="shrink-0 rounded-[1.1rem] border border-gray-200 bg-eatrivo-white-secondary/50 p-1.5 shadow-sm sm:rounded-[1.4rem] sm:p-2">
                   <CookingPot className="h-5 w-5 text-emerald-600 sm:h-8 sm:w-8 lg:h-10 lg:w-10" />
                 </div>
               </div>

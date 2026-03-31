@@ -1,4 +1,6 @@
-﻿import {
+﻿"use client";
+
+import {
   Card,
   CardContent,
   CardHeader,
@@ -26,6 +28,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type {
   UpdateEmailFormData,
   UpdateItem,
@@ -67,6 +70,9 @@ export default function EmailsTab({
   isSendingEmail,
   emailSendResult,
 }: EmailsTabProps) {
+  const t = useTranslations("admin.dashboard.emailsTab");
+  const tCommon = useTranslations("admin.dashboard.common");
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       {/* Left Column - Email Form */}
@@ -77,10 +83,10 @@ export default function EmailsTab({
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-eatrivo-purple/10 flex items-center justify-center text-eatrivo-purple">
                 <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              Odoslať Update Email
+              {t("title")}
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              Informujte používateľov o nových funkciách a vylepšeniach
+              {t("description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
@@ -89,7 +95,7 @@ export default function EmailsTab({
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b border-gray-100">
                   <Sparkles className="w-4 h-4 text-eatrivo-purple" />
-                  Základné informácie
+                  {t("sections.basicInfo")}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -97,11 +103,11 @@ export default function EmailsTab({
                       htmlFor="version"
                       className="mb-1.5 block text-xs sm:text-sm"
                     >
-                      Verzia *
+                      {t("fields.version.label")}
                     </Label>
                     <Input
                       id="version"
-                      placeholder="napr. 1.2.0"
+                      placeholder={t("fields.version.placeholder")}
                       value={emailFormData.version}
                       onChange={(e) =>
                         onEmailInputChange("version", e.target.value)
@@ -114,11 +120,11 @@ export default function EmailsTab({
                       htmlFor="updateTitle"
                       className="mb-1.5 block text-xs sm:text-sm"
                     >
-                      Názov aktualizácie *
+                      {t("fields.updateTitle.label")}
                     </Label>
                     <Input
                       id="updateTitle"
-                      placeholder="napr. Nové funkcie pre váš dashboard"
+                      placeholder={t("fields.updateTitle.placeholder")}
                       value={emailFormData.updateTitle}
                       onChange={(e) =>
                         onEmailInputChange("updateTitle", e.target.value)
@@ -132,11 +138,11 @@ export default function EmailsTab({
                     htmlFor="updateDescription"
                     className="mb-1.5 block text-xs sm:text-sm"
                   >
-                    Úvodný text *
+                    {t("fields.updateDescription.label")}
                   </Label>
                   <Textarea
                     id="updateDescription"
-                    placeholder="Krátky úvodný text pre email..."
+                    placeholder={t("fields.updateDescription.placeholder")}
                     value={emailFormData.updateDescription}
                     onChange={(e) =>
                       onEmailInputChange("updateDescription", e.target.value)
@@ -152,7 +158,7 @@ export default function EmailsTab({
                 <div className="flex items-center justify-between pb-2 border-b border-gray-100">
                   <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-eatrivo-purple" />
-                    Zoznam zmien
+                    {t("sections.changes")}
                   </h3>
                   <Button
                     type="button"
@@ -161,7 +167,7 @@ export default function EmailsTab({
                     className="h-8 text-xs bg-eatrivo-purple/10 text-eatrivo-purple hover:bg-eatrivo-purple hover:text-white"
                   >
                     <Plus className="w-3 h-3 mr-1" />
-                    Pridať
+                    {t("actions.add")}
                   </Button>
                 </div>
 
@@ -173,7 +179,7 @@ export default function EmailsTab({
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-gray-500">
-                          Zmena #{index + 1}
+                          {t("changeItem", { index: index + 1 })}
                         </span>
                         {emailFormData.updates.length > 1 && (
                           <Button
@@ -190,7 +196,7 @@ export default function EmailsTab({
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                           <Label className="mb-1 block text-xs text-gray-600">
-                            Typ
+                            {t("fields.changeType")}
                           </Label>
                           <Select
                             value={update.type}
@@ -205,19 +211,19 @@ export default function EmailsTab({
                               <SelectItem value="feature">
                                 <div className="flex items-center gap-2">
                                   <div className="w-2 h-2 rounded-full bg-blue-500" />
-                                  Novinka
+                                  {t("types.feature")}
                                 </div>
                               </SelectItem>
                               <SelectItem value="improvement">
                                 <div className="flex items-center gap-2">
                                   <div className="w-2 h-2 rounded-full bg-green-500" />
-                                  Vylepšenie
+                                  {t("types.improvement")}
                                 </div>
                               </SelectItem>
                               <SelectItem value="fix">
                                 <div className="flex items-center gap-2">
                                   <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                                  Oprava
+                                  {t("types.fix")}
                                 </div>
                               </SelectItem>
                             </SelectContent>
@@ -225,10 +231,10 @@ export default function EmailsTab({
                         </div>
                         <div className="sm:col-span-2">
                           <Label className="mb-1 block text-xs text-gray-600">
-                            Názov
+                            {t("fields.changeTitle")}
                           </Label>
                           <Input
-                            placeholder="napr. Sledovanie váhy"
+                            placeholder={t("fields.changeTitlePlaceholder")}
                             value={update.title}
                             onChange={(e) =>
                               onUpdateItemChange(index, "title", e.target.value)
@@ -239,10 +245,10 @@ export default function EmailsTab({
                       </div>
                       <div>
                         <Label className="mb-1 block text-xs text-gray-600">
-                          Popis
+                          {t("fields.changeDescription")}
                         </Label>
                         <Textarea
-                          placeholder="Stručný popis zmeny..."
+                          placeholder={t("fields.changeDescriptionPlaceholder")}
                           value={update.description}
                           onChange={(e) =>
                             onUpdateItemChange(
@@ -264,19 +270,19 @@ export default function EmailsTab({
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b border-gray-100">
                   <Send className="w-4 h-4 text-eatrivo-purple" />
-                  Test email
+                  {t("sections.testEmail")}
                 </h3>
                 <div>
                   <Label
                     htmlFor="testEmail"
                     className="mb-1.5 block text-xs sm:text-sm"
                   >
-                    Testovacia adresa
+                    {t("fields.testEmail.label")}
                   </Label>
                   <Input
                     id="testEmail"
                     type="email"
-                    placeholder="vas@email.com"
+                    placeholder={t("fields.testEmail.placeholder")}
                     value={emailFormData.testEmail}
                     onChange={(e) =>
                       onEmailInputChange("testEmail", e.target.value)
@@ -305,21 +311,21 @@ export default function EmailsTab({
                     )}
                     <div className="flex-1">
                       <h4 className={"text-sm font-semibold mb-1"}>
-                        {emailSendResult.success ? "Úspech" : "Chyba"}
+                        {emailSendResult.success ? t("result.successTitle") : t("result.errorTitle")}
                       </h4>
                       <p className={"text-sm"}>{emailSendResult.message}</p>
                       {emailSendResult.sent !== undefined && (
                         <p className="text-xs text-gray-600 mt-2">
-                          Odoslaných: {emailSendResult.sent}
+                          {t("result.sent", { count: emailSendResult.sent })}
                           {emailSendResult.failed !== undefined &&
-                            `, Zlyhalo: ${emailSendResult.failed}`}
+                            `, ${t("result.failed", { count: emailSendResult.failed })}`}
                         </p>
                       )}
                       {emailSendResult.errors &&
                         emailSendResult.errors.length > 0 && (
                           <div className="mt-2 space-y-1">
                             <p className="text-xs font-medium text-red-800">
-                              Chyby:
+                              {t("result.errors")}
                             </p>
                             <ul className="text-xs text-red-700 list-disc list-inside">
                               {emailSendResult.errors
@@ -345,7 +351,7 @@ export default function EmailsTab({
                     className="flex-1 bg-primary-foreground border-2 border-eatrivo-black-primary\80 text-eatrivo-black-primary"
                   >
                     <Send className="w-4 h-4 mr-2" />
-                    {isSendingEmail ? "Odosielam..." : "Odoslať test"}
+                    {isSendingEmail ? t("actions.sending") : t("actions.sendTest")}
                   </Button>
                   <Button
                     type="button"
@@ -354,7 +360,7 @@ export default function EmailsTab({
                     className="flex-1 bg-eatrivo-purple hover:bg-eatrivo-purple/90"
                   >
                     <Mail className="w-4 h-4 mr-2" />
-                    {isSendingEmail ? "Odosielam..." : "Odoslať všetkým"}
+                    {isSendingEmail ? t("actions.sending") : t("actions.sendAll")}
                   </Button>
                 </div>
               </div>
@@ -371,7 +377,7 @@ export default function EmailsTab({
           <CardHeader className="p-4 sm:p-6 pb-2">
             <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
               <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
-              Email štatistiky
+              {t("stats.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-2">
@@ -382,14 +388,14 @@ export default function EmailsTab({
                     {users.length}
                   </p>
                   <p className="text-xs text-white/80">
-                    Celkový počet používateľov
+                    {t("stats.totalUsers")}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-semibold text-white">
                     {users.filter((u) => u.email).length}
                   </p>
-                  <p className="text-xs text-white/80">S emailom</p>
+                  <p className="text-xs text-white/80">{t("stats.withEmail")}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 pt-3 border-t border-white/20">
@@ -397,13 +403,13 @@ export default function EmailsTab({
                   <p className="text-lg font-bold text-white">
                     {users.filter((u) => u.membership === "premium").length}
                   </p>
-                  <p className="text-xs text-white/80">Premium</p>
+                  <p className="text-xs text-white/80">{tCommon("membership.plus")}</p>
                 </div>
                 <div>
                   <p className="text-lg font-bold text-white">
                     {users.filter((u) => u.membership === "basic").length}
                   </p>
-                  <p className="text-xs text-white/80">Basic</p>
+                  <p className="text-xs text-white/80">{tCommon("membership.basic")}</p>
                 </div>
               </div>
             </div>
@@ -414,7 +420,7 @@ export default function EmailsTab({
         <Card className="border-none shadow-md bg-white hidden sm:block">
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-sm text-eatrivo-black-primary">
-              Tipy pre emaily
+              {t("tips.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-2 space-y-3 text-xs text-gray-500">
@@ -422,19 +428,19 @@ export default function EmailsTab({
               <div className="w-6 h-6 rounded-full bg-blue-50 flex-shrink-0 flex items-center justify-center text-blue-500 text-xs">
                 1
               </div>
-              <p>Najprv odošlite test na svoju adresu</p>
+              <p>{t("tips.first")}</p>
             </div>
             <div className="flex gap-2">
               <div className="w-6 h-6 rounded-full bg-green-50 flex-shrink-0 flex items-center justify-center text-green-500 text-xs">
                 2
               </div>
-              <p>Používajte prehľadný zoznam zmien</p>
+              <p>{t("tips.second")}</p>
             </div>
             <div className="flex gap-2">
               <div className="w-6 h-6 rounded-full bg-purple-50 flex-shrink-0 flex items-center justify-center text-purple-500 text-xs">
                 3
               </div>
-              <p>Rozdeľte zmeny podľa typu (novinka/vylepšenie/oprava)</p>
+              <p>{t("tips.third")}</p>
             </div>
           </CardContent>
         </Card>

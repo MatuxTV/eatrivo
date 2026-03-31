@@ -384,7 +384,27 @@ This is the canonical machine key used by deterministic matching.
 - Remove all characters except `a-z`, `0-9`, and `-`.
 - Collapse repeated hyphens.
 - Singularize nouns before slugifying.
+- `ingredient_key` must represent either:
+  - the exact canonical pantry identity of the ingredient, or
+  - a broader pantry family key that the exact ingredient clearly belongs to.
+- If no confidently known broader pantry family exists, prefer the exact canonical key.
+- Do not broaden across sibling variants, near-synonyms, culinary substitutes, or recipe-adjacent concepts.
+- Do not encode preparation state, packaging, marketing adjectives, or recipe-role wording in `ingredient_key` unless that distinction is the core pantry identity.
 - If a reliable identity cannot be determined, use `null` and flag the recipe for review.
+
+**Additional compatibility constraints:**
+
+- `ingredient_key` must be conservative. When uncertain, choose the exact ingredient identity instead of inventing a broader parent.
+- Do not use `ingredient_key` as an approximate category guess for the exact ingredient.
+- Do not pick a broader key only because both ingredients appear in the same culinary family or recipe context.
+
+**Forbidden patterns:**
+
+- sibling substitution such as `ingredient_key: "cream"` for `ingredient_specific_key: "mascarpone"`
+- sibling substitution such as `ingredient_key: "biscuit"` for `ingredient_specific_key: "ladyfinger"`
+- cross-family broadening such as `ingredient_key: "dairy"` for `ingredient_specific_key: "mascarpone"`
+- cross-family broadening such as `ingredient_key: "alcohol"` for `ingredient_specific_key: "amaretto"`
+- semantic mismatch such as `ingredient_key: "cocoa"` for `ingredient_specific_key: "coffee"`
 
 **Examples:**
 
@@ -406,8 +426,33 @@ This is the optional exact-variant machine key used for higher-precision pantry 
 - Use it when the ingredient identity is confidently more specific than the broader `ingredient_key`.
 - It must be equal to or more specific than `ingredient_key`, never broader.
 - It must use the same canonical slug style as `ingredient_key`.
+- If both keys are non-null, `ingredient_specific_key` must be identical to `ingredient_key` or a true descendant variant of it.
+- The pair must be valid under the importer hierarchy check: `pantryKeySatisfiesRecipeKey(ingredient_specific_key, ingredient_key) === true`.
 - If the exact variant is not confidently known, use `null`.
 - If the ingredient is already generic and there is no narrower useful distinction, it may equal `ingredient_key`.
+
+**Decision rule:**
+
+- Use identical keys when the ingredient is already specific enough.
+- Use broader + narrower only when the narrower key is a true member of the broader pantry family.
+- If you cannot justify the hierarchy confidently, do one of these instead:
+  - set both keys equal, or
+  - keep `ingredient_key` as the exact key and set `ingredient_specific_key` to `null`.
+
+**Never use `ingredient_specific_key` for:**
+
+- synonyms in different wording
+- packaging form only
+- recipe-role labels
+- preparation notes
+- brand-like or marketing distinctions
+- sibling ingredients in the same broad category
+
+**Preferred fallback:**
+
+- When unsure, prefer `ingredient_key = exact canonical key`.
+- Then set `ingredient_specific_key` to the same exact key or to `null`.
+- This is safer than inventing a broad+narrow pair that may fail importer validation.
 
 **Examples:**
 
@@ -417,6 +462,14 @@ This is the optional exact-variant machine key used for higher-precision pantry 
 | `chicken` | `chicken` | `chicken-breast` |
 | `olive oil` | `olive-oil` | `extra-virgin-olive-oil` |
 | `egg` | `egg` | `egg` |
+
+**Forbidden examples:**
+
+- `ingredient_key: "cream"` + `ingredient_specific_key: "mascarpone"`
+- `ingredient_key: "biscuit"` + `ingredient_specific_key: "ladyfinger"`
+- `ingredient_key: "dairy"` + `ingredient_specific_key: "mascarpone"`
+- `ingredient_key: "alcohol"` + `ingredient_specific_key: "amaretto"`
+- `ingredient_key: "cocoa"` + `ingredient_specific_key: "coffee"`
 
 ---
 
@@ -504,7 +557,8 @@ Apply these transformations consistently:
 - Singularize ingredient identity to populate `canonical_name`.
 - Normalize each localized `display_name` to the locale-appropriate base ingredient form with no embedded quantity, unit, or parenthetical gloss.
 - Slugify `ingredient_key` from the `canonical_name`.
-- Derive `ingredient_specific_key` only when the exact variant is confidently known and useful for pantry matching.
+- Derive `ingredient_specific_key` only when the exact variant is confidently known, useful for pantry matching, and remains a validated descendant of `ingredient_key`.
+- When the broader/narrower hierarchy is uncertain, prefer the exact key for `ingredient_key` and set `ingredient_specific_key` to the same value or `null`.
 - Generate locale translations from the same canonical ingredient and recipe identity.
 
 ## Forbidden output patterns
@@ -545,6 +599,8 @@ Before returning the final JSON, verify all of the following:
 - [ ] `sort_order` is continuous from `0`.
 - [ ] `ingredient_key` values are lowercase slug strings or `null`.
 - [ ] `ingredient_specific_key` values are lowercase slug strings or `null`, and never broader than `ingredient_key`.
+- [ ] For every ingredient where both keys are non-null, `ingredient_specific_key` is either identical to `ingredient_key` or a validated descendant that would satisfy the importer hierarchy.
+- [ ] When the broader/narrower relationship is uncertain, the exact key is used for `ingredient_key` and `ingredient_specific_key` is set to the same value or `null`.
 - [ ] Quantities are numbers or `null`, never strings.
 - [ ] Every non-null unit is one of `g`, `kg`, `ml`, `dl`, `tbsp`, `tsp`, or `pc`.
 - [ ] Any source units outside the allowed set were approximately converted or replaced with `null` when confidence was too low.

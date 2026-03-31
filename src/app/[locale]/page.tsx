@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 
-import { Navbar } from "@/components/landing/Navbar";
-import { HeroSection } from "@/components/landing/HeroSection";
-import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
-import { MeetRivo } from "@/components/landing/MeetRivo";
-import { AppShowcase } from "@/components/landing/AppShowcase";
-import { PainSolution } from "@/components/landing/PainSolution";
-import { FAQ } from "@/components/landing/FAQ";
-import { DownloadCTA } from "@/components/landing/DownloadCTA";
-import { Footer } from "@/components/landing/Footer";
 import { isLocale, type Locale } from "@/i18n/routing";
-import { Pricing } from "@/components/landing/Pricing";
-import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
+import { auth } from "@/../auth";
+import { WelcomeAuthScreen } from "@/components/auth/WelcomeAuthScreen";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -21,7 +13,7 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale: localeParam } = await params;
   const locale: Locale = isLocale(localeParam) ? localeParam : "sk";
-  const t = await getTranslations({ locale, namespace: "landing" });
+  const t = await getTranslations({ locale, namespace: "auth.welcome" });
 
   return {
     title: t("metaTitle"),
@@ -32,25 +24,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function Home({ params }: PageProps) {
   const { locale: localeParam } = await params;
   const locale: Locale = isLocale(localeParam) ? localeParam : "sk";
+  const session = await auth();
 
-  return (
-    <div className="min-h-screen bg-eatrivo-white-primary selection:bg-eatrivo-purple selection:text-white">
-      <TrackPageEvent
-        eventName="landing_viewed"
-        metadata={{ locale, surface: "landing", entrypoint: "direct" }}
-      />
-      <Navbar />
-      <main>
-        <HeroSection />
-        <MeetRivo />
-        <HowItWorksSection />
-        <AppShowcase />
-        <Pricing />
-        <PainSolution />
-        <FAQ />
-        <DownloadCTA />
-      </main>
-      <Footer />
-    </div>
-  );
+  if (session?.user) {
+    redirect("/home");
+  }
+
+  return <WelcomeAuthScreen locale={locale} surface="locale_root" />;
 }

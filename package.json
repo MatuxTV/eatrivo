@@ -10,7 +10,8 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:merge": "tsx scripts/merge-db.ts",
-    "db:import:recipes": "tsx scripts/import-recipes.ts"
+    "db:import:recipes": "tsx scripts/import-recipes.ts",
+    "db:import:recipe-url": "tsx scripts/import-recipe-url.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",

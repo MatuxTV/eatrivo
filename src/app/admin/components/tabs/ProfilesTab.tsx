@@ -1,4 +1,6 @@
-﻿import {
+﻿"use client";
+
+import {
   Card,
   CardContent,
   CardHeader,
@@ -13,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
 import {
   User,
   UserCircle,
@@ -48,6 +51,23 @@ export default function ProfilesTab({
   userInfo,
   isLoadingUserInfo,
 }: ProfilesTabProps) {
+  const t = useTranslations("admin.dashboard.profilesTab");
+  const tCommon = useTranslations("admin.dashboard.common");
+
+  const getMembershipLabel = (membership?: string | null) => {
+    const normalizedMembership = membership?.toLowerCase();
+
+    if (normalizedMembership === "premium") {
+      return tCommon("membership.plus");
+    }
+
+    if (normalizedMembership === "trainer") {
+      return tCommon("membership.trainer");
+    }
+
+    return tCommon("membership.basic");
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       {/* Left Column - User Selection */}
@@ -58,10 +78,10 @@ export default function ProfilesTab({
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-eatrivo-purple/10 flex items-center justify-center text-eatrivo-purple">
                 <UserCircle className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              Profil používateľa
+              {t("title")}
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              Zobrazenie detailných informácií o používateľovi
+              {t("description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
@@ -73,17 +93,17 @@ export default function ProfilesTab({
                   className="text-sm font-semibold text-gray-700 flex items-center gap-2"
                 >
                   <User className="w-4 h-4" />
-                  Vybrať používateľa
+                  {t("selectUser")}
                 </Label>
                 <Select
                   value={selectedUserForProfile}
                   onValueChange={onUserChange}
                 >
                   <SelectTrigger className="h-11 border-gray-200 focus:ring-eatrivo-purple focus:border-eatrivo-purple">
-                    <SelectValue placeholder="Vyberte používateľa..." />
+                    <SelectValue placeholder={t("selectPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0">-- Vyberte používateľa --</SelectItem>
+                    <SelectItem value="0">{t("selectOption")}</SelectItem>
                     {users
                       .filter((user) => user.profileId)
                       .sort((a, b) =>
@@ -104,7 +124,7 @@ export default function ProfilesTab({
                               {user.email}
                             </span>
                             <span className="text-[10px] px-2 py-0.5 rounded-full font-medium">
-                              {user.membership || "basic"}
+                              {getMembershipLabel(user.membership)}
                             </span>
                           </div>
                         </SelectItem>
@@ -118,7 +138,7 @@ export default function ProfilesTab({
                 <div className="flex items-center justify-center py-12">
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-8 h-8 border-3 border-eatrivo-purple/30 border-t-eatrivo-purple rounded-full animate-spin" />
-                    <p className="text-sm text-gray-500">Načítavam údaje...</p>
+                    <p className="text-sm text-gray-500">{t("loading")}</p>
                   </div>
                 </div>
               )}
@@ -130,10 +150,10 @@ export default function ProfilesTab({
                     <UserCircle className="w-8 h-8 text-gray-400" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    Žiadny používateľ nevybratý
+                    {t("emptySelection.title")}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    Vyberte používateľa pre zobrazenie jeho profilu
+                    {t("emptySelection.description")}
                   </p>
                 </div>
               )}
@@ -145,29 +165,29 @@ export default function ProfilesTab({
                   <div className="space-y-4">
                     <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
                       <UserCircle className="w-5 h-5 text-eatrivo-purple" />
-                      Základné údaje
+                      {t("sections.basicInfo")}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="p-4 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <User className="w-4 h-4 text-gray-500" />
                           <p className="text-xs font-medium text-gray-500">
-                            Pohlavie
+                            {t("fields.sex")}
                           </p>
                         </div>
                         <p className="text-base font-semibold text-gray-900">
                           {userInfo.sex === "man"
-                            ? "Muž"
+                            ? tCommon("sex.man")
                             : userInfo.sex === "woman"
-                              ? "Žena"
-                              : "Neuvedené"}
+                              ? tCommon("sex.woman")
+                              : t("notSpecified")}
                         </p>
                       </div>
                       <div className="p-4 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <Calendar className="w-4 h-4 text-gray-500" />
                           <p className="text-xs font-medium text-gray-500">
-                            Vek
+                            {t("fields.age")}
                           </p>
                         </div>
                         <p className="text-base font-semibold text-gray-900">
@@ -189,34 +209,34 @@ export default function ProfilesTab({
                                   age--;
                                 }
                                 return age;
-                              })()} rokov`
-                            : "Neuvedené"}
+                              })()} ${t("yearsSuffix")}`
+                            : t("notSpecified")}
                         </p>
                       </div>
                       <div className="p-4 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <Activity className="w-4 h-4 text-gray-500" />
                           <p className="text-xs font-medium text-gray-500">
-                            Výška
+                            {t("fields.height")}
                           </p>
                         </div>
                         <p className="text-base font-semibold text-gray-900">
                           {userInfo.height
                             ? `${userInfo.height} cm`
-                            : "Neuvedené"}
+                            : t("notSpecified")}
                         </p>
                       </div>
                       <div className="p-4 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <Scale className="w-4 h-4 text-gray-500" />
                           <p className="text-xs font-medium text-gray-500">
-                            Váha
+                            {t("fields.weight")}
                           </p>
                         </div>
                         <p className="text-base font-semibold text-gray-900">
                           {userInfo.weight
                             ? `${userInfo.weight} kg`
-                            : "Neuvedené"}
+                            : t("notSpecified")}
                         </p>
                       </div>
                     </div>
@@ -226,30 +246,30 @@ export default function ProfilesTab({
                   <div className="space-y-4">
                     <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
                       <Target className="w-5 h-5 text-eatrivo-purple" />
-                      Ciele a aktivita
+                      {t("sections.goals")}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="p-4 bg-blue-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <Target className="w-4 h-4 text-blue-500" />
                           <p className="text-xs font-medium text-blue-700">
-                            Cieľ
+                            {t("fields.goal")}
                           </p>
                         </div>
                         <p className="text-base font-semibold text-gray-900 capitalize">
-                          {userInfo.goal || "Neuvedené"}
+                          {userInfo.goal || t("notSpecified")}
                         </p>
                       </div>
                       <div className="p-4 bg-green-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <Activity className="w-4 h-4 text-green-500" />
                           <p className="text-xs font-medium text-green-700">
-                            Úroveň aktivity
+                            {t("fields.activityLevel")}
                           </p>
                         </div>
                         <p className="text-base font-semibold text-gray-900 capitalize">
                           {userInfo.activity_level?.replace(/_/g, " ") ||
-                            "Neuvedené"}
+                            t("notSpecified")}
                         </p>
                       </div>
                     </div>
@@ -259,51 +279,51 @@ export default function ProfilesTab({
                   <div className="space-y-4">
                     <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
                       <Heart className="w-5 h-5 text-eatrivo-purple" />
-                      Stravovacie preferencie
+                      {t("sections.preferences")}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="p-4 bg-purple-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <Heart className="w-4 h-4 text-purple-500" />
                           <p className="text-xs font-medium text-purple-700">
-                            Diéta
+                            {t("fields.diet")}
                           </p>
                         </div>
                         <p className="text-base font-semibold text-gray-900 capitalize">
-                          {userInfo.diet_preferences || "Neuvedené"}
+                          {userInfo.diet_preferences || t("notSpecified")}
                         </p>
                       </div>
                       <div className="p-4 bg-orange-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <Clock className="w-4 h-4 text-orange-500" />
                           <p className="text-xs font-medium text-orange-700">
-                            Čas na varenie
+                            {t("fields.cookingTime")}
                           </p>
                         </div>
                         <p className="text-base font-semibold text-gray-900 capitalize">
-                          {userInfo.cooking_time_pref || "Neuvedené"}
+                          {userInfo.cooking_time_pref || t("notSpecified")}
                         </p>
                       </div>
                       <div className="p-4 bg-pink-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <DollarSign className="w-4 h-4 text-pink-500" />
                           <p className="text-xs font-medium text-pink-700">
-                            Rozpočet
+                            {t("fields.budget")}
                           </p>
                         </div>
                         <p className="text-base font-semibold text-gray-900 capitalize">
-                          {userInfo.budget_preference || "Neuvedené"}
+                          {userInfo.budget_preference || t("notSpecified")}
                         </p>
                       </div>
                       <div className="p-4 bg-cyan-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <User className="w-4 h-4 text-cyan-500" />
                           <p className="text-xs font-medium text-cyan-700">
-                            Jedál denne
+                            {t("fields.mealsPerDay")}
                           </p>
                         </div>
                         <p className="text-base font-semibold text-gray-900">
-                          {userInfo.meal_per_day || "Neuvedené"}
+                          {userInfo.meal_per_day || t("notSpecified")}
                         </p>
                       </div>
                     </div>
@@ -313,7 +333,7 @@ export default function ProfilesTab({
                   <div className="space-y-4">
                     <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
                       <ThumbsUp className="w-5 h-5 text-eatrivo-purple" />
-                      Preferencie jedál
+                      {t("sections.foodPreferences")}
                     </h3>
                     <div className="space-y-3">
                       {userInfo.likes && (
@@ -321,7 +341,7 @@ export default function ProfilesTab({
                           <div className="flex items-center gap-2 mb-2">
                             <ThumbsUp className="w-4 h-4 text-green-600" />
                             <p className="text-sm font-semibold text-green-900">
-                              Obľúbené jedlá
+                              {t("fields.likes")}
                             </p>
                           </div>
                           <p className="text-sm text-gray-700 whitespace-pre-wrap">
@@ -334,7 +354,7 @@ export default function ProfilesTab({
                           <div className="flex items-center gap-2 mb-2">
                             <ThumbsDown className="w-4 h-4 text-red-600" />
                             <p className="text-sm font-semibold text-red-900">
-                              Neobľúbené jedlá
+                              {t("fields.dislikes")}
                             </p>
                           </div>
                           <p className="text-sm text-gray-700 whitespace-pre-wrap">
@@ -347,7 +367,7 @@ export default function ProfilesTab({
                           <div className="flex items-center gap-2 mb-2">
                             <AlertTriangle className="w-4 h-4 text-yellow-600" />
                             <p className="text-sm font-semibold text-yellow-900">
-                              Alergie
+                              {t("fields.allergies")}
                             </p>
                           </div>
                           <p className="text-sm text-gray-700 whitespace-pre-wrap">
@@ -367,10 +387,10 @@ export default function ProfilesTab({
                     <AlertCircle className="w-8 h-8 text-orange-500" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    Žiadne údaje
+                    {t("noData.title")}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    Tento používateľ nemá vyplnené nutričné informácie
+                    {t("noData.description")}
                   </p>
                 </div>
               )}
@@ -386,7 +406,7 @@ export default function ProfilesTab({
           <CardHeader className="p-4 sm:p-6 pb-2">
             <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
               <UserCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-              Štatistiky profilov
+              {t("stats.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-2">
@@ -396,7 +416,7 @@ export default function ProfilesTab({
                   <p className="text-2xl sm:text-3xl font-bold text-white">
                     {users.filter((u) => u.isProfileComplete).length}
                   </p>
-                  <p className="text-xs text-white/80">Kompletných profilov</p>
+                  <p className="text-xs text-white/80">{t("stats.completedProfiles")}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-semibold text-white">
@@ -409,7 +429,7 @@ export default function ProfilesTab({
                       : 0}
                     %
                   </p>
-                  <p className="text-xs text-white/80">Úspešnosť</p>
+                  <p className="text-xs text-white/80">{t("stats.successRate")}</p>
                 </div>
               </div>
               <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">

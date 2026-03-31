@@ -7,7 +7,6 @@ test("resolveIngredientDisplayName prefers localized displayName", () => {
   assert.equal(
     resolveIngredientDisplayName(
       {
-        locale: "sk",
         displayName: "tofu",
       },
       "firm tofu",
@@ -20,7 +19,6 @@ test("resolveIngredientDisplayName keeps normalized upstream displayName as-is",
   assert.equal(
     resolveIngredientDisplayName(
       {
-        locale: "sk",
         displayName: "čedar",
       },
       "cheddar",

@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AlertTriangle,
-  CakeSlice,
   CheckCircle2,
   ChevronDown,
   Loader2,
@@ -31,6 +30,7 @@ import { guessFoodCategory } from "@/lib/units";
 import { cn } from "@/lib/utils";
 import AddPantryItemModal from "./AddPantryItemModal";
 import PantryItemRow from "./PantryItemRow";
+import type { InitialPantrySectionData } from "@/app/home/types/section-data";
 
 type FilterKey = "all" | "restock" | "expiring" | "manual" | "shopping_list";
 
@@ -107,45 +107,9 @@ function matchesRestockIdentity(restockItem: PantryRestockItem, pantryItem: Pant
   return normalizeLookupValue(restockItem.name) === normalizeLookupValue(pantryItem.name);
 }
 
-function getQuantityDeltaForUnit(unit: string | null): number {
-  switch ((unit ?? "").toLowerCase()) {
-    case "g":
-    case "ml":
-      return 50;
-    case "kg":
-    case "l":
-      return 0.1;
-    case "dl":
-    case "tsp":
-    case "tbsp":
-      return 0.5;
-    case "ks":
-    default:
-      return 1;
-  }
-}
-
 function PantryLoadingState() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-24">
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-3">
-            <Skeleton className="h-9 w-48 rounded-xl bg-eatrivo-purple/10" />
-            <div className="flex gap-2">
-              <Skeleton className="h-7 w-20 rounded-full bg-gray-200" />
-              <Skeleton className="h-7 w-24 rounded-full bg-gray-200" />
-            </div>
-            <Skeleton className="h-4 w-72 rounded-full bg-gray-200" />
-          </div>
-
-          <div className="flex gap-2">
-            <Skeleton className="h-11 w-28 rounded-full bg-gray-200" />
-            <Skeleton className="h-11 w-32 rounded-full bg-eatrivo-purple/10" />
-          </div>
-        </div>
-      </div>
-
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 space-y-3">
         <Skeleton className="h-6 w-36 rounded-full bg-gray-200" />
         {[...Array(2)].map((_, index) => (
@@ -154,7 +118,18 @@ function PantryLoadingState() {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 space-y-4">
-        <Skeleton className="h-11 rounded-2xl bg-gray-100" />
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-40 rounded-full bg-gray-200" />
+            <Skeleton className="h-4 w-64 rounded-full bg-gray-100" />
+          </div>
+          <div className="w-full max-w-[18rem]">
+            <div className="grid grid-cols-2 gap-2">
+              <Skeleton className="h-11 rounded-xl bg-gray-100" />
+              <Skeleton className="h-11 rounded-xl bg-gray-100" />
+            </div>
+          </div>
+        </div>
         <div className="flex gap-2 overflow-hidden">
           {[...Array(4)].map((_, index) => (
             <Skeleton key={index} className="h-10 w-24 rounded-full bg-gray-100" />
@@ -194,10 +169,12 @@ function SectionStateCard({
 
 interface PantrySectionProps {
   onPantryChanged?: () => void;
+  initialData?: InitialPantrySectionData;
 }
 
 export default function PantrySection({
   onPantryChanged,
+  initialData,
 }: PantrySectionProps = {}) {
   const t = useTranslations("pantry");
   const locale = useLocale();
@@ -215,13 +192,16 @@ export default function PantrySection({
     addItem,
     addItemsBatch,
     updateItem,
-    stepItemQuantity,
     deleteItem,
     addItemToShoppingList,
     toggleRecurringForItem,
     confirmDrafts,
     discardDrafts
-  } = usePantry();
+  } = usePantry({
+    initialItems: initialData?.items,
+    initialRestockItems: initialData?.restockItems,
+    initialPendingDrafts: initialData?.pendingDrafts,
+  });
 
   const [isMounted, setIsMounted] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -229,7 +209,6 @@ export default function PantrySection({
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
-  const [pendingQuantityId, setPendingQuantityId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [pendingRecurringId, setPendingRecurringId] = useState<string | null>(null);
   const [pendingAddPackageId, setPendingAddPackageId] = useState<string | null>(null);
@@ -258,6 +237,11 @@ export default function PantrySection({
       other: t("categories.other"),
     }),
     [t],
+  );
+
+  const categoryOptions = useMemo(
+    () => Object.entries(categoryLabels).map(([value, label]) => ({ value, label })),
+    [categoryLabels],
   );
 
   const recurringLookup = useMemo(() => {
@@ -370,30 +354,6 @@ export default function PantrySection({
     }
   }
 
-  async function handleQuantityChange(
-    item: PantryItem,
-    operation: "increment" | "decrement",
-  ) {
-    if (pendingQuantityId) {
-      return;
-    }
-
-    setPendingQuantityId(item.id);
-    try {
-      const success = await stepItemQuantity(
-        item.id,
-        operation,
-        getQuantityDeltaForUnit(item.unit),
-      );
-
-      if (success) {
-        triggerHaptic("light");
-      }
-    } finally {
-      setPendingQuantityId(null);
-    }
-  }
-
   async function handleDeleteItem(itemId: string) {
     setPendingDeleteId(itemId);
     try {
@@ -443,7 +403,13 @@ export default function PantrySection({
 
   async function handleItemEdit(
     itemId: string,
-    updates: { quantity: number | null; unit: string | null },
+    updates: {
+      quantity: number | null;
+      unit: string | null;
+      category: string | null;
+      trackingMode: "quantity" | "availability";
+      inStock?: boolean;
+    },
   ): Promise<boolean> {
     const success = await updateItem(itemId, updates);
     if (success) {
@@ -451,17 +417,6 @@ export default function PantrySection({
     }
 
     return success;
-  }
-
-  async function handleAvailabilityToggle(item: PantryItem): Promise<void> {
-    const success = await updateItem(item.id, {
-      trackingMode: "availability",
-      inStock: !item.inStock,
-    });
-
-    if (success) {
-      triggerHaptic("medium");
-    }
   }
 
   function clearFilters() {
@@ -498,81 +453,6 @@ export default function PantrySection({
           {...(shouldReduceMotion ? {} : fadeIn)}
           className="max-w-5xl mx-auto space-y-6 pb-24"
         >
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 md:p-5">
-            <div className="flex items-stretch justify-between gap-3 md:gap-4">
-              <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="rounded-lg bg-eatrivo-purple/10 p-1.5 md:p-2">
-                      <CakeSlice className="h-4 w-4 text-eatrivo-purple md:h-5 md:w-5" />
-                    </div>
-
-                    <h1 className="text-lg font-bold text-gray-900 md:text-3xl">
-                      {t("title")}
-                    </h1>
-                  </div>
-
-                  <p className="max-w-[14rem] text-xs leading-5 text-gray-600 md:max-w-2xl md:text-sm">
-                    {headerSubtitle}
-                  </p>
-                </div>
-
-                <div>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      triggerHaptic("light");
-                      setIsAddModalOpen(true);
-                    }}
-                    className="h-9 rounded-full bg-eatrivo-purple px-4 text-sm text-white hover:bg-eatrivo-purple/90 md:h-10 md:px-6"
-                  >
-                    <Plus className="mr-1.5 h-4 w-4" />
-                    {t("add_item")}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid w-[160px] grid-cols-2 gap-2 self-start md:w-auto md:min-w-[248px] md:gap-3">
-                <div className="rounded-xl border border-eatrivo-purple/15 bg-eatrivo-purple/5 px-3 py-2 md:rounded-2xl md:px-4 md:py-4">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-gray-500 md:text-[11px] md:tracking-[0.18em]">
-                    {t("summary_inventory")}
-                  </p>
-                  <div className="mt-2 flex items-end gap-1.5 md:mt-3 md:gap-2">
-                    <Package className="h-3.5 w-3.5 text-eatrivo-purple md:h-4 md:w-4" />
-                    <span className="text-lg font-bold text-gray-900 md:text-2xl">{items.length}</span>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-eatrivo-red/15 bg-eatrivo-red/5 px-3 py-2 md:rounded-2xl md:px-4 md:py-4">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-gray-500 md:text-[11px] md:tracking-[0.18em]">
-                    {t("summary_expiring")}
-                  </p>
-                  <div className="mt-2 flex items-end gap-1.5 md:mt-3 md:gap-2">
-                    <AlertTriangle className="h-3.5 w-3.5 text-eatrivo-red md:h-4 md:w-4" />
-                    <span className="text-lg font-bold text-gray-900 md:text-2xl">{expiringItems.length}</span>
-                  </div>
-                </div>
-
-                <Button
-                  type="button"
-                  className="col-span-2 h-11 w-full rounded-xl border border-eatrivo-purple/60 bg-eatrivo-white-primary px-3 text-sm font-semibold text-gray-800 shadow-sm  md:h-12 md:rounded-2xl"
-                >
-                  <span className="flex w-full items-center justify-center gap-2">
-                    <span>{t("scan_bill")}</span>
-                    <Image
-                      src="/icons/eatrivo_plus_icon.svg"
-                      alt={t("scan_bill")}
-                      width={24}
-                      height={24}
-                      className="h-5 w-5 object-contain"
-                    />
-                  </span>
-                </Button>
-
-              </div>
-            </div>
-          </div>
-
           <AnimatePresence mode="wait" initial={false}>
             {pendingDrafts.length > 0 ? (
               <motion.section
@@ -641,15 +521,44 @@ export default function PantrySection({
           </AnimatePresence>
 
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 space-y-6">
-            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-              <div>
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div className="space-y-1.5">
                 <h2 className="text-xl font-bold text-gray-900">{t("inventory_title")}</h2>
                 <p className="text-sm text-gray-600">{t("inventory_description")}</p>
+                <p className="text-xs font-medium text-gray-500">{headerSubtitle}</p>
               </div>
 
-              <Badge className="rounded-full border-transparent bg-eatrivo-purple/10 text-eatrivo-purple">
-                {filteredItems.length}
-              </Badge>
+              <div className="w-full max-w-[18rem] md:w-[18rem]">
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic("light");
+                      setIsAddModalOpen(true);
+                    }}
+                    className="h-11 rounded-xl bg-eatrivo-purple px-4 text-sm font-semibold text-white hover:bg-eatrivo-purple/90"
+                  >
+                    <Plus className="mr-1.5 h-4 w-4" />
+                    {t("add_item")}
+                  </Button>
+
+                  {/* <Button
+                    type="button"
+                    className="h-11 rounded-xl border border-eatrivo-purple/60 bg-eatrivo-white-primary px-3 text-sm font-semibold text-gray-800 shadow-sm"
+                  >
+                    <span className="flex w-full items-center justify-center gap-2">
+                      <span>{t("scan_bill")}</span>
+                      <Image
+                        src="/icons/eatrivo_plus_icon.svg"
+                        alt={t("scan_bill")}
+                        width={24}
+                        height={24}
+                        className="h-5 w-5 object-contain"
+                      />
+                    </span>
+                  </Button> */}
+                </div>
+              </div>
             </div>
 
             {error ? (
@@ -767,11 +676,14 @@ export default function PantrySection({
                                   item={item}
                                   locale={locale}
                                   categoryLabel={categoryLabel}
+                                  categoryValue={item.category ?? guessFoodCategory(item.name)}
+                                  categoryFieldLabel={t("field_category")}
+                                  categoryOptions={categoryOptions}
                                   expiryLabel={formatExpiry(item.expiryDate, locale)}
                                   isExpiring={isExpiringSoon(item.expiryDate)}
                                   isLowStock={item.lowStock}
                                   isRecurring={Boolean(recurringItem?.isActive)}
-                                  isPendingQuantity={pendingQuantityId === item.id}
+                                  isPendingQuantity={false}
                                   isPendingDelete={pendingDeleteId === item.id}
                                   isPendingRecurring={pendingRecurringId === item.id}
                                   sourceLabel={
@@ -793,11 +705,11 @@ export default function PantrySection({
                                   unitPlaceholder={t("field_unit")}
                                   quantityCaption={t("field_quantity")}
                                   availabilityCaption={t("field_availability")}
+                                  trackingModeToggleLabel={t("tracking_mode_toggle_label")}
+                                  trackingModeHelpText={t("tracking_mode_toggle_help")}
                                   availableLabel={t("availability_in_stock")}
                                   unavailableLabel={t("availability_out_of_stock")}
                                   toggleAvailabilityLabel={t("toggle_availability")}
-                                  decreaseLabel={t("aria_decrease")}
-                                  increaseLabel={t("aria_increase")}
                                   deleteLabel={t("aria_delete")}
                                   addPackageLabel={t("row_add_package_label")}
                                   addPackageCtaLabel={t("row_add_package")}
@@ -805,11 +717,8 @@ export default function PantrySection({
                                   addPackageReadyLabel={t("row_add_package_again")}
                                   showAddPackageAction={item.supportsRestockPackage}
                                   isPendingAddPackage={pendingAddPackageId === item.id}
-                                  onIncrease={() => void handleQuantityChange(item, "increment")}
-                                  onDecrease={() => void handleQuantityChange(item, "decrement")}
                                   onDelete={() => void handleDeleteItem(item.id)}
                                   onSaveEdit={(updates) => handleItemEdit(item.id, updates)}
-                                  onToggleAvailability={() => void handleAvailabilityToggle(item)}
                                   onToggleRecurring={() =>
                                     void handleToggleRecurring(
                                       item,

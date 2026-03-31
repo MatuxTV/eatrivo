@@ -1,127 +1,126 @@
 {
   "recipes": [
-   
-    
-   {
-      "external_key": "dinner-easy-butter-chicken",
+    {
+      "external_key": "dessert-mango-crepe-cake",
       "default_locale": "sk",
-      "category_key": "dinner",
+      "category_key": "dessert",
       "diet_tags": [
-        "high-protein"
+        "vegetarian"
       ],
       "restriction_flags": [
         "contains-dairy",
-        "contains-nuts"
+        "contains-eggs",
+        "contains-gluten"
       ],
-      "servings": 4,
-      "prep_time_min": 15,
-      "total_time_min": 50,
+      "servings": 8,
+      "prep_time_min": 20,
+      "total_time_min": 260,
       "nutrition_per_serving": {
-        "calories": 395,
-        "protein_g": 34,
-        "carbohydrates_g": 13,
-        "fat_g": 23
+        "calories": 280,
+        "protein_g": 7,
+        "carbohydrates_g": 45,
+        "fat_g": 8
       },
       "ingredients": [
         {
-          "ingredient_key": "chicken-thigh",
-          "ingredient_specific_key": "chicken-thigh",
-          "canonical_name": "chicken thigh",
-          "quantity": 500,
-          "unit": "g",
+          "ingredient_key": "wheat-flour",
+          "ingredient_specific_key": "wheat-flour",
+          "canonical_name": "wheat flour",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 0,
           "translations": {
             "en": {
-              "display_name": "chicken thigh"
+              "display_name": "wheat flour"
             },
             "sk": {
-              "display_name": "kuracie stehno"
+              "display_name": "múka"
             }
           }
         },
         {
-          "ingredient_key": "lemon",
-          "ingredient_specific_key": "lemon",
-          "canonical_name": "lemon",
-          "quantity": 1,
-          "unit": "pc",
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 1,
           "translations": {
             "en": {
-              "display_name": "lemon"
+              "display_name": "egg"
             },
             "sk": {
-              "display_name": "citrón"
+              "display_name": "vajce"
             }
           }
         },
         {
-          "ingredient_key": "cumin",
-          "ingredient_specific_key": "cumin",
-          "canonical_name": "cumin",
-          "quantity": 2,
-          "unit": "tsp",
+          "ingredient_key": "sugar",
+          "ingredient_specific_key": "sugar",
+          "canonical_name": "sugar",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 2,
           "translations": {
             "en": {
-              "display_name": "cumin"
+              "display_name": "sugar"
             },
             "sk": {
-              "display_name": "rímska rasca"
+              "display_name": "cukor"
             }
           }
         },
         {
-          "ingredient_key": "paprika",
-          "ingredient_specific_key": "paprika",
-          "canonical_name": "paprika",
-          "quantity": 2,
-          "unit": "tsp",
+          "ingredient_key": "cocoa-powder",
+          "ingredient_specific_key": "cocoa-powder",
+          "canonical_name": "cocoa powder",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 3,
           "translations": {
             "en": {
-              "display_name": "paprika"
+              "display_name": "cocoa powder"
             },
             "sk": {
-              "display_name": "mletá paprika"
+              "display_name": "kakao"
             }
           }
         },
         {
-          "ingredient_key": "chili-powder",
-          "ingredient_specific_key": "chili-powder",
-          "canonical_name": "chili powder",
-          "quantity": 1.5,
-          "unit": "tsp",
+          "ingredient_key": "salt",
+          "ingredient_specific_key": "salt",
+          "canonical_name": "salt",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 4,
           "translations": {
             "en": {
-              "display_name": "chili powder"
+              "display_name": "salt"
             },
             "sk": {
-              "display_name": "čili prášok"
+              "display_name": "soľ"
             }
           }
         },
         {
-          "ingredient_key": "natural-yogurt",
-          "ingredient_specific_key": "natural-yogurt",
-          "canonical_name": "natural yogurt",
-          "quantity": 200,
-          "unit": "g",
+          "ingredient_key": "milk",
+          "ingredient_specific_key": "milk",
+          "canonical_name": "milk",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 5,
           "translations": {
             "en": {
-              "display_name": "natural yogurt"
+              "display_name": "milk"
             },
             "sk": {
-              "display_name": "biely jogurt"
+              "display_name": "mlieko"
             }
           }
         },
@@ -138,278 +137,107 @@
               "display_name": "vegetable oil"
             },
             "sk": {
-              "display_name": "rastlinný olej"
+              "display_name": "olej"
             }
           }
         },
         {
-          "ingredient_key": "onion",
-          "ingredient_specific_key": "onion",
-          "canonical_name": "onion",
+          "ingredient_key": "mango",
+          "ingredient_specific_key": "mango",
+          "canonical_name": "mango",
           "quantity": 1,
           "unit": "pc",
           "optional": false,
           "sort_order": 7,
           "translations": {
             "en": {
-              "display_name": "onion"
+              "display_name": "mango"
             },
             "sk": {
-              "display_name": "cibuľa"
+              "display_name": "mango"
             }
           }
         },
         {
-          "ingredient_key": "garlic",
-          "ingredient_specific_key": "garlic",
-          "canonical_name": "garlic",
-          "quantity": 3,
-          "unit": "pc",
+          "ingredient_key": "mango-juice",
+          "ingredient_specific_key": "mango-juice",
+          "canonical_name": "mango juice",
+          "quantity": 200,
+          "unit": "ml",
           "optional": false,
           "sort_order": 8,
           "translations": {
             "en": {
-              "display_name": "garlic"
+              "display_name": "mango juice"
             },
             "sk": {
-              "display_name": "cesnak"
+              "display_name": "mangový džús"
             }
           }
         },
         {
-          "ingredient_key": "green-chili",
-          "ingredient_specific_key": "green-chili",
-          "canonical_name": "green chili",
+          "ingredient_key": "powdered-gelatin",
+          "ingredient_specific_key": "powdered-gelatin",
+          "canonical_name": "powdered gelatin",
           "quantity": 1,
           "unit": "pc",
-          "optional": true,
+          "optional": false,
           "sort_order": 9,
           "translations": {
             "en": {
-              "display_name": "green chili"
+              "display_name": "powdered gelatin"
             },
             "sk": {
-              "display_name": "zelená čili paprička"
+              "display_name": "želatína v prášku"
             }
           }
         },
         {
-          "ingredient_key": "ginger",
-          "ingredient_specific_key": "ginger",
-          "canonical_name": "ginger",
-          "quantity": 1,
+          "ingredient_key": "vanilla-sugar",
+          "ingredient_specific_key": "vanilla-sugar",
+          "canonical_name": "vanilla sugar",
+          "quantity": 2,
           "unit": "pc",
           "optional": false,
           "sort_order": 10,
           "translations": {
             "en": {
-              "display_name": "ginger"
+              "display_name": "vanilla sugar"
             },
             "sk": {
-              "display_name": "zázvor"
-            }
-          }
-        },
-        {
-          "ingredient_key": "garam-masala",
-          "ingredient_specific_key": "garam-masala",
-          "canonical_name": "garam masala",
-          "quantity": 1,
-          "unit": "tsp",
-          "optional": false,
-          "sort_order": 11,
-          "translations": {
-            "en": {
-              "display_name": "garam masala"
-            },
-            "sk": {
-              "display_name": "garam masala"
-            }
-          }
-        },
-        {
-          "ingredient_key": "fenugreek",
-          "ingredient_specific_key": "ground-fenugreek",
-          "canonical_name": "ground fenugreek",
-          "quantity": 2,
-          "unit": "tsp",
-          "optional": false,
-          "sort_order": 12,
-          "translations": {
-            "en": {
-              "display_name": "ground fenugreek"
-            },
-            "sk": {
-              "display_name": "mletá senovka grécka"
-            }
-          }
-        },
-        {
-          "ingredient_key": "tomato-puree",
-          "ingredient_specific_key": "tomato-puree",
-          "canonical_name": "tomato puree",
-          "quantity": 3,
-          "unit": "tbsp",
-          "optional": false,
-          "sort_order": 13,
-          "translations": {
-            "en": {
-              "display_name": "tomato puree"
-            },
-            "sk": {
-              "display_name": "paradajkový pretlak"
-            }
-          }
-        },
-        {
-          "ingredient_key": "chicken-stock",
-          "ingredient_specific_key": "chicken-stock",
-          "canonical_name": "chicken stock",
-          "quantity": 300,
-          "unit": "ml",
-          "optional": false,
-          "sort_order": 14,
-          "translations": {
-            "en": {
-              "display_name": "chicken stock"
-            },
-            "sk": {
-              "display_name": "kurací vývar"
-            }
-          }
-        },
-        {
-          "ingredient_key": "almond",
-          "ingredient_specific_key": "flaked-almond",
-          "canonical_name": "flaked almond",
-          "quantity": 50,
-          "unit": "g",
-          "optional": false,
-          "sort_order": 15,
-          "translations": {
-            "en": {
-              "display_name": "flaked almond"
-            },
-            "sk": {
-              "display_name": "plátková mandľa"
-            }
-          }
-        },
-        {
-          "ingredient_key": "basmati-rice",
-          "ingredient_specific_key": "basmati-rice",
-          "canonical_name": "basmati rice",
-          "quantity": null,
-          "unit": null,
-          "optional": true,
-          "sort_order": 16,
-          "translations": {
-            "en": {
-              "display_name": "basmati rice"
-            },
-            "sk": {
-              "display_name": "basmati ryža"
-            }
-          }
-        },
-        {
-          "ingredient_key": "naan-bread",
-          "ingredient_specific_key": "naan-bread",
-          "canonical_name": "naan bread",
-          "quantity": null,
-          "unit": null,
-          "optional": true,
-          "sort_order": 17,
-          "translations": {
-            "en": {
-              "display_name": "naan bread"
-            },
-            "sk": {
-              "display_name": "chlieb naan"
-            }
-          }
-        },
-        {
-          "ingredient_key": "mango-chutney",
-          "ingredient_specific_key": "mango-chutney",
-          "canonical_name": "mango chutney",
-          "quantity": null,
-          "unit": null,
-          "optional": true,
-          "sort_order": 18,
-          "translations": {
-            "en": {
-              "display_name": "mango chutney"
-            },
-            "sk": {
-              "display_name": "mangové chutney"
-            }
-          }
-        },
-        {
-          "ingredient_key": "coriander",
-          "ingredient_specific_key": "coriander",
-          "canonical_name": "coriander",
-          "quantity": null,
-          "unit": null,
-          "optional": true,
-          "sort_order": 19,
-          "translations": {
-            "en": {
-              "display_name": "coriander"
-            },
-            "sk": {
-              "display_name": "koriander"
-            }
-          }
-        },
-        {
-          "ingredient_key": "lime",
-          "ingredient_specific_key": "lime",
-          "canonical_name": "lime",
-          "quantity": null,
-          "unit": null,
-          "optional": true,
-          "sort_order": 20,
-          "translations": {
-            "en": {
-              "display_name": "lime"
-            },
-            "sk": {
-              "display_name": "limetka"
+              "display_name": "vanilkový cukor"
             }
           }
         }
       ],
       "translations": {
         "en": {
-          "name": "Easy Butter Chicken",
-          "category_label": "Dinner",
+          "name": "Mango Crepe Cake",
+          "category_label": "Dessert",
           "serving_unit_label": "serving",
           "instructions": [
-            "In a medium bowl, mix all the marinade ingredients with some seasoning. Chop the chicken into bite-sized pieces and toss with the marinade. Cover and chill in the fridge for 1 hr or overnight.",
-            "In a large, heavy saucepan, heat the oil. Add the onion, garlic, green chilli, ginger and some seasoning. Fry on a medium heat for 10 mins or until soft.",
-            "Add the spices with the tomato purée, cook for a further 2 mins until fragrant, then add the stock and marinated chicken. Cook for 15 mins, then add any remaining marinade left in the bowl. Simmer for 5 mins, then sprinkle with the toasted almonds.",
-            "Serve with rice, naan bread, chutney, coriander and lime wedges, if you like."
+            "Add the egg, sugar, cocoa powder, a pinch of salt, and enough milk to the flour to create a smooth, thin batter. Stir in the oil and fry thin crepes in a pan.",
+            "Peel the mango and dice it into small cubes. In a saucepan, bring the mango juice to a boil, stir in the vanilla sugar, and dissolve the gelatin according to the package instructions. Fold in the diced mango and let the mixture cool slightly until it begins to set into a jelly.",
+            "Place a crepe at the bottom of a cake pan or plate, spread a thin layer of the mango jelly over it, top with another crepe, and repeat the process until all ingredients are used.",
+            "Refrigerate the cake for at least 4 hours to set completely before slicing and serving."
           ],
-          "notes": "The meat can be marinaded the day before so you can get ahead on your prep."
+          "notes": "Exact quantities for the crepe batter are left to preference in the original recipe to achieve a classic thin consistency. Nutrition information was conservatively estimated for an 8-serving cake."
         },
         "sk": {
-          "name": "Jednoduché maslové kura (Butter chicken)",
-          "category_label": "Večera",
+          "name": "Palacinková torta s mangom",
+          "category_label": "Dezert",
           "serving_unit_label": "porcia",
           "instructions": [
-            "V stredne veľkej miske zmiešajte všetky prísady na marinádu a dochuťte soľou a korením. Kuracie mäso nakrájajte na kúsky veľkosti sústa a obaľte v marináde. Prikryte a nechajte v chladničke odpočívať aspoň 1 hodinu, ideálne však cez noc.",
-            "Vo veľkom hrnci s hrubým dnom zohrejte olej. Pridajte cibuľu, cesnak, zelenú čili papričku, zázvor a trochu korenia. Restujte na strednom ohni asi 10 minút, kým zelenina nezmäkne.",
-            "Pridajte koreniny a paradajkový pretlak, opekajte ďalšie 2 minúty, kým zmes nezačne rozvoniavať. Potom prilejte vývar a pridajte marinované kura. Varte 15 minút, následne pridajte aj zvyšok marinády, ktorá ostala v miske. Duste na miernom ohni ešte 5 minút a nakoniec posypte opraženými plátkami mandlí.",
-            "Podávajte s uvarenou ryžou, chlebom naan, chutney, posypané lístkami koriandra a doplnené o mesiačiky limetky."
+            "K múke pridajte vajce, cukor, kakao, štipku soli a toľko mlieka, aby ste vymiešali hladké, redšie cesto. Nakoniec vmiešajte olej a na panvici upečte tenké palacinky.",
+            "Mango očistite a nakrájajte na malé kocky. Mangový džús zohrejte a rozpustite v ňom vanilkový cukor spolu so želatínou (podľa návodu na obale). Pridajte nakrájané mango a nechajte zmes chladnúť, kým nezačne tuhnúť na želé.",
+            "Na dno tortovej formy alebo taniera položte prvú palacinku, potrite ju vrstvou mangového želé, prikryte ďalšou palacinkou a postup opakujte, kým neminiete všetky suroviny.",
+            "Hotovú tortu uložte do chladničky aspoň na 4 hodiny, aby želé úplne stuhlo, a potom podávajte."
           ],
-          "notes": "Mäso si môžete naložiť do marinády už deň vopred a ušetriť tak čas pri samotnej príprave."
+          "notes": "V pôvodnom recepte sa množstvo surovín na palacinky pridáva 'od oka' do požadovanej hustoty cesta. Výživové hodnoty boli odhadnuté z konzervatívneho štandardu na 8 porcií."
         }
       },
       "meal_prep_friendly": true
     }
-    
   ],
   "rejected": []
 }

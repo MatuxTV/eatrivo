@@ -1,0 +1,64 @@
+{
+  "recipes": [
+    {
+      "external_key": "vegetarian-enchiladas",
+      "default_locale": "en",
+      "category_key": "dinner",
+      "diet_tags": [
+        "vegetarian",
+        "high-protein",
+        "high-fibre"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-gluten"
+      ],
+      "servings": 4,
+      "prep_time_min": 10,
+      "total_time_min": 40,
+      "nutrition_per_serving": {
+        "calories": 430,
+        "protein_g": 23,
+        "carbohydrates_g": 60,
+        "fat_g": 13
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            }
+          }
+        },
+        {
+          "ingredient_key": "carrot",
+          "ingredient_specific_key": "carrot",
+          "canonical_name": "carrot",
+          "quantity": 280,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "

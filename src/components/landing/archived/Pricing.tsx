@@ -19,7 +19,7 @@ interface PricingTier {
 
 const pricingTiers: readonly PricingTier[] = [
   { tier: "basic", price: 0 },
-  { tier: "premium", price: 4.99, isPopular: true },
+  { tier: "premium", price: 3.99, isPopular: true },
 ] as const;
 
 interface PricingCardProps {

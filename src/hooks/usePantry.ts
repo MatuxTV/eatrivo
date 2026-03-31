@@ -99,6 +99,8 @@ export interface BatchPantryResult {
 
 interface PantryMutationResponse {
   item?: PantryItem;
+  deleted?: boolean;
+  deletedItemId?: string;
   normalizationQueued?: boolean;
   error?: string;
 }
@@ -135,21 +137,37 @@ interface PantryDraftConfirmResponse extends PantryDraftsResponse {
   items?: PantryItem[];
 }
 
+interface UsePantryOptions {
+  initialItems?: PantryItem[];
+  initialRestockItems?: PantryRestockItem[];
+  initialPendingDrafts?: PantryDraftItem[];
+}
+
 const PANTRY_CHANGED_EVENT = "pantry:changed";
 
-export function usePantry() {
-  const [items, setItems] = useState<PantryItem[]>([]);
-  const [restockItems, setRestockItems] = useState<PantryRestockItem[]>([]);
-  const [pendingDrafts, setPendingDrafts] = useState<PantryDraftItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function usePantry(options: UsePantryOptions = {}) {
+  const hasInitialItems = options.initialItems !== undefined;
+  const hasInitialRestockItems = options.initialRestockItems !== undefined;
+  const [items, setItems] = useState<PantryItem[]>(options.initialItems ?? []);
+  const [restockItems, setRestockItems] = useState<PantryRestockItem[]>(
+    options.initialRestockItems ?? [],
+  );
+  const [pendingDrafts, setPendingDrafts] = useState<PantryDraftItem[]>(
+    options.initialPendingDrafts ?? [],
+  );
+  const [isLoading, setIsLoading] = useState(!hasInitialItems);
   const [error, setError] = useState<string | null>(null);
   const [isPreparingDrafts, setIsPreparingDrafts] = useState(false);
   const [isConfirmingDrafts, setIsConfirmingDrafts] = useState(false);
-  const [isLoadingRestockItems, setIsLoadingRestockItems] = useState(true);
+  const [isLoadingRestockItems, setIsLoadingRestockItems] = useState(
+    !hasInitialRestockItems,
+  );
 
-  const fetchItems = useCallback(async () => {
+  const fetchItems = useCallback(async (showLoading = true) => {
     try {
-      setIsLoading(true);
+      if (showLoading) {
+        setIsLoading(true);
+      }
       setError(null);
       const response = await fetch("/api/pantry");
       if (!response.ok) throw new Error("Failed to fetch pantry items");
@@ -164,7 +182,9 @@ export function usePantry() {
       console.error("[Pantry] fetchItems: error", err);
       setError(message);
     } finally {
-      setIsLoading(false);
+      if (showLoading) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
@@ -182,9 +202,11 @@ export function usePantry() {
     }
   }, []);
 
-  const fetchRestockItems = useCallback(async () => {
+  const fetchRestockItems = useCallback(async (showLoading = true) => {
     try {
-      setIsLoadingRestockItems(true);
+      if (showLoading) {
+        setIsLoadingRestockItems(true);
+      }
       const response = await fetch("/api/pantry/restock-items", {
         cache: "no-store",
       });
@@ -197,13 +219,27 @@ export function usePantry() {
     } catch (err) {
       console.error("[Pantry] fetchRestockItems: error", err);
     } finally {
-      setIsLoadingRestockItems(false);
+      if (showLoading) {
+        setIsLoadingRestockItems(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    void Promise.all([fetchItems(), fetchDrafts(), fetchRestockItems()]);
-  }, [fetchDrafts, fetchItems, fetchRestockItems]);
+    void Promise.all([
+      fetchItems(!hasInitialItems),
+      fetchDrafts(),
+      fetchRestockItems(!hasInitialRestockItems),
+    ]).finally(() => {
+      if (hasInitialItems) {
+        setIsLoading(false);
+      }
+
+      if (hasInitialRestockItems) {
+        setIsLoadingRestockItems(false);
+      }
+    });
+  }, [fetchDrafts, fetchItems, fetchRestockItems, hasInitialItems, hasInitialRestockItems]);
 
   const prepareDrafts = useCallback(
     async (itemsToPrepare: NewPantryItem[]): Promise<boolean> => {
@@ -300,9 +336,22 @@ export function usePantry() {
           return false;
         }
         const data = (await response.json()) as PantryMutationResponse;
-        setItems((prev) =>
-          prev.map((item) => (item.id === id && data.item ? data.item : item)),
-        );
+
+        if (data.deleted) {
+          setItems((prev) => prev.filter((item) => item.id !== (data.deletedItemId ?? id)));
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event(PANTRY_CHANGED_EVENT));
+          }
+          toast.success("Položka odstránená");
+          return true;
+        }
+
+        if (!data.item) {
+          toast.error("Nepodarilo sa aktualizovať položku");
+          return false;
+        }
+
+        setItems((prev) => prev.map((item) => (item.id === id ? data.item! : item)));
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event(PANTRY_CHANGED_EVENT));
         }
@@ -353,14 +402,26 @@ export function usePantry() {
         });
         const data = (await response.json()) as PantryMutationResponse;
 
-        if (!response.ok || !data.item) {
+        if (!response.ok) {
           toast.error("Nepodarilo sa upraviť množstvo");
           return false;
         }
 
-        setItems((prev) =>
-          prev.map((item) => (item.id === id ? data.item! : item)),
-        );
+        if (data.deleted) {
+          setItems((prev) => prev.filter((item) => item.id !== (data.deletedItemId ?? id)));
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event(PANTRY_CHANGED_EVENT));
+          }
+          toast.success("Položka odstránená");
+          return true;
+        }
+
+        if (!data.item) {
+          toast.error("Nepodarilo sa upraviť množstvo");
+          return false;
+        }
+
+        setItems((prev) => prev.map((item) => (item.id === id ? data.item! : item)));
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event(PANTRY_CHANGED_EVENT));
         }

@@ -150,43 +150,60 @@ export default function AddPantryItemModal({
             initial={shouldReduceMotion ? undefined : { opacity: 0 }}
             animate={shouldReduceMotion ? undefined : { opacity: 1 }}
             exit={shouldReduceMotion ? undefined : { opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+            className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm"
             onClick={onClose}
           />
           {/* Modal */}
           <motion.div
-            initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95, y: 20 }}
-            animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1, y: 0 }}
-            exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95, y: 20 }}
+            initial={
+              shouldReduceMotion
+                ? undefined
+                : { opacity: 0, scale: 0.98, y: 32 }
+            }
+            animate={
+              shouldReduceMotion
+                ? undefined
+                : { opacity: 1, scale: 1, y: 0 }
+            }
+            exit={
+              shouldReduceMotion
+                ? undefined
+                : { opacity: 0, scale: 0.98, y: 32 }
+            }
             transition={
               shouldReduceMotion
                 ? undefined
                 : { type: "spring", stiffness: 400, damping: 30 }
             }
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-2xl shadow-2xl p-6"
+            className="fixed inset-x-0 bottom-0 z-[80] flex max-h-[min(82dvh,760px)] w-full flex-col rounded-t-[1.75rem] bg-white shadow-[0_-16px_50px_rgba(17,24,39,0.18)] sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:max-h-[90vh] sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[1.75rem]"
           >
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-gray-900">
-                {t("modal_title")}
-              </h2>
+            <div className="flex justify-center pt-3 sm:hidden">
+              <div className="h-1.5 w-12 rounded-full bg-gray-200" />
+            </div>
+
+            <div className="flex items-center justify-between px-5 pb-4 pt-4 sm:px-6 sm:pt-6">
+              <div className="pr-4">
+                <h2 className="text-lg font-bold text-gray-900">
+                  {t("modal_title")}
+                </h2>
+                <p className="mt-1 text-xs font-medium uppercase tracking-[0.18em] text-eatrivo-purple/70 sm:hidden">
+                  {t("batch_title")}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                className="rounded-lg p-1.5 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="h-4 w-4 text-gray-500" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="rounded-2xl border border-eatrivo-purple/15 bg-eatrivo-purple/5 px-4 py-3 text-sm text-gray-600">
-                <p className="font-medium text-gray-800">{t("batch_title")}</p>
-                <p className="mt-1 text-xs leading-relaxed text-gray-500">
-                  {t("batch_description")}
-                </p>
-              </div>
+            <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4 sm:px-6">
+                
 
-              <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">
+                <div className="mt-4 space-y-3 pr-1">
                 {batchItems.map((item, index) => (
                   <div
                     key={item.id}
@@ -309,23 +326,24 @@ export default function AddPantryItemModal({
                     </div>
                   </div>
                 ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={addBatchRow}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-eatrivo-purple/30 bg-eatrivo-purple/5 px-4 py-3 text-sm font-medium text-eatrivo-purple transition-colors hover:bg-eatrivo-purple/10"
+                >
+                  <Plus className="h-4 w-4" />
+                  {t("batch_add_row")}
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={addBatchRow}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-eatrivo-purple/30 bg-eatrivo-purple/5 px-4 py-3 text-sm font-medium text-eatrivo-purple transition-colors hover:bg-eatrivo-purple/10"
-              >
-                <Plus className="h-4 w-4" />
-                {t("batch_add_row")}
-              </button>
-
-              <div className="flex gap-2 pt-2">
+              <div className="border-t border-gray-100 bg-white px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6">
+                <div className="flex gap-2">
                 <Button
                   type="button"
-                  variant="outline"
                   onClick={onClose}
-                  className="flex-1"
+                  className="flex-1 bg-eatrivo-white-primary text-eatrivo-black-primary border-2 border-eatrivo-black-primary/10"
                 >
                   {t("quick_add_cancel")}
                 </Button>
@@ -343,6 +361,7 @@ export default function AddPantryItemModal({
                     </>
                   )}
                 </Button>
+                </div>
               </div>
             </form>
           </motion.div>

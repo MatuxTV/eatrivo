@@ -3,6 +3,7 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import MarkdownIt from "markdown-it";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -76,6 +77,9 @@ export default function ShoppingListTab({
   onSubmit,
   onGenerateWithAI,
 }: ShoppingListTabProps) {
+  const t = useTranslations("admin.dashboard.shoppingListTab");
+  const tCommon = useTranslations("admin.dashboard.common");
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       {/* Left Column - Form */}
@@ -86,10 +90,10 @@ export default function ShoppingListTab({
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-eatrivo-purple/10 flex items-center justify-center text-eatrivo-purple">
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              Nový nákupný zoznam
+              {t("title")}
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              Vytvorte a priraďte nákupný zoznam používateľovi.
+              {t("description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
@@ -98,19 +102,19 @@ export default function ShoppingListTab({
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b border-gray-100">
                   <FileText className="w-4 h-4 text-eatrivo-purple" />
-                  Základné informácie
+                  {t("sections.basicInfo")}
                 </h3>
 
                 <div className="grid gap-4">
                   <div>
                     <Label htmlFor="title" className="mb-1.5 block">
-                      Názov zoznamu
+                      {t("fields.title.label")}
                     </Label>
                     <Input
                       id="title"
                       value={formData.title}
                       onChange={(e) => onInputChange("title", e.target.value)}
-                      placeholder="Napr. Nákupný zoznam - Týždeň 42"
+                      placeholder={t("fields.title.placeholder")}
                       required
                       className="h-11"
                     />
@@ -118,7 +122,7 @@ export default function ShoppingListTab({
 
                   <div>
                     <Label htmlFor="description" className="mb-1.5 block">
-                      Popis (voliteľné)
+                      {t("fields.description.label")}
                     </Label>
                     <Textarea
                       id="description"
@@ -126,7 +130,7 @@ export default function ShoppingListTab({
                       onChange={(e) =>
                         onInputChange("description", e.target.value)
                       }
-                      placeholder="Krátky popis zoznamu..."
+                      placeholder={t("fields.description.placeholder")}
                       rows={2}
                       className="min-h-[80px]"
                     />
@@ -138,7 +142,7 @@ export default function ShoppingListTab({
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b border-gray-100">
                   <LayoutDashboard className="w-4 h-4 text-eatrivo-purple" />
-                  Plánovanie
+                  {t("sections.planning")}
                 </h3>
 
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -147,7 +151,7 @@ export default function ShoppingListTab({
                       htmlFor="startDate"
                       className="mb-1.5 block text-xs sm:text-sm"
                     >
-                      Začiatok
+                      {t("fields.startDate")}
                     </Label>
                     <Input
                       id="startDate"
@@ -165,7 +169,7 @@ export default function ShoppingListTab({
                       htmlFor="endDate"
                       className="mb-1.5 block text-xs sm:text-sm"
                     >
-                      Koniec
+                      {t("fields.endDate")}
                     </Label>
                     <Input
                       id="endDate"
@@ -185,15 +189,15 @@ export default function ShoppingListTab({
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b border-gray-100">
                   <User className="w-4 h-4 text-eatrivo-purple" />
-                  Priradenie
+                  {t("sections.assignment")}
                 </h3>
 
                 <div>
-                  <Label className="mb-1.5 block">Používateľ</Label>
+                  <Label className="mb-1.5 block">{t("fields.user")}</Label>
                   {isLoadingUsers ? (
                     <div className="flex items-center gap-3 p-4 text-sm text-gray-500 border border-gray-200 rounded-xl bg-gray-50">
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-eatrivo-purple"></div>
-                      Načítavajú sa používatelia...
+                      {t("loadingUsers")}
                     </div>
                   ) : (
                     <Select
@@ -203,7 +207,7 @@ export default function ShoppingListTab({
                       }
                     >
                       <SelectTrigger className="h-12">
-                        <SelectValue placeholder="Vyberte používateľa" />
+                        <SelectValue placeholder={t("fields.userPlaceholder")} />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
                         <div className="p-2 sticky top-0 bg-white z-10 border-b border-gray-100 mb-1">
@@ -211,14 +215,14 @@ export default function ShoppingListTab({
                             <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                             <input
                               className="w-full pl-8 pr-2 py-1 text-xs border border-gray-200 rounded-md focus:outline-none focus:border-eatrivo-purple"
-                              placeholder="Hľadať..."
+                              placeholder={t("fields.searchPlaceholder")}
                             />
                           </div>
                         </div>
                         <SelectItem value="0" className="py-3">
                           <div className="flex items-center gap-2 text-gray-500">
                             <User className="w-4 h-4" />
-                            <span>Bez priradenia (Test)</span>
+                            <span>{t("fields.unassignedTest")}</span>
                           </div>
                         </SelectItem>
                         {users.map((user) => (
@@ -231,7 +235,7 @@ export default function ShoppingListTab({
                               <div
                                 className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white
                                 ${
-                                  user.membership === "Premium"
+                                  user.membership === "Premium" || user.membership === "Plus"
                                     ? "bg-gradient-to-r from-yellow-400 to-orange-500"
                                     : user.membership === "Basic"
                                       ? "bg-gradient-to-r from-blue-400 to-blue-600"
@@ -243,13 +247,13 @@ export default function ShoppingListTab({
                               </div>
                               <div className="flex flex-col text-left">
                                 <span className="font-medium text-gray-900">
-                                  {user.fullName || "Bez mena"}
+                                  {user.fullName || tCommon("noName")}
                                 </span>
                                 <span className="text-xs text-gray-500">
                                   {user.email}
                                 </span>
                               </div>
-                              {user.membership === "Premium" && (
+                              {(user.membership === "Premium" || user.membership === "Plus") && (
                                 <Sparkles className="w-3 h-3 text-yellow-500 ml-auto" />
                               )}
                             </div>
@@ -270,7 +274,7 @@ export default function ShoppingListTab({
 
                 <div>
                   <Label htmlFor="status" className="mb-1.5 block">
-                    Stav zoznamu
+                    {t("fields.status.label")}
                   </Label>
                   <Select
                     value={formData.status}
@@ -279,25 +283,25 @@ export default function ShoppingListTab({
                     ) => onInputChange("status", value)}
                   >
                     <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Vyberte stav" />
+                      <SelectValue placeholder={t("fields.status.placeholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-green-500" />
-                          Aktívny
+                          {tCommon("status.active")}
                         </div>
                       </SelectItem>
                       <SelectItem value="completed">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-blue-500" />
-                          Dokončený
+                          {tCommon("status.completed")}
                         </div>
                       </SelectItem>
                       <SelectItem value="cancelled">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-red-500" />
-                          Zrušený
+                          {tCommon("status.cancelled")}
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -310,7 +314,7 @@ export default function ShoppingListTab({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-gray-100">
                   <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-eatrivo-purple" />
-                    Obsah (Markdown)
+                    {t("sections.content")}
                   </h3>
                   <Button
                     type="button"
@@ -325,12 +329,12 @@ export default function ShoppingListTab({
                     {isGeneratingAI ? (
                       <div className="flex items-center justify-center gap-2">
                         <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Generuje AI...
+                        {t("actions.generatingAi")}
                       </div>
                     ) : (
                       <div className="flex items-center justify-center gap-2">
                         <Sparkles className="w-4 h-4" />
-                        Generovať AI
+                        {t("actions.generateAi")}
                       </div>
                     )}
                   </Button>
@@ -341,7 +345,7 @@ export default function ShoppingListTab({
                     style={{ height: "500px" }}
                     renderHTML={(text) => mdParser.render(text)}
                     onChange={onMarkdownChange}
-                    placeholder="# Nákupný zoznam...&#10;&#10;Alebo kliknite na 'Generovať AI' pre automatické vytvorenie."
+                    placeholder={t("fields.markdownPlaceholder")}
                     className="md-editor-mobile"
                   />
                 </div>
@@ -356,14 +360,14 @@ export default function ShoppingListTab({
                   {isUploading ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Vytvára sa...
+                      {t("actions.creating")}
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
                       <span className="hidden sm:inline">
-                        Vytvoriť nákupný zoznam
+                        {t("actions.createList")}
                       </span>
-                      <span className="sm:hidden">Vytvoriť zoznam</span>
+                      <span className="sm:hidden">{t("actions.createListShort")}</span>
                       <ChevronRight className="w-4 h-4" />
                     </div>
                   )}
@@ -381,7 +385,7 @@ export default function ShoppingListTab({
         <Card className="border-none shadow-md bg-white hidden sm:block">
           <CardHeader className="p-4 sm:p-6 pb-2">
             <CardTitle className="text-sm sm:text-base text-eatrivo-black-primary">
-              Rýchle tipy
+              {t("tips.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-2 space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-500">
@@ -390,14 +394,16 @@ export default function ShoppingListTab({
                 1
               </div>
               <p>
-                Používajte <strong>Markdown</strong> pre formátovanie zoznamov.
+                {t.rich("tips.markdown", {
+                  strong: (chunks) => <strong>{chunks}</strong>,
+                })}
               </p>
             </div>
             <div className="flex gap-2 sm:gap-3">
               <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-green-50 flex-shrink-0 flex items-center justify-center text-green-500 text-xs sm:text-sm">
                 2
               </div>
-              <p>Zoznamy priraďujte konkrétnemu používateľovi.</p>
+              <p>{t("tips.assignment")}</p>
             </div>
           </CardContent>
         </Card>

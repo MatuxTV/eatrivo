@@ -204,7 +204,7 @@
       "items": {
         "free": {
           "question": "Is Eatrivo free?",
-          "answer": "Yes! The basic version is completely free. You can create a profile, get personalized meal plans and shopping lists without any cost. The premium version offers advanced features for full utilization in achieving your goals, but the basic features are free for everyone."
+          "answer": "Yes. The Basic version is completely free. You can create a profile and get personalized meal plans and shopping lists at no cost. The Plus version adds advanced features to help you achieve your goals more effectively, while the core features remain free for everyone."
         },
         "time": {
           "question": "How long does it take to get a meal plan?",
@@ -278,6 +278,17 @@
     }
   },
   "auth": {
+    "welcome": {
+      "metaTitle": "Welcome",
+      "metaDescription": "Sign in to get your personalized meals based on the ingredients you already have",
+      "logoAlt": "Eatrivo logo",
+      "headlineTop": "Eat better,",
+      "headlineBottom": "feel better.",
+      "subtitle": "Sign in to get your personalized meals based on the ingredients you already have",
+      "illustrationAlt": "Rivo ready to help with meal planning",
+      "emailButton": "Continue with Email",
+      "appleButton": "Continue with Apple"
+    },
     "signIn": {
       "metaTitle": "Sign in",
       "tagline": "Sign in to continue",
@@ -713,7 +724,7 @@
       "mealPlanReady": "Meal plan is ready!",
       "mealPlanLoadError": "Couldn't load meal plan",
       "shoppingListsLoadError": "Couldn't load shopping lists",
-      "premiumOnly": "This feature is only available for premium members",
+      "premiumOnly": "This feature is only available for Plus members",
       "generatingShoppingList": "Generating your personalized shopping list...",
       "shoppingListAndMealPlanGenerated": "Shopping list and meal plan generated successfully! 🎉",
       "shoppingListGenerated": "Shopping list generated successfully!",
@@ -793,14 +804,14 @@
         "description": "You currently don't have any active shopping list. Show all lists to view completed or cancelled ones."
       },
       "premiumCTA": {
-        "title": "Upgrade to Premium and reach your goals faster! 🚀",
+        "title": "Upgrade to Plus and reach your goals faster! 🚀",
         "description": "Generate your personalized shopping list for this week",
         "button": "View Plans"
       },
       "createNew": {
         "title": "Let me cook! 🍳",
         "subtitle": "I'll create a personalized shopping list just for you",
-        "locked": "Unlock with Premium 🔒",
+        "locked": "Unlock with Plus 🔒",
         "lockedSubtitle": "Generate personalized shopping lists tailored to your goals",
         "completeActiveError": "Please complete your active shopping list first! 🛒",
         "activeListExists": "Complete active list first! 🛒",
@@ -1043,7 +1054,7 @@
       },
       "billing": {
         "title": "Billing",
-        "description": "Manage your premium plan"
+        "description": "Manage your Plus membership"
       },
       "logout": {
         "title": "Sign out",
@@ -1100,7 +1111,7 @@
       "membership": {
         "label": "Membership",
         "helper": "Your current plan",
-        "premiumBadge": "Premium member",
+        "premiumBadge": "Plus member",
         "freeBadge": "Free plan"
       },
       "validation": {
@@ -1193,7 +1204,7 @@
           "options": {
             "low": "Low (budget-friendly)",
             "medium": "Medium (balanced)",
-            "high": "High (premium ingredients)"
+            "high": "High (premium-quality ingredients)"
           }
         },
         "likes": {
@@ -1309,6 +1320,221 @@
       "types": {
         "welcome": "Welcome Email",
         "shoppingList": "Shopping List Notification"
+      },
+      "dashboard": {
+        "common": {
+          "membership": {
+            "plus": "Plus",
+            "basic": "Basic",
+            "trainer": "Trainer",
+            "free": "Free"
+          },
+          "noName": "No name",
+          "notSpecified": "Not specified",
+          "status": {
+            "active": "Active",
+            "completed": "Completed",
+            "cancelled": "Cancelled"
+          },
+          "sex": {
+            "man": "Man",
+            "woman": "Woman"
+          },
+          "units": {
+            "years": "yrs"
+          },
+          "profile": {
+            "complete": "OK",
+            "incomplete": "Incomplete"
+          }
+        },
+        "statsCard": {
+          "title": "User overview",
+          "totalUsers": "Total users"
+        },
+        "tabs": {
+          "analytics": "Analytics",
+          "emails": "Emails",
+          "notifications": "Notifications"
+        },
+        "userInfoCard": {
+          "loading": "Loading user data...",
+          "empty": "This user has not filled out nutrition details",
+          "title": "User info",
+          "labels": {
+            "allergies": "Allergies:",
+            "dislikes": "Dislikes:"
+          }
+        },
+        "usersTab": {
+          "title": "User list",
+          "description": "Overview of registered users",
+          "loading": "Loading users...",
+          "emptyTitle": "No users",
+          "emptyDescription": "There are no registered users in the system yet",
+          "details": {
+            "id": "ID:",
+            "profile": "Profile:",
+            "username": "Username:"
+          },
+          "actions": {
+            "create": "Create",
+            "list": "list",
+            "copy": "Copy",
+            "email": "email",
+            "emailCopied": "Email copied"
+          }
+        },
+        "shoppingListTab": {
+          "title": "New shopping list",
+          "description": "Create and assign a shopping list to a user.",
+          "loadingUsers": "Loading users...",
+          "sections": {
+            "basicInfo": "Basic information",
+            "planning": "Planning",
+            "assignment": "Assignment",
+            "content": "Content (Markdown)"
+          },
+          "fields": {
+            "title": {
+              "label": "List title",
+              "placeholder": "E.g. Shopping list - Week 42"
+            },
+            "description": {
+              "label": "Description (optional)",
+              "placeholder": "Short list description..."
+            },
+            "startDate": "Start",
+            "endDate": "End",
+            "user": "User",
+            "userPlaceholder": "Select a user",
+            "searchPlaceholder": "Search...",
+            "unassignedTest": "Unassigned (Test)",
+            "status": {
+              "label": "List status",
+              "placeholder": "Select status"
+            },
+            "markdownPlaceholder": "# Shopping list...\n\nOr click 'Generate with AI' to create it automatically."
+          },
+          "actions": {
+            "generateAi": "Generate with AI",
+            "generatingAi": "Generating with AI...",
+            "creating": "Creating...",
+            "createList": "Create shopping list",
+            "createListShort": "Create list"
+          },
+          "tips": {
+            "title": "Quick tips",
+            "markdown": "Use <strong>Markdown</strong> to format lists.",
+            "assignment": "Assign lists to a specific user."
+          }
+        },
+        "emailsTab": {
+          "title": "Send update email",
+          "description": "Inform users about new features and improvements",
+          "sections": {
+            "basicInfo": "Basic information",
+            "changes": "Change list",
+            "testEmail": "Test email"
+          },
+          "fields": {
+            "version": {
+              "label": "Version *",
+              "placeholder": "e.g. 1.2.0"
+            },
+            "updateTitle": {
+              "label": "Update title *",
+              "placeholder": "e.g. New features for your dashboard"
+            },
+            "updateDescription": {
+              "label": "Intro text *",
+              "placeholder": "Short intro text for the email..."
+            },
+            "changeType": "Type",
+            "changeTitle": "Title",
+            "changeTitlePlaceholder": "e.g. Weight tracking",
+            "changeDescription": "Description",
+            "changeDescriptionPlaceholder": "Brief description of the change...",
+            "testEmail": {
+              "label": "Test address",
+              "placeholder": "you@email.com"
+            }
+          },
+          "types": {
+            "feature": "Feature",
+            "improvement": "Improvement",
+            "fix": "Fix"
+          },
+          "changeItem": "Change #{index}",
+          "result": {
+            "successTitle": "Success",
+            "errorTitle": "Error",
+            "sent": "Sent: {count}",
+            "failed": "Failed: {count}",
+            "errors": "Errors:"
+          },
+          "actions": {
+            "add": "Add",
+            "sending": "Sending...",
+            "sendTest": "Send test",
+            "sendAll": "Send to all"
+          },
+          "stats": {
+            "title": "Email stats",
+            "totalUsers": "Total users",
+            "withEmail": "With email"
+          },
+          "tips": {
+            "title": "Email tips",
+            "first": "Send a test to your own address first",
+            "second": "Use a clear list of changes",
+            "third": "Group changes by type (feature/improvement/fix)"
+          }
+        },
+        "profilesTab": {
+          "title": "User profile",
+          "description": "View detailed information about a user",
+          "selectUser": "Select user",
+          "selectPlaceholder": "Select a user...",
+          "selectOption": "-- Select a user --",
+          "loading": "Loading data...",
+          "emptySelection": {
+            "title": "No user selected",
+            "description": "Select a user to view their profile"
+          },
+          "sections": {
+            "basicInfo": "Basic information",
+            "goals": "Goals and activity",
+            "preferences": "Dietary preferences",
+            "foodPreferences": "Food preferences"
+          },
+          "fields": {
+            "sex": "Sex",
+            "age": "Age",
+            "height": "Height",
+            "weight": "Weight",
+            "goal": "Goal",
+            "activityLevel": "Activity level",
+            "diet": "Diet",
+            "cookingTime": "Cooking time",
+            "budget": "Budget",
+            "mealsPerDay": "Meals per day",
+            "likes": "Favorite meals",
+            "dislikes": "Disliked meals",
+            "allergies": "Allergies"
+          },
+          "yearsSuffix": "years",
+          "notSpecified": "Not specified",
+          "noData": {
+            "title": "No data",
+            "description": "This user has not filled in nutrition information"
+          },
+          "stats": {
+            "title": "Profile statistics",
+            "completedProfiles": "Completed profiles",
+            "successRate": "Success rate"
+          }
+        }
       }
     },
     "feedback": {
@@ -1448,10 +1674,11 @@
     },
     "title": "Invest in yourself",
     "subtitle": "Less than a coffee a week for a plan that actually works.",
+    "freeLabel": "Free",
     "perMonth": "/month",
     "features": "Features",
     "currentPlan": "Current Plan",
-    "upgrade": "Get Premium",
+    "upgrade": "Upgrade",
     "getStarted": "Start for free",
     "popular": "Best value",
     "signInToUpgrade": "Sign in to unlock your plan",
@@ -1474,23 +1701,20 @@
         ]
       },
       "premium": {
-        "name": "Premium",
+        "name": "Plus",
         "description": "All features to help you achieve your goals",
         "features": [
-          "Customize meals to your taste",
-          "Mark favorite and disliked meals for better customization",
-          "Meal plans created from dishes verified by our experts and tailored to your preferences",
-          "Weekly challenges",
-          "Advanced progress tracking",
-          "Priority access to new features and improvements",
-          "Rivo as your personal assistant without limitations"
+          "Support our development team for faster product improvements",
+          "(IN DEVELOPMENT) Receipt scanning for faster and more convenient pantry item adding",
+          "(IN DEVELOPMENT) Customize individual recipes for better personalization based on your goals, tastes, and diet"
+          
         ]
       },
       "pro": {
         "name": "Pro",
         "description": "Advanced features for serious health goals",
         "features": [
-          "Everything in Premium",
+          "Everything in Plus",
           "Custom diet coaching",
           "Advanced analytics",
           "Family meal planning",
@@ -1528,6 +1752,22 @@
     "noSubscription": "No active subscription",
     "freeAccount": "You're using the free plan",
     "successMessage": "Subscription activated successfully! 🎉",
+    "profileSection": {
+      "membershipEyebrow": "Membership",
+      "description": "Manage your membership, check your active subscription, and see what you have unlocked right now.",
+      "currentPlanLabel": "Current plan",
+      "yourMembershipLabel": "Your membership",
+      "paidDescription": "You have an active paid plan, and you can manage your membership in one click.",
+      "basicDescription": "You are currently on the Basic plan. If you want more, you will find the available upgrade below.",
+      "upgradeReady": "Upgrade is ready",
+      "availableUpgradesEyebrow": "Available upgrades",
+      "availableUpgradesTitle": "Higher tiers for your account",
+      "noUpgradeEyebrow": "Higher tiers",
+      "noUpgradeTitle": "There is no higher upgrade available right now",
+      "noUpgradeDescription": "Your current membership is the highest plan we offer in this part of the app.",
+      "consentEyebrow": "Checkout consent",
+      "consentTitle": "Confirm legal consent before upgrading"
+    },
     "errorMessages": {
       "portalFailed": "Failed to open billing portal",
       "checkoutFailed": "Failed to start checkout",
@@ -1568,12 +1808,12 @@
     "autoRefresh": "The page will automatically update once connection is restored"
   },
   "upgrade": {
-    "title": "Get Premium Access",
+    "title": "Get Plus Access",
     "description": "Unlock all features and get unlimited AI meal plans.",
     "feature1": "Unlimited AI meal plans",
     "feature2": "Personalized nutrition tracking",
     "feature3": "Advanced shopping lists",
-    "upgradeButton": "Upgrade to Premium",
+    "upgradeButton": "Upgrade to Plus",
     "maybeLater": "Maybe later",
     "socialProof": "Join 2,400+ members eating smarter",
     "trialDays": "{days} Days Free"
@@ -1601,7 +1841,7 @@
       "termsAgree": "I have read and agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>",
       "digitalConsent": "I request immediate access to the digital service and acknowledge that I lose my 14-day right of withdrawal",
       "mustAgree": "You must agree to the terms before proceeding",
-      "orderWithPayment": "Subscribe with obligation to pay"
+      "orderWithPayment": "Upgrade"
     }
   },
   "pantry": {
@@ -1673,6 +1913,8 @@
     "tracking_mode_quantity": "Track quantity",
     "tracking_mode_availability": "Track availability",
     "tracking_mode_availability_hint": "Availability mode stores this item as something you have on hand without tracking grams or pieces.",
+    "tracking_mode_toggle_label": "Track quantity",
+    "tracking_mode_toggle_help": "When the toggle is off, the item tracks exact quantity. When the toggle is on, the item only tracks whether it is currently in the pantry.",
     "field_availability": "Availability",
     "availability_in_stock": "In Pantry",
     "availability_out_of_stock": "Out of Pantry",

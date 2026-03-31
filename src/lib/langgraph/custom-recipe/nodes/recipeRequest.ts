@@ -5,7 +5,6 @@ import { z } from "zod";
 
 import { CUSTOM_RECIPE_AI_TIMEOUT_MS } from "../constants";
 import {
-  type CustomRecipeAiOutput,
   type CustomRecipePantryContextItem,
 } from "@/lib/custom-recipes/contracts";
 import { apiLogger } from "@/lib/logger";

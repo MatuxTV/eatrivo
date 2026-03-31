@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Check, Loader2, Crown, Zap, Star } from "lucide-react";
+import { Check, Loader2, Crown, Star, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
@@ -70,7 +70,14 @@ export function PricingCard({
     }
   };
 
-  const tierConfig = {
+  const tierConfig: Record<PricingCardProps["tier"], {
+    icon: typeof Star;
+    accent: string;
+    badgeBg: string;
+    checkColor: string;
+    buttonClass: string;
+    glowColor: string;
+  }> = {
     basic: {
       icon: Star,
       accent: "eatrivo-black-secondary",
@@ -110,8 +117,6 @@ export function PricingCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      whileTap={{ scale: 0.98 }}
       className="relative"
     >
       {/* Popular glow ring */}
@@ -185,7 +190,7 @@ export function PricingCard({
           {price === "Free" ? (
             <div className="flex items-baseline gap-1">
               <span className="text-4xl font-extrabold text-eatrivo-black-primary tracking-tight">
-                {t("tiers.basic.name") === "Basic" ? "Free" : "Zadarmo"}
+                {t("freeLabel")}
               </span>
             </div>
           ) : (
@@ -247,7 +252,7 @@ export function PricingCard({
         <Button
           size="lg"
           className={cn(
-            "w-full rounded-xl font-bold text-sm h-12 transition-all duration-200",
+            "w-full rounded-xl font-bold text-sm h-12 transition-all duration-200 active:scale-95",
             config.buttonClass,
             loading && "opacity-80",
           )}

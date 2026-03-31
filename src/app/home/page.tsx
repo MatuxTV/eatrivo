@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { asc, count, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 
 import { auth } from "../../../auth";
 import HomePage from "@/app/home/basic/HomePage";
@@ -9,14 +9,18 @@ import type {
   BasicHomePantrySummary,
   BasicHomeRecipePreview,
 } from "@/app/home/types/data";
+import type { InitialPantrySectionData } from "@/app/home/types/section-data";
 import { isLocale, type Locale } from "@/i18n/routing";
 import { db } from "@/index";
 import {
   pantryItems,
+  pantryRestockItems,
   recipeIngredients,
   recipeIngredientTranslations,
   recipes,
   recipeTranslations,
+  shoppingListItems,
+  shoppingLists,
   userProfiles,
   userInfoTable,
 } from "@/db/schema";
@@ -28,17 +32,30 @@ import {
 import {
   normalizeRecipeInstructions,
 } from "@/lib/recipe-instructions";
+import { getUserContext } from "@/lib/user-context-cache";
+import { CacheService } from "@/lib/redis";
 import {
   formatRecipeIngredientAmount,
   type RecipeIngredientItem,
 } from "@/lib/recipe-ingredients";
 import { guessFoodCategory } from "@/lib/units";
+import { buildPantryInventoryItems } from "@/lib/pantry/grocery";
+import { getPantryDrafts } from "@/lib/pantry/draft-cache";
+import { pantryCacheKey } from "@/lib/pantry/restock";
 import {
   normalizeRecipeLocale,
   resolveRecipeTranslation,
   resolveIngredientDisplayName,
   resolveIngredientTranslation,
 } from "@/lib/recipe-localization";
+
+function serializeNullableDate(value: Date | string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  return value instanceof Date ? value.toISOString() : value;
+}
 
 async function getBasicHomeData(
   userId: string,
@@ -356,6 +373,123 @@ async function getBasicHomeData(
   };
 }
 
+async function getInitialProfileSectionData(userId: string, email?: string | null) {
+  const context = await getUserContext(userId);
+
+  if (!context.userProfile) {
+    return {
+      profile: null,
+      nutrition: null,
+    };
+  }
+
+  const nutrition = context.userInfo
+    ? {
+        ...context.userInfo,
+        weight: context.userInfo.weight ? String(context.userInfo.weight) : "",
+        activity_level: context.userInfo.activity_level?.trim() || null,
+        goal: context.userInfo.goal?.trim() || null,
+        cooking_time_pref: context.userInfo.cooking_time_pref?.trim() || null,
+        meal_prep: context.userInfo.meal_prep ?? false,
+        meal_prep_days: context.userInfo.meal_prep_days ?? null,
+        diet_preferences: context.userInfo.diet_preferences?.trim() || null,
+        budget_preference: context.userInfo.budget_preference?.trim() || null,
+        likes: context.userInfo.likes || "",
+        dislikes: context.userInfo.dislikes || "",
+        allergies: context.userInfo.allergies || "",
+      }
+    : null;
+
+  return {
+    profile: {
+      fullName: context.userProfile.fullName,
+      email: email ?? "",
+      dateOfBirth: context.userInfo?.dateOfBirth
+        ? new Date(context.userInfo.dateOfBirth).toISOString().split("T")[0]
+        : "",
+      membership: context.membership || "basic",
+      badges: context.badges,
+    },
+    nutrition,
+  };
+}
+
+async function getInitialPantrySectionData(userId: string): Promise<InitialPantrySectionData> {
+  const userProfile = await db.query.userProfiles.findFirst({
+    where: eq(userProfiles.userId, userId),
+  });
+
+  if (!userProfile) {
+    return {
+      items: [],
+      restockItems: [],
+      pendingDrafts: [],
+    };
+  }
+
+  const [activeShoppingList, restockRows, cachedPantryRows, pendingDrafts] = await Promise.all([
+    db.query.shoppingLists.findFirst({
+      where: and(
+        eq(shoppingLists.userProfileId, userProfile.id),
+        eq(shoppingLists.status, "active"),
+      ),
+    }),
+    db
+      .select()
+      .from(pantryRestockItems)
+      .where(
+        and(
+          eq(pantryRestockItems.userProfileId, userProfile.id),
+          eq(pantryRestockItems.isActive, true),
+        ),
+      )
+      .orderBy(asc(pantryRestockItems.createdAt)),
+    CacheService.get<(typeof pantryItems.$inferSelect)[]>(pantryCacheKey(userProfile.id)),
+    getPantryDrafts(userProfile.id),
+  ]);
+
+  const pantryRows =
+    cachedPantryRows ??
+    (await db
+      .select()
+      .from(pantryItems)
+      .where(eq(pantryItems.userProfileId, userProfile.id))
+      .orderBy(asc(pantryItems.createdAt)));
+
+  const activeShoppingListItems = activeShoppingList
+    ? await db
+        .select()
+        .from(shoppingListItems)
+        .where(eq(shoppingListItems.shoppingListId, activeShoppingList.id))
+        .orderBy(asc(shoppingListItems.sortOrder))
+    : [];
+
+  return {
+    items: buildPantryInventoryItems(
+      pantryRows,
+      restockRows,
+      activeShoppingListItems,
+      activeShoppingList?.id ?? null,
+    ).map((item) => ({
+      ...item,
+      createdAt: serializeNullableDate(item.createdAt) ?? new Date().toISOString(),
+      updatedAt: serializeNullableDate(item.updatedAt) ?? new Date().toISOString(),
+      expiryDate: serializeNullableDate(item.expiryDate),
+    })),
+    restockItems: restockRows.filter((item) => item.isActive).map((item) => ({
+      ...item,
+      createdAt: serializeNullableDate(item.createdAt) ?? new Date().toISOString(),
+      updatedAt: serializeNullableDate(item.updatedAt) ?? new Date().toISOString(),
+      lastRestockedAt: serializeNullableDate(item.lastRestockedAt),
+    })),
+    pendingDrafts: pendingDrafts.map((draft) => ({
+      ...draft,
+      createdAt: serializeNullableDate(draft.createdAt) ?? new Date().toISOString(),
+      expiresAt: serializeNullableDate(draft.expiresAt) ?? new Date().toISOString(),
+    })),
+  };
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const safeLocale: Locale = isLocale(locale) ? locale : "sk";
@@ -384,7 +518,11 @@ export default async function HomePageCanonical() {
     redirect(`/${safeLocale}/signin`);
   }
 
-  const basicHomeData = await getBasicHomeData(session.user.id, safeLocale);
+  const [basicHomeData, initialProfileSectionData, initialPantrySectionData] = await Promise.all([
+    getBasicHomeData(session.user.id, safeLocale),
+    getInitialProfileSectionData(session.user.id, session.user.email),
+    getInitialPantrySectionData(session.user.id),
+  ]);
 
   return (
     <HomePage
@@ -393,6 +531,9 @@ export default async function HomePageCanonical() {
       cookableRecipes={basicHomeData.cookableRecipes}
       almostCookableRecipes={basicHomeData.almostCookableRecipes}
       pantryNames={basicHomeData.pantryNames}
+      initialProfileData={initialProfileSectionData.profile}
+      initialNutritionData={initialProfileSectionData.nutrition}
+      initialPantryData={initialPantrySectionData}
     />
   );
 }

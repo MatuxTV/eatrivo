@@ -611,7 +611,7 @@ async function handleInvoiceUpcoming(invoice: Stripe.Invoice) {
     membership === "pro"
       ? "Eatrivo Pro"
       : membership === "premium"
-        ? "Eatrivo Premium"
+        ? "Eatrivo Plus"
         : "Eatrivo";
 
   // Format renewal date from the invoice period end

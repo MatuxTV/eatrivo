@@ -37,11 +37,14 @@ import FeedbackButton from "@/components/FeedbackButton";
 import { usePantrySync } from "@/hooks/usePantrySync";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import RecipesSection from "../components/RecipesSection";
+import PantrySection from "@/app/pantry/components/PantryPage";
+import ProfilePageClient from "@/app/home/components/profile/ProfilePageClient";
+import type {
+  InitialPantrySectionData,
+  UserNutritionSnapshot,
+  UserProfileSnapshot,
+} from "@/app/home/types/section-data";
 
-const PantrySection = dynamic(() => import("@/app/pantry/components/PantryPage"));
-const ProfilePageClient = dynamic(
-  () => import("@/app/home/components/profile/ProfilePageClient"),
-);
 const ChatWithRivoPage = dynamic(
   () => import("@/app/chat-with-rivo/ChatWithRivoPage"),
   {
@@ -107,6 +110,9 @@ interface HomePageProps {
   cookableRecipes?: BasicHomeRecipePreview[];
   almostCookableRecipes?: BasicHomeRecipePreview[];
   pantryNames?: string[];
+  initialProfileData?: UserProfileSnapshot | null;
+  initialNutritionData?: UserNutritionSnapshot | null;
+  initialPantryData?: InitialPantrySectionData;
 }
 
 /* ------------------------------------------------------------------ */
@@ -119,6 +125,9 @@ export default function HomePage({
   cookableRecipes = [],
   almostCookableRecipes = [],
   pantryNames = [],
+  initialProfileData = null,
+  initialNutritionData = null,
+  initialPantryData,
 }: HomePageProps) {
   const t = useTranslations("home");
   const locale = useLocale();
@@ -255,6 +264,15 @@ export default function HomePage({
     }
   }, [searchParams]);
 
+  const initialProfileViewParam = searchParams.get("profileView");
+  const initialProfileView =
+    initialProfileViewParam === "personal" ||
+    initialProfileViewParam === "nutrition" ||
+    initialProfileViewParam === "bookmarks" ||
+    initialProfileViewParam === "billing"
+      ? initialProfileViewParam
+      : "default";
+
   /* ---- Section switcher callbacks ---- */
 
   const openPantrySection = useCallback(() => {
@@ -307,7 +325,7 @@ export default function HomePage({
         activeSection={activeSection}
         onSectionChange={setActiveSection}
       />
-      <HomeHeader onSectionChange={setActiveSection} />
+      <HomeHeader />
       <AppShellViewport
         as="main"
         includeBottomNavOffset={
@@ -318,7 +336,7 @@ export default function HomePage({
         className={`flex-1 w-full md:max-w-[calc(100vw-256px)] h-[100dvh] ${
           primaryActiveSection === "chatWithRivo"
             ? "overflow-hidden p-0"
-            : "overflow-x-hidden overflow-y-auto overscroll-y-contain pt-20 md:pt-8 px-4 md:px-8"
+            : "overflow-x-hidden overflow-y-auto overscroll-y-contain pt-16 md:pt-8 px-4 md:px-8"
         }`}
       >
         <AnimatePresence mode="wait">
@@ -333,13 +351,6 @@ export default function HomePage({
             >
               {/* ---- Section switcher ---- */}
               <div className="mb-6">
-                <div className="flex flex-wrap items-center gap-2 justify-between">
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                    {t("greeting.title", {
-                      name: session?.user?.name?.split(" ")[0] || "",
-                    })}
-                  </h1>
-                </div>
                 <div className="mt-4 w-full rounded-2xl border border-eatrivo-black-primary/10 bg-white/80 p-1 shadow-sm backdrop-blur-sm">
                   <div className="grid grid-cols-2 gap-1">
                     <Button
@@ -439,7 +450,10 @@ export default function HomePage({
               transition={{ duration: 0.3 }}
               className="max-w-7xl mx-auto"
             >
-              <PantrySection onPantryChanged={pantrySync.refreshPantrySummary} />
+              <PantrySection
+                onPantryChanged={pantrySync.refreshPantrySummary}
+                initialData={initialPantryData}
+              />
             </motion.div>
           ) : primaryActiveSection === "profile" ? (
             <motion.div
@@ -453,6 +467,9 @@ export default function HomePage({
               <ProfilePageClient
                 onBack={() => setActiveSection("home")}
                 onOpenBookmarkedRecipe={handleOpenBookmarkedRecipeFromProfile}
+                initialProfileData={initialProfileData}
+                initialNutritionData={initialNutritionData}
+                initialView={initialProfileView}
               />
             </motion.div>
           ) : primaryActiveSection === "chatWithRivo" ? (
