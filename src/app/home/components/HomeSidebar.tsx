@@ -171,45 +171,6 @@ export default function HomeSidebar({
           })}
         </nav>
       </motion.div>
-
-      {/* ── Mobile Bottom Tab Bar ── */}
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-white/95 backdrop-blur-sm border-t border-gray-100"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        {mobileNavItems.map((item) => {
-          const isActive = primaryActiveSection === item.id;
-          const isDisabled = false;
-
-          return (
-            <button
-              key={item.id}
-              type="button"
-              disabled={isDisabled}
-              onClick={() => !isDisabled && onSectionChange(item.id)}
-              className={`
-                relative flex flex-1 flex-col items-center justify-center gap-1
-                min-h-[56px] py-2 transition-colors
-                ${isDisabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}
-                ${isActive ? "text-eatrivo-purple" : "text-gray-400"}
-              `}
-            >
-              <div className="relative">
-                <item.icon className="w-5 h-5" />
-                {item.id === "chatWithRivo" && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-                  </span>
-                )}
-              </div>
-              <span className="text-[10px] font-semibold leading-none tracking-wide">
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-      </nav>
     </>
   );
 }
