@@ -325,7 +325,7 @@ export default function HomePage({
         activeSection={activeSection}
         onSectionChange={setActiveSection}
       />
-      <HomeHeader onSectionChange={setActiveSection} />
+      <HomeHeader />
       <AppShellViewport
         as="main"
         includeBottomNavOffset={
@@ -336,7 +336,7 @@ export default function HomePage({
         className={`flex-1 w-full md:max-w-[calc(100vw-256px)] h-[100dvh] ${
           primaryActiveSection === "chatWithRivo"
             ? "overflow-hidden p-0"
-            : "overflow-x-hidden overflow-y-auto overscroll-y-contain pt-20 md:pt-8 px-4 md:px-8"
+            : "overflow-x-hidden overflow-y-auto overscroll-y-contain pt-16 md:pt-8 px-4 md:px-8"
         }`}
       >
         <AnimatePresence mode="wait">
@@ -351,13 +351,6 @@ export default function HomePage({
             >
               {/* ---- Section switcher ---- */}
               <div className="mb-6">
-                <div className="flex flex-wrap items-center gap-2 justify-between">
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                    {t("greeting.title", {
-                      name: session?.user?.name?.split(" ")[0] || "",
-                    })}
-                  </h1>
-                </div>
                 <div className="mt-4 w-full rounded-2xl border border-eatrivo-black-primary/10 bg-white/80 p-1 shadow-sm backdrop-blur-sm">
                   <div className="grid grid-cols-2 gap-1">
                     <Button

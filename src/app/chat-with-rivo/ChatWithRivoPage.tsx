@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Send, Sprout, Target, MessageSquarePlus, Crown } from "lucide-react";
 import Image from "next/image";
@@ -70,6 +70,7 @@ export default function ChatWithRivoPage() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [loaderStepIndex, setLoaderStepIndex] = useState(0);
   const [chatLimit, setChatLimit] = useState<ChatLimit | null>(null);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
 
   const fetchChatLimit = useCallback(async () => {
     try {
@@ -85,6 +86,9 @@ export default function ChatWithRivoPage() {
 
   const sessionId = useRef(loadSessionId() || crypto.randomUUID());
   const hasTrackedSessionStart = useRef(false);
+  const initialViewportHeight = useRef<number | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isInputFocusedRef = useRef(false);
 
   useEffect(() => {
     saveSessionId(sessionId.current);
@@ -117,6 +121,94 @@ export default function ChatWithRivoPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isStreaming, loaderStepIndex]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) {
+      return;
+    }
+
+    const viewport = window.visualViewport;
+    const isStandaloneMode = () => {
+      const navigatorWithStandalone = window.navigator as Navigator & {
+        standalone?: boolean;
+      };
+
+      return (
+        window.matchMedia("(display-mode: standalone)").matches ||
+        navigatorWithStandalone.standalone === true
+      );
+    };
+
+    const getBaselineHeight = () =>
+      Math.max(
+        isStandaloneMode() ? window.innerHeight : 0,
+        viewport.height + viewport.offsetTop,
+      );
+
+    const syncBaselineHeight = () => {
+      initialViewportHeight.current = getBaselineHeight();
+    };
+
+    const updateKeyboardOffset = () => {
+      if (initialViewportHeight.current === null) {
+        syncBaselineHeight();
+      }
+
+      const baselineHeight = initialViewportHeight.current ?? getBaselineHeight();
+      const visibleHeight = viewport.height + viewport.offsetTop;
+      const nextOffset = Math.max(0, baselineHeight - visibleHeight);
+
+      if (!isInputFocusedRef.current && nextOffset < 80) {
+        setKeyboardOffset(0);
+        syncBaselineHeight();
+        return;
+      }
+
+      setKeyboardOffset(nextOffset > 80 ? nextOffset : 0);
+    };
+
+    const settleViewport = () => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          syncBaselineHeight();
+          updateKeyboardOffset();
+        });
+      });
+    };
+
+    syncBaselineHeight();
+    updateKeyboardOffset();
+
+    viewport.addEventListener("resize", updateKeyboardOffset);
+    viewport.addEventListener("scroll", updateKeyboardOffset);
+    window.addEventListener("orientationchange", settleViewport);
+    window.addEventListener("pageshow", settleViewport);
+    window.addEventListener("focusin", settleViewport);
+    window.addEventListener("focusout", settleViewport);
+    document.addEventListener("visibilitychange", settleViewport);
+
+    return () => {
+      viewport.removeEventListener("resize", updateKeyboardOffset);
+      viewport.removeEventListener("scroll", updateKeyboardOffset);
+      window.removeEventListener("orientationchange", settleViewport);
+      window.removeEventListener("pageshow", settleViewport);
+      window.removeEventListener("focusin", settleViewport);
+      window.removeEventListener("focusout", settleViewport);
+      document.removeEventListener("visibilitychange", settleViewport);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (keyboardOffset === 0) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 120);
+
+    return () => window.clearTimeout(timeout);
+  }, [keyboardOffset]);
 
   useEffect(() => {
     if (!isStreaming) return;
@@ -261,14 +353,24 @@ export default function ChatWithRivoPage() {
     }
   }
 
+  const isKeyboardOpen = keyboardOffset > 0;
+  const mobileComposerStyle = {
+    bottom: `calc(env(safe-area-inset-bottom) + ${keyboardOffset}px)`,
+    transition: "bottom 180ms ease-out",
+    willChange: "bottom",
+  } satisfies CSSProperties;
+
   return (
-    <AppShellViewport className="flex h-full w-full flex-1 flex-col mx-auto bg-eatrivo-white-primary relative overflow-hidden px-4 pt-20 md:px-8 md:pt-0">
+    <AppShellViewport
+      includeBottomNavOffset={!isKeyboardOpen}
+      className="flex h-full w-full flex-1 flex-col mx-auto bg-eatrivo-white-primary relative overflow-hidden px-4 pt-20 md:px-8 md:pt-0"
+    >
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-eatrivo-purple/10 blur-[100px] rounded-full opacity-60"></div>
         <div className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] bg-eatrivo-pink/5 blur-[120px] rounded-full opacity-40"></div>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-6 pt-4 pb-6 scrollbar-hide relative z-10 md:max-w-4xl md:mx-auto md:w-full">
+      <div className="flex-1 overflow-y-auto overscroll-y-contain space-y-6 pt-4 pb-28 scrollbar-hide relative z-10 md:max-w-4xl md:mx-auto md:w-full md:pb-6">
         {chatLimit?.limited && (
           <div className="absolute top-2 right-2 md:top-4 md:-right-4 z-20">
             <span
@@ -506,54 +608,85 @@ export default function ChatWithRivoPage() {
         <div ref={bottomRef} className="h-4" />
       </div>
 
-      <div className="pt-2 pb-2 md:pb-6 mt-auto relative z-20 md:max-w-4xl md:mx-auto md:w-full">
-        {chatLimit?.limited && chatLimit.remaining === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-4">
-            <div className="text-center px-4">
-              <p className="text-sm font-semibold text-gray-700">
-                Dosiahol si denný limit {chatLimit.limit} správ
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Prejdi na Plus pre neobmedzeny chat s Rivom
-              </p>
+      <div
+        className="fixed left-4 right-4 z-20 md:static md:left-auto md:right-auto md:mt-auto md:max-w-4xl md:mx-auto md:w-full"
+        style={mobileComposerStyle}
+      >
+        <div className="pt-2 pb-2 bg-gradient-to-t from-eatrivo-white-primary via-eatrivo-white-primary/95 to-transparent md:bg-none md:pb-6">
+          {chatLimit?.limited && chatLimit.remaining === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <div className="text-center px-4">
+                <p className="text-sm font-semibold text-gray-700">
+                  Dosiahol si denný limit {chatLimit.limit} správ
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Prejdi na Plus pre neobmedzeny chat s Rivom
+                </p>
+              </div>
+              <Link
+                href="/pricing"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink text-white text-sm font-semibold rounded-full shadow-md shadow-eatrivo-purple/25 hover:shadow-lg hover:shadow-eatrivo-purple/40 hover:-translate-y-0.5 transition-all"
+              >
+                <Crown className="w-4 h-4" />
+                Upgrade na Plus
+              </Link>
             </div>
-            <Link
-              href="/pricing"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink text-white text-sm font-semibold rounded-full shadow-md shadow-eatrivo-purple/25 hover:shadow-lg hover:shadow-eatrivo-purple/40 hover:-translate-y-0.5 transition-all"
-            >
-              <Crown className="w-4 h-4" />
-              Upgrade na Plus
-            </Link>
-          </div>
-        ) : (
-          <div className="relative flex items-center bg-white/90 backdrop-blur-xl p-1.5 rounded-[2rem] border border-eatrivo-purple/10 shadow-[0_8px_30px_rgb(123,63,242,0.12)] focus-within:ring-2 focus-within:ring-eatrivo-purple/30 focus-within:border-eatrivo-purple/50 transition-all duration-300">
-            <input
-              className="flex-1 bg-transparent px-5 py-3 min-h-[44px] text-[15px] text-eatrivo-black-primary focus:outline-none placeholder:text-eatrivo-black-secondary/70"
-              placeholder="Opýtaj sa na svoj jedálniček..."
-              value={input}
-              onChange={(e) => {
-                if (e.target.value.length <= MAX_INPUT_CHARS) setInput(e.target.value);
-              }}
-              onKeyDown={(e) =>
-                e.key === "Enter" && !e.shiftKey && sendMessage()
-              }
-              disabled={isStreaming}
-              maxLength={MAX_INPUT_CHARS}
-            />
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => sendMessage()}
-              disabled={isStreaming || !input.trim()}
-              className="h-11 w-11 shrink-0 bg-gradient-to-tr from-eatrivo-purple to-eatrivo-pink text-white rounded-full shadow-md shadow-eatrivo-purple/30 disabled:opacity-50 disabled:shadow-none hover:shadow-lg hover:shadow-eatrivo-purple/40 transition-all mr-0.5 flex items-center justify-center"
-            >
-              <Send className="w-5 h-5 ml-0.5" />
-            </motion.button>
-          </div>
-        )}
-        <p className="text-center text-[11px] text-eatrivo-black-secondary mt-3 font-medium opacity-80 hidden md:block">
-          Rivo môže robiť chyby. Odporúčame overovať dôležité informácie.
-        </p>
+          ) : (
+            <div className="relative flex items-center bg-white/90 backdrop-blur-xl p-1.5 rounded-[2rem] border border-eatrivo-purple/10 shadow-[0_8px_30px_rgb(123,63,242,0.12)] focus-within:ring-2 focus-within:ring-eatrivo-purple/30 focus-within:border-eatrivo-purple/50 transition-all duration-300">
+              <input
+                ref={inputRef}
+                className="flex-1 bg-transparent px-5 py-3 min-h-[44px] text-base md:text-[15px] text-eatrivo-black-primary focus:outline-none placeholder:text-eatrivo-black-secondary/70"
+                placeholder="Opýtaj sa na svoj jedálniček..."
+                value={input}
+                onChange={(e) => {
+                  if (e.target.value.length <= MAX_INPUT_CHARS) setInput(e.target.value);
+                }}
+                onFocus={() => {
+                  isInputFocusedRef.current = true;
+                  if (window.visualViewport) {
+                    initialViewportHeight.current = Math.max(
+                      window.innerHeight,
+                      window.visualViewport.height + window.visualViewport.offsetTop,
+                    );
+                  }
+                  window.setTimeout(() => {
+                    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+                  }, 180);
+                }}
+                onBlur={() => {
+                  isInputFocusedRef.current = false;
+                  window.setTimeout(() => {
+                    if (window.visualViewport) {
+                      initialViewportHeight.current = Math.max(
+                        window.innerHeight,
+                        window.visualViewport.height + window.visualViewport.offsetTop,
+                      );
+                    }
+                    setKeyboardOffset(0);
+                  }, 180);
+                }}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && !e.shiftKey && sendMessage()
+                }
+                disabled={isStreaming}
+                maxLength={MAX_INPUT_CHARS}
+                enterKeyHint="send"
+              />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => sendMessage()}
+                disabled={isStreaming || !input.trim()}
+                className="h-11 w-11 shrink-0 bg-gradient-to-tr from-eatrivo-purple to-eatrivo-pink text-white rounded-full shadow-md shadow-eatrivo-purple/30 disabled:opacity-50 disabled:shadow-none hover:shadow-lg hover:shadow-eatrivo-purple/40 transition-all mr-0.5 flex items-center justify-center"
+              >
+                <Send className="w-5 h-5 ml-0.5" />
+              </motion.button>
+            </div>
+          )}
+          <p className="text-center text-[11px] text-eatrivo-black-secondary mt-3 font-medium opacity-80 hidden md:block">
+            Rivo môže robiť chyby. Odporúčame overovať dôležité informácie.
+          </p>
+        </div>
       </div>
     </AppShellViewport>
   );

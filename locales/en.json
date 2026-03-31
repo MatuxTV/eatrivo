@@ -278,6 +278,17 @@
     }
   },
   "auth": {
+    "welcome": {
+      "metaTitle": "Welcome",
+      "metaDescription": "Sign in to get your personalized meals based on the ingredients you already have",
+      "logoAlt": "Eatrivo logo",
+      "headlineTop": "Eat better,",
+      "headlineBottom": "feel better.",
+      "subtitle": "Sign in to get your personalized meals based on the ingredients you already have",
+      "illustrationAlt": "Rivo ready to help with meal planning",
+      "emailButton": "Continue with Email",
+      "appleButton": "Continue with Apple"
+    },
     "signIn": {
       "metaTitle": "Sign in",
       "tagline": "Sign in to continue",

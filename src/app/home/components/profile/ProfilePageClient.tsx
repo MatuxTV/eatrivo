@@ -27,6 +27,7 @@ import type {
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
+import LanguageSwitcher from "../LanguageSwitcher";
 
 interface ProfilePageClientProps {
   onBack?: () => void;
@@ -36,7 +37,12 @@ interface ProfilePageClientProps {
   initialView?: ProfileView;
 }
 
-type ProfileView = "default" | "personal" | "nutrition" | "bookmarks" | "billing";
+type ProfileView =
+  | "default"
+  | "personal"
+  | "nutrition"
+  | "bookmarks"
+  | "billing";
 
 export default function ProfilePageClient({
   onBack: _onBack,
@@ -55,9 +61,8 @@ export default function ProfilePageClient({
   const [profileData, setProfileData] = useState<UserProfileSnapshot | null>(
     initialProfileData,
   );
-  const [nutritionData, setNutritionData] = useState<UserNutritionSnapshot | null>(
-    initialNutritionData,
-  );
+  const [nutritionData, setNutritionData] =
+    useState<UserNutritionSnapshot | null>(initialNutritionData);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -95,7 +100,10 @@ export default function ProfilePageClient({
       "billing",
     ];
 
-    if (!profileViewParam || !validViews.includes(profileViewParam as ProfileView)) {
+    if (
+      !profileViewParam ||
+      !validViews.includes(profileViewParam as ProfileView)
+    ) {
       return;
     }
 
@@ -225,13 +233,19 @@ export default function ProfilePageClient({
         <div className="pointer-events-none absolute -right-12 -top-16 hidden h-40 w-40 rounded-full bg-[#ead6ff] opacity-80 blur-3xl sm:block" />
         <div className="pointer-events-none absolute -left-10 bottom-0 hidden h-32 w-32 rounded-full bg-[#ffe5ef] opacity-70 blur-3xl sm:block" />
 
+        <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6 md:right-7 md:top-7">
+          <LanguageSwitcher />
+        </div>
+
         <div className="relative z-10 flex flex-col gap-6">
           <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:gap-6">
-              <div className="relative flex h-20 w-20 items-center justify-center rounded-[1.6rem] bg-[radial-gradient(circle_at_top,#4b2a69_0%,#241426_72%)] text-2xl font-black tracking-[-0.04em] text-white shadow-[0_18px_40px_rgba(58,27,79,0.38)] ring-4 ring-white sm:h-24 sm:w-24 sm:rounded-[2rem] sm:text-3xl">
-                {initials || "E"}
-                <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#7d49cf] text-white ring-4 ring-[#fff7ff]">
-                  <Settings className="h-4 w-4" />
+              <div className="flex flex-row">
+                <div className="relative flex h-20 w-20 items-center justify-center rounded-[1.6rem] bg-[radial-gradient(circle_at_top,#4b2a69_0%,#241426_72%)] text-2xl font-black tracking-[-0.04em] text-white shadow-[0_18px_40px_rgba(58,27,79,0.38)] ring-4 ring-white sm:h-24 sm:w-24 sm:rounded-[2rem] sm:text-3xl">
+                  {initials || "E"}
+                  <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#7d49cf] text-white ring-4 ring-[#fff7ff]">
+                    <Settings className="h-4 w-4" />
+                  </div>
                 </div>
               </div>
 
@@ -243,12 +257,16 @@ export default function ProfilePageClient({
                   {displayName}
                 </h1>
                 <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                  <span className="rounded-full bg-[#7d49cf] px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_24px_rgba(125,73,207,0.28)]">
+                  <span
+                    className={`rounded-full ${profileData?.membership === "premium" ? "bg-eatrivo-yellow" : "bg-eatrivo-purple"} px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_24px_rgba(125,73,207,0.28)]`}
+                  >
                     {profileData?.membership?.toUpperCase() || "FREE"}
                   </span>
                   {(profileData?.badges?.length ?? 0) > 0 ? (
                     <span className="rounded-full bg-[#f5ecff] px-3 py-1.5 text-[11px] font-bold text-[#7d49cf] ring-1 ring-[#eadcff]">
-                      {t("header.badgesCount", { count: profileData?.badges?.length ?? 0 })}
+                      {t("header.badgesCount", {
+                        count: profileData?.badges?.length ?? 0,
+                      })}
                     </span>
                   ) : null}
                 </div>
@@ -295,18 +313,26 @@ export default function ProfilePageClient({
             onClick={card.action}
             className="flex w-full items-center gap-3 rounded-[1.6rem] border border-[#f2e8fb] bg-white px-4 py-4 text-left shadow-[0_14px_34px_rgba(121,78,171,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(121,78,171,0.10)] sm:gap-4 sm:rounded-[1.8rem] sm:px-5 sm:py-5"
           >
-            <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${card.iconClassName} sm:h-12 sm:w-12`}>
+            <span
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${card.iconClassName} sm:h-12 sm:w-12`}
+            >
               <card.icon className="h-5 w-5" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className={`block text-lg font-black tracking-[-0.04em] sm:text-xl ${card.key === "logout" ? "text-[#da325c]" : "text-[#35204f]"}`}>
+              <span
+                className={`block text-lg font-black tracking-[-0.04em] sm:text-xl ${card.key === "logout" ? "text-[#da325c]" : "text-[#35204f]"}`}
+              >
                 {card.title}
               </span>
-              <span className={`mt-1 block text-sm font-medium ${card.key === "logout" ? "text-[#ef7b97]" : "text-[#87739f]"}`}>
+              <span
+                className={`mt-1 block text-sm font-medium ${card.key === "logout" ? "text-[#ef7b97]" : "text-[#87739f]"}`}
+              >
                 {card.description}
               </span>
             </span>
-            <ChevronRight className={`h-5 w-5 shrink-0 ${card.key === "logout" ? "text-[#ef7b97]" : "text-[#af95cf]"}`} />
+            <ChevronRight
+              className={`h-5 w-5 shrink-0 ${card.key === "logout" ? "text-[#ef7b97]" : "text-[#af95cf]"}`}
+            />
           </button>
         ))}
       </section>
@@ -358,9 +384,7 @@ export default function ProfilePageClient({
           />,
         );
       case "billing":
-        return renderDetailShell(
-          <ProfileBillingSection embedded />,
-        );
+        return renderDetailShell(<ProfileBillingSection embedded />);
       case "bookmarks":
         return renderDetailShell(
           <BookmarkedRecipesSection
@@ -368,7 +392,7 @@ export default function ProfilePageClient({
             onOpenRecipe={(recipe) => {
               onOpenBookmarkedRecipe?.(recipe);
             }}
-          />
+          />,
         );
       case "default":
       default:

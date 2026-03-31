@@ -294,7 +294,6 @@ export function Pricing({ className = "" }: SectionProps) {
                 key={tier.tier}
                 tier={tier}
                 name={name}
-                trialDays={data?.trialDaysLeft}
                 description={description}
                 features={features}
                 locale={locale}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Check, Loader2, Crown,  Star } from "lucide-react";
+import { Check, Loader2, Crown, Star, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
@@ -70,7 +70,14 @@ export function PricingCard({
     }
   };
 
-  const tierConfig = {
+  const tierConfig: Record<PricingCardProps["tier"], {
+    icon: typeof Star;
+    accent: string;
+    badgeBg: string;
+    checkColor: string;
+    buttonClass: string;
+    glowColor: string;
+  }> = {
     basic: {
       icon: Star,
       accent: "eatrivo-black-secondary",
@@ -88,15 +95,15 @@ export function PricingCard({
         "bg-eatrivo-purple text-white hover:bg-eatrivo-purple/90 shadow-lg shadow-eatrivo-purple/25",
       glowColor: "rgba(123, 63, 242, 0.15)",
     },
-    // pro: {
-    //   icon: Zap,
-    //   accent: "violet-600",
-    //   badgeBg: "bg-violet-100 text-violet-600",
-    //   checkColor: "text-violet-500",
-    //   buttonClass:
-    //     "bg-violet-600 text-white hover:bg-violet-700 shadow-lg shadow-violet-600/25",
-    //   glowColor: "rgba(124, 58, 237, 0.15)",
-    // },
+    pro: {
+      icon: Zap,
+      accent: "violet-600",
+      badgeBg: "bg-violet-100 text-violet-600",
+      checkColor: "text-violet-500",
+      buttonClass:
+        "bg-violet-600 text-white hover:bg-violet-700 shadow-lg shadow-violet-600/25",
+      glowColor: "rgba(124, 58, 237, 0.15)",
+    },
   };
 
   const config = tierConfig[tier];

@@ -542,7 +542,7 @@ export default function PantrySection({
                     {t("add_item")}
                   </Button>
 
-                  <Button
+                  {/* <Button
                     type="button"
                     className="h-11 rounded-xl border border-eatrivo-purple/60 bg-eatrivo-white-primary px-3 text-sm font-semibold text-gray-800 shadow-sm"
                   >
@@ -556,7 +556,7 @@ export default function PantrySection({
                         className="h-5 w-5 object-contain"
                       />
                     </span>
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
             </div>

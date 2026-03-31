@@ -278,6 +278,17 @@
     }
   },
   "auth": {
+    "welcome": {
+      "metaTitle": "Vitajte",
+      "metaDescription": "Prihláste sa do Eatrivo a pokračujte k personalizovaným jedlám na základe ingrediencií, ktoré už máte",
+      "logoAlt": "Logo Eatrivo",
+      "headlineTop": "Jedz lepšie,",
+      "headlineBottom": "cíť sa lepšie.",
+      "subtitle": "Prihláste sa a pokračujte k personalizovaným jedlám na základe ingrediencií, ktoré už máte",
+      "illustrationAlt": "Rivo pripravený pomôcť s plánovaním jedál",
+      "emailButton": "Pokračovať e-mailom",
+      "appleButton": "Pokračovať cez Apple"
+    },
     "signIn": {
       "metaTitle": "Prihlásenie",
       "tagline": "Prihláste sa a pokračujte",
@@ -1733,6 +1744,17 @@
           "Podpora nášho vývojového týmu pre rychlejší vývoj",
           "(PRIPRAVUJEME) Skenovanie nákupného bločku pre rýchlejšie a pohodlnejšie pridanie potravín do Špajze",
           "(PRIPRAVUJEME) Prispôsobenie jednotlivých receptov pre lepšiu personalizáciu založenú na vašich cieľoch, chutiach a vašej diéte"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "Pokročilé funkcie pre ambiciózne zdravotné ciele",
+        "features": [
+          "Všetko z Plus",
+          "Pokročilejšie vedenie stravovania",
+          "Rozšírené analytiky",
+          "Rodinné plánovanie jedál",
+          "Import a export receptov"
         ]
       }
     },

@@ -58,6 +58,12 @@ export const analyticsEventDefinitions = {
   signin_viewed: {
     eventType: "page_view",
     destinations: [],
+    allowClient: true,
+  },
+  welcome_auth_viewed: {
+    eventType: "page_view",
+    destinations: [],
+    allowClient: true,
   },
   signup_started: {
     eventType: "engagement",
