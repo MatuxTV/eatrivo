@@ -47,7 +47,7 @@ const localeScreenshots: Record<Locale, string[]> = {
   sk: [
     "/images/screenshots/sk/SCREEN_HOME.jpg",
     "/images/screenshots/sk/SCREEN_PANTRY.jpg",
-    "/images/screenshots/sk/CHAT_W_RIVO.jpg",
+    "/images/screenshots/sk/SCREEN_CHAT_W_RIVO.jpg",
   ],
   en: [
     "/images/screenshots/en/SCREEN_HOME.jpeg",
@@ -87,12 +87,15 @@ function shuffleArray(items: string[]) {
 
 function FeaturePhoneMockup({ screenshotSrc, alt }: { screenshotSrc: string; alt: string }) {
   return (
-    <div className="relative mx-auto w-full max-w-[18rem] px-1">
-      <div className="absolute left-5 top-5 h-16 w-16 rounded-full bg-[#ead8ff] blur-2xl" />
-      <div className="absolute bottom-10 right-1 h-24 w-24 rounded-full bg-[#ffd9e7] blur-3xl" />
+    <div className="relative mx-auto w-full max-w-[19.5rem] px-1">
+      <div className="absolute left-4 top-4 h-16 w-16 rounded-full bg-[#ead8ff] blur-2xl" />
+      <div className="absolute bottom-8 right-0 h-24 w-24 rounded-full bg-[#ffd9e7] blur-3xl" />
 
-      <div className="relative mx-auto aspect-[129/236] w-[13.5rem] rounded-[2.85rem] border-[5px] border-[#2f2a36] bg-[#18141f] p-[0.4rem] shadow-[0_30px_80px_rgba(49,33,72,0.26)]">
-        <div className="absolute left-1/2 top-[0.58rem] z-20 h-[1.55rem] w-[6.1rem] -translate-x-1/2 rounded-full bg-[#221d28] shadow-[0_6px_14px_rgba(0,0,0,0.22)]" />
+      <div className="relative mx-auto aspect-[129/236] w-[14.65rem] rounded-[3rem] border-[5px] border-[#2f2a36] bg-[#18141f] p-[0.4rem] shadow-[0_32px_90px_rgba(49,33,72,0.28)]">
+        <div className="absolute left-1/2 top-[0.52rem] z-20 flex h-[1.72rem] w-[6.85rem] -translate-x-1/2 items-center justify-center rounded-full bg-[#221d28] shadow-[0_8px_18px_rgba(0,0,0,0.24)]">
+          <div className="h-[0.46rem] w-[0.46rem] rounded-full bg-[#0d0a11] opacity-90" />
+          <div className="ml-2 h-[0.38rem] w-[0.38rem] rounded-full bg-[#36313d]" />
+        </div>
         <div className="relative h-full overflow-hidden rounded-[2.2rem] bg-white">
           <Image
             src={screenshotSrc}
@@ -126,16 +129,15 @@ function IntroDevicePreview({
 
   if (slideKey === "signin") {
     return (
-      <div className="relative mx-auto flex h-[22.5rem] w-full max-w-[17rem] items-center justify-center overflow-hidden rounded-[2.5rem] bg-[radial-gradient(circle_at_top,#fffafc_0%,#f6ecff_58%,#f4e8ff_100%)] shadow-[0_25px_70px_rgba(135,87,197,0.2)]">
-        <div className="absolute left-8 top-6 h-20 w-20 rounded-full bg-[#e9d7ff] blur-3xl" />
-        <div className="absolute bottom-6 right-5 h-24 w-24 rounded-full bg-[#ffd8e8] blur-3xl" />
+      <div className="relative mx-auto flex h-[22.5rem] w-full max-w-[17rem] items-center justify-center overflow-hidden rounded-[2.5rem] ">
+        <div className="absolute bottom-6 right-5 " />
         <Image
           src="/rivo/RIVO7-login.png"
           alt={"Rivo"}
-          width={360}
-          height={220}
+          width={400}
+          height={280}
           priority
-          className="relative h-auto w-[14.75rem]"
+          className="relative h-auto w-[20.75rem]"
         />
       </div>
     );
@@ -290,7 +292,7 @@ export function SignInIntroCarousel({
 
       <div className="relative mx-auto flex min-h-[calc(100dvh-1.5rem)] w-full max-w-[25rem] flex-col rounded-[2rem] bg-white/45 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-[2px] sm:min-h-[46rem] sm:px-6 sm:pt-5">
         <header className="relative flex items-center justify-between">
-          <div className="flex items-center gap-2 rounded-full bg-white/80 px-2.5 py-1.5 shadow-[0_10px_25px_rgba(114,75,161,0.08)] ring-1 ring-white/80">
+          <div className="flex items-center gap-2 rounded-full px-2.5 py-1.5 shadow-[0_10px_25px_rgba(114,75,161,0.08)] ">
             <Image
               src="/logo/LOGO_ROW.png"
               alt={logoAlt}
@@ -349,9 +351,9 @@ export function SignInIntroCarousel({
               animate="animate"
               exit="exit"
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-1 flex-col"
+              className={`flex flex-1 flex-col ${hasFeaturePreview ? "justify-center" : "justify-center"}`}
             >
-              <div className={`relative z-0 ${hasFeaturePreview ? "-mb-28 pt-1" : "flex-1"}`}>
+              <div className={`relative z-0 mx-auto w-full ${hasFeaturePreview ? "-mb-28 pt-0" : "flex justify-center"}`}>
                 <IntroDevicePreview
                   slideKey={currentSlide.key}
                   screenshotSrc={currentSlide.screenshotSrc}
@@ -359,11 +361,11 @@ export function SignInIntroCarousel({
                 />
               </div>
 
-              <div className={`relative overflow-hidden rounded-[2.25rem] px-4 py-6 text-center shadow-[0_20px_55px_rgba(121,78,171,0.1)] ${hasFeaturePreview ? "-mt-8 pt-10" : "mt-6"}`}>
+              <div className={`relative mx-auto w-full max-w-[22rem] overflow-hidden rounded-[2.25rem] px-4 py-6 text-center shadow-[0_20px_55px_rgba(121,78,171,0.1)] ${hasFeaturePreview ? "-mt-8 pt-10" : "mt-6"}`}>
                 {currentSlide.screenshotSrc ? (
                   <>
-                    <div className="absolute left-1/2 top-[-11rem] h-[calc(100%+12rem)] w-[13.85rem] -translate-x-1/2 rounded-[2.65rem] bg-[#251f2c]/12 blur-[1px]" />
-                    <div className="absolute left-1/2 top-[-10.65rem] h-[calc(100%+11.5rem)] w-[13.15rem] -translate-x-1/2 overflow-hidden rounded-[2.35rem]">
+                    <div className="absolute left-1/2 top-[-11.9rem] h-[calc(100%+13rem)] w-[15rem] -translate-x-1/2 rounded-[2.85rem] bg-[#251f2c]/12 blur-[1px]" />
+                    <div className="absolute left-1/2 top-[-11.5rem] h-[calc(100%+12.35rem)] w-[14.25rem] -translate-x-1/2 overflow-hidden rounded-[2.5rem]">
                       <Image
                         src={currentSlide.screenshotSrc}
                         alt=""
@@ -386,7 +388,7 @@ export function SignInIntroCarousel({
                   </>
                 ) : null}
 
-                <div className="relative z-10">
+                <div className="relative z-10 flex flex-col items-center justify-center">
                 {currentSlide.eyebrow ? (
                   <div className="inline-flex items-center gap-2 rounded-full bg-white/72 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[#7d49cf] shadow-sm ring-1 ring-white/80">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#7d49cf]" />
@@ -394,63 +396,63 @@ export function SignInIntroCarousel({
                   </div>
                 ) : null}
 
-                <h1 className="mx-auto mt-4 max-w-[18rem] whitespace-pre-line text-[2.3rem] font-black leading-[0.95] tracking-[-0.055em] text-[#2e1848] sm:text-[2.55rem]">
+                <h1 className="mx-auto mt-4 max-w-[18.75rem] whitespace-pre-line text-[2.35rem] font-black leading-[0.93] tracking-[-0.06em] text-[#2e1848] sm:text-[2.55rem]">
                   {currentSlide.title}
                 </h1>
-                <p className="mx-auto mt-4 max-w-[18.4rem] text-[1rem] font-medium leading-7 text-[#6f6383] sm:max-w-[19.5rem]">
+                <p className="mx-auto mt-4 max-w-[18.75rem] text-[1.02rem] font-medium leading-7 text-[#6f6383] sm:max-w-[19.5rem]">
                   {currentSlide.description}
                 </p>
                 </div>
               </div>
-
-              <div className="mt-auto pt-7">
-                {isFinalSlide ? (
-                  <>
-                    <form action={googleAction}>
-                      <button
-                        type="submit"
-                        className="flex h-14 w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white px-5 text-sm font-bold text-[#262231] shadow-[0_16px_35px_rgba(78,55,118,0.12)] transition-all duration-200 hover:translate-y-[-1px] active:scale-[0.98]"
-                      >
-                        <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-                          <path fill="#4285F4" d="M21.6 12.23c0-.68-.06-1.33-.18-1.95H12v3.69h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.24c1.9-1.75 2.98-4.33 2.98-7.26Z" />
-                          <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.61-2.43l-3.24-2.5c-.9.6-2.05.96-3.37.96-2.59 0-4.79-1.75-5.57-4.1H3.09v2.58A9.98 9.98 0 0 0 12 22Z" />
-                          <path fill="#FBBC05" d="M6.43 13.93A5.98 5.98 0 0 1 6.1 12c0-.67.12-1.32.33-1.93V7.5H3.09A9.98 9.98 0 0 0 2 12c0 1.61.39 3.14 1.09 4.5l3.34-2.57Z" />
-                          <path fill="#EA4335" d="M12 5.96c1.47 0 2.78.5 3.81 1.48l2.86-2.86C16.95 2.98 14.69 2 12 2A9.98 9.98 0 0 0 3.09 7.5l3.34 2.57c.78-2.35 2.98-4.11 5.57-4.11Z" />
-                        </svg>
-                        {googleButtonLabel}
-                      </button>
-                    </form>
-
-                    <p className="mx-auto mt-4 max-w-[18rem] text-center text-[11px] leading-5 text-[#948ca3]">
-                      {agreementPrefix}{" "}
-                      <Link href={`/${locale}/terms-of-service`} className="font-semibold text-[#5f3db2] underline underline-offset-2">
-                        {termsLabel}
-                      </Link>{" "}
-                      {andLabel}{" "}
-                      <Link href={`/${locale}/privacy-policy`} className="font-semibold text-[#5f3db2] underline underline-offset-2">
-                        {privacyLabel}
-                      </Link>
-                      .
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleNext}
-                      className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7d49cf] to-[#8539ff] px-5 text-base font-black text-white shadow-[0_18px_40px_rgba(125,73,207,0.34)] transition-all duration-200 hover:translate-y-[-1px] active:scale-[0.98]"
-                    >
-                      {continueLabel}
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                    <p className="mt-4 text-center text-[0.72rem] font-medium tracking-[0.02em] text-[#9186a5]">
-                      {swipeHint}
-                    </p>
-                  </>
-                )}
-              </div>
             </motion.div>
           </AnimatePresence>
+
+          <div className="mt-auto pt-7">
+            {isFinalSlide ? (
+              <>
+                <form action={googleAction}>
+                  <button
+                    type="submit"
+                    className="flex h-14 w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white px-5 text-sm font-bold text-[#262231] shadow-[0_16px_35px_rgba(78,55,118,0.12)] transition-all duration-200 hover:translate-y-[-1px] active:scale-[0.98]"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+                      <path fill="#4285F4" d="M21.6 12.23c0-.68-.06-1.33-.18-1.95H12v3.69h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.24c1.9-1.75 2.98-4.33 2.98-7.26Z" />
+                      <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.61-2.43l-3.24-2.5c-.9.6-2.05.96-3.37.96-2.59 0-4.79-1.75-5.57-4.1H3.09v2.58A9.98 9.98 0 0 0 12 22Z" />
+                      <path fill="#FBBC05" d="M6.43 13.93A5.98 5.98 0 0 1 6.1 12c0-.67.12-1.32.33-1.93V7.5H3.09A9.98 9.98 0 0 0 2 12c0 1.61.39 3.14 1.09 4.5l3.34-2.57Z" />
+                      <path fill="#EA4335" d="M12 5.96c1.47 0 2.78.5 3.81 1.48l2.86-2.86C16.95 2.98 14.69 2 12 2A9.98 9.98 0 0 0 3.09 7.5l3.34 2.57c.78-2.35 2.98-4.11 5.57-4.11Z" />
+                    </svg>
+                    {googleButtonLabel}
+                  </button>
+                </form>
+
+                <p className="mx-auto mt-4 max-w-[18rem] text-center text-[11px] leading-5 text-[#948ca3]">
+                  {agreementPrefix}{" "}
+                  <Link href={`/${locale}/terms-of-service`} className="font-semibold text-[#5f3db2] underline underline-offset-2">
+                    {termsLabel}
+                  </Link>{" "}
+                  {andLabel}{" "}
+                  <Link href={`/${locale}/privacy-policy`} className="font-semibold text-[#5f3db2] underline underline-offset-2">
+                    {privacyLabel}
+                  </Link>
+                  .
+                </p>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7d49cf] to-[#8539ff] px-5 text-base font-black text-white shadow-[0_18px_40px_rgba(125,73,207,0.34)] transition-all duration-200 hover:translate-y-[-1px] active:scale-[0.98]"
+                >
+                  {continueLabel}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+                <p className="mt-4 text-center text-[0.72rem] font-medium tracking-[0.02em] text-[#9186a5]">
+                  {swipeHint}
+                </p>
+              </>
+            )}
+          </div>
         </div>
         <span className="sr-only">{illustrationAlt}</span>
       </div>
