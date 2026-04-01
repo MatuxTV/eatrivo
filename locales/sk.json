@@ -310,6 +310,30 @@
         "nutrition": "Prehľad o výžive"
       }
     },
+    "intro": {
+      "common": {
+        "skip": "Preskočiť",
+        "continue": "Pokračovať",
+        "swipeHint": "Potiahni pre viac"
+      },
+      "slides": {
+        "introduction": {
+          "eyebrow": "Osobný AI asistent",
+          "title": "Jedz lepšie.\nCíť sa lepšie.",
+          "description": "Tvoj osobný AI asistent pre varenie, nákupy a dosahovanie cieľov. Bez stresu a plytvania jedlom."
+        },
+        "customRecipes": {
+          "eyebrow": "Rivo custom",
+          "title": "Recepty podľa toho, čo máš rád",
+          "description": "Rivo ti vyskladá vlastné recepty podľa cieľa, preferencií a toho, čo už doma máš. Menej hľadania, viac varenia."
+        },
+        "pantry": {
+          "eyebrow": "Inteligentná špajza",
+          "title": "Uvar z toho, čo už máš doma",
+          "description": "Sleduj svoju špajzu a objav jedlá, ktoré vieš pripraviť hneď. Keď niečo chýba, Rivo ti ukáže najrýchlejší dokup."
+        }
+      }
+    },
     "signOut": {
       "metaTitle": "Odhlásenie",
       "title": "Odhlásiť sa",

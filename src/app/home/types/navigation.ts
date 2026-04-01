@@ -23,3 +23,7 @@ export function getPrimaryAppHomeSection(
 export function isHomeSection(section: AppHomeSection): section is HomeSection {
   return getPrimaryAppHomeSection(section) === "home";
 }
+
+export function isProfileSection(section: AppHomeSection): boolean {
+  return section === "profile";
+}

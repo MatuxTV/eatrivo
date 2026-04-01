@@ -21,6 +21,7 @@ import {
   type AppHomeSection,
   getPrimaryAppHomeSection,
   isHomeSection,
+  isProfileSection
 } from "../types/navigation";
 
 /* ---- Layout shells ---- */
@@ -506,7 +507,7 @@ export default function HomePage({
       />
       <PWAInstallPrompt />
       <NotificationBanner />
-      {isHomeSection(activeSection) && (
+      {isProfileSection(activeSection) && (
         <div className="hidden md:block">
           <FeedbackButton />
         </div>

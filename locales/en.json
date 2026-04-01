@@ -310,6 +310,30 @@
         "nutrition": "Nutrition tracking"
       }
     },
+    "intro": {
+      "common": {
+        "skip": "Skip",
+        "continue": "Continue",
+        "swipeHint": "Swipe for more"
+      },
+      "slides": {
+        "introduction": {
+          "eyebrow": "Personal AI assistant",
+          "title": "Eat better.\nFeel better.",
+          "description": "Your personal AI assistant for cooking, shopping, and reaching your goals. Less stress, less food waste."
+        },
+        "customRecipes": {
+          "eyebrow": "Rivo custom",
+          "title": "Recipes shaped around your taste",
+          "description": "Rivo builds custom recipes around your goals, preferences, and the ingredients you already have at home."
+        },
+        "pantry": {
+          "eyebrow": "Smart pantry",
+          "title": "Cook with what is already at home",
+          "description": "Track your pantry and instantly see meals you can cook right now. If something is missing, Rivo shows the fastest top-up path."
+        }
+      }
+    },
     "signOut": {
       "metaTitle": "Sign out",
       "title": "Sign out",
@@ -359,6 +383,30 @@
       },
       "sex": "Sex",
       "sexPlaceholder": "Select sex",
+      "sexOptions": {
+        "man": "Man",
+        "woman": "Woman"
+      },
+      "height": "Height (cm)",
+      "heightPlaceholder": "170",
+      "weight": "Weight (kg)",
+      "weightPlaceholder": "70",
+      "activityLevel": "Activity level",
+      "activityPlaceholder": "Select activity level",
+      "activityOptions": {
+        "sedentary": "Sedentary (desk job)",
+        "lightlyActive": "Lightly active (1–2x per week)",
+        "moderatelyActive": "Moderately active (3–5x per week)",
+        "veryActive": "Very active (6–7x per week)",
+        "athlete": "Athlete (multiple times per day)"
+      },
+      "goal": "Goal",
+      "goalPlaceholder": "Select goal",
+      "goalOptions": {
+        "loseWeight": "Lose weight",
+        "maintainWeight": "Maintain weight",
+        "gainMuscle": "Build muscle"
+      },
       "mealsPerDay": "Meals per day",
       "mealsPerDayPlaceholder": "3",
       "cookingTime": "Cooking time",
@@ -372,7 +420,7 @@
       "mealPrepYes": "Yes, I want to prep in advance",
       "mealPrepNo": "No, I prefer cooking daily",
       "mealPrepDays": "How many days ahead?",
-      "mealPrepDaysPlaceholder": "e.g., 3",
+      "mealPrepDaysPlaceholder": "e.g. 3",
       "mealPrepDaysHelp": "Choose how many days in advance you'd like to prepare meals",
       "mealPrepNote": {
         "title": "Why meal prep?",

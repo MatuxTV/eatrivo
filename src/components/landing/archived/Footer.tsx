@@ -57,7 +57,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href={`/${locale}/signin`}
+                  href={`/${locale}`}
                   className="text-gray-400 hover:text-white text-sm transition-colors"
                 >
                   {t("footer.pricing")}

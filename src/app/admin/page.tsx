@@ -20,7 +20,7 @@ export default async function AdminPage() {
 
   const session = await auth();
   if (!session?.user?.id) {
-    redirect(`/${safeLocale}/signin`);
+    redirect(`/${safeLocale}`);
   }
 
   const userProfile = await db.query.userProfiles.findFirst({

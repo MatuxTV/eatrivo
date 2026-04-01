@@ -78,7 +78,7 @@ export function DownloadCTA({ className = "" }: SectionProps) {
               className="inline-block"
             >
               <Link
-                href={`/${locale}/signin`}
+                href={`/${locale}`}
                 onClick={() => {
                   trackClientEvent({
                     eventName: "landing_cta_clicked",

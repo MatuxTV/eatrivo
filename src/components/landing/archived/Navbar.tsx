@@ -85,7 +85,7 @@ export function Navbar() {
           </Link>
 
           {/* CTA Button */}
-          <Link href={`/${locale}/signin`}>
+          <Link href={`/${locale}`}>
             <Button className="bg-eatrivo-purple hover:scale-[1.1] active:scale-[0.98] text-white font-semibold rounded-full px-6 py-2.5 h-auto inline-flex items-center pointer-coarse:cursor-pointer gap-2 transition-all duration-200">
               <Sparkles className="w-4 h-4" aria-hidden="true" />
               {t("navbar.signIn")}
@@ -172,7 +172,7 @@ export function Navbar() {
               </Link>
               <div className="pt-4 flex flex-col gap-3">
                 <Link
-                  href={`/${locale}/signin`}
+                  href={`/${locale}`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Button className="w-full justify-center bg-gradient-to-r from-eatrivo-purple to-eatrivo-pink hover:shadow-lg text-white font-semibold rounded-full py-3 h-auto gap-2">

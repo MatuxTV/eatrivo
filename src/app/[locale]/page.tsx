@@ -30,5 +30,5 @@ export default async function Home({ params }: PageProps) {
     redirect("/home");
   }
 
-  return <WelcomeAuthScreen locale={locale} surface="locale_root" />;
+  return <WelcomeAuthScreen locale={locale} />;
 }

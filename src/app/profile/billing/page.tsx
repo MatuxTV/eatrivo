@@ -16,7 +16,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
 
   const session = await auth();
   if (!session?.user?.id) {
-    redirect(`/${safeLocale}/signin`);
+    redirect(`/${safeLocale}`);
   }
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
