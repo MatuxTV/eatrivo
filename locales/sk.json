@@ -551,6 +551,8 @@
         "setup": {
           "title": "Najprv spresni recept",
           "description": "Povedz Rivovi, na aké jedlo má recept sedieť a pre koľko porcií ho má pripraviť, ešte pred samotným generovaním.",
+          "modeLabel": "Režim generovania",
+          "modeHint": "Vyber, či má Rivo vychádzať zo špajze, alebo ju úplne ignorovať a riadiť sa len profilom.",
           "servingsLabel": "Počet porcií",
           "servingsHint": "Nastav, pre koľko ľudí má Rivo recept vyskladať.",
           "mealTypeLabel": "Typ jedla",
@@ -564,6 +566,16 @@
           },
           "mealPrepLabel": "Chcem meal prep variant",
           "mealPrepDescription": "Uprednostni recepty, ktoré sa dajú dobre odložiť a chutia dobre aj po ohriatí.",
+          "modes": {
+            "pantry": {
+              "title": "Použiť špajzu",
+              "description": "Rivo sa najprv pokúsi variť z toho, čo už máš doma, a malé dokúpenie navrhne len keď treba."
+            },
+            "preferencesOnly": {
+              "title": "Ignorovať špajzu",
+              "description": "Rivo vygeneruje recept len podľa diéty, alergií, neobľúbených jedál a preferencií jedla."
+            }
+          },
           "profileHintLabel": "Profil klienta",
           "profileHint": "Rivo bude stále rešpektovať tvoju diétu, alergie a jedlá, ktoré nemáš rád.",
           "submit": "Generovať recept",
@@ -588,7 +600,8 @@
           "open": "Otvoriť výsledok receptu",
           "regenerate": "Vygenerovať znova",
           "readyNow": "Hneď uvariteľné",
-          "almostCookable": "Takmer uvariteľné"
+          "almostCookable": "Takmer uvariteľné",
+          "preferencesOnly": "Podľa tvojich preferencií"
         },
         "fallback": {
           "badge": "Smart fallback",
@@ -596,11 +609,13 @@
           "description": "Rivo z tvojej aktuálnej špajze nevedel poskladať uvariteľný recept, ale tieto rýchle úpravy by ho mali odomknúť.",
           "retry": "Skúsiť znova",
           "openPantry": "Upraviť špajzu",
+          "preferencesOnly": "Profilová zhoda",
           "missingCount": "Chýba {count}",
           "defaultSuggestions": {
             "pantry": "Pridaj dve alebo tri základné suroviny, ktoré kupuješ najčastejšie.",
             "protein": "Doplň jeden zdroj bielkovín a otvoríš viac jedál.",
-            "vegetables": "Pridaj jednu čerstvú zeleninu pre jednoduchšie obedové a večerné zhody."
+            "vegetables": "Pridaj jednu čerstvú zeleninu pre jednoduchšie obedové a večerné zhody.",
+            "preferences": "Rivo ti navrhne niekoľko receptov, ktoré sedia na tvoj profil aj bez špajze."
           }
         },
         "error": {
@@ -624,14 +639,18 @@
         "message": {
           "pantryRecipeReady": "Rivo ti našiel recept zo špajze: {recipeName}.",
           "almostCookableReady": "Rivo našiel recept {recipeName}. Chýba už len {missingCount} surovina(y).",
+          "preferencesOnlyReady": "Rivo vytvoril recept podľa tvojich preferencií: {recipeName}.",
+          "preferencesFallbackReady": "Rivo pripravil {suggestionCount} profilovo vhodné odporúčania receptov.",
           "fallbackSuggestionsReady": "Rivo pripravil {suggestionCount} záložné odporúčanie(a) z databázy.",
           "emptyPantry": "Tvoja špajza je zatiaľ prázdna, tak Rivo pripravil aspoň pár šikovných štartov.",
-          "noRecipeAvailable": "Zatiaľ sa nenašla presná zhoda, ale Rivo vybral niekoľko užitočných ďalších možností."
+          "noRecipeAvailable": "Zatiaľ sa nenašla presná zhoda, ale Rivo vybral niekoľko užitočných ďalších možností.",
+          "noPreferencesRecipeAvailable": "Rivo zatiaľ nevytvoril silný recept len z preferencií, ale našiel pár užitočných alternatív."
         },
         "recipeUnavailable": {
           "pantryEmpty": "Tvoja špajza je prázdna, takže sa z nej zatiaľ nedá nič uvariť.",
           "noPantryRecipe": "Zo súčasnej špajze sa zatiaľ nedá uvariť plný recept bez dokúpenia.",
-          "noAlmostCookable": "Rivo nenašiel ani takmer uvariteľný recept s tromi alebo menej chýbajúcimi surovinami."
+          "noAlmostCookable": "Rivo nenašiel ani takmer uvariteľný recept s tromi alebo menej chýbajúcimi surovinami.",
+          "noPreferencesRecipe": "Rivo nedokázal vytvoriť recept, ktorý by dosť dobre sedel tvojim preferenciám."
         },
         "toasts": {
           "ready": "Tvoj vlastný recept je pripravený.",
@@ -666,6 +685,7 @@
         "addToShoppingList": "Pridať do nákupného zoznamu",
         "cookThisRecipe": "Chcem variť tento recept",
         "haveAmountInline": "máme {amount}",
+        "stapleAvailable": "základ",
         "fallbackUsing": "Máme: {ingredient}",
         "saveRecipe": "Uložiť recept",
         "removeBookmark": "Odstrániť záložku",
@@ -724,6 +744,7 @@
         "readyAmount": "pripravené",
         "missingAmount": "dopĺň",
         "haveAmountInline": "máme {amount}",
+        "stapleAvailable": "základ",
         "previousStep": "Späť",
         "nextStep": "Ďalší krok",
         "stepProgress": "Krok {current} z {total}",
@@ -1053,6 +1074,24 @@
         "title": "Chat s Rivom",
         "description": "Opýtaj sa Riva čokoľvek o výžive, receptoch alebo pláne jedál. Tvoj osobný AI šéfkuchár, vždy pripravený.",
         "badge": "● UŽ ČOSKORO",
+        "history": {
+          "title": "História chatov",
+          "description": "Vráť sa k predchádzajúcim konverzáciám alebo začni nový chat len pre aktuálnu tému.",
+          "currentLabel": "Aktívny chat",
+          "mobileListLabel": "Tvoje konverzácie",
+          "newChat": "Nový chat",
+          "untitled": "Nový chat",
+          "loading": "Načítavam históriu...",
+          "emptyTitle": "Zatiaľ tu nič nie je",
+          "emptyDescription": "Keď pošleš prvú správu, tento chat sa uloží do tvojej histórie.",
+          "inputPlaceholder": "Opýtaj sa na svoj jedálniček...",
+          "errors": {
+            "loadSessions": "Históriu chatov sa nepodarilo načítať.",
+            "loadSession": "Tento chat sa nepodarilo otvoriť.",
+            "createSession": "Nový chat sa nepodarilo vytvoriť.",
+            "refreshSessions": "Zoznam chatov sa nepodarilo obnoviť."
+          }
+        },
         "warning": {
           "title": "Rivo je stále vo vývoji",
           "body": "Bohužiaľ, Rivo je stále vo vývoji. Môžeš ho používať ako informačného asistenta. Zatiaľ nedokáže meniť nič vo vašom profile ani pracovať s vašimi receptami. Tieto funkcie sprístupníme v budúcich aktualizáciách."

@@ -92,9 +92,9 @@ function FeaturePhoneMockup({ screenshotSrc, alt }: { screenshotSrc: string; alt
       <div className="absolute bottom-8 right-0 h-24 w-24 rounded-full bg-[#ffd9e7] blur-3xl" />
 
       <div className="relative mx-auto aspect-[129/236] w-[14.65rem] rounded-[3rem] border-[5px] border-[#2f2a36] bg-[#18141f] p-[0.4rem] shadow-[0_32px_90px_rgba(49,33,72,0.28)]">
-        <div className="absolute left-1/2 top-[0.52rem] z-20 flex h-[1.72rem] w-[6.85rem] -translate-x-1/2 items-center justify-center rounded-full bg-[#221d28] shadow-[0_8px_18px_rgba(0,0,0,0.24)]">
-          <div className="h-[0.46rem] w-[0.46rem] rounded-full bg-[#0d0a11] opacity-90" />
-          <div className="ml-2 h-[0.38rem] w-[0.38rem] rounded-full bg-[#36313d]" />
+        <div className="absolute left-1/2 top-[0.62rem] z-20 flex h-[1.06rem] w-[4.18rem] -translate-x-1/2 items-center justify-center gap-[0.28rem] rounded-full bg-[#221d28] shadow-[0_8px_18px_rgba(0,0,0,0.24)]">
+          <div className="h-[0.34rem] w-[0.34rem] rounded-full bg-[#0d0a11] opacity-95" />
+          <div className="h-[0.24rem] w-[0.24rem] rounded-full bg-[#3c3744]" />
         </div>
         <div className="relative h-full overflow-hidden rounded-[2.2rem] bg-white">
           <Image
@@ -290,9 +290,9 @@ export function SignInIntroCarousel({
       <div className="pointer-events-none absolute bottom-[-3rem] left-[-2rem] h-44 w-44 rounded-full bg-[#ffdcea] opacity-80 blur-3xl" />
       <div className="pointer-events-none absolute bottom-[20%] right-[-2rem] h-48 w-48 rounded-full bg-[#efe3ff] opacity-80 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-[calc(100dvh-1.5rem)] w-full max-w-[25rem] flex-col rounded-[2rem] bg-white/45 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-[2px] sm:min-h-[46rem] sm:px-6 sm:pt-5">
+      <div className="relative bg-eatrivo-white-primary rounded-2xl mx-auto flex min-h-[calc(100dvh-1.5rem)] w-full max-w-[25rem] flex-col  px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 sm:min-h-[46rem] sm:px-6 sm:pt-5">
         <header className="relative flex items-center justify-between">
-          <div className="flex items-center gap-2 rounded-full px-2.5 py-1.5 shadow-[0_10px_25px_rgba(114,75,161,0.08)] ">
+          <div className="flex items-center gap-2 rounded-full px-2.5 py-1.5  ">
             <Image
               src="/logo/LOGO_ROW.png"
               alt={logoAlt}
@@ -303,29 +303,10 @@ export function SignInIntroCarousel({
             />
           </div>
 
-          <div className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-2">
-            {slides.map((slide, index) => {
-              const isActive = index === currentIndex;
-
-              return (
-                <motion.div
-                  key={slide.key}
-                  animate={{
-                    width: isActive ? 28 : 10,
-                    backgroundColor: isActive ? "#7c3aed" : "#d9cde8",
-                    opacity: isActive ? 1 : 0.95,
-                  }}
-                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                  className="h-2.5 rounded-full shadow-[0_4px_10px_rgba(124,58,237,0.14)]"
-                />
-              );
-            })}
-          </div>
+         
 
           {isFinalSlide ? (
-            <div className="rounded-full bg-white/78 px-3 py-1.5 text-xs font-semibold text-[#7c6b97] shadow-sm ring-1 ring-white/80">
-              4/4
-            </div>
+            null
           ) : (
             <button
               type="button"

@@ -4,8 +4,94 @@ import assert from "node:assert/strict";
 import {
   customRecipeAiOutputSchema,
   customRecipeResultSchema,
+  customRecipeStartRequestSchema,
   mapAiCandidateToGeneratedRecipe,
+  mapMatchedRecipeToSuggestion,
 } from "./contracts";
+
+test("customRecipeStartRequestSchema defaults to pantry mode", () => {
+  const parsed = customRecipeStartRequestSchema.parse({});
+
+  assert.equal(parsed.mode, "pantry");
+});
+
+test("customRecipeAiOutputSchema rejects ingredients without explicit unit", () => {
+  assert.throws(() =>
+    customRecipeAiOutputSchema.parse({
+      pantryRecipe: {
+        status: "available",
+        name: "Oil Pasta",
+        category: "Dinner",
+        description: "Needs proper unit.",
+        servings: 2,
+        servingUnit: null,
+        prepTimeMin: 10,
+        totalTimeMin: 20,
+        difficulty: "easy",
+        mealPrepFriendly: false,
+        tags: ["quick"],
+        nutrition: {
+          calories: 480,
+          proteinG: 18,
+          carbohydratesG: 52,
+          fatG: 20,
+        },
+        ingredients: [
+          {
+            name: "Olive oil",
+            amount: "0,5",
+            pantryStatus: "pantry",
+            pantryMatchName: "Olive oil",
+          },
+        ],
+        instructions: [{ title: "", text: "Mix and serve." }],
+      },
+      almostCookableRecipe: {
+        status: "unavailable",
+        reason: "INSUFFICIENT_PANTRY",
+      },
+    }),
+  );
+});
+
+test("customRecipeAiOutputSchema allows semantically questionable units for later audit", () => {
+  const parsed = customRecipeAiOutputSchema.parse({
+    pantryRecipe: {
+      status: "unavailable",
+      reason: "INSUFFICIENT_PANTRY",
+    },
+    almostCookableRecipe: {
+      status: "available",
+      name: "Pasta al pretlak",
+      category: "Dinner",
+      description: "Wrong unit test.",
+      servings: 2,
+      servingUnit: null,
+      prepTimeMin: 10,
+      totalTimeMin: 20,
+      difficulty: "easy",
+      mealPrepFriendly: false,
+      tags: ["quick"],
+      nutrition: {
+        calories: 480,
+        proteinG: 18,
+        carbohydratesG: 52,
+        fatG: 20,
+      },
+      ingredients: [
+        {
+          name: "Tomato paste",
+          amount: "2 ks",
+          pantryStatus: "missing",
+          pantryMatchName: null,
+        },
+      ],
+      instructions: [{ title: "", text: "Mix and serve." }],
+    },
+  });
+
+  assert.equal(parsed.almostCookableRecipe.status, "available");
+});
 
 test("customRecipeAiOutputSchema accepts a valid payload", () => {
   const parsed = customRecipeAiOutputSchema.parse({
@@ -150,6 +236,7 @@ test("customRecipeResultSchema accepts structured final payload", () => {
     },
     meta: {
       locale: "en",
+      mode: "pantry",
       pantryItemCount: 4,
       pantryIngredientKeyCount: 3,
       fallbackUsed: false,
@@ -224,5 +311,144 @@ test("mapAiCandidateToGeneratedRecipe enriches pantry keys from pantry context",
   assert.equal(recipe.ingredientItems[1]?.ingredientKey, "rice");
   assert.equal(recipe.matchedIngredients[0]?.pantryIngredientName, "Hovadzi steak");
   assert.equal(recipe.matchedIngredients[0]?.matchType, "fallback");
+  assert.equal(recipe.ingredientItems[0]?.pantryTrackingMode, "quantity");
+  assert.equal(recipe.ingredientItems[0]?.isAvailabilityStaple, false);
   assert.deepEqual(recipe.matchedIngredientNames, ["Steak (Hovadzi steak)"]);
+});
+
+test("mapAiCandidateToGeneratedRecipe flags availability staples from pantry context", () => {
+  const recipe = mapAiCandidateToGeneratedRecipe(
+    {
+      status: "available",
+      name: "Pepper Eggs",
+      category: "Breakfast",
+      description: "Eggs finished with staples.",
+      servings: 2,
+      servingUnit: null,
+      prepTimeMin: 5,
+      totalTimeMin: 10,
+      difficulty: "easy",
+      mealPrepFriendly: false,
+      tags: ["quick"],
+      nutrition: {
+        calories: 320,
+        proteinG: 22,
+        carbohydratesG: 4,
+        fatG: 22,
+      },
+      ingredients: [
+        {
+          name: "Olive oil",
+          amount: "10 ml",
+          pantryStatus: "pantry",
+          pantryMatchName: "Olive oil",
+        },
+      ],
+      instructions: [{ title: "", text: "Cook and serve." }],
+    },
+    "pantry",
+    {
+      locale: "en",
+      pantryRows: [
+        {
+          id: "pantry-staple",
+          pantryName: "Olive oil",
+          ingredientName: "Olive oil",
+          ingredientKey: "oil",
+          ingredientSpecificKey: "olive-oil",
+          trackingMode: "availability",
+          inStock: true,
+          quantity: null,
+          unit: null,
+          category: "fat",
+        },
+      ],
+    },
+  );
+
+  assert.equal(recipe.ingredientItems[0]?.pantryTrackingMode, "availability");
+  assert.equal(recipe.ingredientItems[0]?.isAvailabilityStaple, true);
+  assert.equal(recipe.matchedIngredients[0]?.isAvailabilityStaple, true);
+});
+
+test("mapMatchedRecipeToSuggestion separates quantity and staple matches", () => {
+  const suggestion = mapMatchedRecipeToSuggestion(
+    {
+      id: "de305d54-75b4-431b-adb2-eb6b9e546014",
+      slug: "pantry-pasta",
+      externalKey: "pantry-pasta",
+      name: "Pantry Pasta",
+      category: "Dinner",
+      categoryKey: "dinner",
+      servings: 2,
+      servingUnit: "servings",
+      prepTimeMin: 10,
+      totalTimeMin: 20,
+      calories: 540,
+      proteinG: 24,
+      carbohydratesG: 64,
+      fatG: 18,
+      restrictionFlags: [],
+      instructions: [{ title: "", text: "Cook and serve." }],
+      ingredientItems: [
+        { name: "Pasta", amount: "200 g", category: "carb" },
+        { name: "Olive oil", amount: "10 ml", category: "fat" },
+      ],
+      mealPrepFriendly: false,
+      totalRequiredIngredients: 2,
+      matchedRequiredIngredients: 2,
+      missingRequiredIngredients: 0,
+      matchRatio: 1,
+      matchedIngredients: [
+        {
+          recipeIngredientName: "Pasta",
+          pantryIngredientName: "Pasta",
+          matchType: "exact",
+          displayName: "Pasta",
+          amount: "200 g",
+          pantryComparison: {
+            status: "enough",
+            canCompare: true,
+            isEnough: true,
+            requiredQuantity: 200,
+            requiredUnit: "g",
+            requiredLabel: "200 g",
+            availableQuantity: 300,
+            availableUnit: "g",
+            availableLabel: "300 g",
+            missingQuantity: 0,
+            missingLabel: null,
+            matchingPantryItems: 1,
+          },
+        },
+        {
+          recipeIngredientName: "Olive oil",
+          pantryIngredientName: "Olive oil",
+          matchType: "exact",
+          displayName: "Olive oil",
+          amount: "10 ml",
+          pantryComparison: {
+            status: "available-staple",
+            canCompare: false,
+            isEnough: true,
+            requiredQuantity: 10,
+            requiredUnit: "ml",
+            requiredLabel: "10 ml",
+            availableQuantity: null,
+            availableUnit: null,
+            availableLabel: null,
+            missingQuantity: 0,
+            missingLabel: null,
+            matchingPantryItems: 1,
+          },
+        },
+      ],
+      matchedIngredientNames: ["Pasta", "Olive oil"],
+      missingIngredientNames: [],
+    },
+    "pantry",
+  );
+
+  assert.equal(suggestion.quantityMatchedIngredients, 1);
+  assert.equal(suggestion.availabilityMatchedIngredients, 1);
 });

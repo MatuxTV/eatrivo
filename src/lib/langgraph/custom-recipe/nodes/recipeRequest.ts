@@ -1,14 +1,19 @@
-import { HumanMessage } from "@langchain/core/messages";
+import { AIMessage, HumanMessage } from "@langchain/core/messages";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { setMaxListeners } from "events";
 import { z } from "zod";
 
 import { CUSTOM_RECIPE_AI_TIMEOUT_MS } from "../constants";
 import {
-  type CustomRecipePantryContextItem,
-} from "@/lib/custom-recipes/contracts";
+  buildPreviousRecipePromptContext,
+  CUSTOM_RECIPE_MIN_DIVERSITY,
+} from "@/lib/custom-recipes/diversity";
 import { apiLogger } from "@/lib/logger";
-import { getRecipeMatchesForUserProfile } from "@/lib/recipe-matches";
+import {
+  getPreferenceRecipeSuggestionsForUserProfile,
+  getRecipeMatchesForUserProfile,
+} from "@/lib/recipe-matches";
+import { buildPantryPromptContext } from "../pantryPromptContext";
 import type { CustomRecipeState } from "../state";
 
 setMaxListeners(30);
@@ -166,16 +171,6 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   });
 }
 
-function stringifyPantryItem(
-  pantryItem: CustomRecipePantryContextItem,
-): string {
-  const amount = pantryItem.quantity
-    ? `${pantryItem.quantity}${pantryItem.unit ? ` ${pantryItem.unit}` : ""}`
-    : "quantity unknown";
-
-  return `${pantryItem.pantryName} (${amount})`;
-}
-
 function buildReferenceRecipesSection(
   referenceRecipes: Awaited<ReturnType<typeof getRecipeMatchesForUserProfile>>,
 ): string {
@@ -227,28 +222,65 @@ function buildBasePrompt(
   state: typeof CustomRecipeState.State,
   firstName: string,
   pantrySummary: string,
+  pantryContext: ReturnType<typeof buildPantryPromptContext>,
   diet: string,
   allergies: string,
   dislikes: string,
   referenceRecipesSection: string,
+  previousRecipeSection: string,
+  retryGuidance: string,
 ): string {
+  const pantryRules =
+    state.mode === "preferences_only"
+      ? `- Ignore pantry inventory completely in this mode.
+- Pantry fields are only structural here: every ingredient must use pantryStatus "pantry" and pantryMatchName equal to the ingredient name.
+- Do not optimize for ingredients the user already has at home.`
+      : `- For pantry ingredients, pantryMatchName must exactly match one pantry item from the list below.
+- Never invent pantryMatchName values.
+- Pantry ingredients must use pantryStatus "pantry" with a non-null pantryMatchName.
+- Missing ingredients must use pantryStatus "missing" with pantryMatchName null.`;
+  const pantryContextSection =
+    state.mode === "preferences_only"
+      ? "Pantry is intentionally ignored for this request."
+      : pantrySummary;
+  const pantrySummarySection =
+    state.mode === "preferences_only"
+      ? ""
+      : `
+
+Pantry context summary:
+- Quantity-tracked pantry items: ${pantryContext.quantityTrackedCount}
+- Always-available staples: ${pantryContext.availabilityStapleCount}`;
+
   return `
 You are Rivo, the recipe generation workflow for Eatrivo.
 
 Return one recipe candidate only.
 
 Hard rules:
-- For pantry ingredients, pantryMatchName must exactly match one pantry item from the list below.
-- Never invent pantryMatchName values.
 - Respect allergies, dislikes, and diet preference.
 - Keep the recipe realistic and concise.
 - If status is "available", include all required fields: name, category, description, servings, servingUnit, prepTimeMin, totalTimeMin, difficulty, mealPrepFriendly, tags, nutrition, ingredients, instructions.
 - If status is "unavailable", return only status and reason.
 - Always include amount for every ingredient. Use null when amount is unknown.
-- Pantry ingredients must use pantryStatus "pantry" with a non-null pantryMatchName.
-- Missing ingredients must use pantryStatus "missing" with pantryMatchName null.
+${pantryRules}
+- Ingredients listed under always-available staples are already available in stock even without a tracked pantry quantity.
+- Always-available staples should be treated as normal pantry ingredients, not as missing ingredients.
 - Never omit servingUnit. Use "${getDefaultServingUnit(state.locale)}" unless there is a better explicit serving label.
 - Always include instruction title and text. Title may be an empty string when no short label fits.
+- Every ingredient amount must include an explicit unit.
+- Allowed ingredient units are only: g, kg, ml, l, dl, ks, bal, plechovka, fľaša, zväzok, hlávka.
+- Do not use kitchen units like tbsp, tsp, cup, pinch, handful, scoop, dash, clove.
+- Liquids such as oils, vinegars, milk, broths, and sauces should prefer ml, l, or dl.
+- Pastes, flours, rice, sugar, oats, spices, and other dry goods should prefer g or kg.
+- Countable items like eggs, onions, tomatoes, lemons, and garlic should use ks.
+- Tomato paste and olive oil must never use ks.
+- Availability staples are especially useful for oils, seasonings, spices, vinegars, and sauces.
+- Even when a staple is availability-tracked, still output a realistic recipe amount and unit for it.
+- If a previous recipe is provided below, the new recipe must be at least ${Math.round(
+    CUSTOM_RECIPE_MIN_DIVERSITY * 100,
+  )}% different overall.
+- When regenerating after a diversity failure, make a clearly different recipe, not a rename or light tweak.
 
 Request preferences:
 - Name: ${firstName}
@@ -262,14 +294,94 @@ Client food preferences:
 - Dislikes: ${dislikes}
 
 Pantry items:
-${pantrySummary}${referenceRecipesSection}
+${pantryContextSection}${pantrySummarySection}${referenceRecipesSection}${previousRecipeSection}${retryGuidance}
 `.trim();
+}
+
+function buildPreviousRecipeSection(state: typeof CustomRecipeState.State): string {
+  if (!state.previousGeneratedRecipe) {
+    return "";
+  }
+
+  return `
+
+Previous generated recipe to avoid repeating:
+${buildPreviousRecipePromptContext(state.previousGeneratedRecipe)}
+
+Make this new recipe meaningfully different. Change the ingredient composition, cooking method, and flavor direction enough to avoid obvious repetition.`;
+}
+
+function buildRetryGuidance(state: typeof CustomRecipeState.State): string {
+  const stapleItems = state.pantryRows
+    .filter((row) => row.inStock && row.trackingMode === "availability")
+    .map((row) => row.pantryName)
+    .slice(0, 5);
+  const stapleHint = stapleItems.length
+    ? `\n- You already have these always-available staples in stock: ${stapleItems.join(", ")}.`
+    : "";
+
+  if (!state.requestError) {
+    return "";
+  }
+
+  if (state.validationErrorType === "unit_format_error") {
+    return `
+
+Previous attempt failed amount formatting validation.
+- Every ingredient amount must include a numeric quantity and an explicit allowed unit.
+- Do not output bare values like 0,5 or 2 without a unit.
+- Use only g, kg, ml, l, dl, ks, bal, plechovka, fľaša, zväzok, hlávka.${stapleHint}`;
+  }
+
+  if (state.validationErrorType === "unit_semantic_error") {
+    return `
+
+Previous attempt failed ingredient unit semantics.
+- Fix the unit so it matches the ingredient form.
+- Liquids should use ml/l/dl, dry goods g/kg, countable items ks.
+- Never use ks for olive oil, tomato paste, sauces, or other liquids/pastes.${stapleHint}`;
+  }
+
+  if (state.validationErrorType === "unit_repair_failed") {
+    return `
+
+Previous unit repair attempt still failed validation.
+- Rebuild the ingredient amounts from scratch with correct units.
+- Use only the allowed unit set and make each amount explicit.${stapleHint}`;
+  }
+
+  if (!state.requestError.toLowerCase().includes("similar")) {
+    return `
+
+Previous attempt issue:
+- ${state.requestError}${stapleHint}`;
+  }
+
+  return `
+
+Previous attempt was rejected for being too similar to the last generated recipe.
+- Replace multiple core ingredients, not just garnish.
+- Use a different preparation or cooking method.
+- Shift the flavor profile so the meal feels clearly distinct.${stapleHint}`;
 }
 
 function buildCandidatePrompt(
   kind: "pantry" | "almost_cookable",
   basePrompt: string,
+  mode: typeof CustomRecipeState.State.mode,
 ): string {
+  if (mode === "preferences_only") {
+    return `${basePrompt}
+
+Generate one recipe candidate based only on the user profile and request preferences.
+- Ignore pantry availability and home inventory entirely.
+- Every ingredient in this mode must use pantryStatus "pantry" and pantryMatchName equal to the ingredient name.
+- Match the requested meal type and requested number of servings.
+- When meal prep friendly is requested, prefer recipes that store and reheat well.
+- Keep ingredients focused, ideally 4 to 10 items.
+- Keep instructions to 2 to 6 steps.`;
+  }
+
   if (kind === "pantry") {
     return `${basePrompt}
 
@@ -360,20 +472,34 @@ export async function recipeRequest(
   }
 
   const firstName = state.userProfile?.fullName?.split(" ")[0] ?? "friend";
-  const pantrySummary = state.pantryRows.length
-    ? state.pantryRows.map(stringifyPantryItem).join(", ")
-    : "No pantry items available.";
+  const pantryContext = buildPantryPromptContext(state.pantryRows);
+  const pantrySummary = state.mode === "preferences_only"
+    ? "Pantry is intentionally ignored in this mode."
+    : state.pantryRows.length
+    ? pantryContext.summary
+    : "Tracked pantry items with quantities:\n- none\n\nAlways-available staples already in stock:\n- none";
   const diet = state.userInfo?.diet_preferences ?? "none";
   const allergies = state.userInfo?.allergies?.trim() || "none";
   const dislikes = state.userInfo?.dislikes?.trim() || "none";
-  const referenceRecipeMatches = await getRecipeMatchesForUserProfile(
-    state.userProfileId,
-    {
-      locale: state.locale,
-      maxMissingIngredients: 3,
-      cookableLimit: 1,
-      almostCookableLimit: 1,
-    },
+  const referenceRecipeMatches = await (state.mode === "preferences_only"
+    ? getPreferenceRecipeSuggestionsForUserProfile(state.userProfileId, {
+        locale: state.locale,
+        limit: 1,
+        mealType: state.requestedMealType,
+        mealPrep: state.requestedMealPrep,
+      }).then((recipes) => ({
+        pantryIsEmpty: false,
+        pantryIngredientKeyCount: 0,
+        recipeCountAnalyzed: recipes.length,
+        cookable: recipes,
+        almostCookable: [],
+      }))
+    : getRecipeMatchesForUserProfile(state.userProfileId, {
+        locale: state.locale,
+        maxMissingIngredients: 3,
+        cookableLimit: 1,
+        almostCookableLimit: 1,
+      })
   ).catch((error) => {
     apiLogger.warn("[customRecipe.recipeRequest] reference recipe lookup failed", {
       metadata: {
@@ -392,18 +518,37 @@ export async function recipeRequest(
     };
   });
   const referenceRecipesSection = buildReferenceRecipesSection(referenceRecipeMatches);
+  const previousRecipeSection = buildPreviousRecipeSection(state);
+  const retryGuidance = buildRetryGuidance(state);
 
   const basePrompt = buildBasePrompt(
     state,
     firstName,
     pantrySummary,
+    pantryContext,
     diet,
     allergies,
     dislikes,
     referenceRecipesSection,
+    previousRecipeSection,
+    retryGuidance,
   );
-  const pantryPrompt = buildCandidatePrompt("pantry", basePrompt);
-  const almostCookablePrompt = buildCandidatePrompt("almost_cookable", basePrompt);
+
+  apiLogger.info("[customRecipe.recipeRequest] pantry prompt context prepared", {
+    metadata: {
+      userId: state.userId,
+      userProfileId: state.userProfileId,
+      quantityTrackedCount: pantryContext.quantityTrackedCount,
+      availabilityStapleCount: pantryContext.availabilityStapleCount,
+      stapleNames: pantryContext.stapleNames,
+    },
+  });
+  const pantryPrompt = buildCandidatePrompt("pantry", basePrompt, state.mode);
+  const almostCookablePrompt = buildCandidatePrompt(
+    "almost_cookable",
+    basePrompt,
+    state.mode,
+  );
 
   const model = new ChatGoogleGenerativeAI({
     model: "gemini-3.1-flash-lite-preview",
@@ -417,10 +562,31 @@ export async function recipeRequest(
       12_000,
       Math.floor(CUSTOM_RECIPE_AI_TIMEOUT_MS * 0.6),
     );
-    const [pantryResponse, almostCookableResponse] = await Promise.allSettled([
-      requestSingleCandidate(model, pantryPrompt, perCandidateTimeoutMs),
-      requestSingleCandidate(model, almostCookablePrompt, perCandidateTimeoutMs),
-    ]);
+    const [pantryResponse, almostCookableResponse] = state.mode === "preferences_only"
+      ? ([
+          await Promise.resolve(
+            await requestSingleCandidate(model, pantryPrompt, perCandidateTimeoutMs),
+          ).then((value) => ({ status: "fulfilled", value } as const)).catch((reason) => ({
+            status: "rejected",
+            reason,
+          } as const)),
+          {
+            status: "fulfilled",
+            value: {
+              parsed: {
+                recipe: {
+                  status: "unavailable" as const,
+                  reason: "AI_UNABLE_TO_COMPOSE" as const,
+                },
+              },
+              raw: new AIMessage(""),
+            },
+          } as const,
+        ] satisfies [PromiseSettledResult<Awaited<ReturnType<typeof requestSingleCandidate>>>, PromiseSettledResult<Awaited<ReturnType<typeof requestSingleCandidate>>>])
+      : await Promise.allSettled([
+          requestSingleCandidate(model, pantryPrompt, perCandidateTimeoutMs),
+          requestSingleCandidate(model, almostCookablePrompt, perCandidateTimeoutMs),
+        ]);
 
     const pantryParsed =
       pantryResponse.status === "fulfilled"
@@ -515,6 +681,8 @@ export async function recipeRequest(
         almostCookableCallSucceeded: almostCookableResponse.status === "fulfilled",
         pantryCandidateSummary: summarizeCandidate(pantryParsed),
         almostCookableCandidateSummary: summarizeCandidate(almostCookableParsed),
+        previousGeneratedRecipeName: state.previousGeneratedRecipe?.name ?? null,
+        previousGeneratedRecipeJobId: state.previousGeneratedRecipeJobId,
         retryCount: state.retryCount,
       },
     });
@@ -528,6 +696,7 @@ export async function recipeRequest(
           metadata: {
             userId: state.userId,
             userProfileId: state.userProfileId,
+            mode: state.mode,
             pantryRecipeStatus: response.parsed.pantryRecipe.status,
             almostCookableStatus: response.parsed.almostCookableRecipe.status,
             normalizedOutputLength: normalizedOutput.length,

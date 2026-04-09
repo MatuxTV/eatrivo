@@ -68,6 +68,9 @@ export function buildRecipeIngredientPantryComparison(
   pantryCandidates: PantryQuantityCandidate[],
   locale: string,
 ): RecipeIngredientPantryComparison {
+  const availablePantryCandidates = pantryCandidates.filter(
+    (candidate) => candidate.inStock ?? true,
+  );
   const normalizedRequiredQuantity = normalizeNumericQuantity(requiredQuantity);
   const normalizedRequiredUnit = requiredUnit?.trim()
     ? normalizeUnit(requiredUnit)
@@ -77,7 +80,7 @@ export function buildRecipeIngredientPantryComparison(
       ? toCanonicalQuantity(normalizedRequiredQuantity, normalizedRequiredUnit)
       : null;
 
-  const comparableCandidates = pantryCandidates
+  const comparableCandidates = availablePantryCandidates
     .map((candidate) => ({
       trackingMode: candidate.trackingMode ?? "quantity",
       inStock: candidate.inStock ?? true,
@@ -93,7 +96,7 @@ export function buildRecipeIngredientPantryComparison(
           : null,
     }))
     .filter((candidate) => candidate.quantity !== null);
-  const availableStapleCandidates = pantryCandidates.filter(
+  const availableStapleCandidates = availablePantryCandidates.filter(
     (candidate) =>
       (candidate.trackingMode ?? "quantity") === "availability" &&
       (candidate.inStock ?? true),
@@ -135,7 +138,7 @@ export function buildRecipeIngredientPantryComparison(
       availableLabel: null,
       missingQuantity: null,
       missingLabel: null,
-      matchingPantryItems: pantryCandidates.length,
+      matchingPantryItems: availablePantryCandidates.length,
     };
   }
 
@@ -234,7 +237,7 @@ export function buildRecipeIngredientPantryComparison(
     };
   }
 
-  if (pantryCandidates.length > 0) {
+  if (availablePantryCandidates.length > 0) {
     return {
       status: "missing-pantry-quantity",
       canCompare: false,
@@ -247,7 +250,24 @@ export function buildRecipeIngredientPantryComparison(
       availableLabel: null,
       missingQuantity: null,
       missingLabel: null,
-      matchingPantryItems: pantryCandidates.length,
+      matchingPantryItems: availablePantryCandidates.length,
+    };
+  }
+
+  if (pantryCandidates.length > 0) {
+    return {
+      status: "unavailable",
+      canCompare: false,
+      isEnough: false,
+      requiredQuantity: normalizedRequiredQuantity,
+      requiredUnit: normalizedRequiredUnit,
+      requiredLabel,
+      availableQuantity: null,
+      availableUnit: null,
+      availableLabel: null,
+      missingQuantity: normalizedRequiredQuantity,
+      missingLabel: requiredLabel,
+      matchingPantryItems: 0,
     };
   }
 

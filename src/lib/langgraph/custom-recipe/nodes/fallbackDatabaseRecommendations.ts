@@ -3,13 +3,33 @@ import {
   type CustomRecipeSuggestion,
 } from "@/lib/custom-recipes/contracts";
 import { apiLogger } from "@/lib/logger";
-import { getRecipeMatchesForUserProfile } from "@/lib/recipe-matches";
+import {
+  getPreferenceRecipeSuggestionsForUserProfile,
+  getRecipeMatchesForUserProfile,
+} from "@/lib/recipe-matches";
 import type { CustomRecipeState } from "../state";
 
 export async function fallbackDatabaseRecommendations(
   state: typeof CustomRecipeState.State,
 ): Promise<Partial<typeof CustomRecipeState.State>> {
   try {
+    if (state.mode === "preferences_only") {
+      const suggestions = (
+        await getPreferenceRecipeSuggestionsForUserProfile(state.userProfileId, {
+          locale: state.locale,
+          limit: state.fallbackSuggestionLimit,
+          mealType: state.requestedMealType,
+          mealPrep: state.requestedMealPrep,
+        })
+      ).map((recipe) => mapMatchedRecipeToSuggestion(recipe, "preferences_only"));
+
+      return {
+        fallbackSuggestions: suggestions,
+        pantryIngredientKeyCount: 0,
+        fallbackSuggestionsFetched: true,
+      };
+    }
+
     const matches = await getRecipeMatchesForUserProfile(state.userProfileId, {
       locale: state.locale,
       maxMissingIngredients: 3,
@@ -29,6 +49,7 @@ export async function fallbackDatabaseRecommendations(
     return {
       fallbackSuggestions: suggestions,
       pantryIngredientKeyCount: matches.pantryIngredientKeyCount,
+      fallbackSuggestionsFetched: true,
     };
   } catch (error) {
     apiLogger.error(
@@ -44,6 +65,7 @@ export async function fallbackDatabaseRecommendations(
 
     return {
       fallbackSuggestions: [],
+      fallbackSuggestionsFetched: true,
     };
   }
 }

@@ -4,9 +4,11 @@ import type { MatchedRecipe } from "@/lib/recipe-matches";
 import { parseRecipeIngredient } from "@/lib/ingredients";
 import { buildRecipeIngredientPantryComparison } from "@/lib/recipe-quantity-comparison";
 import { guessFoodCategory } from "@/lib/units";
+import { validateCustomRecipeIngredientAmountFormat } from "./unit-validation";
 
 const localeSchema = z.enum(["en", "sk"]);
 const customRecipeJobIdSchema = z.string().uuid();
+export const customRecipeModeSchema = z.enum(["pantry", "preferences_only"]);
 export const customRecipeMealTypeSchema = z.enum([
   "breakfast",
   "lunch",
@@ -30,6 +32,7 @@ export const customRecipeStartRequestSchema = z.object({
   servings: z.coerce.number().int().min(1).max(8).default(2),
   mealType: customRecipeMealTypeSchema.default("dinner"),
   mealPrep: z.coerce.boolean().default(false),
+  mode: customRecipeModeSchema.default("pantry"),
 });
 
 export const customRecipeInstructionSchema = z.object({
@@ -46,6 +49,9 @@ export const customRecipeIngredientItemSchema = z.object({
   ingredientKey: z.string().max(160).nullable().optional(),
   ingredientSpecificKey: z.string().max(200).nullable().optional(),
   pantryMatchName: z.string().max(120).nullable().optional(),
+  pantryTrackingMode: z.enum(["quantity", "availability"]).nullable().optional(),
+  pantryInStock: z.boolean().nullable().optional(),
+  isAvailabilityStaple: z.boolean().optional(),
   pantryComparison: z
     .object({
       status: z.enum([
@@ -79,6 +85,8 @@ const customRecipeMatchedIngredientSchema = z.object({
   matchType: z.enum(["exact", "fallback"]),
   displayName: z.string().min(1).max(180),
   amount: z.string().max(80).nullable(),
+  pantryTrackingMode: z.enum(["quantity", "availability"]).nullable().optional(),
+  isAvailabilityStaple: z.boolean().optional(),
 });
 
 export const customRecipeAiIngredientSchema = z
@@ -103,6 +111,16 @@ export const customRecipeAiIngredientSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Missing ingredients cannot include pantryMatchName",
+      });
+    }
+
+    for (const issue of validateCustomRecipeIngredientAmountFormat({
+      ingredientName: ingredient.name,
+      amount: ingredient.amount,
+    })) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: issue.message,
       });
     }
   });
@@ -201,7 +219,7 @@ export const customRecipeUnavailableSchema = z.object({
 
 export const customRecipeGeneratedRecipeSchema = z.object({
   status: z.literal("available"),
-  kind: z.enum(["pantry", "almost_cookable"]),
+  kind: z.enum(["pantry", "almost_cookable", "preferences_only"]),
   name: z.string().min(1).max(120),
   category: z.string().min(1).max(80),
   description: z.string().min(1).max(280),
@@ -238,7 +256,7 @@ export const customRecipeAcceptResponseSchema = z.object({
 
 export const customRecipeSuggestionSchema = z.object({
   kind: z.literal("suggestion"),
-  availability: z.enum(["pantry", "almost_cookable"]),
+  availability: z.enum(["pantry", "almost_cookable", "preferences_only"]),
   id: z.string().uuid(),
   slug: z.string().min(1),
   externalKey: z.string().min(1),
@@ -258,6 +276,8 @@ export const customRecipeSuggestionSchema = z.object({
   mealPrepFriendly: z.boolean(),
   totalRequiredIngredients: z.number().int().min(0),
   matchedRequiredIngredients: z.number().int().min(0),
+  quantityMatchedIngredients: z.number().int().min(0),
+  availabilityMatchedIngredients: z.number().int().min(0),
   missingRequiredIngredients: z.number().int().min(0).max(3),
   matchRatio: z.number().min(0).max(1),
   matchedIngredientNames: z.array(z.string().min(1)),
@@ -277,6 +297,7 @@ export const customRecipeResultSchema = z.object({
   userMessage: messageDescriptorSchema,
   meta: z.object({
     locale: localeSchema,
+    mode: customRecipeModeSchema,
     pantryItemCount: z.number().int().min(0),
     pantryIngredientKeyCount: z.number().int().min(0),
     fallbackUsed: z.boolean(),
@@ -342,6 +363,7 @@ export type MessageDescriptor = z.infer<typeof messageDescriptorSchema>;
 export type CustomRecipeStartRequest = z.infer<
   typeof customRecipeStartRequestSchema
 >;
+export type CustomRecipeMode = z.infer<typeof customRecipeModeSchema>;
 export type CustomRecipeAcceptRequest = z.infer<
   typeof customRecipeAcceptRequestSchema
 >;
@@ -481,6 +503,9 @@ function normalizeCustomRecipeIngredientItem(
     ingredientKey: pantryMatch?.ingredientKey ?? parsedIngredient.ingredientKey,
     ingredientSpecificKey: pantryMatch?.ingredientSpecificKey ?? null,
     pantryMatchName: pantryMatch?.pantryName ?? ingredient.pantryMatchName ?? null,
+    pantryTrackingMode: pantryMatch?.trackingMode ?? null,
+    pantryInStock: pantryMatch?.inStock ?? null,
+    isAvailabilityStaple: pantryMatch?.trackingMode === "availability",
     pantryComparison,
   };
 }
@@ -516,6 +541,8 @@ function buildGeneratedMatchedIngredients(
           matchType,
         ),
         amount: matchedItem?.amount ?? ingredient.amount,
+        pantryTrackingMode: matchedItem?.pantryTrackingMode ?? null,
+        isAvailabilityStaple: matchedItem?.isAvailabilityStaple ?? false,
       };
     });
 }
@@ -574,6 +601,10 @@ export function mapMatchedRecipeToSuggestion(
   recipe: MatchedRecipe,
   availability: CustomRecipeSuggestion["availability"],
 ): CustomRecipeSuggestion {
+  const availabilityMatchedIngredients = recipe.matchedIngredients.filter(
+    (ingredient) => ingredient.pantryComparison?.status === "available-staple",
+  ).length;
+
   return {
     kind: "suggestion",
     availability,
@@ -596,6 +627,9 @@ export function mapMatchedRecipeToSuggestion(
     mealPrepFriendly: recipe.mealPrepFriendly,
     totalRequiredIngredients: recipe.totalRequiredIngredients,
     matchedRequiredIngredients: recipe.matchedRequiredIngredients,
+    quantityMatchedIngredients:
+      recipe.matchedRequiredIngredients - availabilityMatchedIngredients,
+    availabilityMatchedIngredients,
     missingRequiredIngredients: recipe.missingRequiredIngredients,
     matchRatio: recipe.matchRatio,
     matchedIngredientNames: recipe.matchedIngredientNames,

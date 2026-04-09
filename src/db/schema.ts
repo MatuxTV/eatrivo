@@ -646,17 +646,57 @@ export const chatMessageRoleEnum = pgEnum("chat_message_role", [
   "assistant",
 ]);
 
-export const chatMessages = pgTable("chat_messages", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userProfileId: uuid("user_profile_id")
-    .notNull()
-    .references(() => userProfiles.id, { onDelete: "cascade" }),
-  sessionId: uuid("session_id").notNull(),
-  role: chatMessageRoleEnum("role").notNull(),
-  content: text("content").notNull(),
-  intent: text("intent"), // "meal_swap" | "macros" | "pantry" | "recipe" | "general"
-  metadata: jsonb("metadata"), // { model, latencyMs, tokenCount }
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const chatSessions = pgTable(
+  "chat_sessions",
+  {
+    id: uuid("id").primaryKey(),
+    userProfileId: uuid("user_profile_id")
+      .notNull()
+      .references(() => userProfiles.id, { onDelete: "cascade" }),
+    title: text("title"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    lastMessageAt: timestamp("last_message_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+  },
+  (table) => ({
+    userProfileIdx: index("chat_sessions_user_profile_idx").on(table.userProfileId),
+    lastMessageIdx: index("chat_sessions_last_message_idx").on(table.lastMessageAt),
+  }),
+);
+
+export const chatMessages = pgTable(
+  "chat_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userProfileId: uuid("user_profile_id")
+      .notNull()
+      .references(() => userProfiles.id, { onDelete: "cascade" }),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => chatSessions.id, { onDelete: "cascade" }),
+    role: chatMessageRoleEnum("role").notNull(),
+    content: text("content").notNull(),
+    intent: text("intent"), // "meal_swap" | "macros" | "pantry" | "recipe" | "general"
+    metadata: jsonb("metadata"), // { model, latencyMs, tokenCount }
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    sessionCreatedIdx: index("chat_messages_session_created_idx").on(
+      table.sessionId,
+      table.createdAt,
+    ),
+    userProfileCreatedIdx: index("chat_messages_user_profile_created_idx").on(
+      table.userProfileId,
+      table.createdAt,
+    ),
+  }),
+);

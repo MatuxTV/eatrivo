@@ -148,6 +148,20 @@
       "when": 1774870553119,
       "tag": "0020_elite_jamie_braddock",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1775289600000,
+      "tag": "0021_chat_sessions",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1775765659695,
+      "tag": "0022_mixed_fabian_cortez",
+      "breakpoints": true
     }
   ]
 }

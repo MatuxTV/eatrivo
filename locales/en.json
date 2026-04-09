@@ -551,6 +551,8 @@
         "setup": {
           "title": "Shape the recipe first",
           "description": "Tell Rivo what kind of meal you want and how many portions to prepare before generation starts.",
+          "modeLabel": "Generation mode",
+          "modeHint": "Choose whether Rivo should use your pantry or ignore it and optimize only for your profile.",
           "servingsLabel": "Portions",
           "servingsHint": "Set how many servings Rivo should plan for.",
           "mealTypeLabel": "Meal type",
@@ -564,6 +566,16 @@
           },
           "mealPrepLabel": "Make it meal prep friendly",
           "mealPrepDescription": "Favor recipes that store well and still taste good after reheating.",
+          "modes": {
+            "pantry": {
+              "title": "Use pantry",
+              "description": "Rivo tries to cook from what you already have at home and suggests small top-ups only when needed."
+            },
+            "preferencesOnly": {
+              "title": "Ignore pantry",
+              "description": "Rivo generates a recipe only from your diet, allergies, dislikes, and meal preferences."
+            }
+          },
           "profileHintLabel": "Client profile",
           "profileHint": "Rivo will still respect your diet, allergies, and the foods you do not like.",
           "submit": "Generate recipe",
@@ -588,7 +600,8 @@
           "open": "Open recipe result",
           "regenerate": "Generate again",
           "readyNow": "Ready now",
-          "almostCookable": "Almost cookable"
+          "almostCookable": "Almost cookable",
+          "preferencesOnly": "For your preferences"
         },
         "fallback": {
           "badge": "Smart fallback",
@@ -596,11 +609,13 @@
           "description": "Rivo could not build a cookable recipe from your current pantry, but these quick changes should unlock one fast.",
           "retry": "Try again",
           "openPantry": "Update pantry",
+          "preferencesOnly": "Profile match",
           "missingCount": "Missing {count}",
           "defaultSuggestions": {
             "pantry": "Add two or three staple ingredients you buy often.",
             "protein": "Top up one protein source to unlock more meals.",
-            "vegetables": "Add one fresh vegetable for easier lunch and dinner matches."
+            "vegetables": "Add one fresh vegetable for easier lunch and dinner matches.",
+            "preferences": "Rivo will suggest a few profile-friendly recipes even when it ignores your pantry."
           }
         },
         "error": {
@@ -624,14 +639,18 @@
         "message": {
           "pantryRecipeReady": "Rivo found a pantry recipe for you: {recipeName}.",
           "almostCookableReady": "Rivo found {recipeName}. You only need {missingCount} more ingredient(s).",
+          "preferencesOnlyReady": "Rivo created a recipe for your preferences: {recipeName}.",
+          "preferencesFallbackReady": "Rivo prepared {suggestionCount} profile-friendly recipe suggestion(s).",
           "fallbackSuggestionsReady": "Rivo prepared {suggestionCount} backup recipe suggestion(s) from the database.",
           "emptyPantry": "Your pantry is still empty, so Rivo prepared a few smart starting points.",
-          "noRecipeAvailable": "Nothing matched perfectly yet, but Rivo found a few useful next options."
+          "noRecipeAvailable": "Nothing matched perfectly yet, but Rivo found a few useful next options.",
+          "noPreferencesRecipeAvailable": "Rivo could not create a strong preference-only recipe yet, but it found a few useful alternatives."
         },
         "recipeUnavailable": {
           "pantryEmpty": "Your pantry is empty, so there is nothing to cook from it yet.",
           "noPantryRecipe": "Nothing can be cooked from your current pantry only.",
-          "noAlmostCookable": "Rivo could not find an almost-cookable option with three or fewer missing ingredients."
+          "noAlmostCookable": "Rivo could not find an almost-cookable option with three or fewer missing ingredients.",
+          "noPreferencesRecipe": "Rivo could not create a recipe that fit your preferences strongly enough."
         },
         "toasts": {
           "ready": "Your custom recipe is ready.",
@@ -666,6 +685,7 @@
         "addToShoppingList": "Add to shopping list",
         "cookThisRecipe": "I want to cook this recipe",
         "haveAmountInline": "have {amount}",
+        "stapleAvailable": "staple",
         "fallbackUsing": "We have: {ingredient}",
         "saveRecipe": "Save recipe",
         "removeBookmark": "Remove bookmark",
@@ -724,6 +744,7 @@
         "readyAmount": "ready",
         "missingAmount": "missing",
         "haveAmountInline": "have {amount}",
+        "stapleAvailable": "staple",
         "previousStep": "Previous",
         "nextStep": "Next step",
         "stepProgress": "Step {current} of {total}",
@@ -1041,6 +1062,24 @@
         "title": "Chat with Rivo",
         "description": "Ask Rivo anything about nutrition, recipes, or meal planning. Your personal AI chef, always ready.",
         "badge": "● COMING SOON",
+        "history": {
+          "title": "Chat history",
+          "description": "Jump back into previous conversations or start a fresh chat for a new topic.",
+          "currentLabel": "Active chat",
+          "mobileListLabel": "Your conversations",
+          "newChat": "New chat",
+          "untitled": "New chat",
+          "loading": "Loading chat history...",
+          "emptyTitle": "Nothing here yet",
+          "emptyDescription": "Once you send your first message, this chat will appear in your history.",
+          "inputPlaceholder": "Ask about your meal plan...",
+          "errors": {
+            "loadSessions": "Could not load chat history.",
+            "loadSession": "Could not open this chat.",
+            "createSession": "Could not create a new chat.",
+            "refreshSessions": "Could not refresh the chat list."
+          }
+        },
         "warning": {
           "title": "Rivo is still in development",
           "body": "Unfortunately, Rivo is still in development. You can use him as your information assistant. For now, he cannot change anything in your profile or work with your recipes. These features will be released in future updates."
