@@ -52,6 +52,7 @@ Each recipe object inside the `recipes` array must use exactly these recipe-leve
       "ingredient_key": "string or null",
       "ingredient_specific_key": "string or null",
       "canonical_name": "string or null",
+      "pantry_tracking_hint": "string or null",
       "quantity": 0,
       "unit": "string or null",
       "optional": false,
@@ -223,6 +224,13 @@ Do not silently preserve a calories value that contradicts the macros.
 - Do not include numbering inside the strings if the order is already represented by the array.
 - Remove marketing text, tips, and nutrition commentary from instructions.
 
+### Notes
+
+- `notes` may be `null` or a short user-facing recipe note.
+- Do not use `notes` to explain normalization decisions, schema compliance, guessed quantities, conservative estimates, rejected ambiguities, or any other QA/process commentary.
+- Do not mention that vague source amounts were estimated, standardized, or replaced to satisfy the contract.
+- If the recipe would require that kind of explanation to remain acceptable, reject it instead.
+
 ### Temperature normalization in instructions
 
 All temperatures mentioned in instruction strings must be expressed in **°C only**.
@@ -255,6 +263,7 @@ Each ingredient must already be structured. Raw ingredient strings are not allow
 | `ingredient_key` | Normalized machine key used for matching. |
 | `ingredient_specific_key` | More specific machine key for exact pantry variant matching. |
 | `canonical_name` | Normalized semantic ingredient identity (locale-neutral). |
+| `pantry_tracking_hint` | Optional pantry tracking hint for whether the ingredient is typically tracked by quantity or simple availability. |
 | `quantity` | Numeric value or `null`. |
 | `unit` | Canonical unit string or `null`. |
 | `optional` | Required boolean. |
@@ -391,6 +400,8 @@ This is the canonical machine key used by deterministic matching.
 - Do not broaden across sibling variants, near-synonyms, culinary substitutes, or recipe-adjacent concepts.
 - Do not encode preparation state, packaging, marketing adjectives, or recipe-role wording in `ingredient_key` unless that distinction is the core pantry identity.
 - If a reliable identity cannot be determined, use `null` and flag the recipe for review.
+- Do not collapse a clearly specific source ingredient into a vague placeholder such as `cheese`, `paprika`, `meat`, `fish`, `herb`, or `oil` when the source actually implies a more specific pantry identity.
+- If the source wording is too ambiguous to choose a precise pantry identity confidently, reject the recipe instead of keeping a generic fallback ingredient identity.
 
 **Additional compatibility constraints:**
 
@@ -478,7 +489,9 @@ This is the optional exact-variant machine key used for higher-precision pantry 
 **Rules:**
 
 - Must be a JSON number, not a string.
-- Use `null` if quantity is genuinely missing or not meaningful.
+- In canonical recipe output, every ingredient must have an explicit quantity.
+- Do not use `null` for recipe ingredients just because the source says `to taste`, `as needed`, `for seasoning`, `for serving`, or similar vague wording.
+- If a realistic quantity cannot be derived with reasonable confidence, reject the recipe instead of outputting an ingredient with missing amount data.
 - Convert unicode fractions to decimal numbers.
 - Convert mixed fractions to decimal numbers.
 
@@ -520,9 +533,32 @@ If the source recipe uses any non-canonical unit (including imperial units such 
 
 - The canonical unit set is metric-first. Imperial units are never output.
 - Never output units outside this set: `g`, `kg`, `ml`, `dl`, `tbsp`, `tsp`, `pc`.
+- In canonical recipe output, every ingredient must have an explicit non-null unit from the allowed set.
 - Prefer `g` over `kg` for smaller amounts and `ml` over `dl` for small liquid amounts when that improves clarity.
 - Use approximate conversion when necessary, but keep the value realistic and conservative.
-- If the source amount cannot be converted with reasonable confidence, use `quantity: null` and `unit: null` instead of preserving a non-canonical unit.
+- If the source amount cannot be converted with reasonable confidence, reject the recipe instead of preserving a vague amount or outputting `null`.
+
+### `pantry_tracking_hint`
+
+This field does not describe whether the user currently has the ingredient in stock.
+It only describes how the ingredient is typically tracked in Eatrivo pantry workflows.
+
+Allowed values are:
+
+- `quantity`
+- `availability`
+- `null`
+
+**Rules:**
+
+- Use `availability` only for pantry staples that users usually track as simply on hand rather than by exact grams or pieces.
+- Typical `availability` examples include: `salt`, `black pepper`, `pepper`, `garlic`, `olive oil`, `oil`, `soy sauce`, `vinegar`, and similar seasonings, oils, and staple condiments.
+- Use `quantity` for ingredients that are normally consumption-sensitive or package-sensitive, such as eggs, milk, yogurt, meat, vegetables, fruit, rice, pasta, tortillas, bread, and cheese.
+- Use `null` only when the pantry tracking mode cannot be inferred confidently from the ingredient identity.
+- `pantry_tracking_hint` must never replace `quantity` or `unit`. Even ingredients tracked by `availability` must still have an explicit recipe amount.
+- This field is a pantry modeling hint, not a recipe availability claim.
+- Dried herbs and ground spices may use `availability` only when their ingredient identity itself is still precise and confidently known.
+- `availability` does not justify keeping an ingredient semantically vague; for example, if the source implies a specific spice blend, pepper type, or cheese type, preserve that identity or reject the recipe.
 
 ---
 
@@ -531,6 +567,9 @@ If the source recipe uses any non-canonical unit (including imperial units such 
 Set to `true` only when the source explicitly indicates optionality or garnish-only usage.
 
 Treat phrases like these as optional signals: `optional`, `to taste`, `to serve`, `for garnish`, `for serving`.
+
+If an ingredient is kept in the recipe as optional, it still needs an explicit structured quantity and unit in canonical output whenever that amount can be derived reasonably.
+Do not preserve vague optional wording such as `salt to taste` or `pepper as needed` as a substitute for amount normalization.
 
 ---
 
@@ -546,6 +585,14 @@ Treat phrases like these as optional signals: `optional`, `to taste`, `to serve`
 
 The upstream model must prefer deterministic normalization over preserving noisy source wording.
 
+The model may perform corrective normalization when the source concept is clear but the raw wording is imprecise, colloquial, partially localized, structurally inconsistent, or not yet aligned to the Eatrivo contract.
+This means the model may fix the representation to the correct canonical concept, but it must not invent missing concepts that are not supported by the source.
+
+Use this decision rule:
+
+- If the source clearly implies the intended ingredient, unit meaning, pantry identity, serving interpretation, or recipe structure, normalize it into the correct canonical form even if the original wording is messy.
+- If the source does not clearly support a single defensible canonical interpretation, reject the recipe instead of guessing.
+
 Apply these transformations consistently:
 
 - Convert unicode fractions to numeric decimals.
@@ -558,8 +605,27 @@ Apply these transformations consistently:
 - Normalize each localized `display_name` to the locale-appropriate base ingredient form with no embedded quantity, unit, or parenthetical gloss.
 - Slugify `ingredient_key` from the `canonical_name`.
 - Derive `ingredient_specific_key` only when the exact variant is confidently known, useful for pantry matching, and remains a validated descendant of `ingredient_key`.
+- Derive `pantry_tracking_hint` from the normalized ingredient identity when possible.
 - When the broader/narrower hierarchy is uncertain, prefer the exact key for `ingredient_key` and set `ingredient_specific_key` to the same value or `null`.
 - Generate locale translations from the same canonical ingredient and recipe identity.
+- When the source wording is semantically clear but structurally weak, correct it into the canonical Eatrivo concept instead of mirroring the weak source representation.
+- You may refine an ingredient into a more precise canonical pantry identity when the source context clearly supports that refinement, even if the raw label itself is shorter or less exact.
+- If a source ingredient is only described vaguely and cannot be mapped to a precise pantry identity with confidence, reject the recipe instead of inventing a generic placeholder ingredient.
+- Do not convert `to taste` seasonings or unspecified fillings into estimated accepted recipe data unless the page itself gives enough contextual evidence for a tight, defensible normalization.
+- Never use recipe notes to justify guessed values that would otherwise be too uncertain for acceptance.
+
+**Examples of allowed corrective normalization:**
+
+- source label `paprika` + localized wording/context clearly meaning ground spice -> canonical concept may be normalized to `ground paprika`
+- source label `mozzarella` -> canonical concept may be normalized to `mozzarella cheese`
+- source text `2 cloves garlic` -> canonical unit may be normalized to `2 pc`
+- source serving label that is obviously too small for the dish -> servings may be rescaled to realistic normalized portions
+
+**Examples that still require rejection:**
+
+- source says only `cheese` and nothing else narrows the type, but exact cheese identity materially affects pantry matching
+- source uses `spices` or `seasoning` with no reliable clue which spice concept is intended
+- source amount is missing and the page does not provide enough evidence for a tight normalization
 
 ## Forbidden output patterns
 
@@ -574,8 +640,11 @@ Do not output:
 - Mixed unit conventions inside one file without normalization and approximate conversion
 - Duplicate recipe keys with different casing conventions
 - Inferred data that is clearly speculative
+- Vague ingredient amounts such as `to taste`, `as needed`, `for seasoning`, `for serving`, or `as required` in place of structured `quantity` and `unit`
+- Generic fallback ingredient identities such as `cheese`, `paprika`, `oil`, `herb`, or `spice` when the source does not support a precise accepted identity confidently
 - Quantities, unit labels, or parenthetical English aliases embedded inside ingredient `display_name`
 - Quantity-inflected localized ingredient labels where a base ingredient form can be produced confidently
+- Notes that mention guessed quantities, normalization process, schema requirements, or why uncertain source data was still accepted
 
 Do not output internal persistence fields such as `source`, `user_generated`, `created_by_user_id`, or `source_job_id` in upstream normalized JSON. Those are internal system concerns, not upstream content fields.
 
@@ -590,7 +659,7 @@ Before returning the final JSON, verify all of the following:
 - [ ] Every recipe inside `recipes` has all required fields.
 - [ ] Every recipe has `external_key`, `default_locale`, `category_key`, and `translations`.
 - [ ] Every ingredient is an object, not a string.
-- [ ] Every ingredient has `ingredient_key`, `ingredient_specific_key`, `canonical_name`, `quantity`, `unit`, `optional`, `sort_order`, and `translations`.
+- [ ] Every ingredient has `ingredient_key`, `ingredient_specific_key`, `canonical_name`, `pantry_tracking_hint`, `quantity`, `unit`, `optional`, `sort_order`, and `translations`.
 - [ ] The `default_locale` exists inside each recipe `translations` map.
 - [ ] Each ingredient `translations` map contains the locales needed by the recipe.
 - [ ] Each ingredient translation contains `display_name`.
@@ -601,13 +670,17 @@ Before returning the final JSON, verify all of the following:
 - [ ] `ingredient_specific_key` values are lowercase slug strings or `null`, and never broader than `ingredient_key`.
 - [ ] For every ingredient where both keys are non-null, `ingredient_specific_key` is either identical to `ingredient_key` or a validated descendant that would satisfy the importer hierarchy.
 - [ ] When the broader/narrower relationship is uncertain, the exact key is used for `ingredient_key` and `ingredient_specific_key` is set to the same value or `null`.
-- [ ] Quantities are numbers or `null`, never strings.
-- [ ] Every non-null unit is one of `g`, `kg`, `ml`, `dl`, `tbsp`, `tsp`, or `pc`.
-- [ ] Any source units outside the allowed set were approximately converted or replaced with `null` when confidence was too low.
+- [ ] `pantry_tracking_hint` is either `quantity`, `availability`, or `null`.
+- [ ] Quantities are numbers, never strings or `null` in accepted recipes.
+- [ ] Every unit is one of `g`, `kg`, `ml`, `dl`, `tbsp`, `tsp`, or `pc`, and is never `null` in accepted recipes.
+- [ ] Any source units outside the allowed set were approximately converted, and the recipe was rejected if confidence was too low.
+- [ ] No accepted ingredient identity falls back to an unjustifiably generic placeholder when the source is ambiguous.
 - [ ] Optional garnish-style ingredients are marked with `optional: true`.
 - [ ] No extra metadata keys remain from the source dataset.
 - [ ] All temperatures in instruction strings are expressed in °C; no Fahrenheit values remain.
 - [ ] `unit` fields contain only canonical machine values; localized unit labels are used only when the UI composes a combined display string.
+- [ ] No accepted recipe ingredient uses vague quantity language such as `to taste` or `as needed` instead of explicit amount data.
+- [ ] `notes` do not mention guessed values, normalization process, schema compliance, or uncertainty mitigation.
 - [ ] `calories` in `nutrition_per_serving` is consistent with the macro sum within ±15 %; if not, it was recalculated or the recipe was rejected.
 - [ ] `meal_prep_friendly` was set based on the defined criteria, defaulting to `false` when uncertain.
 
