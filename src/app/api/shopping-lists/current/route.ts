@@ -23,6 +23,10 @@ import {
 import { formatAmountLabel } from "@/lib/pantry/format";
 import { buildPantryInventoryItems } from "@/lib/pantry/grocery";
 import {
+  normalizeShoppingListAmount,
+  parseShoppingListAmountLabel,
+} from "@/lib/pantry/shopping-list-amount";
+import {
   normalizeRestockUnit,
   parseStoredQuantity,
   serializeQuantity,
@@ -31,7 +35,7 @@ import { checkRateLimit } from "@/lib/rateLimit";
 import { CacheService } from "@/lib/redis";
 import { handleApiError, safeErrorResponse, unauthorizedError, validationError } from "@/lib/safeError";
 import { shoppingListCurrentMutationSchema } from "@/lib/schemas/pantry";
-import { guessFoodCategory, parseQuantity } from "@/lib/units";
+import { guessFoodCategory } from "@/lib/units";
 
 type ShoppingListItemResponse = {
   id: string;
@@ -196,20 +200,25 @@ export async function POST(request: NextRequest) {
       return validationError("Validation failed");
     }
     const body = parsedBody.data;
-    const parsedAmountLabel = body.amountLabel
-      ? parseQuantity(body.amountLabel)
-      : null;
+    const parsedAmountLabel = parseShoppingListAmountLabel(body.amountLabel ?? null);
+    if (!parsedAmountLabel.ok) {
+      return validationError(parsedAmountLabel.message);
+    }
     const resolvedManualQuantity =
       body.quantity !== undefined
         ? body.quantity
-        : parsedAmountLabel?.value ?? null;
+        : parsedAmountLabel.quantity ?? null;
     const resolvedManualUnit =
       body.unit !== undefined
         ? normalizeRestockUnit(body.unit)
-        : parsedAmountLabel?.unit ?? null;
-    const resolvedManualAmountLabel =
-      body.amountLabel ??
-      formatAmountLabel(resolvedManualQuantity, resolvedManualUnit);
+        : parsedAmountLabel.unit ?? null;
+    const resolvedManualAmount = normalizeShoppingListAmount(
+      resolvedManualQuantity,
+      resolvedManualUnit,
+    );
+    if (!resolvedManualAmount.ok) {
+      return validationError(resolvedManualAmount.message);
+    }
 
     apiLogger.debug("[shopping-list.current.upsert] request validated", {
       metadata: {
@@ -221,8 +230,8 @@ export async function POST(request: NextRequest) {
         lowStockOnly: body.lowStockOnly ?? false,
         appendPackage: body.appendPackage ?? false,
         amountLabel: body.amountLabel ?? null,
-        parsedAmountLabelQuantity: parsedAmountLabel?.value ?? null,
-        parsedAmountLabelUnit: parsedAmountLabel?.unit ?? null,
+        parsedAmountLabelQuantity: parsedAmountLabel.quantity ?? null,
+        parsedAmountLabelUnit: parsedAmountLabel.unit ?? null,
       },
     });
 
@@ -308,8 +317,8 @@ export async function POST(request: NextRequest) {
                 name: body.name.trim(),
                 trackingMode: null,
                 inStock: null,
-                quantity: resolvedManualQuantity,
-                unit: resolvedManualUnit,
+                quantity: resolvedManualAmount.quantity,
+                unit: resolvedManualAmount.unit,
                 category: body.category ?? guessFoodCategory(body.name),
                 expiryDate: null,
               },
@@ -356,11 +365,11 @@ export async function POST(request: NextRequest) {
                 aiSuggestion?.matchedExistingIngredientSpecificKey ??
                 null,
               quantity:
-                resolvedManualQuantity !== null
-                  ? String(resolvedManualQuantity)
+                resolvedManualAmount.quantity !== null
+                  ? String(resolvedManualAmount.quantity)
                   : null,
-              unit: resolvedManualUnit,
-              amountLabel: resolvedManualAmountLabel,
+              unit: resolvedManualAmount.unit,
+              amountLabel: resolvedManualAmount.amountLabel,
               category:
                 aiSuggestion?.category ??
                 body.category ??
@@ -433,14 +442,22 @@ export async function POST(request: NextRequest) {
         const mergedQuantity = shouldAppendPackage
           ? (existingQuantity ?? 0) + seedQuantity
           : null;
-        const nextAmountLabel = shouldAppendPackage
-          ? formatAmountLabel(mergedQuantity, seed.unit ?? existingItem.unit ?? null)
+        const nextAmount = normalizeShoppingListAmount(
+          shouldAppendPackage
+            ? mergedQuantity
+            : existingItem.quantity ?? seed.quantity ?? null,
+          shouldAppendPackage
+            ? seed.unit ?? existingItem.unit ?? null
+            : existingItem.unit ?? seed.unit ?? null,
+        );
+        const nextAmountLabel = nextAmount.ok
+          ? nextAmount.amountLabel
           : existingItem.amountLabel ?? seed.amountLabel;
-        const nextQuantity = shouldAppendPackage
-          ? serializeQuantity(mergedQuantity)
+        const nextQuantity = nextAmount.ok
+          ? (nextAmount.quantity !== null ? serializeQuantity(nextAmount.quantity) : null)
           : existingItem.quantity ?? seed.quantity ?? null;
-        const nextUnit = shouldAppendPackage
-          ? seed.unit ?? existingItem.unit ?? null
+        const nextUnit = nextAmount.ok
+          ? nextAmount.unit
           : existingItem.unit ?? seed.unit ?? null;
         const nextCategory = existingItem.category ?? seed.category ?? null;
 

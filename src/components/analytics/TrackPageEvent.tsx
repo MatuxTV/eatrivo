@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import {
   trackClientEvent,
@@ -12,9 +12,12 @@ export function TrackPageEvent({
   metadata,
 }: TrackClientEventParams) {
   const metadataKey = JSON.stringify(metadata ?? null);
+  const metadataRef = useRef(metadata);
+
+  metadataRef.current = metadata;
 
   useEffect(() => {
-    trackClientEvent({ eventName, metadata });
+    trackClientEvent({ eventName, metadata: metadataRef.current });
   }, [eventName, metadataKey]);
 
   return null;

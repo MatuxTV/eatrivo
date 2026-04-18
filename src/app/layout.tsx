@@ -124,14 +124,14 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={`${quicksand.variable} antialiased`}>
-        <Providers>
-          <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>
             <GoogleConsentMode />
             {children}
             <ConditionalAnalytics />
             <CookieConsentBanner />
-          </NextIntlClientProvider>
-        </Providers>
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

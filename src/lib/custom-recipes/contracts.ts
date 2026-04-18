@@ -40,6 +40,66 @@ export const customRecipeInstructionSchema = z.object({
   text: z.string().min(1).max(500),
 });
 
+const localeNeutralKeySchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(80)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+
+const customRecipeIngredientTranslationSchema = z.object({
+  display_name: z.string().trim().min(1).max(120),
+});
+
+const customRecipeIngredientTranslationsSchema = z.object({
+  en: customRecipeIngredientTranslationSchema,
+  sk: customRecipeIngredientTranslationSchema,
+});
+
+const customRecipeRecipeTranslationSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  category_label: z.string().trim().min(1).max(80).nullable(),
+  serving_unit_label: z.string().trim().min(1).max(40).nullable(),
+  instructions: z.array(z.string().trim().min(1).max(500)).min(1).max(12),
+  notes: z.string().trim().min(1).max(280).nullable(),
+});
+
+const customRecipeRecipeTranslationsSchema = z.object({
+  en: customRecipeRecipeTranslationSchema,
+  sk: customRecipeRecipeTranslationSchema,
+});
+
+const customRecipeCanonicalIngredientSchema = z.object({
+  ingredient_key: z.string().max(160).nullable(),
+  ingredient_specific_key: z.string().max(200).nullable(),
+  canonical_name: z.string().max(120).nullable(),
+  pantry_tracking_hint: z.enum(["quantity", "availability"]).nullable(),
+  quantity: z.number().finite().nullable(),
+  unit: z.string().max(40).nullable(),
+  optional: z.boolean(),
+  sort_order: z.number().int().min(0),
+  translations: customRecipeIngredientTranslationsSchema,
+});
+
+export const customRecipeCanonicalRecipeSchema = z.object({
+  default_locale: localeSchema,
+  category_key: localeNeutralKeySchema,
+  diet_tags: z.array(localeNeutralKeySchema).max(8),
+  restriction_flags: z.array(localeNeutralKeySchema).max(12),
+  servings: z.number().int().min(1).max(12),
+  prep_time_min: z.number().int().min(1).max(240),
+  total_time_min: z.number().int().min(1).max(360),
+  nutrition_per_serving: z.object({
+    calories: z.number().int().min(0).max(3000),
+    protein_g: z.number().min(0).max(300),
+    carbohydrates_g: z.number().min(0).max(500),
+    fat_g: z.number().min(0).max(200),
+  }),
+  ingredients: z.array(customRecipeCanonicalIngredientSchema).min(1).max(20),
+  translations: customRecipeRecipeTranslationsSchema,
+  meal_prep_friendly: z.boolean(),
+});
+
 export const customRecipeIngredientItemSchema = z.object({
   name: z.string().min(1).max(120),
   amount: z.string().max(80).nullable(),
@@ -95,6 +155,7 @@ export const customRecipeAiIngredientSchema = z
     amount: z.string().max(80).nullable(),
     pantryStatus: z.enum(["pantry", "missing"]),
     pantryMatchName: z.string().min(1).max(120).nullable(),
+    translations: customRecipeIngredientTranslationsSchema,
   })
   .superRefine((ingredient, ctx) => {
     if (
@@ -138,6 +199,8 @@ const customRecipeAvailableAiCandidateSchema = z
     name: z.string().min(1).max(120),
     category: z.string().min(1).max(80),
     description: z.string().min(1).max(280),
+    dietTags: z.array(localeNeutralKeySchema).max(8),
+    restrictionFlags: z.array(localeNeutralKeySchema).max(12),
     servings: z.number().int().min(1).max(12),
     servingUnit: z.string().max(40).nullable(),
     prepTimeMin: z.number().int().min(1).max(240),
@@ -148,6 +211,7 @@ const customRecipeAvailableAiCandidateSchema = z
     nutrition: customRecipeAiNutritionSchema,
     ingredients: z.array(customRecipeAiIngredientSchema).min(1).max(20),
     instructions: z.array(customRecipeInstructionSchema).min(1).max(12),
+    translations: customRecipeRecipeTranslationsSchema,
   })
   .superRefine((candidate, ctx) => {
     if (candidate.totalTimeMin < candidate.prepTimeMin) {
@@ -239,6 +303,7 @@ export const customRecipeGeneratedRecipeSchema = z.object({
   matchedIngredients: z.array(customRecipeMatchedIngredientSchema).max(20).default([]),
   matchedIngredientNames: z.array(z.string().min(1).max(120)).max(20),
   missingIngredientNames: z.array(z.string().min(1).max(120)).max(3),
+  canonicalRecipe: customRecipeCanonicalRecipeSchema.optional(),
 });
 
 export const customRecipeAcceptRequestSchema = z.object({
@@ -414,6 +479,43 @@ function normalizeLookup(value: string | null | undefined): string {
   return (value ?? "").trim().toLowerCase();
 }
 
+function normalizeLocaleNeutralKey(value: string | null | undefined): string {
+  return (value ?? "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+}
+
+function normalizeNullableString(value: string | null | undefined): string | null {
+  const normalized = value?.trim();
+  return normalized ? normalized : null;
+}
+
+function resolveRecipeTranslation(
+  translations: Extract<
+    CustomRecipeAiOutput["pantryRecipe"],
+    { status: "available" }
+  >["translations"],
+  locale: "en" | "sk",
+) {
+  return translations[locale] ?? translations.en;
+}
+
+function resolveIngredientDisplayName(
+  ingredient: Extract<
+    CustomRecipeAiOutput["pantryRecipe"],
+    { status: "available" }
+  >["ingredients"][number],
+  locale: "en" | "sk",
+): string {
+  return ingredient.translations[locale]?.display_name?.trim()
+    || ingredient.translations.en.display_name.trim()
+    || ingredient.name.trim();
+}
+
 function buildMatchedIngredientDisplayName(
   recipeIngredientName: string,
   pantryIngredientName: string | null,
@@ -475,6 +577,8 @@ function normalizeCustomRecipeIngredientItem(
     locale?: "en" | "sk";
   },
 ): CustomRecipeGeneratedRecipe["ingredientItems"][number] {
+  const previewLocale = options?.locale ?? "en";
+  const localizedName = resolveIngredientDisplayName(ingredient, previewLocale);
   const combinedValue = [ingredient.amount?.trim(), ingredient.name.trim()]
     .filter(Boolean)
     .join(" ");
@@ -493,7 +597,7 @@ function normalizeCustomRecipeIngredientItem(
     : null;
 
   return {
-    name: ingredient.name,
+    name: localizedName,
     amount: ingredient.amount,
     category:
       pantryMatch?.category ??
@@ -516,27 +620,28 @@ function buildGeneratedMatchedIngredients(
     { status: "available" }
   >,
   ingredientItems: CustomRecipeGeneratedRecipe["ingredientItems"],
+  locale: "en" | "sk",
 ): CustomRecipeGeneratedRecipe["matchedIngredients"] {
   return candidate.ingredients
     .filter((ingredient) => ingredient.pantryStatus === "pantry")
-    .map((ingredient) => {
-      const matchedItem = ingredientItems.find(
-        (item) => normalizeLookup(item.name) === normalizeLookup(ingredient.name),
-      );
+    .map((ingredient, index) => {
+      const matchedItem = ingredientItems[index];
       const pantryIngredientName =
         matchedItem?.pantryMatchName ?? ingredient.pantryMatchName ?? null;
+      const recipeIngredientName =
+        matchedItem?.name ?? resolveIngredientDisplayName(ingredient, locale);
       const matchType =
-        pantryIngredientName &&
-        normalizeLookup(pantryIngredientName) === normalizeLookup(ingredient.name)
+        pantryIngredientName
+        && normalizeLookup(pantryIngredientName) === normalizeLookup(recipeIngredientName)
           ? "exact"
           : "fallback";
 
       return {
-        recipeIngredientName: ingredient.name,
+        recipeIngredientName,
         pantryIngredientName,
         matchType,
         displayName: buildMatchedIngredientDisplayName(
-          ingredient.name,
+          recipeIngredientName,
           pantryIngredientName,
           matchType,
         ),
@@ -545,6 +650,86 @@ function buildGeneratedMatchedIngredients(
         isAvailabilityStaple: matchedItem?.isAvailabilityStaple ?? false,
       };
     });
+}
+
+function buildCanonicalRecipe(
+  candidate: Extract<
+    CustomRecipeAiOutput["pantryRecipe"],
+    { status: "available" }
+  >,
+  ingredientItems: CustomRecipeGeneratedRecipe["ingredientItems"],
+): NonNullable<CustomRecipeGeneratedRecipe["canonicalRecipe"]> {
+  const categoryKey =
+    normalizeLocaleNeutralKey(
+      candidate.translations.en.category_label ?? candidate.category,
+    ) || "custom-recipe";
+
+  return customRecipeCanonicalRecipeSchema.parse({
+    default_locale: "en",
+    category_key: categoryKey,
+    diet_tags: [...new Set(candidate.dietTags.map(normalizeLocaleNeutralKey).filter(Boolean))],
+    restriction_flags: [
+      ...new Set(candidate.restrictionFlags.map(normalizeLocaleNeutralKey).filter(Boolean)),
+    ],
+    servings: candidate.servings,
+    prep_time_min: candidate.prepTimeMin,
+    total_time_min: candidate.totalTimeMin,
+    nutrition_per_serving: {
+      calories: candidate.nutrition.calories,
+      protein_g: candidate.nutrition.proteinG,
+      carbohydrates_g: candidate.nutrition.carbohydratesG,
+      fat_g: candidate.nutrition.fatG,
+    },
+    ingredients: candidate.ingredients.map((ingredient, index) =>
+      customRecipeCanonicalIngredientSchema.parse({
+        ingredient_key: ingredientItems[index]?.ingredientKey ?? null,
+        ingredient_specific_key: ingredientItems[index]?.ingredientSpecificKey ?? null,
+        canonical_name: normalizeNullableString(ingredient.name),
+        pantry_tracking_hint: ingredientItems[index]?.pantryTrackingMode ?? null,
+        quantity:
+          typeof ingredientItems[index]?.quantityValue === "number"
+          && Number.isFinite(ingredientItems[index]?.quantityValue)
+            ? ingredientItems[index]?.quantityValue ?? null
+            : null,
+        unit: normalizeNullableString(ingredientItems[index]?.unit),
+        optional: false,
+        sort_order: index,
+        translations: {
+          en: {
+            display_name: ingredient.translations.en.display_name.trim(),
+          },
+          sk: {
+            display_name: ingredient.translations.sk.display_name.trim(),
+          },
+        },
+      }),
+    ),
+    translations: {
+      en: {
+        name: candidate.translations.en.name.trim(),
+        category_label: normalizeNullableString(candidate.translations.en.category_label),
+        serving_unit_label: normalizeNullableString(
+          candidate.translations.en.serving_unit_label,
+        ),
+        instructions: candidate.translations.en.instructions.map((instruction) =>
+          instruction.trim(),
+        ),
+        notes: normalizeNullableString(candidate.translations.en.notes),
+      },
+      sk: {
+        name: candidate.translations.sk.name.trim(),
+        category_label: normalizeNullableString(candidate.translations.sk.category_label),
+        serving_unit_label: normalizeNullableString(
+          candidate.translations.sk.serving_unit_label,
+        ),
+        instructions: candidate.translations.sk.instructions.map((instruction) =>
+          instruction.trim(),
+        ),
+        notes: normalizeNullableString(candidate.translations.sk.notes),
+      },
+    },
+    meal_prep_friendly: candidate.mealPrepFriendly,
+  });
 }
 
 export function mapAiCandidateToGeneratedRecipe(
@@ -558,28 +743,41 @@ export function mapAiCandidateToGeneratedRecipe(
     locale?: "en" | "sk";
   },
 ): CustomRecipeGeneratedRecipe {
+  const previewLocale = options?.locale ?? "en";
   const ingredientItems = candidate.ingredients.map((ingredient) =>
     normalizeCustomRecipeIngredientItem(ingredient, options),
   );
   const matchedIngredients = buildGeneratedMatchedIngredients(
     candidate,
     ingredientItems,
+    previewLocale,
+  );
+  const localizedTranslation = resolveRecipeTranslation(
+    candidate.translations,
+    previewLocale,
   );
   const matchedIngredientNames = matchedIngredients.map(
     (ingredient) => ingredient.displayName,
   );
   const missingIngredientNames = candidate.ingredients
     .filter((ingredient) => ingredient.pantryStatus === "missing")
-    .map((ingredient) => ingredient.name);
+    .map((ingredient) => resolveIngredientDisplayName(ingredient, previewLocale));
+  const canonicalRecipe = buildCanonicalRecipe(candidate, ingredientItems);
 
   return {
     status: "available",
     kind,
-    name: candidate.name,
-    category: candidate.category,
-    description: candidate.description,
+    name: localizedTranslation.name,
+    category:
+      localizedTranslation.category_label
+      ?? candidate.translations.en.category_label
+      ?? candidate.category,
+    description: localizedTranslation.notes ?? candidate.description,
     servings: candidate.servings,
-    servingUnit: candidate.servingUnit,
+    servingUnit:
+      localizedTranslation.serving_unit_label
+      ?? candidate.translations.en.serving_unit_label
+      ?? candidate.servingUnit,
     prepTimeMin: candidate.prepTimeMin,
     totalTimeMin: candidate.totalTimeMin,
     difficulty: candidate.difficulty,
@@ -590,10 +788,14 @@ export function mapAiCandidateToGeneratedRecipe(
     carbohydratesG: candidate.nutrition.carbohydratesG,
     fatG: candidate.nutrition.fatG,
     ingredientItems,
-    instructions: candidate.instructions,
+    instructions: localizedTranslation.instructions.map((instruction) => ({
+      title: "",
+      text: instruction,
+    })),
     matchedIngredients,
     matchedIngredientNames,
     missingIngredientNames,
+    canonicalRecipe,
   };
 }
 

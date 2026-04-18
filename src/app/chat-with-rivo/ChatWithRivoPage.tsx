@@ -17,6 +17,7 @@ import { FeedbackDialog } from "@/components/FeedbackButton";
 import Link from "next/link";
 import AppShellViewport from "@/app/home/components/AppShellViewport";
 import { MOBILE_BOTTOM_NAV_OFFSET } from "@/app/home/constants/app-shell";
+import { useTutorialSurface } from "@/components/tutorial/TutorialProvider";
 import { trackClientEvent } from "@/lib/analytics-client";
 import {
   Dialog,
@@ -182,6 +183,7 @@ function ChatSessionList({
 export default function ChatWithRivoPage() {
   const t = useTranslations("home.comingSoon.chatWithRivo");
   const locale = useLocale();
+  useTutorialSurface("chatWithRivo");
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatSessions, setChatSessions] = useState<ChatSessionSummary[]>([]);
   const [input, setInput] = useState("");
@@ -656,6 +658,7 @@ export default function ChatWithRivoPage() {
 
   return (
     <AppShellViewport
+      data-tutorial-anchor="chat-root"
       className="flex h-full w-full flex-1 flex-col mx-auto bg-eatrivo-white-primary relative overflow-hidden px-4 pt-20 md:px-8 md:pt-0"
     >
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -666,6 +669,7 @@ export default function ChatWithRivoPage() {
       <div className="relative z-20 flex items-center justify-between gap-3 pb-4 md:mx-auto md:w-full md:max-w-6xl">
         <div className="flex min-w-0 items-center gap-3">
           <button
+            data-tutorial-anchor="chat-history-trigger"
             type="button"
             onClick={() => setIsHistoryOpen(true)}
             disabled={isStreaming}
@@ -685,6 +689,7 @@ export default function ChatWithRivoPage() {
         </div>
 
         <button
+          data-tutorial-anchor="chat-new-chat"
           type="button"
           onClick={handleCreateNewChat}
           disabled={isStreaming || isBootstrapping}
@@ -957,7 +962,10 @@ export default function ChatWithRivoPage() {
                   </Link>
                 </div>
               ) : (
-                <div className="relative flex items-center rounded-[2rem] border border-eatrivo-purple/10 bg-white/90 p-1.5 shadow-[0_8px_30px_rgb(123,63,242,0.12)] backdrop-blur-xl transition-all duration-300 focus-within:border-eatrivo-purple/50 focus-within:ring-2 focus-within:ring-eatrivo-purple/30">
+                <div
+                  data-tutorial-anchor="chat-composer"
+                  className="relative flex items-center rounded-[2rem] border border-eatrivo-purple/10 bg-white/90 p-1.5 shadow-[0_8px_30px_rgb(123,63,242,0.12)] backdrop-blur-xl transition-all duration-300 focus-within:border-eatrivo-purple/50 focus-within:ring-2 focus-within:ring-eatrivo-purple/30"
+                >
                   <input
                     ref={inputRef}
                     className="min-h-[44px] flex-1 bg-transparent px-5 py-3 text-base text-eatrivo-black-primary placeholder:text-eatrivo-black-secondary/70 focus:outline-none md:text-[15px]"

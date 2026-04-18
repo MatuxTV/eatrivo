@@ -4,7 +4,6 @@ import {
 } from "@/lib/analytics-events";
 import { captureServerAnalyticsEvent } from "@/lib/analytics-server";
 import type {
-  AnalyticsEventType,
   TrackEventParams as BaseTrackEventParams,
 } from "@/lib/analytics-types";
 

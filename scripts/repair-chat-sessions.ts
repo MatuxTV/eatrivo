@@ -253,7 +253,7 @@ async function main() {
 
   const missingAfter = await getMissingRowCount();
 
-  console.log(
+  console.warn(
     JSON.stringify(
       {
         missingBefore,

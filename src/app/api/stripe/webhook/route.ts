@@ -8,7 +8,7 @@ import {
   subscriptions,
   invoices,
 } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { Analytics } from "@/lib/analytics";
 import { captureServerAnalyticsEvent } from "@/lib/analytics-server";
 
@@ -20,6 +20,24 @@ import { invalidateUserContextCaches } from "@/lib/user-context-cache";
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export const runtime = "nodejs";
+
+function mapInvoiceStatus(
+  stripeStatus: string | null | undefined,
+): "draft" | "open" | "paid" | "void" | "uncollectible" {
+  switch (stripeStatus) {
+    case "draft":
+      return "draft";
+    case "open":
+      return "open";
+    case "void":
+      return "void";
+    case "uncollectible":
+      return "uncollectible";
+    case "paid":
+    default:
+      return "paid";
+  }
+}
 
 export async function POST(req: NextRequest) {
   // Apply rate limit against webhook flooding
@@ -458,18 +476,6 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 
   const userId = user[0].id;
 
-  // Map Stripe status to our enum
-  const statusMap: Record<
-    string,
-    "draft" | "open" | "paid" | "void" | "uncollectible"
-  > = {
-    draft: "draft",
-    open: "open",
-    paid: "paid",
-    void: "void",
-    uncollectible: "uncollectible",
-  };
-
   // Create or update invoice record
   await db
     .insert(invoices)
@@ -477,7 +483,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       userId: userId,
       stripeInvoiceId: invoice.id,
       stripeSubscriptionId: subscriptionId,
-      status: statusMap[invoice.status || "paid"] || "paid",
+      status: mapInvoiceStatus(invoice.status),
       amountDue: invoice.amount_due,
       amountPaid: invoice.amount_paid,
       currency: invoice.currency,
@@ -549,13 +555,15 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     .limit(1);
 
   if (user.length) {
+    const failedStatus = mapInvoiceStatus(invoice.status);
+
     await db
       .insert(invoices)
       .values({
         userId: user[0].id,
         stripeInvoiceId: invoice.id,
         stripeSubscriptionId: subscriptionId,
-        status: "open", // Failed invoices stay open until paid/void
+        status: failedStatus,
         amountDue: invoice.amount_due,
         amountPaid: invoice.amount_paid || 0,
         currency: invoice.currency,
@@ -568,7 +576,33 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
           ? new Date(invoice.period_end * 1000)
           : null,
       })
-      .onConflictDoNothing();
+      .onConflictDoUpdate({
+        target: invoices.stripeInvoiceId,
+        set: {
+          stripeSubscriptionId: subscriptionId,
+          status: sql`
+            case
+              when ${invoices.status} in ('paid', 'void', 'uncollectible') then ${invoices.status}
+              else excluded.status
+            end
+          `,
+          amountDue: invoice.amount_due,
+          amountPaid: sql`
+            case
+              when ${invoices.status} = 'paid' then ${invoices.amountPaid}
+              else excluded.amount_paid
+            end
+          `,
+          invoiceUrl: invoice.hosted_invoice_url || null,
+          invoicePdf: invoice.invoice_pdf || null,
+          periodStart: invoice.period_start
+            ? new Date(invoice.period_start * 1000)
+            : null,
+          periodEnd: invoice.period_end
+            ? new Date(invoice.period_end * 1000)
+            : null,
+        },
+      });
   }
 }
 

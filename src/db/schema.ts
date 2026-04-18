@@ -13,8 +13,8 @@ import {
   unique,
 } from "drizzle-orm/pg-core";
 
-// Define the role enum
-export const roleEnum = pgEnum("role", ["user", "coach", "admin"]);
+// Define the authorization role enum
+export const roleEnum = pgEnum("role", ["user", "admin"]);
 export const sexEnum = pgEnum("sex", ["man", "woman"]);
 export const activityLevelEnum = pgEnum("activity_level", [
   "sedentary",
@@ -79,6 +79,13 @@ export const consentTypeEnum = pgEnum("consent_type", [
   "medical_disclaimer",
   "health_data_processing",
   "push_notifications",
+]);
+export const tutorialStatusEnum = pgEnum("tutorial_status", [
+  "unseen",
+  "started",
+  "completed",
+  "dismissed",
+  "skipped",
 ]);
 
 export const badgeTypeEnum = pgEnum("badge_type", ["legacy"]);
@@ -215,11 +222,47 @@ export const users = pgTable("users", {
   //Stamp for NewUpdate window tracking
   lastSeenWelcomeVersion: text("last_seen_welcome_version"),
   lastSeenWelcomeAt: timestamp("last_seen_welcome_at", { withTimezone: true }),
+  lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
   // PWA install prompt preference
   hideInstallPrompt: boolean("hide_install_prompt").default(false).notNull(),
   // Feature flags
   isBetaTester: boolean("is_beta_tester").default(false).notNull(),
 });
+
+export const userTutorialState = pgTable(
+  "user_tutorial_state",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tutorialKey: text("tutorial_key").notNull(),
+    surfaceKey: text("surface_key").notNull(),
+    version: text("version").notNull(),
+    status: tutorialStatusEnum("status").default("unseen").notNull(),
+    lastStepIndex: integer("last_step_index").default(0).notNull(),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
+    metadata: jsonb("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    userIdx: index("user_tutorial_state_user_idx").on(table.userId),
+    statusIdx: index("user_tutorial_state_status_idx").on(table.status),
+    userSurfaceUnique: unique("user_tutorial_state_user_surface_unique").on(
+      table.userId,
+      table.tutorialKey,
+      table.surfaceKey,
+    ),
+  }),
+);
 
 // Your app's main user profile table
 export const userProfiles = pgTable("user_profiles", {

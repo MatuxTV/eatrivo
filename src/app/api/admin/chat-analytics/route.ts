@@ -1,26 +1,16 @@
 // Admin chat analytics API — beta feature for monitoring Chat with Rivo
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { auth } from "@/../auth";
 import { db } from "@/index";
 import { chatMessages, userProfiles } from "@/db/schema";
 import { sql, gte, count, eq, desc } from "drizzle-orm";
+import { isAuthError, requireAdminAuth } from "@/lib/adminAuth";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const userProfile = await db.query.userProfiles.findFirst({
-      where: eq(userProfiles.userId, session.user.id),
-    });
-
-    if (!userProfile || userProfile.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const authResult = await requireAdminAuth(["admin"]);
+    if (isAuthError(authResult)) {
+      return authResult;
     }
 
     // If sessionId is provided, return messages for that session
@@ -40,7 +30,11 @@ export async function GET(req: NextRequest) {
         .where(eq(chatMessages.sessionId, sessionId))
         .orderBy(chatMessages.createdAt);
 
-      return NextResponse.json({ messages });
+      return NextResponse.json({ messages }, {
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0",
+        },
+      });
     }
 
     // Otherwise return overview analytics
@@ -172,6 +166,10 @@ export async function GET(req: NextRequest) {
       dailyMessages,
       topUsers,
       recentSessions,
+    }, {
+      headers: {
+        "Cache-Control": "private, no-store, max-age=0",
+      },
     });
   } catch (error) {
     console.error("[Admin Chat Analytics] Error:", error);

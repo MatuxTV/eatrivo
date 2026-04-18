@@ -1,6 +1,5 @@
 "use client";
 
-import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { User } from "lucide-react";
 import { useSession } from "next-auth/react";

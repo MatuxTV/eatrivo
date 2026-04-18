@@ -23,7 +23,6 @@ import NotificationsTab from "./tabs/NotificationsTab";
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabId>("analytics");
   const [users, setUsers] = useState<UserType[]>([]);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
 
   // Email form state
   const [emailFormData, setEmailFormData] = useState<UpdateEmailFormData>({
@@ -45,7 +44,6 @@ export default function AdminDashboard() {
   // Fetch users on component mount
   useEffect(() => {
     const fetchUsers = async () => {
-      setIsLoadingUsers(true);
       try {
         const response = await fetch("/api/admin/users");
         if (response.ok) {
@@ -63,8 +61,6 @@ export default function AdminDashboard() {
         console.error("Error fetching users:", error);
         toast.error("Chyba pri načítavaní používateľov");
         setUsers([]);
-      } finally {
-        setIsLoadingUsers(false);
       }
     };
 

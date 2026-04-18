@@ -61,11 +61,6 @@ export default function HomeSidebar({
     },
   ];
 
-  const mobileNavItems = [
-    ...navItems,
-    { id: "profile" as const, label: t("nav.profile"), icon: User },
-  ];
-
   return (
     <>
       {/* ── Desktop Sidebar ── */}
@@ -115,6 +110,7 @@ export default function HomeSidebar({
 
             <div className="flex gap-2">
               <Button
+                data-tutorial-anchor="nav-profile"
                 size="sm"
                 className={`flex-1 border-2 text-xs h-8 ${primaryActiveSection === "profile" ? "bg-eatrivo-purple/10 border-eatrivo-purple/20 text-eatrivo-purple" : "bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700"}`}
                 onClick={() => onSectionChange("profile")}
@@ -143,6 +139,15 @@ export default function HomeSidebar({
             return (
               <Button
                 key={item.id}
+                data-tutorial-anchor={
+                  item.id === "home"
+                    ? "nav-home"
+                    : item.id === "chatWithRivo"
+                      ? "nav-chat"
+                      : item.id === "pantry"
+                        ? "nav-pantry"
+                        : undefined
+                }
                 variant="ghost"
                 onClick={() => onSectionChange(item.id)}
                 className={`

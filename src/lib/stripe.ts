@@ -1,15 +1,20 @@
 import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set");
+function requireEnv(name: string) {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`${name} is not set`);
+  }
+
+  return value;
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+export const stripe = new Stripe(requireEnv("STRIPE_SECRET_KEY"));
 
 // Price IDs from environment
 export const STRIPE_PRICES = {
-  premium: process.env.STRIPE_PRICE_PREMIUM!,
-  pro: process.env.STRIPE_PRICE_PRO!,
+  premium: requireEnv("STRIPE_PRICE_PREMIUM"),
+  pro: requireEnv("STRIPE_PRICE_PRO"),
 } as const;
 
 export type MembershipTier = "basic" | "premium" | "pro" | "trainer";

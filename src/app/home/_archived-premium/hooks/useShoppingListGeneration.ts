@@ -125,7 +125,7 @@ export function useShoppingListGeneration() {
           return;
         }
 
-        console.debug("[Generation] Lock detected on mount — resuming UI", {
+        console.warn("[Generation] Lock detected on mount — resuming UI", {
           progress: data.progress,
           label: data.label,
         });

@@ -39,19 +39,19 @@ async function getReadyRegistration(): Promise<ServiceWorkerRegistration> {
 }
 
 export async function requestNotificationPermission(): Promise<PushSubscription | null> {
-  console.log("[Push] requestNotificationPermission() called");
+  console.warn("[Push] requestNotificationPermission() called");
   if (!("Notification" in window)) {
     console.error("[Push] Browser does not support notifications");
     return null;
   }
 
-  console.log(
+  console.warn(
     "[Push] Current Notification.permission:",
     Notification.permission,
   );
 
   if (Notification.permission === "granted") {
-    console.log("[Push] Already granted — delegating to subscribeUserToPush()");
+    console.warn("[Push] Already granted — delegating to subscribeUserToPush()");
     return subscribeUserToPush();
   }
 
@@ -62,9 +62,9 @@ export async function requestNotificationPermission(): Promise<PushSubscription 
     return null;
   }
 
-  console.log("[Push] Requesting permission from browser...");
+  console.warn("[Push] Requesting permission from browser...");
   const permission = await Notification.requestPermission();
-  console.log("[Push] Permission response:", permission);
+  console.warn("[Push] Permission response:", permission);
   if (permission === "granted") return subscribeUserToPush();
   console.warn("[Push] Permission not granted, result was:", permission);
   return null;
@@ -86,9 +86,9 @@ export async function subscribeUserToPush(): Promise<PushSubscription | null> {
   let registration: ServiceWorkerRegistration;
   try {
     const regs = await navigator.serviceWorker.getRegistrations();
-    console.log("[Push] Current SW registrations count:", regs.length);
+    console.warn("[Push] Current SW registrations count:", regs.length);
     regs.forEach((r, i) => {
-      console.log(
+      console.warn(
         `[Push] SW[${i}] scope:`,
         r.scope,
         "| active:",
@@ -111,7 +111,7 @@ export async function subscribeUserToPush(): Promise<PushSubscription | null> {
         const manualReg = await navigator.serviceWorker.register("/sw.js", {
           scope: "/",
         });
-        console.log(
+        console.warn(
           "[Push] Manual SW registration succeeded. State:",
           manualReg.active?.state ?? "installing…",
         );
@@ -125,14 +125,14 @@ export async function subscribeUserToPush(): Promise<PushSubscription | null> {
       }
     }
 
-    console.log("[Push] Waiting for SW to be ready (max 10s)...");
+    console.warn("[Push] Waiting for SW to be ready (max 10s)...");
     registration = await getReadyRegistration();
-    console.log("[Push] SW ready. Scope:", registration.scope);
-    console.log(
+    console.warn("[Push] SW ready. Scope:", registration.scope);
+    console.warn(
       "[Push] SW active state:",
       registration.active?.state ?? "none",
     );
-    console.log(
+    console.warn(
       "[Push] SW active scriptURL:",
       registration.active?.scriptURL ?? "none",
     );
@@ -150,7 +150,7 @@ export async function subscribeUserToPush(): Promise<PushSubscription | null> {
   }
 
   if (existing) {
-    console.log(
+    console.warn(
       "[Push] Existing subscription found:",
       existing.endpoint.slice(0, 60) + "...",
     );
@@ -158,12 +158,12 @@ export async function subscribeUserToPush(): Promise<PushSubscription | null> {
   }
 
   // Create new subscription
-  console.log("[Push] Creating new push subscription...");
-  console.log("[Push] VAPID key length:", VAPID_PUBLIC_KEY.length);
+  console.warn("[Push] Creating new push subscription...");
+  console.warn("[Push] VAPID key length:", VAPID_PUBLIC_KEY.length);
   let applicationServerKey: Uint8Array;
   try {
     applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-    console.log(
+    console.warn(
       "[Push] VAPID key decoded to Uint8Array, length:",
       applicationServerKey.length,
       "(expected 65)",
@@ -178,11 +178,11 @@ export async function subscribeUserToPush(): Promise<PushSubscription | null> {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       applicationServerKey: applicationServerKey as any,
     });
-    console.log("[Push] Subscription created successfully");
-    console.log("[Push] endpoint:", subscription.endpoint.slice(0, 80) + "...");
+    console.warn("[Push] Subscription created successfully");
+    console.warn("[Push] endpoint:", subscription.endpoint.slice(0, 80) + "...");
     const subJson = subscription.toJSON();
-    console.log("[Push] keys.auth present:", !!subJson.keys?.auth);
-    console.log("[Push] keys.p256dh present:", !!subJson.keys?.p256dh);
+    console.warn("[Push] keys.auth present:", !!subJson.keys?.auth);
+    console.warn("[Push] keys.p256dh present:", !!subJson.keys?.p256dh);
     return subscription;
   } catch (err) {
     const errMsg = String(err);
@@ -202,7 +202,7 @@ export async function subscribeUserToPush(): Promise<PushSubscription | null> {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as any,
         });
-        console.log(
+        console.warn(
           "[Push] ? Re-subscribed after key mismatch:",
           fresh.endpoint.slice(0, 60) + "...",
         );
@@ -220,14 +220,14 @@ export async function subscribeUserToPush(): Promise<PushSubscription | null> {
 export async function savePushSubscription(
   subscription: PushSubscription,
 ): Promise<{ status: "pending" | "confirmed"; message: string }> {
-  console.log("[Push] Saving subscription to DB...");
+  console.warn("[Push] Saving subscription to DB...");
   const payload = subscription.toJSON();
   const locale = typeof document !== "undefined" ? document.documentElement.lang : "sk";
-  console.log(
+  console.warn(
     "[Push] Payload endpoint:",
     (payload.endpoint ?? "").slice(0, 60) + "...",
   );
-  console.log(
+  console.warn(
     "[Push] Has keys:",
     !!(payload.keys?.auth && payload.keys?.p256dh),
   );
@@ -245,7 +245,7 @@ export async function savePushSubscription(
     throw new Error(data.error || `HTTP ${response.status}`);
   }
 
-  console.log("[Push] ? Saved to DB:", data.message);
+  console.warn("[Push] ? Saved to DB:", data.message);
   return {
     status: data.status === "confirmed" ? "confirmed" : "pending",
     message: typeof data.message === "string" ? data.message : "OK",
@@ -265,7 +265,7 @@ export async function syncPushSubscriptionToDB(): Promise<boolean> {
     const registration = await getReadyRegistration();
     const subscription = await registration.pushManager.getSubscription();
     if (!subscription) {
-      console.log(
+      console.warn(
         "[Push] Sync: permission granted but no SW subscription exists",
       );
       return false;

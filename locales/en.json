@@ -2061,5 +2061,103 @@
         "body": "Check your pantry — some items expire within 3 days."
       }
     }
+  },
+  "tutorial": {
+    "common": {
+      "progress": "{current} of {total}",
+      "labels": {
+        "guidedTour": "Quick start",
+        "quickTip": "Quick tip"
+      },
+      "actions": {
+        "next": "Next",
+        "back": "Back",
+        "skip": "Skip",
+        "finish": "Finish",
+        "startTour": "Show me around",
+        "close": "Close"
+      }
+    },
+    "intro": {
+      "steps": {
+        "welcome": {
+          "eyebrow": "Welcome to Eatrivo",
+          "title": "Meals, shopping, and pantry in one flow",
+          "description": "Eatrivo helps you decide what to eat, what to buy, and what you should use from your pantry right now."
+        },
+        "planning": {
+          "eyebrow": "Mobile first",
+          "title": "Built for mobile, still clean on desktop",
+          "description": "Navigation, sections, and coachmarks are designed for narrow screens first, then adapt into a wider desktop layout without breaking the flow."
+        },
+        "guidance": {
+          "eyebrow": "Short tour",
+          "title": "First the overview, then tips directly on the UI",
+          "description": "We start with a short intro and then show contextual highlights right where the important controls live."
+        }
+      }
+    },
+    "coachmarks": {
+      "homeRecipes": {
+        "steps": {
+          "homeNav": {
+            "title": "This is your main dashboard",
+            "description": "From here you can jump between recipes, chat, pantry, and the rest of the app without losing context."
+          },
+          "switcher": {
+            "title": "Switch between recipes and shopping",
+            "description": "On mobile this toggle is the fastest way to move between recipe discovery and your active shopping list."
+          },
+          "recipes": {
+            "title": "Your recipe feed lives here",
+            "description": "This section shows recommendations, filters, and pantry-aware suggestions for what you can cook next."
+          }
+        }
+      },
+      "shoppingList": {
+        "steps": {
+          "tab": {
+            "title": "Shopping has its own tab",
+            "description": "Move here when you want to focus on buying what you need instead of browsing recipes."
+          },
+          "list": {
+            "title": "This is your live shopping list",
+            "description": "You can check items off, rename the list, and only finish it once everything has been picked up."
+          }
+        }
+      },
+      "pantry": {
+        "steps": {
+          "nav": {
+            "title": "Pantry is a first-class section",
+            "description": "It is worth keeping this updated often because cookable recipes and restock suggestions depend on it."
+          },
+          "inventory": {
+            "title": "This is where inventory stays under control",
+            "description": "You get stock levels, expiry context, and quick actions for keeping your pantry useful."
+          },
+          "add": {
+            "title": "Adding an item should take one tap",
+            "description": "Whenever you buy something or find food at home, add it here so Eatrivo can use it in recipes and shopping suggestions."
+          }
+        }
+      },
+      "chat": {
+        "steps": {
+          "nav": {
+            "title": "Rivo is always close by",
+            "description": "Open chat from navigation any time you want help with meals, calories, or pantry-based ideas."
+          },
+          "history": {
+            "title": "Open conversation history here",
+            "description": "On mobile the history panel stays tucked away so the chat composer and messages have more room."
+          },
+          "composer": {
+            "title": "Type your request here",
+            "description": "Ask a question, request a suggestion, or describe what you have at home. The composer stays usable even with the mobile keyboard open."
+          }
+        }
+      }
+    }
   }
 }

@@ -53,7 +53,7 @@ export function GoogleConsentMode() {
   }
 
   return (
-    <Script id="google-consent-mode" strategy="beforeInteractive">
+    <Script id="google-consent-mode" strategy="afterInteractive">
       {`
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}

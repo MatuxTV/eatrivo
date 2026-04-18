@@ -54,10 +54,9 @@ export async function fetchProfile(
 
     apiLogger.info("[fetchProfile] DB load success", { metadata: { userProfileId, goal: context.userInfo.goal, language: context.userInfo.language } });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return {
-      userProfile: context.userProfile as any,
-      userInfo: context.userInfo as any,
+      userProfile: context.userProfile,
+      userInfo: context.userInfo,
     };
   } catch (err) {
     return {

@@ -27,7 +27,7 @@ export default async function AdminPage() {
     where: eq(userProfiles.userId, session.user.id),
   });
 
-  if (!userProfile || !["admin", "coach"].includes(userProfile.role ?? "")) {
+  if (!userProfile || userProfile.role !== "admin") {
     redirect(`/${safeLocale}/not-authorized`);
   }
 

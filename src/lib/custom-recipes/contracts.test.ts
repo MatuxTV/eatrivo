@@ -9,6 +9,32 @@ import {
   mapMatchedRecipeToSuggestion,
 } from "./contracts";
 
+function buildAiTranslations(name: string, category: string, notes: string) {
+  return {
+    en: {
+      name,
+      category_label: category,
+      serving_unit_label: null,
+      instructions: ["Cook and serve."],
+      notes,
+    },
+    sk: {
+      name: `${name} SK`,
+      category_label: `${category} SK`,
+      serving_unit_label: null,
+      instructions: ["Uvar a podávaj."],
+      notes: `${notes} SK`,
+    },
+  };
+}
+
+function buildIngredientTranslations(name: string) {
+  return {
+    en: { display_name: name },
+    sk: { display_name: `${name} SK` },
+  };
+}
+
 test("customRecipeStartRequestSchema defaults to pantry mode", () => {
   const parsed = customRecipeStartRequestSchema.parse({});
 
@@ -23,6 +49,8 @@ test("customRecipeAiOutputSchema rejects ingredients without explicit unit", () 
         name: "Oil Pasta",
         category: "Dinner",
         description: "Needs proper unit.",
+        dietTags: [],
+        restrictionFlags: [],
         servings: 2,
         servingUnit: null,
         prepTimeMin: 10,
@@ -42,9 +70,11 @@ test("customRecipeAiOutputSchema rejects ingredients without explicit unit", () 
             amount: "0,5",
             pantryStatus: "pantry",
             pantryMatchName: "Olive oil",
+            translations: buildIngredientTranslations("Olive oil"),
           },
         ],
         instructions: [{ title: "", text: "Mix and serve." }],
+        translations: buildAiTranslations("Oil Pasta", "Dinner", "Needs proper unit."),
       },
       almostCookableRecipe: {
         status: "unavailable",
@@ -65,6 +95,8 @@ test("customRecipeAiOutputSchema allows semantically questionable units for late
       name: "Pasta al pretlak",
       category: "Dinner",
       description: "Wrong unit test.",
+      dietTags: [],
+      restrictionFlags: [],
       servings: 2,
       servingUnit: null,
       prepTimeMin: 10,
@@ -84,9 +116,15 @@ test("customRecipeAiOutputSchema allows semantically questionable units for late
           amount: "2 ks",
           pantryStatus: "missing",
           pantryMatchName: null,
+          translations: buildIngredientTranslations("Tomato paste"),
         },
       ],
       instructions: [{ title: "", text: "Mix and serve." }],
+      translations: buildAiTranslations(
+        "Pasta al pretlak",
+        "Dinner",
+        "Wrong unit test.",
+      ),
     },
   });
 
@@ -100,6 +138,8 @@ test("customRecipeAiOutputSchema accepts a valid payload", () => {
       name: "Pantry Pasta",
       category: "Dinner",
       description: "Fast pantry-friendly pasta.",
+      dietTags: [],
+      restrictionFlags: [],
       servings: 2,
       servingUnit: null,
       prepTimeMin: 10,
@@ -119,9 +159,15 @@ test("customRecipeAiOutputSchema accepts a valid payload", () => {
           amount: "200 g",
           pantryStatus: "pantry",
           pantryMatchName: "Pasta",
+          translations: buildIngredientTranslations("Pasta"),
         },
       ],
       instructions: [{ title: "", text: "Cook and serve." }],
+      translations: buildAiTranslations(
+        "Pantry Pasta",
+        "Dinner",
+        "Fast pantry-friendly pasta.",
+      ),
     },
     almostCookableRecipe: {
       status: "unavailable",
@@ -144,6 +190,8 @@ test("customRecipeAiOutputSchema rejects too many missing ingredients", () => {
         name: "Almost Soup",
         category: "Lunch",
         description: "Needs too many extras.",
+        dietTags: [],
+        restrictionFlags: [],
         servings: 2,
         servingUnit: null,
         prepTimeMin: 15,
@@ -163,27 +211,36 @@ test("customRecipeAiOutputSchema rejects too many missing ingredients", () => {
             amount: "2 pcs",
             pantryStatus: "missing",
             pantryMatchName: null,
+            translations: buildIngredientTranslations("Tomatoes"),
           },
           {
             name: "Onion",
             amount: "1 pc",
             pantryStatus: "missing",
             pantryMatchName: null,
+            translations: buildIngredientTranslations("Onion"),
           },
           {
             name: "Broth",
             amount: "500 ml",
             pantryStatus: "missing",
             pantryMatchName: null,
+            translations: buildIngredientTranslations("Broth"),
           },
           {
             name: "Garlic",
             amount: "2 cloves",
             pantryStatus: "missing",
             pantryMatchName: null,
+            translations: buildIngredientTranslations("Garlic"),
           },
         ],
         instructions: [{ title: "", text: "Cook and serve." }],
+        translations: buildAiTranslations(
+          "Almost Soup",
+          "Lunch",
+          "Needs too many extras.",
+        ),
       },
     }),
   );
@@ -254,6 +311,8 @@ test("mapAiCandidateToGeneratedRecipe enriches pantry keys from pantry context",
       name: "Steak Bowl",
       category: "Dinner",
       description: "Protein bowl from pantry items.",
+      dietTags: ["high-protein"],
+      restrictionFlags: ["contains-beef"],
       servings: 1,
       servingUnit: null,
       prepTimeMin: 10,
@@ -273,15 +332,22 @@ test("mapAiCandidateToGeneratedRecipe enriches pantry keys from pantry context",
           amount: "200 g",
           pantryStatus: "pantry",
           pantryMatchName: "Hovadzi steak",
+          translations: buildIngredientTranslations("Steak"),
         },
         {
           name: "Rice",
           amount: "100 g",
           pantryStatus: "missing",
           pantryMatchName: null,
+          translations: buildIngredientTranslations("Rice"),
         },
       ],
       instructions: [{ title: "", text: "Cook and serve." }],
+      translations: buildAiTranslations(
+        "Steak Bowl",
+        "Dinner",
+        "Protein bowl from pantry items.",
+      ),
     },
     "almost_cookable",
     {
@@ -314,6 +380,8 @@ test("mapAiCandidateToGeneratedRecipe enriches pantry keys from pantry context",
   assert.equal(recipe.ingredientItems[0]?.pantryTrackingMode, "quantity");
   assert.equal(recipe.ingredientItems[0]?.isAvailabilityStaple, false);
   assert.deepEqual(recipe.matchedIngredientNames, ["Steak (Hovadzi steak)"]);
+  assert.equal(recipe.canonicalRecipe?.translations.en.name, "Steak Bowl");
+  assert.equal(recipe.canonicalRecipe?.category_key, "dinner");
 });
 
 test("mapAiCandidateToGeneratedRecipe flags availability staples from pantry context", () => {
@@ -323,6 +391,8 @@ test("mapAiCandidateToGeneratedRecipe flags availability staples from pantry con
       name: "Pepper Eggs",
       category: "Breakfast",
       description: "Eggs finished with staples.",
+      dietTags: ["vegetarian"],
+      restrictionFlags: ["contains-eggs"],
       servings: 2,
       servingUnit: null,
       prepTimeMin: 5,
@@ -342,9 +412,15 @@ test("mapAiCandidateToGeneratedRecipe flags availability staples from pantry con
           amount: "10 ml",
           pantryStatus: "pantry",
           pantryMatchName: "Olive oil",
+          translations: buildIngredientTranslations("Olive oil"),
         },
       ],
       instructions: [{ title: "", text: "Cook and serve." }],
+      translations: buildAiTranslations(
+        "Pepper Eggs",
+        "Breakfast",
+        "Eggs finished with staples.",
+      ),
     },
     "pantry",
     {

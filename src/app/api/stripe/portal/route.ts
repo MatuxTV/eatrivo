@@ -21,8 +21,7 @@ export async function POST(req: NextRequest) {
     if (!rateLimit.success) return rateLimit.response!;
 
     // Get locale from request body (optional)
-    const body = await req.json().catch(() => ({}));
-    const locale = body.locale || 'en';
+    await req.json().catch(() => ({}));
 
     // Get user from database
     const user = await db.query.users.findFirst({

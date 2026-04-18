@@ -93,6 +93,7 @@ export default function ShoppingListSection({ shopping }: ShoppingListSectionPro
 
   return (
     <motion.div
+      data-tutorial-anchor="home-shopping-section"
       key="home-shopping-list"
       initial={{ opacity: 0, y: 14, scale: 0.985 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}

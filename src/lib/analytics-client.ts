@@ -31,6 +31,31 @@ export interface TrackClientEventParams {
   metadata?: Record<string, unknown>;
 }
 
+type CookiePreferences = {
+  essential: true;
+  analytics: boolean;
+};
+
+const COOKIE_CONSENT_KEY = "cookie-consent";
+
+function hasAnalyticsConsent() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  try {
+    const stored = window.localStorage.getItem(COOKIE_CONSENT_KEY);
+    if (!stored) {
+      return false;
+    }
+
+    const parsed = JSON.parse(stored) as { preferences?: CookiePreferences };
+    return parsed.preferences?.analytics === true;
+  } catch {
+    return false;
+  }
+}
+
 export const trackClientEvent = ({
   eventName,
   metadata,
@@ -45,6 +70,10 @@ export const trackClientEvent = ({
   const sanitizedMetadata = sanitizeAnalyticsMetadata(metadata);
   const definition = getAnalyticsEventDefinition(eventName);
   const destinations = definition.destinations as readonly string[];
+
+  if (!hasAnalyticsConsent()) {
+    return;
+  }
 
   if (destinations.includes("ga") && typeof window !== "undefined") {
     window.gtag?.("event", eventName, sanitizedMetadata || {});

@@ -17,11 +17,41 @@ import { buildPantryPromptContext } from "../pantryPromptContext";
 import type { CustomRecipeState } from "../state";
 
 setMaxListeners(30);
+const localeNeutralKeySchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(80)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+
+const customRecipeProviderIngredientTranslationSchema = z.object({
+  display_name: z.string().trim().min(1).max(120),
+});
+
+const customRecipeProviderIngredientTranslationsSchema = z.object({
+  en: customRecipeProviderIngredientTranslationSchema,
+  sk: customRecipeProviderIngredientTranslationSchema,
+});
+
+const customRecipeProviderRecipeTranslationSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  category_label: z.string().trim().min(1).max(80).nullable(),
+  serving_unit_label: z.string().trim().min(1).max(40).nullable(),
+  instructions: z.array(z.string().trim().min(1).max(500)).min(1).max(12),
+  notes: z.string().trim().min(1).max(280).nullable(),
+});
+
+const customRecipeProviderRecipeTranslationsSchema = z.object({
+  en: customRecipeProviderRecipeTranslationSchema,
+  sk: customRecipeProviderRecipeTranslationSchema,
+});
+
 const customRecipeProviderIngredientSchema = z.object({
   name: z.string().min(1).max(120),
   amount: z.string().max(80).nullable(),
   pantryStatus: z.enum(["pantry", "missing"]),
   pantryMatchName: z.string().min(1).max(120).nullable(),
+  translations: customRecipeProviderIngredientTranslationsSchema,
 });
 
 const customRecipeProviderInstructionSchema = z.object({
@@ -49,6 +79,8 @@ const customRecipeProviderCandidateSchema = z.object({
   name: z.string().min(1).max(120).optional(),
   category: z.string().min(1).max(80).optional(),
   description: z.string().min(1).max(280).optional(),
+  dietTags: z.array(localeNeutralKeySchema).max(8).optional(),
+  restrictionFlags: z.array(localeNeutralKeySchema).max(12).optional(),
   servings: z.number().int().min(1).max(12).optional(),
   servingUnit: z.string().max(40).nullable().optional(),
   prepTimeMin: z.number().int().min(1).max(240).optional(),
@@ -59,6 +91,7 @@ const customRecipeProviderCandidateSchema = z.object({
   nutrition: customRecipeProviderNutritionSchema.optional(),
   ingredients: z.array(customRecipeProviderIngredientSchema).min(1).max(20).optional(),
   instructions: z.array(customRecipeProviderInstructionSchema).min(1).max(12).optional(),
+  translations: customRecipeProviderRecipeTranslationsSchema.optional(),
 });
 
 type CustomRecipeProviderCandidate = z.infer<
@@ -93,6 +126,9 @@ function summarizeCandidate(
         candidate.ingredients ? null : "ingredients",
         candidate.instructions ? null : "instructions",
         candidate.tags ? null : "tags",
+        candidate.dietTags ? null : "dietTags",
+        candidate.restrictionFlags ? null : "restrictionFlags",
+        candidate.translations ? null : "translations",
         candidate.nutrition ? null : "nutrition",
         candidate.servings !== undefined ? null : "servings",
         candidate.servingUnit !== undefined ? null : "servingUnit",
@@ -262,6 +298,11 @@ Hard rules:
 - Keep the recipe realistic and concise.
 - If status is "available", include all required fields: name, category, description, servings, servingUnit, prepTimeMin, totalTimeMin, difficulty, mealPrepFriendly, tags, nutrition, ingredients, instructions.
 - If status is "unavailable", return only status and reason.
+- translations.en and translations.sk are mandatory and are the source of truth for the official persisted recipe.
+- Every available recipe must include locale-neutral dietTags and restrictionFlags arrays in kebab-case. Use [] when none apply.
+- Every ingredient must include translations.en.display_name and translations.sk.display_name.
+- English and Slovak translations must describe the same recipe, not two variants.
+- The English translation must stay stable regardless of the user's current locale.
 - Always include amount for every ingredient. Use null when amount is unknown.
 ${pantryRules}
 - Ingredients listed under always-available staples are already available in stock even without a tracked pantry quantity.
@@ -553,7 +594,7 @@ export async function recipeRequest(
   const model = new ChatGoogleGenerativeAI({
     model: "gemini-3.1-flash-lite-preview",
     temperature: 0.3,
-    maxOutputTokens: 2048,
+    maxOutputTokens: 4096,
     apiKey,
   });
 

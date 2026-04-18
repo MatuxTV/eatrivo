@@ -50,9 +50,9 @@ const localeScreenshots: Record<Locale, string[]> = {
     "/images/screenshots/sk/SCREEN_CHAT_W_RIVO.jpg",
   ],
   en: [
-    "/images/screenshots/en/SCREEN_HOME.jpeg",
-    "/images/screenshots/en/SCREEN_PANTRY.jpeg",
-    "/images/screenshots/en/CHAT_W_RIVO.jpeg",
+    "/images/screenshots/en/SCREEN_HOME.jpg",
+    "/images/screenshots/en/SCREEN_PANTRY.jpg",
+    "/images/screenshots/en/SCREEN_SHOPPING_LIST.jpg",
   ],
 };
 
