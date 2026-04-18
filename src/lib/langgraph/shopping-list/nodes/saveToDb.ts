@@ -5,7 +5,8 @@ import { CacheService } from "@/lib/redis";
 import { Analytics } from "@/lib/analytics";
 import { EatrivoAIService } from "@/lib/langchain";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { guessFoodCategory, normalizeUnit } from "@/lib/units";
+import { normalizeShoppingListAmount } from "@/lib/pantry/shopping-list-amount";
+import { guessFoodCategory } from "@/lib/units";
 import type { ShoppingListState } from "../state";
 
 export async function saveToDb(
@@ -47,7 +48,8 @@ export async function saveToDb(
         });
 
         const prompt = `You are a structured data extractor. Parse this shopping list markdown and extract all items.
-Return ONLY valid JSON array. Each item: { "name": string, "quantity": number | null, "unit": string | null, "category": string | null }
+      Return ONLY valid JSON array. Each item: { "name": string, "quantity": number | null, "unit": string | null, "category": string | null }
+      Hard rule: if quantity is not null, unit must also be explicit and not null. If the markdown does not specify a reliable unit, return quantity=null and unit=null.
 SHOPPING LIST MARKDOWN:
 ${aiOutput.markdown}
 Return JSON array only, no explanation, no markdown:`;
@@ -88,12 +90,31 @@ Return JSON array only, no explanation, no markdown:`;
       if (parsedItems.length > 0) {
         const toInsertItems = parsedItems.map((item, index) => {
           const normalizedName = item.name.trim();
+          const normalizedAmount = normalizeShoppingListAmount(item.quantity, item.unit);
+
+          if (!normalizedAmount.ok) {
+            apiLogger.warn("saveToDb: dropping invalid shopping list amount", {
+              metadata: {
+                userProfileId,
+                shoppingListTitle: aiOutput.title,
+                itemName: normalizedName,
+                quantity: item.quantity,
+                unit: item.unit,
+                code: normalizedAmount.code,
+              },
+            });
+          }
+
           return {
             shoppingListId: list.id,
             sortOrder: index,
             name: normalizedName,
-            quantity: item.quantity !== null && item.quantity !== undefined ? String(item.quantity) : null,
-            unit: item.unit ? normalizeUnit(item.unit) : null,
+            quantity:
+              normalizedAmount.ok && normalizedAmount.quantity !== null
+                ? String(normalizedAmount.quantity)
+                : null,
+            unit: normalizedAmount.ok ? normalizedAmount.unit : null,
+            amountLabel: normalizedAmount.ok ? normalizedAmount.amountLabel : null,
             category: item.category || guessFoodCategory(normalizedName),
           };
         });

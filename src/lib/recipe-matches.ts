@@ -90,6 +90,13 @@ export interface RecipeAvailabilityOptions {
   locale?: string;
 }
 
+export interface RecipePreferenceSuggestionOptions {
+  locale?: string;
+  limit?: number;
+  mealType?: "breakfast" | "lunch" | "dinner" | "snack";
+  mealPrep?: boolean;
+}
+
 interface RecipeBucket {
   recipe: Omit<MatchedRecipe, "totalRequiredIngredients" | "matchedRequiredIngredients" | "missingRequiredIngredients" | "matchRatio" | "matchedIngredients" | "matchedIngredientNames" | "missingIngredientNames">;
   defaultLocale: string;
@@ -355,6 +362,79 @@ export async function getRecipeAvailabilityForUserProfile(
   return new Map(analyzedRecipes.map((recipe) => [recipe.id, recipe]));
 }
 
+function matchesRequestedMealType(
+  categoryKey: string,
+  mealType: "breakfast" | "lunch" | "dinner" | "snack",
+): boolean {
+  switch (mealType) {
+    case "breakfast":
+      return categoryKey === "breakfast";
+    case "snack":
+      return categoryKey === "snack" || categoryKey === "smoothies";
+    case "lunch":
+      return categoryKey === "lunch" || categoryKey === "lunch-and-dinner";
+    case "dinner":
+      return categoryKey === "dinner" || categoryKey === "lunch-and-dinner";
+    default:
+      return true;
+  }
+}
+
+function sortPreferenceRecipes(
+  left: MatchedRecipe,
+  right: MatchedRecipe,
+  requestedMealPrep: boolean,
+): number {
+  if (requestedMealPrep && left.mealPrepFriendly !== right.mealPrepFriendly) {
+    return left.mealPrepFriendly ? -1 : 1;
+  }
+
+  if (right.proteinG !== left.proteinG) {
+    return right.proteinG - left.proteinG;
+  }
+
+  if (left.totalTimeMin !== right.totalTimeMin) {
+    return left.totalTimeMin - right.totalTimeMin;
+  }
+
+  return left.name.localeCompare(right.name);
+}
+
+export async function getPreferenceRecipeSuggestionsForUserProfile(
+  userProfileId: string,
+  options: RecipePreferenceSuggestionOptions = {},
+): Promise<MatchedRecipe[]> {
+  const requestedLocale = normalizeRecipeLocale(options.locale);
+  const limit = Math.max(1, options.limit ?? 4);
+  const requestedMealPrep = options.mealPrep ?? false;
+
+  const { analyzedRecipes } = await analyzeRecipeMatchesForUserProfile(userProfileId, {
+    locale: requestedLocale,
+  });
+
+  return analyzedRecipes
+    .filter((recipe) =>
+      options.mealType
+        ? matchesRequestedMealType(recipe.categoryKey, options.mealType)
+        : true,
+    )
+    .map((recipe) => ({
+      ...recipe,
+      ingredientItems: recipe.ingredientItems.map((ingredient) => ({
+        ...ingredient,
+        pantryComparison: null,
+      })),
+      matchedRequiredIngredients: 0,
+      missingRequiredIngredients: 0,
+      matchRatio: 0,
+      matchedIngredients: [],
+      matchedIngredientNames: [],
+      missingIngredientNames: [],
+    }))
+    .sort((left, right) => sortPreferenceRecipes(left, right, requestedMealPrep))
+    .slice(0, limit);
+}
+
 async function analyzeRecipeMatchesForUserProfile(
   userProfileId: string,
   options: AnalyzeRecipeMatchesOptions = {},
@@ -445,7 +525,9 @@ async function analyzeRecipeMatchesForUserProfile(
         .from(recipeIngredientTranslations),
     ]);
 
-  const pantryMatchCandidates = pantryRows
+  const availablePantryRows = pantryRows.filter((row) => row.inStock);
+
+  const pantryMatchCandidates = availablePantryRows
     .map((row) => [row.ingredientSpecificKey, row.ingredientKey].filter((value): value is string => Boolean(value)))
     .filter((candidates) => candidates.length > 0);
   const uniquePantryIngredientKeyCount = new Set(
@@ -605,7 +687,7 @@ async function analyzeRecipeMatchesForUserProfile(
         ingredientMeta.fallbackName;
 
       const { match: matchedIngredient, matchedPantryRows } = resolveMatchedIngredient(
-        pantryRows,
+        availablePantryRows,
         ingredientMeta.ingredientKey,
         ingredientMeta.ingredientSpecificKey,
         ingredientName,

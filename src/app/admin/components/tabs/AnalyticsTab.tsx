@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -472,7 +472,7 @@ export default function AnalyticsTab() {
   const [sessionMessages, setSessionMessages] = useState<ChatMessage[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
-  const fetchAnalytics = async (selectedRangeDays = rangeDays) => {
+  const fetchAnalytics = useCallback(async (selectedRangeDays: string) => {
     setIsLoading(true);
     setError(null);
 
@@ -491,7 +491,7 @@ export default function AnalyticsTab() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const fetchSessionMessages = async (sessionId: string) => {
     setViewingSession(sessionId);
@@ -515,7 +515,7 @@ export default function AnalyticsTab() {
 
   useEffect(() => {
     void fetchAnalytics(rangeDays);
-  }, [rangeDays]);
+  }, [fetchAnalytics, rangeDays]);
 
   if (isLoading) {
     return (
@@ -529,7 +529,7 @@ export default function AnalyticsTab() {
     return (
       <div className="rounded-lg bg-red-50 p-6 text-center">
         <p className="text-red-600">{error}</p>
-        <Button onClick={() => void fetchAnalytics()} variant="outline" className="mt-4">
+        <Button onClick={() => void fetchAnalytics(rangeDays)} variant="outline" className="mt-4">
           Skúsiť znova
         </Button>
       </div>
@@ -568,7 +568,7 @@ export default function AnalyticsTab() {
               <SelectItem value="90">Posledných 90 dní</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={() => fetchAnalytics()} variant="outline" disabled={isLoading}>
+          <Button onClick={() => void fetchAnalytics(rangeDays)} variant="outline" disabled={isLoading}>
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Obnoviť
           </Button>

@@ -26,21 +26,25 @@ export async function fetchPantry(
       .from(pantryItems)
       .where(eq(pantryItems.userProfileId, state.userProfileId));
 
-    const pantryContextRows: CustomRecipePantryContextItem[] = rows.map((row) => ({
-      id: row.id,
-      pantryName: row.name,
-      ingredientName: row.ingredientName,
-      ingredientKey: row.ingredientKey,
-      ingredientSpecificKey: row.ingredientSpecificKey,
-      trackingMode: row.trackingMode,
-      inStock: row.inStock,
-      quantity: row.quantity,
-      unit: row.unit,
-      category: row.category,
-    }));
+    const availableRows = rows.filter((row) => row.inStock);
+
+    const pantryContextRows: CustomRecipePantryContextItem[] = availableRows.map(
+      (row) => ({
+        id: row.id,
+        pantryName: row.name,
+        ingredientName: row.ingredientName,
+        ingredientKey: row.ingredientKey,
+        ingredientSpecificKey: row.ingredientSpecificKey,
+        trackingMode: row.trackingMode,
+        inStock: row.inStock,
+        quantity: row.quantity,
+        unit: row.unit,
+        category: row.category,
+      }),
+    );
 
     const pantryIngredientKeyCount = new Set(
-      rows.flatMap((row) =>
+      availableRows.flatMap((row) =>
         [row.ingredientSpecificKey, row.ingredientKey].filter(
           (value): value is string => Boolean(value),
         ),

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AlertTriangle,
@@ -16,6 +15,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
+import { useTutorialSurface } from "@/components/tutorial/TutorialProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -178,6 +178,7 @@ export default function PantrySection({
 }: PantrySectionProps = {}) {
   const t = useTranslations("pantry");
   const locale = useLocale();
+  useTutorialSurface("pantry");
   const shouldReduceMotion = useReducedMotion();
   const triggerHaptic = useHapticFeedback();
   const {
@@ -451,6 +452,7 @@ export default function PantrySection({
         <motion.div
           key="content"
           {...(shouldReduceMotion ? {} : fadeIn)}
+          data-tutorial-anchor="pantry-root"
           className="max-w-5xl mx-auto space-y-6 pb-24"
         >
           <AnimatePresence mode="wait" initial={false}>
@@ -531,6 +533,7 @@ export default function PantrySection({
               <div className="w-full max-w-[18rem] md:w-[18rem]">
                 <div className="grid grid-cols-2 gap-2">
                   <Button
+                    data-tutorial-anchor="pantry-add-item"
                     type="button"
                     onClick={() => {
                       triggerHaptic("light");
@@ -580,6 +583,7 @@ export default function PantrySection({
                 icon={<Package className="w-5 h-5" />}
                 action={
                   <Button
+                    data-tutorial-anchor="pantry-add-item"
                     type="button"
                     onClick={() => {
                       triggerHaptic("light");

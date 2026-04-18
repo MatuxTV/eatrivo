@@ -153,6 +153,7 @@ export async function POST(request: NextRequest) {
   apiLogger.info("[customRecipe.generate] request validated", {
     metadata: {
       userId: session.user.id,
+      mode: parsedBody.data.mode,
       locale: parsedBody.data.locale ?? "en",
       fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
       servings: parsedBody.data.servings,
@@ -209,6 +210,7 @@ export async function POST(request: NextRequest) {
       servings: parsedBody.data.servings,
       mealType: parsedBody.data.mealType,
       mealPrep: parsedBody.data.mealPrep,
+      mode: parsedBody.data.mode,
       source: "custom_recipe_generator",
       jobId,
     },
@@ -227,6 +229,7 @@ export async function POST(request: NextRequest) {
       userProfileId: userProfile.id,
       jobId,
       locale: parsedBody.data.locale ?? "en",
+      mode: parsedBody.data.mode,
       fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
       servings: parsedBody.data.servings,
       mealType: parsedBody.data.mealType,
@@ -239,6 +242,8 @@ export async function POST(request: NextRequest) {
   return new Response(
     new ReadableStream<Uint8Array>({
       async start(controller) {
+        let fallbackNodeSeen = false;
+
         try {
           writeEvent(controller, encoder, customRecipeProgressStreamEventSchema.parse({
             type: "progress",
@@ -257,6 +262,7 @@ export async function POST(request: NextRequest) {
               userId,
               userProfileId: userProfile.id,
               locale: parsedBody.data.locale ?? "en",
+              mode: parsedBody.data.mode,
               fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
               requestedServings: parsedBody.data.servings,
               requestedMealType: parsedBody.data.mealType,
@@ -371,7 +377,29 @@ export async function POST(request: NextRequest) {
               }));
             }
 
+            if (nodeName === "fallback_database_recommendations") {
+              fallbackNodeSeen = true;
+            }
+
             if (nodeName === "finalize_result" && nodeState?.finalResult) {
+              if (
+                nodeState.finalResult.meta.fallbackUsed &&
+                !fallbackNodeSeen
+              ) {
+                apiLogger.info(
+                  "[customRecipe.generate] waiting for fallback recommendations",
+                  {
+                    metadata: {
+                      jobId,
+                      userId,
+                      retryCount: nodeState.retryCount ?? 0,
+                    },
+                  },
+                );
+
+                continue;
+              }
+
               apiLogger.info("[customRecipe.generate] final result ready", {
                 metadata: {
                   jobId,

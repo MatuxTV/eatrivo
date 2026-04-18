@@ -97,6 +97,7 @@ export default function MobileNavigation({
         <div className="flex flex-1 items-center justify-around h-full pr-8">
           <NavItem
             id="home"
+            anchor="nav-home"
             label={t("nav.home")}
             icon={LayoutDashboard}
             activeSection={primaryActiveSection}
@@ -104,6 +105,7 @@ export default function MobileNavigation({
           />
           <NavItem
             id="pantry"
+            anchor="nav-pantry"
             label={t("nav.pantry")}
             icon={CakeSlice}
             activeSection={primaryActiveSection}
@@ -136,6 +138,7 @@ export default function MobileNavigation({
         <div className="bg-eatrivo-white-secondary p-1 rounded-full drop-shadow-sm flex items-center justify-center">
           <div className="bg-eatrivo-white-primary p-1 rounded-full flex items-center justify-center">
             <button
+              data-tutorial-anchor="nav-chat"
               onClick={() => onSectionChange("chatWithRivo")}
               className={`w-11 h-11 rounded-full flex flex-col items-center justify-center shadow-lg transition-transform active:scale-95 duration-200 relative ${
                 primaryActiveSection === "chatWithRivo"
@@ -159,12 +162,14 @@ export default function MobileNavigation({
 
 function NavItem({
   id,
+  anchor,
   label,
   icon: Icon,
   activeSection,
   onClick,
 }: {
   id: string;
+  anchor?: string;
   label: string;
   icon: ElementType;
   activeSection: string;
@@ -173,6 +178,7 @@ function NavItem({
   const isActive = activeSection === id;
   return (
     <button
+      data-tutorial-anchor={anchor}
       onClick={onClick}
       className="relative flex flex-col items-center justify-center w-full h-full pt-1 pb-1"
     >

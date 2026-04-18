@@ -29,3 +29,29 @@ test("buildRecipeIngredientPantryComparison resolves canonical unit aliases in l
   assert.equal(comparison.availableLabel, "1 pc");
   assert.equal(comparison.missingLabel, "1 pc");
 });
+
+test("buildRecipeIngredientPantryComparison treats in-stock availability items as staples", () => {
+  const comparison = buildRecipeIngredientPantryComparison(
+    15,
+    "ml",
+    [{ trackingMode: "availability", inStock: true, quantity: null, unit: null }],
+    "en",
+  );
+
+  assert.equal(comparison.status, "available-staple");
+  assert.equal(comparison.isEnough, true);
+  assert.equal(comparison.matchingPantryItems, 1);
+});
+
+test("buildRecipeIngredientPantryComparison ignores out-of-stock pantry candidates", () => {
+  const comparison = buildRecipeIngredientPantryComparison(
+    100,
+    "g",
+    [{ trackingMode: "quantity", inStock: false, quantity: 500, unit: "g" }],
+    "en",
+  );
+
+  assert.equal(comparison.status, "unavailable");
+  assert.equal(comparison.isEnough, false);
+  assert.equal(comparison.matchingPantryItems, 0);
+});

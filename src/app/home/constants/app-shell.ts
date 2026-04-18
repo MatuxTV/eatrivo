@@ -1,3 +1,6 @@
+export const MOBILE_BOTTOM_NAV_OFFSET =
+  "calc(100px + env(safe-area-inset-bottom))";
+
 export const MOBILE_BOTTOM_NAV_HEIGHT_CLASS =
   "h-[calc(100px+env(safe-area-inset-bottom))]";
 

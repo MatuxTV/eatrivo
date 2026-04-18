@@ -73,9 +73,11 @@ function buildKitchenCounterIngredients(
             : "green";
 
       const amount =
-        comparison?.status === "insufficient" &&
-        comparison.requiredLabel &&
-        comparison.availableLabel
+        comparison?.status === "available-staple"
+          ? t("basic.kitchenCounter.stapleAvailable")
+          : comparison?.status === "insufficient" &&
+              comparison.requiredLabel &&
+              comparison.availableLabel
           ? `${comparison.requiredLabel} (${t(
               "basic.kitchenCounter.haveAmountInline",
               {
@@ -83,10 +85,10 @@ function buildKitchenCounterIngredients(
               },
             )})`
           : (comparison?.requiredLabel ??
-            ingredient.amount ??
-            (tone === "green"
-              ? t("basic.kitchenCounter.readyAmount")
-              : t("basic.kitchenCounter.missingAmount")));
+              ingredient.amount ??
+              (tone === "green"
+                ? t("basic.kitchenCounter.readyAmount")
+                : t("basic.kitchenCounter.missingAmount")));
 
       return {
         name: ingredient.name,

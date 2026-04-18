@@ -9,7 +9,7 @@ export default async function ChatWithRivoPage() {
 
   const session = await auth();
   if (!session?.user) {
-    redirect(`/${safeLocale}/signin`);
+    redirect(`/${safeLocale}`);
   }
 
   redirect("/home?section=chatWithRivo");

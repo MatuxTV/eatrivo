@@ -515,7 +515,7 @@ export default async function HomePageCanonical() {
 
   const session = await auth();
   if (!session?.user) {
-    redirect(`/${safeLocale}/signin`);
+    redirect(`/${safeLocale}`);
   }
 
   const [basicHomeData, initialProfileSectionData, initialPantrySectionData] = await Promise.all([

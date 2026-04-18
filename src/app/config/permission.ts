@@ -12,8 +12,8 @@ export const permissions = {
   pantry: ['basic', 'premium', 'pro', 'trainer'],
 };
 
-// Admin roles from userProfiles.role (DB column, NOT membership)
-const ADMIN_ROLES: string[] = ['admin', 'coach'];
+// Admin routes are restricted to the dedicated admin role from userProfiles.role.
+const ADMIN_ROLES: string[] = ['admin'];
 
 export function hasAccess(route: string, role: string) {
   for (const [key, allowedRoles] of Object.entries(permissions)) {
@@ -25,7 +25,7 @@ export function hasAccess(route: string, role: string) {
 }
 
 /**
- * Check if user has admin-level role (admin or coach).
+ * Check if user has admin-level role.
  * Uses userProfile.role, NOT membership tier.
  */
 export function hasAdminRole(role: string | undefined): boolean {

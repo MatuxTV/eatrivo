@@ -4,6 +4,7 @@ import type {
   shoppingListItems,
 } from "@/db/schema";
 import { formatAmountLabel } from "@/lib/pantry/format";
+import { normalizeShoppingListAmount } from "@/lib/pantry/shopping-list-amount";
 import { isStampedAvailabilityCandidate } from "@/lib/pantry/tracking";
 import { guessFoodCategory } from "@/lib/units";
 
@@ -186,6 +187,7 @@ export function resolveShoppingListSeedFromPantryItem(
     trackingMode === "quantity" || isStamped
       ? restockItem?.defaultUnit ?? pantryItem.unit ?? null
       : null;
+  const normalizedAmount = normalizeShoppingListAmount(quantity, unit);
 
   return {
     name: pantryItem.name.trim(),
@@ -194,9 +196,11 @@ export function resolveShoppingListSeedFromPantryItem(
     ingredientSpecificKey: pantryItem.ingredientSpecificKey,
     trackingMode,
     inStock: pantryItem.inStock ?? true,
-    quantity,
-    unit,
-    amountLabel: formatAmountLabel(quantity, unit),
+    quantity: normalizedAmount.ok ? quantity : null,
+    unit: normalizedAmount.ok ? normalizedAmount.unit : null,
+    amountLabel: normalizedAmount.ok
+      ? normalizedAmount.amountLabel
+      : formatAmountLabel(null, null),
     category:
       pantryItem.category ??
       restockItem?.category ??

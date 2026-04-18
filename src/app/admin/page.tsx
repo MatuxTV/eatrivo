@@ -20,14 +20,14 @@ export default async function AdminPage() {
 
   const session = await auth();
   if (!session?.user?.id) {
-    redirect(`/${safeLocale}/signin`);
+    redirect(`/${safeLocale}`);
   }
 
   const userProfile = await db.query.userProfiles.findFirst({
     where: eq(userProfiles.userId, session.user.id),
   });
 
-  if (!userProfile || !["admin", "coach"].includes(userProfile.role ?? "")) {
+  if (!userProfile || userProfile.role !== "admin") {
     redirect(`/${safeLocale}/not-authorized`);
   }
 

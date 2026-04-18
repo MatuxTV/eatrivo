@@ -49,7 +49,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           if (userProfile) {
             // Expose DB role on session for admin route-level checks
-            session.user.role = userProfile.role as "user" | "coach" | "admin";
+            session.user.role = userProfile.role as "user" | "admin";
 
             // Run language + badges queries in parallel (both depend on profile.id)
             const [userInfo, userBadges] = await Promise.all([
@@ -79,6 +79,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   events: {
     async signIn(message) {
       if (message.user?.id) {
+        await db
+          .update(users)
+          .set({ lastLoginAt: new Date() })
+          .where(eq(users.id, message.user.id));
+
         await Analytics.login(message.user.id, {
           provider: message.account?.provider,
         });

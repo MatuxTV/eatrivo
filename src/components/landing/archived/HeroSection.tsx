@@ -275,7 +275,7 @@ export function HeroSection({ className = "" }: SectionProps) {
             whileTap={{ scale: 0.97 }}
             className="block sm:inline-block"
           >
-            <Link href={`/${locale}/signin`}>
+            <Link href={`/${locale}`}>
               <Button className="w-full sm:w-auto bg-eatrivo-purple hover:bg-eatrivo-purple/90 text-white rounded-full px-7 sm:px-9 h-12 sm:h-14 text-sm sm:text-base font-semibold shadow-lg shadow-eatrivo-purple/30 transition-all duration-200">
                 {t("cta")}
                 <ArrowRight

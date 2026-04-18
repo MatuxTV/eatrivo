@@ -310,6 +310,30 @@
         "nutrition": "Nutrition tracking"
       }
     },
+    "intro": {
+      "common": {
+        "skip": "Skip",
+        "continue": "Continue",
+        "swipeHint": "Swipe for more"
+      },
+      "slides": {
+        "introduction": {
+          "eyebrow": "Personal AI assistant",
+          "title": "Eat better.\nFeel better.",
+          "description": "Your personal AI assistant for cooking, shopping, and reaching your goals. Less stress, less food waste."
+        },
+        "customRecipes": {
+          "eyebrow": "Rivo custom",
+          "title": "Recipes shaped around your taste",
+          "description": "Rivo builds custom recipes around your goals, preferences, and the ingredients you already have at home."
+        },
+        "pantry": {
+          "eyebrow": "Smart pantry",
+          "title": "Cook with what is already at home",
+          "description": "Track your pantry and instantly see meals you can cook right now. If something is missing, Rivo shows the fastest top-up path."
+        }
+      }
+    },
     "signOut": {
       "metaTitle": "Sign out",
       "title": "Sign out",
@@ -359,6 +383,30 @@
       },
       "sex": "Sex",
       "sexPlaceholder": "Select sex",
+      "sexOptions": {
+        "man": "Man",
+        "woman": "Woman"
+      },
+      "height": "Height (cm)",
+      "heightPlaceholder": "170",
+      "weight": "Weight (kg)",
+      "weightPlaceholder": "70",
+      "activityLevel": "Activity level",
+      "activityPlaceholder": "Select activity level",
+      "activityOptions": {
+        "sedentary": "Sedentary (desk job)",
+        "lightlyActive": "Lightly active (1–2x per week)",
+        "moderatelyActive": "Moderately active (3–5x per week)",
+        "veryActive": "Very active (6–7x per week)",
+        "athlete": "Athlete (multiple times per day)"
+      },
+      "goal": "Goal",
+      "goalPlaceholder": "Select goal",
+      "goalOptions": {
+        "loseWeight": "Lose weight",
+        "maintainWeight": "Maintain weight",
+        "gainMuscle": "Build muscle"
+      },
       "mealsPerDay": "Meals per day",
       "mealsPerDayPlaceholder": "3",
       "cookingTime": "Cooking time",
@@ -372,7 +420,7 @@
       "mealPrepYes": "Yes, I want to prep in advance",
       "mealPrepNo": "No, I prefer cooking daily",
       "mealPrepDays": "How many days ahead?",
-      "mealPrepDaysPlaceholder": "e.g., 3",
+      "mealPrepDaysPlaceholder": "e.g. 3",
       "mealPrepDaysHelp": "Choose how many days in advance you'd like to prepare meals",
       "mealPrepNote": {
         "title": "Why meal prep?",
@@ -503,6 +551,8 @@
         "setup": {
           "title": "Shape the recipe first",
           "description": "Tell Rivo what kind of meal you want and how many portions to prepare before generation starts.",
+          "modeLabel": "Generation mode",
+          "modeHint": "Choose whether Rivo should use your pantry or ignore it and optimize only for your profile.",
           "servingsLabel": "Portions",
           "servingsHint": "Set how many servings Rivo should plan for.",
           "mealTypeLabel": "Meal type",
@@ -516,6 +566,16 @@
           },
           "mealPrepLabel": "Make it meal prep friendly",
           "mealPrepDescription": "Favor recipes that store well and still taste good after reheating.",
+          "modes": {
+            "pantry": {
+              "title": "Use pantry",
+              "description": "Rivo tries to cook from what you already have at home and suggests small top-ups only when needed."
+            },
+            "preferencesOnly": {
+              "title": "Ignore pantry",
+              "description": "Rivo generates a recipe only from your diet, allergies, dislikes, and meal preferences."
+            }
+          },
           "profileHintLabel": "Client profile",
           "profileHint": "Rivo will still respect your diet, allergies, and the foods you do not like.",
           "submit": "Generate recipe",
@@ -540,7 +600,8 @@
           "open": "Open recipe result",
           "regenerate": "Generate again",
           "readyNow": "Ready now",
-          "almostCookable": "Almost cookable"
+          "almostCookable": "Almost cookable",
+          "preferencesOnly": "For your preferences"
         },
         "fallback": {
           "badge": "Smart fallback",
@@ -548,11 +609,13 @@
           "description": "Rivo could not build a cookable recipe from your current pantry, but these quick changes should unlock one fast.",
           "retry": "Try again",
           "openPantry": "Update pantry",
+          "preferencesOnly": "Profile match",
           "missingCount": "Missing {count}",
           "defaultSuggestions": {
             "pantry": "Add two or three staple ingredients you buy often.",
             "protein": "Top up one protein source to unlock more meals.",
-            "vegetables": "Add one fresh vegetable for easier lunch and dinner matches."
+            "vegetables": "Add one fresh vegetable for easier lunch and dinner matches.",
+            "preferences": "Rivo will suggest a few profile-friendly recipes even when it ignores your pantry."
           }
         },
         "error": {
@@ -576,14 +639,18 @@
         "message": {
           "pantryRecipeReady": "Rivo found a pantry recipe for you: {recipeName}.",
           "almostCookableReady": "Rivo found {recipeName}. You only need {missingCount} more ingredient(s).",
+          "preferencesOnlyReady": "Rivo created a recipe for your preferences: {recipeName}.",
+          "preferencesFallbackReady": "Rivo prepared {suggestionCount} profile-friendly recipe suggestion(s).",
           "fallbackSuggestionsReady": "Rivo prepared {suggestionCount} backup recipe suggestion(s) from the database.",
           "emptyPantry": "Your pantry is still empty, so Rivo prepared a few smart starting points.",
-          "noRecipeAvailable": "Nothing matched perfectly yet, but Rivo found a few useful next options."
+          "noRecipeAvailable": "Nothing matched perfectly yet, but Rivo found a few useful next options.",
+          "noPreferencesRecipeAvailable": "Rivo could not create a strong preference-only recipe yet, but it found a few useful alternatives."
         },
         "recipeUnavailable": {
           "pantryEmpty": "Your pantry is empty, so there is nothing to cook from it yet.",
           "noPantryRecipe": "Nothing can be cooked from your current pantry only.",
-          "noAlmostCookable": "Rivo could not find an almost-cookable option with three or fewer missing ingredients."
+          "noAlmostCookable": "Rivo could not find an almost-cookable option with three or fewer missing ingredients.",
+          "noPreferencesRecipe": "Rivo could not create a recipe that fit your preferences strongly enough."
         },
         "toasts": {
           "ready": "Your custom recipe is ready.",
@@ -618,6 +685,7 @@
         "addToShoppingList": "Add to shopping list",
         "cookThisRecipe": "I want to cook this recipe",
         "haveAmountInline": "have {amount}",
+        "stapleAvailable": "staple",
         "fallbackUsing": "We have: {ingredient}",
         "saveRecipe": "Save recipe",
         "removeBookmark": "Remove bookmark",
@@ -676,6 +744,7 @@
         "readyAmount": "ready",
         "missingAmount": "missing",
         "haveAmountInline": "have {amount}",
+        "stapleAvailable": "staple",
         "previousStep": "Previous",
         "nextStep": "Next step",
         "stepProgress": "Step {current} of {total}",
@@ -993,6 +1062,24 @@
         "title": "Chat with Rivo",
         "description": "Ask Rivo anything about nutrition, recipes, or meal planning. Your personal AI chef, always ready.",
         "badge": "● COMING SOON",
+        "history": {
+          "title": "Chat history",
+          "description": "Jump back into previous conversations or start a fresh chat for a new topic.",
+          "currentLabel": "Active chat",
+          "mobileListLabel": "Your conversations",
+          "newChat": "New chat",
+          "untitled": "New chat",
+          "loading": "Loading chat history...",
+          "emptyTitle": "Nothing here yet",
+          "emptyDescription": "Once you send your first message, this chat will appear in your history.",
+          "inputPlaceholder": "Ask about your meal plan...",
+          "errors": {
+            "loadSessions": "Could not load chat history.",
+            "loadSession": "Could not open this chat.",
+            "createSession": "Could not create a new chat.",
+            "refreshSessions": "Could not refresh the chat list."
+          }
+        },
         "warning": {
           "title": "Rivo is still in development",
           "body": "Unfortunately, Rivo is still in development. You can use him as your information assistant. For now, he cannot change anything in your profile or work with your recipes. These features will be released in future updates."
@@ -1972,6 +2059,104 @@
       "expiry_warning": {
         "title": "⚠️ Items expiring soon",
         "body": "Check your pantry — some items expire within 3 days."
+      }
+    }
+  },
+  "tutorial": {
+    "common": {
+      "progress": "{current} of {total}",
+      "labels": {
+        "guidedTour": "Quick start",
+        "quickTip": "Quick tip"
+      },
+      "actions": {
+        "next": "Next",
+        "back": "Back",
+        "skip": "Skip",
+        "finish": "Finish",
+        "startTour": "Show me around",
+        "close": "Close"
+      }
+    },
+    "intro": {
+      "steps": {
+        "welcome": {
+          "eyebrow": "Welcome to Eatrivo",
+          "title": "Meals, shopping, and pantry in one flow",
+          "description": "Eatrivo helps you decide what to eat, what to buy, and what you should use from your pantry right now."
+        },
+        "planning": {
+          "eyebrow": "Mobile first",
+          "title": "Built for mobile, still clean on desktop",
+          "description": "Navigation, sections, and coachmarks are designed for narrow screens first, then adapt into a wider desktop layout without breaking the flow."
+        },
+        "guidance": {
+          "eyebrow": "Short tour",
+          "title": "First the overview, then tips directly on the UI",
+          "description": "We start with a short intro and then show contextual highlights right where the important controls live."
+        }
+      }
+    },
+    "coachmarks": {
+      "homeRecipes": {
+        "steps": {
+          "homeNav": {
+            "title": "This is your main dashboard",
+            "description": "From here you can jump between recipes, chat, pantry, and the rest of the app without losing context."
+          },
+          "switcher": {
+            "title": "Switch between recipes and shopping",
+            "description": "On mobile this toggle is the fastest way to move between recipe discovery and your active shopping list."
+          },
+          "recipes": {
+            "title": "Your recipe feed lives here",
+            "description": "This section shows recommendations, filters, and pantry-aware suggestions for what you can cook next."
+          }
+        }
+      },
+      "shoppingList": {
+        "steps": {
+          "tab": {
+            "title": "Shopping has its own tab",
+            "description": "Move here when you want to focus on buying what you need instead of browsing recipes."
+          },
+          "list": {
+            "title": "This is your live shopping list",
+            "description": "You can check items off, rename the list, and only finish it once everything has been picked up."
+          }
+        }
+      },
+      "pantry": {
+        "steps": {
+          "nav": {
+            "title": "Pantry is a first-class section",
+            "description": "It is worth keeping this updated often because cookable recipes and restock suggestions depend on it."
+          },
+          "inventory": {
+            "title": "This is where inventory stays under control",
+            "description": "You get stock levels, expiry context, and quick actions for keeping your pantry useful."
+          },
+          "add": {
+            "title": "Adding an item should take one tap",
+            "description": "Whenever you buy something or find food at home, add it here so Eatrivo can use it in recipes and shopping suggestions."
+          }
+        }
+      },
+      "chat": {
+        "steps": {
+          "nav": {
+            "title": "Rivo is always close by",
+            "description": "Open chat from navigation any time you want help with meals, calories, or pantry-based ideas."
+          },
+          "history": {
+            "title": "Open conversation history here",
+            "description": "On mobile the history panel stays tucked away so the chat composer and messages have more room."
+          },
+          "composer": {
+            "title": "Type your request here",
+            "description": "Ask a question, request a suggestion, or describe what you have at home. The composer stays usable even with the mobile keyboard open."
+          }
+        }
       }
     }
   }

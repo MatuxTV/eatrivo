@@ -7,7 +7,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Define your public routes here
   const routes = [
     '',
-    '/signin',
     '/onboarding',
   ];
 

@@ -1,7 +1,9 @@
 import type { CustomRecipeGeneratedRecipe } from "@/lib/custom-recipes/contracts";
+import type { CustomRecipeMode } from "@/lib/custom-recipes/contracts";
 
 export interface CustomRecipeQualityContext {
   pantryItemCount: number;
+  mode?: CustomRecipeMode;
   cookingTimePreference?: string | null;
   goal?: string | null;
 }
@@ -89,9 +91,13 @@ export function scoreCustomRecipe(
     recipe.ingredientItems.length > 0
       ? recipe.matchedIngredientNames.length / recipe.ingredientItems.length
       : 0;
-  score += Math.round(pantryCoverageRatio * 20);
-  if (pantryCoverageRatio < 0.45) {
-    reasons.push("low_pantry_coverage");
+  if (context.mode !== "preferences_only") {
+    score += Math.round(pantryCoverageRatio * 20);
+    if (pantryCoverageRatio < 0.45) {
+      reasons.push("low_pantry_coverage");
+    }
+  } else {
+    score += 12;
   }
 
   score += scoreTimePreference(
@@ -116,7 +122,11 @@ export function scoreCustomRecipe(
     }
   }
 
-  if (context.pantryItemCount === 0) {
+  if (recipe.kind === "preferences_only") {
+    score += recipe.missingIngredientNames.length === 0 ? 10 : 4;
+  }
+
+  if (context.mode !== "preferences_only" && context.pantryItemCount === 0) {
     reasons.push("empty_pantry_context");
   }
 

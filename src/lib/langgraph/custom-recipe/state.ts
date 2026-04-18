@@ -4,11 +4,15 @@ import type { InferSelectModel } from "drizzle-orm";
 import type { pantryItems, userInfoTable, userProfiles } from "@/db/schema";
 import type {
   CustomRecipeAiOutput,
+  CustomRecipeGeneratedRecipe,
+  CustomRecipeMode,
   CustomRecipeStartRequest,
   CustomRecipePantryContextItem,
   CustomRecipeResult,
   CustomRecipeSuggestion,
 } from "@/lib/custom-recipes/contracts";
+import type { CustomRecipeDiversityCheck } from "@/lib/custom-recipes/diversity";
+import type { CustomRecipeUnitSemanticAudit, CustomRecipeValidationErrorType } from "@/lib/custom-recipes/unit-validation";
 
 export const CustomRecipeState = Annotation.Root({
   userId: Annotation<string>({
@@ -22,6 +26,10 @@ export const CustomRecipeState = Annotation.Root({
   locale: Annotation<"en" | "sk">({
     value: (current, update) => (update !== undefined ? update : current),
     default: () => "en",
+  }),
+  mode: Annotation<CustomRecipeMode>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => "pantry",
   }),
   fallbackSuggestionLimit: Annotation<number>({
     value: (current, update) => (update !== undefined ? update : current),
@@ -52,6 +60,22 @@ export const CustomRecipeState = Annotation.Root({
     value: (current, update) => (update !== undefined ? update : current),
     default: () => [],
   }),
+  previousGeneratedRecipe: Annotation<CustomRecipeGeneratedRecipe | null>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => null,
+  }),
+  previousGeneratedRecipeJobId: Annotation<string | null>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => null,
+  }),
+  diversityCheck: Annotation<CustomRecipeDiversityCheck | null>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => null,
+  }),
+  unitSemanticAudit: Annotation<CustomRecipeUnitSemanticAudit | null>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => null,
+  }),
   pantryItemCount: Annotation<number>({
     value: (current, update) => (update !== undefined ? update : current),
     default: () => 0,
@@ -72,6 +96,10 @@ export const CustomRecipeState = Annotation.Root({
     value: (current, update) => (update !== undefined ? update : current),
     default: () => [],
   }),
+  fallbackSuggestionsFetched: Annotation<boolean>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => false,
+  }),
   finalResult: Annotation<CustomRecipeResult | null>({
     value: (current, update) => (update !== undefined ? update : current),
     default: () => null,
@@ -81,6 +109,10 @@ export const CustomRecipeState = Annotation.Root({
     default: () => 0,
   }),
   requestError: Annotation<string | null>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => null,
+  }),
+  validationErrorType: Annotation<CustomRecipeValidationErrorType | null>({
     value: (current, update) => (update !== undefined ? update : current),
     default: () => null,
   }),

@@ -7,11 +7,11 @@ import { shoppingListItems, shoppingLists, userProfiles } from "@/db/schema";
 import { db } from "@/index";
 import { apiLogger } from "@/lib/logger";
 import { formatAmountLabel } from "@/lib/pantry/format";
+import { parseShoppingListAmountLabel } from "@/lib/pantry/shopping-list-amount";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { CacheService } from "@/lib/redis";
 import { pantryAmountLabelSchema } from "@/lib/schemas/pantry";
 import { guessFoodCategory } from "@/lib/units";
-import { parseQuantity } from "@/lib/units";
 
 type ShoppingListItemResponse = {
   id: string;
@@ -75,14 +75,18 @@ export async function PATCH(
       return NextResponse.json({ error: "amountLabel is required" }, { status: 400 });
     }
     const amountLabel = parsedBody.data;
-    const parsedAmount = amountLabel ? parseQuantity(amountLabel) : null;
+    const parsedAmount = parseShoppingListAmountLabel(amountLabel);
+
+    if (!parsedAmount.ok) {
+      return NextResponse.json({ error: parsedAmount.message }, { status: 400 });
+    }
 
     apiLogger.debug("[shopping-list.current-item.update] amount parsed", {
       metadata: {
         shoppingListItemId: itemId,
         amountLabel,
-        parsedQuantity: parsedAmount?.value ?? null,
-        parsedUnit: parsedAmount?.unit ?? null,
+        parsedQuantity: parsedAmount.quantity ?? null,
+        parsedUnit: parsedAmount.unit ?? null,
       },
     });
 
@@ -115,9 +119,9 @@ export async function PATCH(
     const [item] = await db
       .update(shoppingListItems)
       .set({
-        amountLabel,
-        quantity: parsedAmount ? String(parsedAmount.value) : null,
-        unit: parsedAmount?.unit ?? null,
+        amountLabel: parsedAmount.amountLabel,
+        quantity: parsedAmount.quantity !== null ? String(parsedAmount.quantity) : null,
+        unit: parsedAmount.unit,
         updatedAt: new Date(),
       })
       .where(

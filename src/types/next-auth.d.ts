@@ -4,7 +4,7 @@ declare module "next-auth" {
   interface User {
     id: string;
     membership?: "basic" | "premium" | "trainer";
-    role?: "user" | "coach" | "admin";
+    role?: "user" | "admin";
     lastSeenWelcomeVersion?: string;
     locale?: string;
     hideInstallPrompt?: boolean;
@@ -16,7 +16,7 @@ declare module "next-auth" {
     user: {
       id: string;
       membership?: "basic" | "premium" | "trainer";
-      role?: "user" | "coach" | "admin";
+      role?: "user" | "admin";
       lastSeenWelcomeVersion?: string;
       locale?: string;
       hideInstallPrompt?: boolean;

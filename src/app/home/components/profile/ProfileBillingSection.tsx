@@ -75,7 +75,7 @@ export default function ProfileBillingSection({
     }
 
     if (!isAuthenticated) {
-      router.push(`/${locale}/signin?callbackUrl=${encodeURIComponent(billingHomePath)}`);
+      router.push(`/${locale}?callbackUrl=${encodeURIComponent(billingHomePath)}`);
       return;
     }
 
@@ -101,7 +101,7 @@ export default function ProfileBillingSection({
 
   const handleUpgrade = async (tier: "premium" | "pro") => {
     if (status !== "authenticated") {
-      router.push(`/${locale}/signin?callbackUrl=${encodeURIComponent(billingHomePath)}`);
+      router.push(`/${locale}?callbackUrl=${encodeURIComponent(billingHomePath)}`);
       return;
     }
 

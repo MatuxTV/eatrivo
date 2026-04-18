@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import {
   CookingPot,
-  Check,
   ChefHat,
   Clock,
   Flame,
@@ -21,7 +20,7 @@ import {
   Droplets,
   AlertCircle,
 } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import type {
@@ -30,7 +29,6 @@ import type {
 } from "./RivoCustomRecipeExperience";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { trackClientEvent } from "@/lib/analytics-client";
 
 const RivoCustomRecipeExperience = dynamic(
   () => import("./RivoCustomRecipeExperience"),
@@ -101,7 +99,6 @@ export default function RecipesSection({
   onPendingExternalRecipeHandled,
 }: RecipesSectionProps) {
   const t = useTranslations("home");
-  const locale = useLocale();
   const triggerHaptic = useHapticFeedback();
   const rivoCustomRecipeRef = useRef<RivoCustomRecipeExperienceHandle | null>(null);
   const cookableTouchStartXRef = useRef<number | null>(null);
@@ -464,6 +461,7 @@ export default function RecipesSection({
 
   return (
     <motion.div
+      data-tutorial-anchor="home-recipes-section"
       key="home-recipes"
       initial={{ opacity: 0, y: 16, scale: 0.992 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}

@@ -2,6 +2,7 @@ import {
   customRecipeAiOutputSchema,
   type CustomRecipeAiOutput,
 } from "@/lib/custom-recipes/contracts";
+import { validateCustomRecipeIngredientAmountFormat } from "@/lib/custom-recipes/unit-validation";
 import { apiLogger } from "@/lib/logger";
 import type { CustomRecipeState } from "../state";
 import { ZodError } from "zod";
@@ -114,6 +115,10 @@ function validatePantryReferences(
   output: CustomRecipeAiOutput,
   state: typeof CustomRecipeState.State,
 ): string | null {
+  if (state.mode === "preferences_only") {
+    return null;
+  }
+
   const pantryNames = buildPantryNameSet(state);
 
   const candidates = [
@@ -139,6 +144,36 @@ function validatePantryReferences(
       const matchName = ingredient.pantryMatchName?.trim().toLowerCase();
       if (!matchName || !pantryNames.has(matchName)) {
         return `Invalid pantryMatchName for ingredient "${ingredient.name}"`;
+      }
+    }
+  }
+
+  return null;
+}
+
+function validateIngredientAmountFormats(output: CustomRecipeAiOutput): string | null {
+  const candidates = [
+    output.pantryRecipe.status === "available"
+      ? { kind: "pantry", candidate: output.pantryRecipe }
+      : null,
+    output.almostCookableRecipe.status === "available"
+      ? { kind: "almost_cookable", candidate: output.almostCookableRecipe }
+      : null,
+  ].filter(Boolean) as Array<{
+    kind: "pantry" | "almost_cookable";
+    candidate: Extract<CustomRecipeAiOutput["pantryRecipe"], { status: "available" }>;
+  }>;
+
+  for (const { kind, candidate } of candidates) {
+    for (const ingredient of candidate.ingredients) {
+      const issues = validateCustomRecipeIngredientAmountFormat({
+        ingredientName: ingredient.name,
+        amount: ingredient.amount,
+        category: candidate.category,
+      });
+
+      if (issues.length > 0) {
+        return `[${kind}] ${issues[0]?.message ?? "Invalid ingredient unit"}`;
       }
     }
   }
@@ -181,6 +216,7 @@ export async function validateRecipeJson(
     const parsed = JSON.parse(state.rawAiOutput) as unknown;
     const validated = customRecipeAiOutputSchema.parse(parsed);
     const pantryReferenceError = validatePantryReferences(validated, state);
+    const ingredientUnitError = validateIngredientAmountFormats(validated);
 
     if (pantryReferenceError) {
       apiLogger.warn(
@@ -201,6 +237,29 @@ export async function validateRecipeJson(
         rawAiOutput: null,
         requestError: pantryReferenceError,
         retryCount: state.retryCount + 1,
+        validationErrorType: "unit_format_error",
+      };
+    }
+
+    if (ingredientUnitError) {
+      apiLogger.warn(
+        "[customRecipe.validateRecipeJson] ingredient unit validation failed",
+        {
+          metadata: {
+            userId: state.userId,
+            userProfileId: state.userProfileId,
+            retryCount: state.retryCount + 1,
+            ingredientUnitError,
+          },
+        },
+      );
+
+      return {
+        parsedAiOutput: null,
+        rawAiOutput: null,
+        requestError: ingredientUnitError,
+        retryCount: state.retryCount + 1,
+        validationErrorType: "unit_format_error",
       };
     }
 
@@ -219,6 +278,7 @@ export async function validateRecipeJson(
     return {
       parsedAiOutput: validated,
       requestError: null,
+      validationErrorType: null,
     };
   } catch (error) {
     // Enhanced error logging for debugging
@@ -281,6 +341,7 @@ export async function validateRecipeJson(
       requestError:
         error instanceof Error ? error.message : "Recipe JSON validation failed",
       retryCount: state.retryCount + 1,
+      validationErrorType: "unit_format_error",
     };
   }
 }

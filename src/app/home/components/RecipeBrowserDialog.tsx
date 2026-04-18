@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -92,7 +92,6 @@ export default function RecipeBrowserDialog({
   onCookRecipe,
 }: RecipeBrowserDialogProps) {
   const t = useTranslations("home");
-  const locale = useLocale();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [direction, setDirection] = useState(0); // -1 left, 1 right
   const [selectedMissingIngredients, setSelectedMissingIngredients] = useState<Set<string>>(
@@ -491,6 +490,12 @@ export default function RecipeBrowserDialog({
                     const ingredient = ingredientByName.get(
                       ingredientName.trim().toLowerCase(),
                     );
+
+                    if (
+                      ingredient?.pantryComparison?.status === "available-staple"
+                    ) {
+                      return t("basic.recipeDialog.stapleAvailable");
+                    }
 
                     if (
                       ingredient?.pantryComparison?.status === "insufficient" &&

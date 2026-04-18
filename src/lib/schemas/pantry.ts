@@ -190,6 +190,17 @@ export const shoppingListCurrentMutationSchema = z
           "Provide exactly one source: name, pantryItemId, pantryItemIds, or lowStockOnly",
       });
     }
+
+    const hasQuantity = value.quantity !== undefined && value.quantity !== null;
+    const hasUnit = value.unit !== undefined && value.unit !== null;
+
+    if (hasQuantity !== hasUnit) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "quantity and unit must be provided together",
+        path: hasQuantity ? ["unit"] : ["quantity"],
+      });
+    }
   });
 
 export type PantryCreateItemInput = z.infer<typeof pantryCreateItemSchema>;

@@ -10,9 +10,11 @@ import {
   recipeTranslations,
 } from "@/db/schema";
 import type { CustomRecipeGeneratedRecipe } from "@/lib/custom-recipes/contracts";
-import { parseRecipeIngredient } from "@/lib/ingredients";
 import { apiLogger } from "@/lib/logger";
-import { guessFoodCategory, normalizeUnit } from "@/lib/units";
+
+type PersistableCanonicalRecipe = NonNullable<
+  CustomRecipeGeneratedRecipe["canonicalRecipe"]
+>;
 
 function slugify(value: string): string {
   return value
@@ -24,88 +26,119 @@ function slugify(value: string): string {
     .replace(/-{2,}/g, "-");
 }
 
-function buildPersistedIngredient(
-  ingredient: CustomRecipeGeneratedRecipe["ingredientItems"][number],
+function buildLegacyCanonicalRecipe(
+  recipe: CustomRecipeGeneratedRecipe,
   locale: "en" | "sk",
-  sortOrder: number,
-) {
-  const canonicalInputName = ingredient.name.trim();
-  const displayName = canonicalInputName;
-  const parsedIngredient = parseRecipeIngredient(
-    ingredient.amount?.trim() ? `${ingredient.amount.trim()} ${canonicalInputName}` : canonicalInputName,
-  );
-  const normalizedQuantity =
-    typeof ingredient.quantityValue === "number" &&
-    Number.isFinite(ingredient.quantityValue)
-      ? ingredient.quantityValue
-      : parsedIngredient.quantity;
-  const normalizedUnit = ingredient.unit?.trim()
-    ? normalizeUnit(ingredient.unit)
-    : parsedIngredient.unit;
-  const ingredientName = parsedIngredient.ingredientName ?? ingredient.name.trim();
-  const category = ingredient.category?.trim()
-    ? ingredient.category.trim()
-    : guessFoodCategory(ingredientName);
-
+): PersistableCanonicalRecipe {
   return {
-    category,
-    row: {
-      canonicalName: ingredient.name.trim() ? ingredient.name.trim() : ingredientName,
-      ingredientKey: ingredient.ingredientKey ?? parsedIngredient.ingredientKey,
-      ingredientSpecificKey: ingredient.ingredientSpecificKey ?? null,
-      quantity: normalizedQuantity !== null ? String(normalizedQuantity) : null,
-      unit: normalizedUnit,
+    default_locale: locale,
+    category_key: slugify(recipe.category) || "custom-recipe",
+    diet_tags: recipe.tags.map(slugify).filter(Boolean),
+    restriction_flags: [],
+    servings: recipe.servings,
+    prep_time_min: recipe.prepTimeMin,
+    total_time_min: recipe.totalTimeMin,
+    nutrition_per_serving: {
+      calories: recipe.calories,
+      protein_g: recipe.proteinG,
+      carbohydrates_g: recipe.carbohydratesG,
+      fat_g: recipe.fatG,
+    },
+    ingredients: recipe.ingredientItems.map((ingredient, index) => ({
+      ingredient_key: ingredient.ingredientKey ?? null,
+      ingredient_specific_key: ingredient.ingredientSpecificKey ?? null,
+      canonical_name: ingredient.name.trim() || null,
+      pantry_tracking_hint: ingredient.pantryTrackingMode ?? null,
+      quantity:
+        typeof ingredient.quantityValue === "number"
+        && Number.isFinite(ingredient.quantityValue)
+          ? ingredient.quantityValue
+          : null,
+      unit: ingredient.unit?.trim() || null,
       optional: false,
-      sortOrder,
+      sort_order: index,
+      translations: {
+        en: { display_name: ingredient.name.trim() },
+        sk: { display_name: ingredient.name.trim() },
+      },
+    })),
+    translations: {
+      en: {
+        name: recipe.name,
+        category_label: recipe.category,
+        serving_unit_label: recipe.servingUnit,
+        instructions: recipe.instructions.map((instruction) => instruction.text.trim()),
+        notes: recipe.description,
+      },
+      sk: {
+        name: recipe.name,
+        category_label: recipe.category,
+        serving_unit_label: recipe.servingUnit,
+        instructions: recipe.instructions.map((instruction) => instruction.text.trim()),
+        notes: recipe.description,
+      },
     },
-    translation: {
-      locale,
-      displayName,
-    },
+    meal_prep_friendly: recipe.mealPrepFriendly,
   };
 }
 
 function buildRecipeHash(
   userId: string,
-  locale: "en" | "sk",
-  recipe: CustomRecipeGeneratedRecipe,
+  recipe: PersistableCanonicalRecipe,
 ): string {
-  const normalizedIngredients = recipe.ingredientItems.map((ingredient) => ({
-    name: ingredient.name.trim().toLowerCase(),
-    amount: ingredient.amount?.trim().toLowerCase() ?? null,
-    quantityValue:
-      typeof ingredient.quantityValue === "number" && Number.isFinite(ingredient.quantityValue)
-        ? ingredient.quantityValue
-        : null,
+  const normalizedIngredients = recipe.ingredients.map((ingredient) => ({
+    canonicalName: ingredient.canonical_name?.trim().toLowerCase() ?? null,
+    ingredientKey: ingredient.ingredient_key?.trim().toLowerCase() ?? null,
+    ingredientSpecificKey:
+      ingredient.ingredient_specific_key?.trim().toLowerCase() ?? null,
+    quantity: ingredient.quantity,
     unit: ingredient.unit?.trim().toLowerCase() ?? null,
-  }));
-
-  const normalizedInstructions = recipe.instructions.map((instruction) => ({
-    title: instruction.title.trim(),
-    text: instruction.text.trim(),
+    pantryTrackingHint: ingredient.pantry_tracking_hint,
+    translations: ingredient.translations,
   }));
 
   return createHash("sha256")
     .update(
       JSON.stringify({
         userId,
-        locale,
-        name: recipe.name.trim(),
-        category: recipe.category.trim(),
+        defaultLocale: recipe.default_locale,
+        categoryKey: recipe.category_key,
+        dietTags: recipe.diet_tags,
+        restrictionFlags: recipe.restriction_flags,
         servings: recipe.servings,
-        servingUnit: recipe.servingUnit,
-        prepTimeMin: recipe.prepTimeMin,
-        totalTimeMin: recipe.totalTimeMin,
-        calories: recipe.calories,
-        proteinG: recipe.proteinG,
-        carbohydratesG: recipe.carbohydratesG,
-        fatG: recipe.fatG,
+        prepTimeMin: recipe.prep_time_min,
+        totalTimeMin: recipe.total_time_min,
+        calories: recipe.nutrition_per_serving.calories,
+        proteinG: recipe.nutrition_per_serving.protein_g,
+        carbohydratesG: recipe.nutrition_per_serving.carbohydrates_g,
+        fatG: recipe.nutrition_per_serving.fat_g,
         ingredientItems: normalizedIngredients,
-        instructions: normalizedInstructions,
+        translations: recipe.translations,
       }),
     )
     .digest("hex")
     .slice(0, 24);
+}
+
+function buildPersistedIngredient(
+  ingredient: PersistableCanonicalRecipe["ingredients"][number],
+  sortOrder: number,
+) {
+  return {
+    row: {
+      canonicalName: ingredient.canonical_name,
+      ingredientKey: ingredient.ingredient_key,
+      ingredientSpecificKey: ingredient.ingredient_specific_key,
+      quantity: ingredient.quantity !== null ? String(ingredient.quantity) : null,
+      unit: ingredient.unit,
+      optional: ingredient.optional,
+      sortOrder,
+    },
+    translations: (["en", "sk"] as const).map((locale) => ({
+      locale,
+      displayName: ingredient.translations[locale].display_name,
+    })),
+  };
 }
 
 export interface PersistAcceptedCustomRecipeInput {
@@ -118,13 +151,17 @@ export interface PersistAcceptedCustomRecipeInput {
 export async function persistAcceptedCustomRecipe(
   input: PersistAcceptedCustomRecipeInput,
 ) {
-  const categoryKey = slugify(input.recipe.category) || "custom-recipe";
-  const recipeHash = buildRecipeHash(input.userId, input.locale, input.recipe);
+  const canonicalRecipe =
+    input.recipe.canonicalRecipe ?? buildLegacyCanonicalRecipe(input.recipe, input.locale);
+  const categoryKey = canonicalRecipe.category_key;
+  const recipeHash = buildRecipeHash(input.userId, canonicalRecipe);
   const externalKey = `ai-custom:${input.userId}:${recipeHash}`;
-  const slugBase = slugify(input.recipe.name) || "custom-recipe";
+  const slugBase =
+    slugify(canonicalRecipe.translations[canonicalRecipe.default_locale].name)
+    || "custom-recipe";
   const slug = `${slugBase}-${recipeHash.slice(0, 8)}`;
-  const persistedIngredients = input.recipe.ingredientItems.map((ingredient, index) =>
-    buildPersistedIngredient(ingredient, input.locale, index),
+  const persistedIngredients = canonicalRecipe.ingredients.map((ingredient, index) =>
+    buildPersistedIngredient(ingredient, index),
   );
 
   const recipePayload = {
@@ -135,17 +172,19 @@ export async function persistAcceptedCustomRecipe(
     createdByUserId: input.userId,
     sourceJobId: input.sourceJobId ?? null,
     categoryKey,
-    defaultLocale: input.locale,
-    servings: input.recipe.servings,
-    prepTimeMin: input.recipe.prepTimeMin,
-    totalTimeMin: input.recipe.totalTimeMin,
-    calories: input.recipe.calories,
-    proteinG: Math.round(input.recipe.proteinG),
-    carbohydratesG: Math.round(input.recipe.carbohydratesG),
-    fatG: Math.round(input.recipe.fatG),
-    dietTags: input.recipe.tags,
-    restrictionFlags: [],
-    mealPrepFriendly: input.recipe.mealPrepFriendly,
+    defaultLocale: canonicalRecipe.default_locale,
+    servings: canonicalRecipe.servings,
+    prepTimeMin: canonicalRecipe.prep_time_min,
+    totalTimeMin: canonicalRecipe.total_time_min,
+    calories: canonicalRecipe.nutrition_per_serving.calories,
+    proteinG: Math.round(canonicalRecipe.nutrition_per_serving.protein_g),
+    carbohydratesG: Math.round(
+      canonicalRecipe.nutrition_per_serving.carbohydrates_g,
+    ),
+    fatG: Math.round(canonicalRecipe.nutrition_per_serving.fat_g),
+    dietTags: canonicalRecipe.diet_tags,
+    restrictionFlags: canonicalRecipe.restriction_flags,
+    mealPrepFriendly: canonicalRecipe.meal_prep_friendly,
   };
 
   const [upsertedRecipe] = await db
@@ -183,16 +222,18 @@ export async function persistAcceptedCustomRecipe(
   await db.delete(recipeTranslations).where(eq(recipeTranslations.recipeId, upsertedRecipe.id));
   await db.delete(recipeIngredients).where(eq(recipeIngredients.recipeId, upsertedRecipe.id));
 
-  await db.insert(recipeTranslations).values({
-    recipeId: upsertedRecipe.id,
-    locale: input.locale,
-    name: input.recipe.name,
-    categoryLabel: input.recipe.category,
-    servingUnitLabel: input.recipe.servingUnit,
-    instructions: input.recipe.instructions,
-    notes: input.recipe.description,
-    updatedAt: new Date(),
-  });
+  await db.insert(recipeTranslations).values(
+    (["en", "sk"] as const).map((locale) => ({
+      recipeId: upsertedRecipe.id,
+      locale,
+      name: canonicalRecipe.translations[locale].name,
+      categoryLabel: canonicalRecipe.translations[locale].category_label,
+      servingUnitLabel: canonicalRecipe.translations[locale].serving_unit_label,
+      instructions: canonicalRecipe.translations[locale].instructions,
+      notes: canonicalRecipe.translations[locale].notes,
+      updatedAt: new Date(),
+    })),
+  );
 
   for (const ingredient of persistedIngredients) {
     const [insertedIngredient] = await db
@@ -210,12 +251,14 @@ export async function persistAcceptedCustomRecipe(
       })
       .returning({ id: recipeIngredients.id });
 
-    await db.insert(recipeIngredientTranslations).values({
-      recipeIngredientId: insertedIngredient.id,
-      locale: ingredient.translation.locale,
-      displayName: ingredient.translation.displayName,
-      updatedAt: new Date(),
-    });
+    await db.insert(recipeIngredientTranslations).values(
+      ingredient.translations.map((translation) => ({
+        recipeIngredientId: insertedIngredient.id,
+        locale: translation.locale,
+        displayName: translation.displayName,
+        updatedAt: new Date(),
+      })),
+    );
   }
 
   apiLogger.info("[customRecipe.accept] recipe persisted", {
@@ -223,7 +266,7 @@ export async function persistAcceptedCustomRecipe(
       userId: input.userId,
       recipeId: upsertedRecipe.id,
       externalKey: upsertedRecipe.externalKey,
-      locale: input.locale,
+      locale: canonicalRecipe.default_locale,
       sourceJobId: input.sourceJobId ?? null,
     },
   });

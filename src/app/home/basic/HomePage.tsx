@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
-import { APP_CONFIG } from "@/app/config/app";
 import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
-import { logger } from "@/lib/logger";
+import { useTutorialSurface } from "@/components/tutorial/TutorialProvider";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -21,10 +19,10 @@ import {
   type AppHomeSection,
   getPrimaryAppHomeSection,
   isHomeSection,
+  isProfileSection
 } from "../types/navigation";
 
 /* ---- Layout shells ---- */
-import WelcomeDialog from "../components/WelcomeDialog";
 import HomeSidebar from "../components/HomeSidebar";
 import HomeHeader from "../components/HomeHeader";
 import MobileNavigation from "../components/MobileNavigation";
@@ -132,7 +130,6 @@ export default function HomePage({
   const t = useTranslations("home");
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const { data: session } = useSession();
   const triggerHaptic = useHapticFeedback();
 
   /* ---- Extracted hooks ---- */
@@ -154,6 +151,11 @@ export default function HomePage({
   const primaryActiveSection = getPrimaryAppHomeSection(activeSection);
   const activeHomeSection =
     activeSection === "home.shoppingList" ? "home.shoppingList" : "home.recipes";
+  const activeTutorialSurface = isHomeSection(activeSection)
+    ? activeHomeSection
+    : null;
+
+  useTutorialSurface(activeTutorialSurface);
 
   /* ---- Recipes state (owned here, passed to RecipesSection) ---- */
 
@@ -209,36 +211,6 @@ export default function HomePage({
     },
     [triggerHaptic],
   );
-
-  /* ---- Welcome dialog ---- */
-
-  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
-
-  useEffect(() => {
-    if (!session?.user) return;
-
-    const currentVersion = APP_CONFIG.WELCOME_DIALOG_VERSION;
-    const needsWelcome =
-      !session.user.lastSeenWelcomeVersion ||
-      session.user.lastSeenWelcomeVersion !== currentVersion;
-    setShowWelcomeDialog(needsWelcome);
-  }, [session?.user]);
-
-  const handleCloseDialog = async () => {
-    setShowWelcomeDialog(false);
-    try {
-      await fetch("/api/user/update-dialog", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ version: APP_CONFIG.WELCOME_DIALOG_VERSION }),
-      });
-    } catch (error) {
-      logger.error("Failed to update welcome dialog version", error, {
-        context: "HomePage",
-        metadata: { userId: session?.user?.id },
-      });
-    }
-  };
 
   /* ---- Section routing from URL ---- */
 
@@ -313,14 +285,6 @@ export default function HomePage({
         eventName="home_viewed"
         metadata={{ locale, surface: "home" }}
       />
-      <WelcomeDialog
-        open={showWelcomeDialog}
-        onOpenChange={handleCloseDialog}
-        version={APP_CONFIG.WELCOME_DIALOG_VERSION}
-        changelog={
-          APP_CONFIG.WELCOME_DIALOG_CHANGELOG[APP_CONFIG.WELCOME_DIALOG_VERSION]
-        }
-      />
       <HomeSidebar
         activeSection={activeSection}
         onSectionChange={setActiveSection}
@@ -351,9 +315,13 @@ export default function HomePage({
             >
               {/* ---- Section switcher ---- */}
               <div className="mb-6">
-                <div className="mt-4 w-full rounded-2xl border border-eatrivo-black-primary/10 bg-white/80 p-1 shadow-sm backdrop-blur-sm">
+                <div
+                  data-tutorial-anchor="home-section-switcher"
+                  className="mt-4 w-full rounded-2xl border border-eatrivo-black-primary/10 bg-white/80 p-1 shadow-sm backdrop-blur-sm"
+                >
                   <div className="grid grid-cols-2 gap-1">
                     <Button
+                      data-tutorial-anchor="home-tab-recipes"
                       type="button"
                       variant="ghost"
                       className="relative h-10 overflow-hidden rounded-xl px-4 text-sm font-semibold active:scale-[0.98]"
@@ -382,6 +350,7 @@ export default function HomePage({
                       </span>
                     </Button>
                     <Button
+                      data-tutorial-anchor="home-tab-shopping"
                       type="button"
                       variant="ghost"
                       className="relative h-10 overflow-hidden rounded-xl px-4 text-sm font-semibold active:scale-[0.98]"
@@ -506,7 +475,7 @@ export default function HomePage({
       />
       <PWAInstallPrompt />
       <NotificationBanner />
-      {isHomeSection(activeSection) && (
+      {isProfileSection(activeSection) && (
         <div className="hidden md:block">
           <FeedbackButton />
         </div>

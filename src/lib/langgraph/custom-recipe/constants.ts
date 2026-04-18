@@ -14,6 +14,10 @@ export const NODE_PROGRESS: Record<
     progress: 25,
     label: "customRecipe.fetchingPantry",
   },
+  fetch_previous_recipe: {
+    progress: 38,
+    label: "customRecipe.fetchingPreviousRecipe",
+  },
   recipe_request: {
     progress: 55,
     label: "customRecipe.requestingRecipe",
@@ -22,12 +26,24 @@ export const NODE_PROGRESS: Record<
     progress: 72,
     label: "customRecipe.validatingRecipe",
   },
-  fallback_database_recommendations: {
+  validate_unit_semantics: {
+    progress: 78,
+    label: "customRecipe.validatingUnits",
+  },
+  repair_recipe_units: {
+    progress: 84,
+    label: "customRecipe.repairingUnits",
+  },
+  validate_recipe_diversity: {
     progress: 88,
+    label: "customRecipe.validatingDiversity",
+  },
+  fallback_database_recommendations: {
+    progress: 90,
     label: "customRecipe.fetchingFallbacks",
   },
   finalize_result: {
-    progress: 95,
+    progress: 96,
     label: "customRecipe.finalizing",
   },
 };

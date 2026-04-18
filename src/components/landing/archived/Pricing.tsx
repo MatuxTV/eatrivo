@@ -188,7 +188,7 @@ function PricingCard({
         >
           <Link
             href={
-              tier.tier === "basic" ? `/${locale}/signin` : `/${locale}/pricing`
+              tier.tier === "basic" ? `/${locale}` : `/${locale}/pricing`
             }
             onClick={() => {
               if (tier.tier === "premium") {

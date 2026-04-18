@@ -3,6 +3,7 @@ export const PANTRY_VIEW_CACHE_TTL_SECONDS = 120;
 export const SUBSCRIPTION_SNAPSHOT_CACHE_TTL_SECONDS = 60;
 export const ADMIN_ANALYTICS_CACHE_TTL_SECONDS = 45;
 export const FEATURED_RECIPES_CACHE_TTL_SECONDS = 900;
+export const TUTORIAL_STATE_CACHE_TTL_SECONDS = 300;
 
 export function userContextCacheKey(userId: string) {
   return `user-context:${userId}`;
@@ -14,6 +15,10 @@ export function shoppingListsCacheKey(userId: string) {
 
 export function subscriptionSnapshotCacheKey(userId: string) {
   return `subscription-snapshot:${userId}`;
+}
+
+export function tutorialStateCacheKey(userId: string) {
+  return `tutorial-state:${userId}`;
 }
 
 export function pantrySnapshotCacheKey(

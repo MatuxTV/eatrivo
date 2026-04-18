@@ -47,6 +47,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 export type CustomRecipeGenerationStatus =
@@ -57,11 +58,13 @@ export type CustomRecipeGenerationStatus =
   | "error";
 
 type CustomRecipeMealType = "breakfast" | "lunch" | "dinner" | "snack";
+type CustomRecipeMode = "pantry" | "preferences_only";
 
 interface CustomRecipeRequestPreferences {
   servings: number;
   mealType: CustomRecipeMealType;
   mealPrep: boolean;
+  mode: CustomRecipeMode;
 }
 
 interface CustomRecipeApiMessageDescriptor {
@@ -91,7 +94,7 @@ interface CustomRecipeApiMatchedIngredient {
 
 interface CustomRecipeApiGeneratedRecipe {
   status: "available";
-  kind: "pantry" | "almost_cookable";
+  kind: "pantry" | "almost_cookable" | "preferences_only";
   name: string;
   category: string;
   description: string;
@@ -129,7 +132,7 @@ type CustomRecipeApiRecipe =
 
 interface CustomRecipeApiSuggestion {
   kind: "suggestion";
-  availability: "pantry" | "almost_cookable";
+  availability: "pantry" | "almost_cookable" | "preferences_only";
   id: string;
   slug: string;
   externalKey: string;
@@ -162,6 +165,7 @@ interface CustomRecipeApiResultPayload {
   userMessage: CustomRecipeApiMessageDescriptor;
   meta: {
     locale: "en" | "sk";
+    mode: CustomRecipeMode;
     pantryItemCount: number;
     pantryIngredientKeyCount: number;
     fallbackUsed: boolean;
@@ -173,7 +177,7 @@ export interface CustomRecipeFallbackRecommendation {
   id: string;
   title: string;
   category: string;
-  availability?: "pantry" | "almost_cookable";
+  availability?: "pantry" | "almost_cookable" | "preferences_only";
   missingCount?: number;
   totalTimeMin?: number;
   proteinG?: number;
@@ -231,6 +235,7 @@ const DEFAULT_REQUEST_PREFERENCES: CustomRecipeRequestPreferences = {
   servings: 2,
   mealType: "dinner",
   mealPrep: false,
+  mode: "pantry",
 };
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -501,6 +506,8 @@ function adaptGeneratedRecipe(
   const ingredientItems = recipe.ingredientItems
     .map((ingredient) => adaptIngredientItem(ingredient))
     .filter((ingredient): ingredient is RecipeIngredientItem => ingredient !== null);
+  const isPreferencesOnlyRecipe = recipe.kind === "preferences_only";
+  const allIngredientNames = ingredientItems.map((ingredient) => ingredient.name);
 
   return {
     id: fallbackId,
@@ -522,14 +529,17 @@ function adaptGeneratedRecipe(
       recipe.matchedIngredientNames.length > 0
         ? recipe.matchedIngredientNames
         : ingredientItems.map((ingredient) => ingredient.name).slice(0, 4),
-    matchedIngredients: buildMatchedIngredients(
-      recipe.matchedIngredients,
-      recipe.matchedIngredientNames,
-      ingredientItems,
-    ),
+    matchedIngredients: isPreferencesOnlyRecipe
+      ? []
+      : buildMatchedIngredients(
+          recipe.matchedIngredients,
+          recipe.matchedIngredientNames,
+          ingredientItems,
+        ),
     mealPrepFriendly: recipe.mealPrepFriendly,
-    missingIngredients:
-      recipe.missingIngredientNames.length > 0
+    missingIngredients: isPreferencesOnlyRecipe
+      ? allIngredientNames
+      : recipe.missingIngredientNames.length > 0
         ? recipe.missingIngredientNames
         : undefined,
   };
@@ -555,6 +565,8 @@ function adaptSuggestionRecipe(
   const ingredientItems = recipe.ingredientItems
     .map((ingredient) => adaptIngredientItem(ingredient))
     .filter((ingredient): ingredient is RecipeIngredientItem => ingredient !== null);
+  const isPreferencesOnlyRecipe = recipe.availability === "preferences_only";
+  const allIngredientNames = ingredientItems.map((ingredient) => ingredient.name);
 
   return {
     id: recipe.id,
@@ -576,14 +588,17 @@ function adaptSuggestionRecipe(
       recipe.matchedIngredientNames.length > 0
         ? recipe.matchedIngredientNames
         : ingredientItems.map((ingredient) => ingredient.name).slice(0, 4),
-    matchedIngredients: buildMatchedIngredients(
-      undefined,
-      recipe.matchedIngredientNames,
-      ingredientItems,
-    ),
+    matchedIngredients: isPreferencesOnlyRecipe
+      ? []
+      : buildMatchedIngredients(
+          undefined,
+          recipe.matchedIngredientNames,
+          ingredientItems,
+        ),
     mealPrepFriendly: recipe.mealPrepFriendly,
-    missingIngredients:
-      recipe.missingIngredientNames.length > 0
+    missingIngredients: isPreferencesOnlyRecipe
+      ? allIngredientNames
+      : recipe.missingIngredientNames.length > 0
         ? recipe.missingIngredientNames
         : undefined,
   };
@@ -732,14 +747,17 @@ const RivoCustomRecipeExperience = forwardRef<
       result?.fallbackRecommendations.length
         ? result.fallbackRecommendations
         : [
-            { title: t("basic.customRecipe.fallback.defaultSuggestions.pantry") },
+            rawResultPayload?.meta.mode === "preferences_only"
+              ? { title: t("basic.customRecipe.fallback.defaultSuggestions.preferences") }
+              : { title: t("basic.customRecipe.fallback.defaultSuggestions.pantry") },
             { title: t("basic.customRecipe.fallback.defaultSuggestions.protein") },
             { title: t("basic.customRecipe.fallback.defaultSuggestions.vegetables") },
           ],
-    [result?.fallbackRecommendations, t],
+    [rawResultPayload?.meta.mode, result?.fallbackRecommendations, t],
   );
   const userMessage = resolveMessageDescriptor(t, result?.userMessage);
   const activeDialogRecipe = dialogRecipes[dialogIndex] ?? null;
+  const isPreferencesOnlyMode = rawResultPayload?.meta.mode === "preferences_only";
   const hasNextDialogRecipe = dialogIndex < dialogRecipes.length - 1;
   const hasPreviousDialogRecipe = dialogIndex > 0;
   const mealTypeOptions = useMemo(
@@ -1312,6 +1330,7 @@ const RivoCustomRecipeExperience = forwardRef<
           servings: requestPreferences.servings,
           mealType: requestPreferences.mealType,
           mealPrep: requestPreferences.mealPrep,
+          mode: requestPreferences.mode,
         }),
         signal: controller.signal,
       });
@@ -1362,6 +1381,7 @@ const RivoCustomRecipeExperience = forwardRef<
     locale,
     requestPreferences.mealPrep,
     requestPreferences.mealType,
+    requestPreferences.mode,
     requestPreferences.servings,
     t,
     triggerHaptic,
@@ -1510,7 +1530,7 @@ const RivoCustomRecipeExperience = forwardRef<
         }),
       }).catch(() => null);
     },
-    [getGeneratedRecipeFromPreview, rawResultPayload?.meta.locale],
+    [getGeneratedRecipeFromPreview, locale, rawResultPayload?.meta.locale],
   );
 
   const handleToggleBookmark = useCallback(async () => {
@@ -1720,7 +1740,8 @@ const RivoCustomRecipeExperience = forwardRef<
                       </Button>
                     ) : null}
 
-                    {status === "fallback-empty" || status === "error" ? (
+                    {(status === "fallback-empty" || status === "error") &&
+                    !isPreferencesOnlyMode ? (
                       <Button
                         type="button"
                         variant="ghost"
@@ -1799,9 +1820,11 @@ const RivoCustomRecipeExperience = forwardRef<
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                                {isAlmostCookable
-                                  ? t("basic.customRecipe.result.almostCookable")
-                                  : t("basic.customRecipe.result.readyNow")}
+                                {isPreferencesOnlyMode
+                                  ? t("basic.customRecipe.result.preferencesOnly")
+                                  : isAlmostCookable
+                                    ? t("basic.customRecipe.result.almostCookable")
+                                    : t("basic.customRecipe.result.readyNow")}
                               </p>
                               <h4 className="mt-1 text-base font-semibold text-gray-900">
                                 {recipe.title}
@@ -1866,6 +1889,8 @@ const RivoCustomRecipeExperience = forwardRef<
                             <span className="rounded-full bg-eatrivo-purple/10 px-2.5 py-1 text-xs font-medium text-eatrivo-purple">
                               {recommendation.availability === "pantry"
                                 ? t("basic.customRecipe.result.readyNow")
+                                : recommendation.availability === "preferences_only"
+                                  ? t("basic.customRecipe.fallback.preferencesOnly")
                                 : t("basic.customRecipe.fallback.missingCount", {
                                     count: recommendation.missingCount ?? 0,
                                   })}
@@ -1945,6 +1970,60 @@ const RivoCustomRecipeExperience = forwardRef<
             <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-7 sm:py-7">
               <div className="space-y-4 sm:space-y-6">
                 <div className="grid gap-4 sm:gap-5 sm:grid-cols-[1.1fr_1fr]">
+                  <div className="space-y-3 rounded-3xl border border-gray-200 bg-gray-50/80 p-4 sm:col-span-2">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+                        {t("basic.customRecipe.setup.modeLabel")}
+                      </p>
+                      <p className="mt-1 text-sm text-gray-600">
+                        {t("basic.customRecipe.setup.modeHint")}
+                      </p>
+                    </div>
+
+                    <RadioGroup
+                      value={requestPreferences.mode}
+                      onValueChange={(value) => {
+                        setRequestPreferences((current) => ({
+                          ...current,
+                          mode: value as CustomRecipeMode,
+                        }));
+                      }}
+                      className="grid gap-3 sm:grid-cols-2"
+                    >
+                      <label className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-4 transition-colors ${
+                        requestPreferences.mode === "pantry"
+                          ? "border-eatrivo-purple/30 bg-eatrivo-purple/5"
+                          : "border-gray-200 bg-white"
+                      }`}>
+                        <RadioGroupItem value="pantry" className="mt-1" />
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {t("basic.customRecipe.setup.modes.pantry.title")}
+                          </p>
+                          <p className="mt-1 text-sm text-gray-600">
+                            {t("basic.customRecipe.setup.modes.pantry.description")}
+                          </p>
+                        </div>
+                      </label>
+
+                      <label className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-4 transition-colors ${
+                        requestPreferences.mode === "preferences_only"
+                          ? "border-eatrivo-orange/30 bg-orange-50/70"
+                          : "border-gray-200 bg-white"
+                      }`}>
+                        <RadioGroupItem value="preferences_only" className="mt-1" />
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {t("basic.customRecipe.setup.modes.preferencesOnly.title")}
+                          </p>
+                          <p className="mt-1 text-sm text-gray-600">
+                            {t("basic.customRecipe.setup.modes.preferencesOnly.description")}
+                          </p>
+                        </div>
+                      </label>
+                    </RadioGroup>
+                  </div>
+
                   <div className="space-y-3 rounded-3xl border border-orange-100 bg-orange-50/70 p-4">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
@@ -2215,7 +2294,13 @@ const RivoCustomRecipeExperience = forwardRef<
                         </span>
                         <span className="flex items-center gap-1.5">
                           <Users className="h-4 w-4" />
-                          {t("basic.recipeDialog.servings", { count: 1 })}
+                            {activeDialogRecipe.servings === 1
+                              ? t("basic.recipeDialog.oneServing", {
+                                  count: activeDialogRecipe.servings,
+                                })
+                              : t("basic.recipeDialog.servings", {
+                                  count: activeDialogRecipe.servings,
+                                })}
                         </span>
                       </div>
                     </div>
@@ -2301,6 +2386,13 @@ const RivoCustomRecipeExperience = forwardRef<
                           const ingredient = ingredientByName.get(
                             ingredientName.trim().toLowerCase(),
                           );
+
+                          if (
+                            ingredient?.pantryComparison?.status ===
+                            "available-staple"
+                          ) {
+                            return t("basic.recipeDialog.stapleAvailable");
+                          }
 
                           if (
                             ingredient?.pantryComparison?.status === "insufficient" &&

@@ -15,6 +15,7 @@ function applyQualityGate(
 ) {
   const quality = scoreCustomRecipe(recipe, {
     pantryItemCount: state.pantryItemCount,
+    mode: state.mode,
     cookingTimePreference: state.userInfo?.cooking_time_pref ?? null,
     goal: state.userInfo?.goal ?? null,
   });
@@ -77,6 +78,73 @@ function buildAlmostUnavailableFromState(state: typeof CustomRecipeState.State) 
 export async function finalizeResult(
   state: typeof CustomRecipeState.State,
 ): Promise<Partial<typeof CustomRecipeState.State>> {
+  if (state.mode === "preferences_only") {
+    const primaryRecipe =
+      state.parsedAiOutput?.pantryRecipe.status === "available"
+        ? applyQualityGate(
+            state,
+            mapAiCandidateToGeneratedRecipe(
+              state.parsedAiOutput.pantryRecipe,
+              "preferences_only",
+              {
+                pantryRows: [],
+                locale: state.locale,
+              },
+            ),
+            "basic.customRecipe.recipeUnavailable.noPreferencesRecipe",
+          )
+        : buildUnavailableRecipe(
+            state.parsedAiOutput?.pantryRecipe.status === "unavailable"
+              ? state.parsedAiOutput.pantryRecipe.reason
+              : "AI_UNABLE_TO_COMPOSE",
+            buildMessageDescriptor(
+              "basic.customRecipe.recipeUnavailable.noPreferencesRecipe",
+            ),
+          );
+
+    const secondaryRecipe = buildUnavailableRecipe(
+      "AI_UNABLE_TO_COMPOSE",
+      buildMessageDescriptor("basic.customRecipe.recipeUnavailable.noAlmostCookable"),
+    );
+
+    const fallbackUsed = primaryRecipe.status !== "available";
+    const userMessage =
+      primaryRecipe.status === "available"
+        ? buildMessageDescriptor(
+            "basic.customRecipe.message.preferencesOnlyReady",
+            {
+              recipeName: primaryRecipe.name,
+            },
+          )
+        : state.fallbackSuggestions.length > 0
+          ? buildMessageDescriptor(
+              "basic.customRecipe.message.preferencesFallbackReady",
+              {
+                suggestionCount: state.fallbackSuggestions.length,
+              },
+            )
+          : buildMessageDescriptor(
+              "basic.customRecipe.message.noPreferencesRecipeAvailable",
+            );
+
+    return {
+      finalResult: customRecipeResultSchema.parse({
+        pantryRecipe: primaryRecipe,
+        almostCookableRecipe: secondaryRecipe,
+        fallbackDatabaseSuggestions: state.fallbackSuggestions,
+        userMessage,
+        meta: {
+          locale: state.locale,
+          mode: state.mode,
+          pantryItemCount: 0,
+          pantryIngredientKeyCount: 0,
+          fallbackUsed,
+          retryCount: state.retryCount,
+        },
+      }),
+    };
+  }
+
   const pantryRecipe =
     state.parsedAiOutput?.pantryRecipe.status === "available"
       ? applyQualityGate(
@@ -136,6 +204,7 @@ export async function finalizeResult(
     userMessage,
     meta: {
       locale: state.locale,
+      mode: state.mode,
       pantryItemCount: state.pantryItemCount,
       pantryIngredientKeyCount: state.pantryIngredientKeyCount,
       fallbackUsed,

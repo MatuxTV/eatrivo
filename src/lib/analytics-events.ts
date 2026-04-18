@@ -104,6 +104,36 @@ export const analyticsEventDefinitions = {
     destinations: [],
     persistAs: "onboarding_complete",
   },
+  tutorial_started: {
+    eventType: "engagement",
+    destinations: ["db", "posthog"],
+    allowClient: true,
+  },
+  tutorial_step_viewed: {
+    eventType: "engagement",
+    destinations: ["db", "posthog"],
+    allowClient: true,
+  },
+  tutorial_completed: {
+    eventType: "engagement",
+    destinations: ["db", "posthog"],
+    allowClient: true,
+  },
+  tutorial_skipped: {
+    eventType: "engagement",
+    destinations: ["db", "posthog"],
+    allowClient: true,
+  },
+  tutorial_dismissed: {
+    eventType: "engagement",
+    destinations: ["db", "posthog"],
+    allowClient: true,
+  },
+  tutorial_announcement_seen: {
+    eventType: "engagement",
+    destinations: ["db", "posthog"],
+    allowClient: true,
+  },
   onboarding_save_failed: {
     eventType: "engagement",
     destinations: [],

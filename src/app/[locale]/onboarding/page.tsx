@@ -35,7 +35,7 @@ export default async function OnboardingPage({ params }: PageProps) {
 
   const session = await auth();
   if (!session?.user?.id) {
-    redirect(`/${locale}/signin`);
+    redirect(`/${locale}`);
   }
 
   const existingProfile = await checkUserProfileExists(session.user.id);

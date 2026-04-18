@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
     if (!rl.success) return rl.response!;
 
-    // Check if user is admin/trainer
+    // Check if user has the admin role
     const profile = await db.query.userProfiles.findFirst({
       where: eq(userProfiles.userId, session.user.id),
     });

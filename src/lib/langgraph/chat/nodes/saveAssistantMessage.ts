@@ -1,6 +1,7 @@
 import { db } from "@/index";
-import { chatMessages } from "@/db/schema";
+import { chatMessages, chatSessions } from "@/db/schema";
 import { AIMessage } from "@langchain/core/messages";
+import { eq } from "drizzle-orm";
 import type { ChatState } from "../state";
 
 export async function saveAssistantMessage(
@@ -13,18 +14,29 @@ export async function saveAssistantMessage(
 
   if (!lastAI) return {};
 
+  const content =
+    typeof lastAI.content === "string"
+      ? lastAI.content
+      : JSON.stringify(lastAI.content);
+  const now = new Date();
+
   try {
     await db.insert(chatMessages).values({
       userProfileId: state.userProfileId,
       sessionId: state.sessionId,
       role: "assistant",
-      content:
-        typeof lastAI.content === "string"
-          ? lastAI.content
-          : JSON.stringify(lastAI.content),
+      content,
       intent: state.intent ?? null,
       metadata: { model: "gemini-3-flash-preview" },
     });
+
+    await db
+      .update(chatSessions)
+      .set({
+        updatedAt: now,
+        lastMessageAt: now,
+      })
+      .where(eq(chatSessions.id, state.sessionId));
   } catch {
     // Non-fatal — DB zlyha, ale odpoveď sme už streamovali
   }

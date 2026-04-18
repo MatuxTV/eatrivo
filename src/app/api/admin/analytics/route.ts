@@ -2,7 +2,6 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { and, count, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 
-import { auth } from "@/../auth";
 import {
   analyticsEvents,
   chatMessages,
@@ -14,6 +13,7 @@ import {
 } from "@/db/schema";
 import { db } from "@/index";
 import { activeAdminAnalyticsEventNames } from "@/lib/analytics-events";
+import { isAuthError, requireAdminAuth } from "@/lib/adminAuth";
 import { getAdminPostHogTelemetry } from "@/lib/posthog-admin";
 
 const DEFAULT_RANGE_DAYS = 30;
@@ -69,18 +69,9 @@ function formatDeltaLabel(metric: ReturnType<typeof buildDelta>) {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userProfile = await db.query.userProfiles.findFirst({
-      where: eq(userProfiles.userId, session.user.id),
-    });
-
-    if (!userProfile || userProfile.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const authResult = await requireAdminAuth(["admin"]);
+    if (isAuthError(authResult)) {
+      return authResult;
     }
 
     const requestedRange = Number(
@@ -114,32 +105,23 @@ export async function GET(req: NextRequest) {
       pantryViewedCurrentResult,
       pantryViewedPreviousResult,
       kitchenCounterViewedCurrentResult,
-      kitchenCounterViewedPreviousResult,
       kitchenCounterCompletedCurrentResult,
       kitchenCounterCompletedPreviousResult,
       kitchenCounterCompletedMissingCurrentResult,
       kitchenCounterCompletedMissingPreviousResult,
       recipeOpenedCurrentResult,
-      recipeOpenedPreviousResult,
       customRecipeStartedCurrentResult,
-      customRecipeStartedPreviousResult,
       customRecipeGeneratedCurrentResult,
-      customRecipeGeneratedPreviousResult,
       customRecipeFailedCurrentResult,
-      customRecipeFailedPreviousResult,
       customRecipesAcceptedCurrentResult,
       customRecipesAcceptedPreviousResult,
       customRecipeResultOpenedCurrentResult,
-      customRecipeResultOpenedPreviousResult,
       customRecipeFallbackOpenedCurrentResult,
-      customRecipeFallbackOpenedPreviousResult,
       chatMessagesCurrentResult,
-      chatMessagesPreviousResult,
       chatSessionsCurrentResult,
       chatSessionsPreviousResult,
       chatUsersCurrentResult,
       chatLimitHitsCurrentResult,
-      chatLimitHitsPreviousResult,
       currentWeekPantryViewedResult,
       previousWeekPantryViewedResult,
       currentWeekKitchenAttemptsResult,
@@ -207,17 +189,6 @@ export async function GET(req: NextRequest) {
         .from(analyticsEvents)
         .where(
           and(
-            eq(analyticsEvents.eventName, "kitchen_counter_viewed"),
-            gte(analyticsEvents.createdAt, previousRangeStart),
-            lt(analyticsEvents.createdAt, previousRangeEnd),
-          ),
-        ),
-
-      db
-        .select({ count: count() })
-        .from(analyticsEvents)
-        .where(
-          and(
             eq(analyticsEvents.eventName, "kitchen_counter_completed"),
             gte(analyticsEvents.createdAt, rangeStart),
           ),
@@ -276,30 +247,8 @@ export async function GET(req: NextRequest) {
         .from(analyticsEvents)
         .where(
           and(
-            eq(analyticsEvents.eventName, "recipe_opened"),
-            gte(analyticsEvents.createdAt, previousRangeStart),
-            lt(analyticsEvents.createdAt, previousRangeEnd),
-          ),
-        ),
-
-      db
-        .select({ count: count() })
-        .from(analyticsEvents)
-        .where(
-          and(
             eq(analyticsEvents.eventName, "custom_recipe_generation_started"),
             gte(analyticsEvents.createdAt, rangeStart),
-          ),
-        ),
-
-      db
-        .select({ count: count() })
-        .from(analyticsEvents)
-        .where(
-          and(
-            eq(analyticsEvents.eventName, "custom_recipe_generation_started"),
-            gte(analyticsEvents.createdAt, previousRangeStart),
-            lt(analyticsEvents.createdAt, previousRangeEnd),
           ),
         ),
 
@@ -318,17 +267,6 @@ export async function GET(req: NextRequest) {
         .from(analyticsEvents)
         .where(
           and(
-            eq(analyticsEvents.eventName, "custom_recipe_generated"),
-            gte(analyticsEvents.createdAt, previousRangeStart),
-            lt(analyticsEvents.createdAt, previousRangeEnd),
-          ),
-        ),
-
-      db
-        .select({ count: count() })
-        .from(analyticsEvents)
-        .where(
-          and(
             eq(analyticsEvents.eventName, "custom_recipe_generation_failed"),
             gte(analyticsEvents.createdAt, rangeStart),
           ),
@@ -337,17 +275,6 @@ export async function GET(req: NextRequest) {
       db
         .select({ count: count() })
         .from(analyticsEvents)
-        .where(
-          and(
-            eq(analyticsEvents.eventName, "custom_recipe_generation_failed"),
-            gte(analyticsEvents.createdAt, previousRangeStart),
-            lt(analyticsEvents.createdAt, previousRangeEnd),
-          ),
-        ),
-
-      db
-        .select({ count: count() })
-        .from(recipes)
         .where(
           and(eq(recipes.source, "ai_custom"), gte(recipes.createdAt, rangeStart)),
         ),
@@ -378,17 +305,6 @@ export async function GET(req: NextRequest) {
         .from(analyticsEvents)
         .where(
           and(
-            eq(analyticsEvents.eventName, "custom_recipe_result_opened"),
-            gte(analyticsEvents.createdAt, previousRangeStart),
-            lt(analyticsEvents.createdAt, previousRangeEnd),
-          ),
-        ),
-
-      db
-        .select({ count: count() })
-        .from(analyticsEvents)
-        .where(
-          and(
             eq(analyticsEvents.eventName, "custom_recipe_fallback_opened"),
             gte(analyticsEvents.createdAt, rangeStart),
           ),
@@ -398,26 +314,7 @@ export async function GET(req: NextRequest) {
         .select({ count: count() })
         .from(analyticsEvents)
         .where(
-          and(
-            eq(analyticsEvents.eventName, "custom_recipe_fallback_opened"),
-            gte(analyticsEvents.createdAt, previousRangeStart),
-            lt(analyticsEvents.createdAt, previousRangeEnd),
-          ),
-        ),
-
-      db
-        .select({ totalMessages: count().as("count") })
-        .from(chatMessages)
-        .where(gte(chatMessages.createdAt, rangeStart)),
-
-      db
-        .select({ totalMessages: count().as("count") })
-        .from(chatMessages)
-        .where(
-          and(
-            gte(chatMessages.createdAt, previousRangeStart),
-            lt(chatMessages.createdAt, previousRangeEnd),
-          ),
+          gte(chatMessages.createdAt, rangeStart),
         ),
 
       db
@@ -462,17 +359,6 @@ export async function GET(req: NextRequest) {
           and(
             eq(analyticsEvents.eventName, "chat_limit_reached"),
             gte(analyticsEvents.createdAt, rangeStart),
-          ),
-        ),
-
-      db
-        .select({ count: count() })
-        .from(analyticsEvents)
-        .where(
-          and(
-            eq(analyticsEvents.eventName, "chat_limit_reached"),
-            gte(analyticsEvents.createdAt, previousRangeStart),
-            lt(analyticsEvents.createdAt, previousRangeEnd),
           ),
         ),
 
@@ -678,9 +564,6 @@ export async function GET(req: NextRequest) {
     const pantryViewed = toInt(pantryViewedCurrentResult[0]?.count);
     const pantryViewedPrevious = toInt(pantryViewedPreviousResult[0]?.count);
     const kitchenCounterViewed = toInt(kitchenCounterViewedCurrentResult[0]?.count);
-    const kitchenCounterViewedPrevious = toInt(
-      kitchenCounterViewedPreviousResult[0]?.count,
-    );
     const kitchenCounterCompleted = toInt(
       kitchenCounterCompletedCurrentResult[0]?.count,
     );
@@ -699,22 +582,12 @@ export async function GET(req: NextRequest) {
       kitchenCounterCompletedPrevious + kitchenCounterCompletedMissingPrevious;
 
     const recipeOpened = toInt(recipeOpenedCurrentResult[0]?.count);
-    const recipeOpenedPrevious = toInt(recipeOpenedPreviousResult[0]?.count);
 
     const customRecipeStarted = toInt(customRecipeStartedCurrentResult[0]?.count);
-    const customRecipeStartedPrevious = toInt(
-      customRecipeStartedPreviousResult[0]?.count,
-    );
     const customRecipeGenerated = toInt(
       customRecipeGeneratedCurrentResult[0]?.count,
     );
-    const customRecipeGeneratedPrevious = toInt(
-      customRecipeGeneratedPreviousResult[0]?.count,
-    );
     const customRecipeFailed = toInt(customRecipeFailedCurrentResult[0]?.count);
-    const customRecipeFailedPrevious = toInt(
-      customRecipeFailedPreviousResult[0]?.count,
-    );
     const customRecipesAccepted = toInt(
       customRecipesAcceptedCurrentResult[0]?.count,
     );
@@ -724,23 +597,15 @@ export async function GET(req: NextRequest) {
     const customRecipeResultOpened = toInt(
       customRecipeResultOpenedCurrentResult[0]?.count,
     );
-    const customRecipeResultOpenedPrevious = toInt(
-      customRecipeResultOpenedPreviousResult[0]?.count,
-    );
     const customRecipeFallbackOpened = toInt(
       customRecipeFallbackOpenedCurrentResult[0]?.count,
     );
-    const customRecipeFallbackOpenedPrevious = toInt(
-      customRecipeFallbackOpenedPreviousResult[0]?.count,
-    );
 
-    const totalMessages = toInt(chatMessagesCurrentResult[0]?.totalMessages);
-    const totalMessagesPrevious = toInt(chatMessagesPreviousResult[0]?.totalMessages);
+    const totalMessages = toInt(chatMessagesCurrentResult[0]?.count);
     const totalSessions = toInt(chatSessionsCurrentResult[0]?.count);
     const totalSessionsPrevious = toInt(chatSessionsPreviousResult[0]?.count);
     const chatUsers = toInt(chatUsersCurrentResult[0]?.count);
     const chatLimitHits = toInt(chatLimitHitsCurrentResult[0]?.count);
-    const chatLimitHitsPrevious = toInt(chatLimitHitsPreviousResult[0]?.count);
 
     const comparisons = {
       pantryViews: buildDelta(pantryViewed, pantryViewedPrevious),
@@ -923,7 +788,7 @@ export async function GET(req: NextRequest) {
           {
             label: "Top degrading metric",
             value: `${topDegradingMetric.label} (${formatDeltaLabel(topDegradingMetric.metric)})`,
-            note: "Toto je najväčší týždenný pokles, ktorý sa oplatí skontrolovať."
+            note: "Toto je najväčší týždenný pokles, ktorý sa oplatí skontrolovať.",
           },
         ],
       },
@@ -986,6 +851,10 @@ export async function GET(req: NextRequest) {
       ops: {
         recentEvents,
         recentChatSessions,
+      },
+    }, {
+      headers: {
+        "Cache-Control": "private, no-store, max-age=0",
       },
     });
   } catch (error) {

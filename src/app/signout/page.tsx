@@ -36,7 +36,7 @@ export default async function SignOutPage() {
             <form
               action={async () => {
                 "use server";
-                await signOut({ redirectTo: `/${safeLocale}/signin` });
+                await signOut({ redirectTo: `/${safeLocale}` });
               }}
               className="space-y-3"
             >

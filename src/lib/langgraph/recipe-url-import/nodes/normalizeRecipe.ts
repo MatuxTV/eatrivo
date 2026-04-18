@@ -32,6 +32,7 @@ const recipeIngredientSchema = z
     ingredient_key: z.string().nullable(),
     ingredient_specific_key: z.string().nullable(),
     canonical_name: z.string().nullable(),
+    pantry_tracking_hint: z.enum(["quantity", "availability"]).nullable(),
     quantity: z.number().nullable(),
     unit: z.string().nullable(),
     optional: z.boolean(),
@@ -126,6 +127,18 @@ function validateCanonicalRecipeFile(
       if (!hasAtLeastOneTranslation(ingredient.translations)) {
         issues.push(
           `recipes.${recipeIndex}.ingredients.${ingredientIndex}.translations: at least one locale is required`,
+        );
+      }
+
+      if (ingredient.quantity === null) {
+        issues.push(
+          `recipes.${recipeIndex}.ingredients.${ingredientIndex}.quantity: quantity is required for accepted recipes`,
+        );
+      }
+
+      if (ingredient.unit === null) {
+        issues.push(
+          `recipes.${recipeIndex}.ingredients.${ingredientIndex}.unit: unit is required for accepted recipes`,
         );
       }
     });

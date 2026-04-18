@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from "react";
 import {
-  CheckCircle2,
   Loader2,
   PackagePlus,
   Pin,
   Trash2,
-  XCircle,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
@@ -77,15 +75,6 @@ const fadeIn = {
   exit: { opacity: 0, y: -8 },
   transition: { duration: 0.4, ease: "easeOut" as const },
 };
-
-function parseStoredNumber(value: string | null | undefined): number | null {
-  if (!value) {
-    return null;
-  }
-
-  const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
 
 function formatQuantity(
   quantity: string | null,
@@ -182,7 +171,6 @@ export default function PantryItemRow({
   );
   const [draftInStock, setDraftInStock] = useState(item.inStock);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
-  const isAvailabilityMode = draftTrackingMode === "availability";
 
   useEffect(() => {
     setDraftQuantity(formatDraftQuantityForEditor(item.quantity, item.unit));

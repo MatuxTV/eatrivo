@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "drizzle-kit push",
+    "db:repair:chat-sessions": "tsx scripts/repair-chat-sessions.ts",
     "db:studio": "drizzle-kit studio",
     "db:merge": "tsx scripts/merge-db.ts",
     "db:import:recipes": "tsx scripts/import-recipes.ts",

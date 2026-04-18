@@ -16,6 +16,7 @@ import { useTranslations } from "next-intl";
 
 const DISMISSED_KEY = "eatrivo-notif-banner-dismissed";
 const SHOW_DELAY_MS = 2000; // Show after 2 seconds on page
+const PUSH_NOTIFICATION_BANNER_ENABLED = false;
 
 export function NotificationBanner() {
   const { data: session } = useSession();
@@ -25,6 +26,7 @@ export function NotificationBanner() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!PUSH_NOTIFICATION_BANNER_ENABLED) return;
     if (!session?.user?.id) return;
     if (typeof window === "undefined") return;
     if (!isPushNotificationSupported()) return;
@@ -60,35 +62,35 @@ export function NotificationBanner() {
     setIsLoading(true);
     setErrorMsg(null);
 
-    console.log('[NotifBanner] handleEnable START');
-    console.log('[NotifBanner] session.user.id:', session.user.id);
-    console.log('[NotifBanner] Notification.permission:', Notification.permission);
-    console.log('[NotifBanner] serviceWorker in navigator:', 'serviceWorker' in navigator);
-    console.log('[NotifBanner] PushManager in window:', 'PushManager' in window);
-    console.log('[NotifBanner] VAPID key present:', !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
-    console.log('[NotifBanner] VAPID key (first 20 chars):', process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.slice(0, 20) ?? 'MISSING');
+    console.warn('[NotifBanner] handleEnable START');
+    console.warn('[NotifBanner] session.user.id:', session.user.id);
+    console.warn('[NotifBanner] Notification.permission:', Notification.permission);
+    console.warn('[NotifBanner] serviceWorker in navigator:', 'serviceWorker' in navigator);
+    console.warn('[NotifBanner] PushManager in window:', 'PushManager' in window);
+    console.warn('[NotifBanner] VAPID key present:', !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
+    console.warn('[NotifBanner] VAPID key (first 20 chars):', process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.slice(0, 20) ?? 'MISSING');
 
     try {
       // If permission already granted, try to get/create SW subscription directly
       let subscription;
       if (Notification.permission === "granted") {
-        console.log('[NotifBanner] Permission already granted — calling subscribeUserToPush()');
+        console.warn('[NotifBanner] Permission already granted — calling subscribeUserToPush()');
         subscription = await subscribeUserToPush();
       } else {
-        console.log('[NotifBanner] Permission not yet granted — calling requestNotificationPermission()');
+        console.warn('[NotifBanner] Permission not yet granted — calling requestNotificationPermission()');
         subscription = await requestNotificationPermission();
       }
 
-      console.log('[NotifBanner] subscription result:', subscription ? 'SUBSCRIPTION OBJECT' : 'NULL');
+      console.warn('[NotifBanner] subscription result:', subscription ? 'SUBSCRIPTION OBJECT' : 'NULL');
       if (subscription) {
-        console.log('[NotifBanner] subscription.endpoint:', subscription.endpoint.slice(0, 80) + '...');
+        console.warn('[NotifBanner] subscription.endpoint:', subscription.endpoint.slice(0, 80) + '...');
         const json = subscription.toJSON();
-        console.log('[NotifBanner] subscription.keys.auth present:', !!json.keys?.auth);
-        console.log('[NotifBanner] subscription.keys.p256dh present:', !!json.keys?.p256dh);
+        console.warn('[NotifBanner] subscription.keys.auth present:', !!json.keys?.auth);
+        console.warn('[NotifBanner] subscription.keys.p256dh present:', !!json.keys?.p256dh);
 
-        console.log('[NotifBanner] Calling savePushSubscription()...');
+        console.warn('[NotifBanner] Calling savePushSubscription()...');
         const result = await savePushSubscription(subscription);
-        console.log('[NotifBanner] savePushSubscription() completed successfully');
+        console.warn('[NotifBanner] savePushSubscription() completed successfully');
         toast.success(result.status === "pending" ? t("pendingConfirmation") : t("enabled"));
         dismiss();
       } else {
@@ -117,7 +119,7 @@ export function NotificationBanner() {
       toast.error(t("toggleError"));
     } finally {
       setIsLoading(false);
-      console.log('[NotifBanner] handleEnable END');
+      console.warn('[NotifBanner] handleEnable END');
     }
   };
 
@@ -125,6 +127,10 @@ export function NotificationBanner() {
     setVisible(false);
     sessionStorage.setItem(DISMISSED_KEY, "1");
   };
+
+  if (!PUSH_NOTIFICATION_BANNER_ENABLED) {
+    return null;
+  }
 
   return (
     <AnimatePresence>
