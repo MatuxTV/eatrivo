@@ -1,13 +1,13 @@
 {
   "name": "Eatrivo - Inteligentné Stravovanie",
   "short_name": "Eatrivo",
-  "description": "AI-powered nákupné zoznamy a meal plány pre zdravé stravovanie",
+  "description": "AI asistent pre výživu, špajzu a zdravé stravovanie v aktívnych častiach aplikácie Eatrivo",
   "theme_color": "#8B5CF6",
   "background_color": "#FFFFFF",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "/dashboard?source=pwa",
+  "start_url": "/home?source=pwa",
   "icons": [
     {
       "src": "/logo/favicon_io/android-chrome-192x192.png",
@@ -45,25 +45,25 @@
   "categories": ["food", "health", "lifestyle"],
   "screenshots": [
     {
-      "src": "/images/screenshots/en/dashboard.PNG",
+      "src": "/images/screenshots/sk/SCREEN_HOME.jpg",
       "sizes": "1170x2532",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Dashboard"
+      "label": "Domov"
     },
     {
-      "src": "/images/screenshots/en/health-circle.PNG",
+      "src": "/images/screenshots/sk/SCREEN_PANTRY.jpg",
       "sizes": "1170x2532",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Health Score"
+      "label": "Špajza"
     },
     {
-      "src": "/images/screenshots/en/shopping-list.PNG",
+      "src": "/images/screenshots/sk/SCREEN_CHAT_W_RIVO.jpg",
       "sizes": "1170x2532",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Shopping List"
+      "label": "Chat s Rivom"
     }
   ]
 }

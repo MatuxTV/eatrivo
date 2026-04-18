@@ -8,6 +8,8 @@ import {
   getTrialPeriodForUser,
 } from "@/lib/subscription";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { SUBSCRIPTION_SNAPSHOT_CACHE_TTL_SECONDS, subscriptionSnapshotCacheKey } from "@/lib/cache-keys";
+import { CacheService } from "@/lib/redis";
 
 export async function GET() {
   try {
@@ -20,6 +22,27 @@ export async function GET() {
     const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
     if (!rl.success) return rl.response!;
 
+    const cacheKey = subscriptionSnapshotCacheKey(session.user.id);
+    const cached = await CacheService.get<{
+      membership: string;
+      isActive: boolean;
+      isExpired: boolean;
+      expiresAt: Date | string | null;
+      daysRemaining: number | null;
+      subscription: {
+        status: string;
+        currentPeriodEnd: Date | string | null;
+        cancelAt: Date | string | null;
+        isGifted: boolean;
+        giftReason: string | null;
+      } | null;
+      trialDays: number;
+    }>(cacheKey);
+
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     // Validate subscription and auto-downgrade if expired
     const subscriptionStatus = await validateAndUpdateSubscription(
       session.user.id,
@@ -31,7 +54,7 @@ export async function GET() {
       orderBy: [desc(subscriptions.createdAt)],
     });
 
-    return NextResponse.json({
+    const response = {
       membership: subscriptionStatus.membership,
       isActive: subscriptionStatus.isActive,
       isExpired: subscriptionStatus.isExpired,
@@ -47,7 +70,15 @@ export async function GET() {
           }
         : null,
       trialDays: await getTrialPeriodForUser(session.user.id),
-    });
+    };
+
+    await CacheService.set(
+      cacheKey,
+      response,
+      SUBSCRIPTION_SNAPSHOT_CACHE_TTL_SECONDS,
+    );
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Get subscription error:", error);
     return NextResponse.json(

@@ -1,15 +1,20 @@
 import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set");
+function requireEnv(name: string) {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`${name} is not set`);
+  }
+
+  return value;
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+export const stripe = new Stripe(requireEnv("STRIPE_SECRET_KEY"));
 
 // Price IDs from environment
 export const STRIPE_PRICES = {
-  premium: process.env.STRIPE_PRICE_PREMIUM!,
-  pro: process.env.STRIPE_PRICE_PRO!,
+  premium: requireEnv("STRIPE_PRICE_PREMIUM"),
+  pro: requireEnv("STRIPE_PRICE_PRO"),
 } as const;
 
 export type MembershipTier = "basic" | "premium" | "pro" | "trainer";
@@ -42,6 +47,9 @@ export async function createCheckoutSession({
   cancelUrl,
   discountCode,
   trialPeriodDays,
+  locale,
+  sourcePage,
+  surface,
 }: {
   userId: string;
   email: string;
@@ -50,7 +58,19 @@ export async function createCheckoutSession({
   cancelUrl: string;
   discountCode?: string;
   trialPeriodDays?: number;
+  locale?: string;
+  sourcePage?: string;
+  surface?: string;
 }) {
+  const metadata = {
+    userId,
+    locale: locale || "en",
+    sourcePage: sourcePage || "unknown",
+    surface: surface || "checkout",
+    discountCodePresent: String(Boolean(discountCode)),
+    trialApplied: String(Boolean(trialPeriodDays && trialPeriodDays > 0)),
+  };
+
   const sessionParams: Stripe.Checkout.SessionCreateParams = {
     mode: "subscription",
     payment_method_types: ["card"],
@@ -58,9 +78,9 @@ export async function createCheckoutSession({
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: successUrl,
     cancel_url: cancelUrl,
-    metadata: { userId },
+    metadata,
     subscription_data: {
-      metadata: { userId },
+      metadata,
     },
   };
 

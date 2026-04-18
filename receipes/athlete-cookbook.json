@@ -1,0 +1,1934 @@
+{
+  "recipes": [
+    {
+      "external_key": "breakfast-egg-muffins-with-tomato-basil-and-spinach",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "vegetarian",
+        "gluten-free",
+        "high-protein",
+        "low-carb"
+      ],
+      "restriction_flags": [
+        "contains-eggs",
+        "contains-dairy"
+      ],
+      "servings": 12,
+      "prep_time_min": 15,
+      "total_time_min": 35,
+      "nutrition_per_serving": {
+        "calories": 100,
+        "protein_g": 8,
+        "carbohydrates_g": 2,
+        "fat_g": 6
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "egg",
+          "quantity": 12,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "12 eggs",
+              "ingredient_name": "egg"
+            },
+            "sk": {
+              "display_name": "12 vajec",
+              "ingredient_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "quantity": 0.25,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "1/4 cup onion, diced",
+              "ingredient_name": "onion"
+            },
+            "sk": {
+              "display_name": "1/4 šálky cibule, nakrájanej na kocky",
+              "ingredient_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "quantity": 2,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "2 cloves garlic, minced",
+              "ingredient_name": "garlic"
+            },
+            "sk": {
+              "display_name": "2 strúčiky cesnaku, mleté",
+              "ingredient_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "basil",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1 tbsp dried basil",
+              "ingredient_name": "basil"
+            },
+            "sk": {
+              "display_name": "1 PL sušenej bazalky",
+              "ingredient_name": "bazalka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "quantity": 0.25,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "1/4 tsp salt",
+              "ingredient_name": "salt"
+            },
+            "sk": {
+              "display_name": "1/4 ČL soli",
+              "ingredient_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pepper",
+          "quantity": 0.25,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "1/4 tsp pepper",
+              "ingredient_name": "pepper"
+            },
+            "sk": {
+              "display_name": "1/4 ČL korenia",
+              "ingredient_name": "čierne korenie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spinach",
+          "quantity": 2,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "2 cups spinach, chopped",
+              "ingredient_name": "spinach"
+            },
+            "sk": {
+              "display_name": "2 šálky špenátu, nasekaného",
+              "ingredient_name": "špenát"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cherry-tomato",
+          "quantity": 12,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "12 cherry tomatoes, chopped",
+              "ingredient_name": "cherry tomato"
+            },
+            "sk": {
+              "display_name": "12 cherry paradajok, nasekaných",
+              "ingredient_name": "cherry paradajka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "mozzarella-cheese",
+          "quantity": 1,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "1 cup mozzarella cheese, shredded",
+              "ingredient_name": "mozzarella cheese"
+            },
+            "sk": {
+              "display_name": "1 šálka strúhaného syra mozzarella",
+              "ingredient_name": "syr mozzarella"
+            }
+          }
+        },
+        {
+          "ingredient_key": "olive-oil",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "olive oil or vegetable spray (to coat pan)",
+              "ingredient_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej alebo rastlinný sprej na potretie panvice",
+              "ingredient_name": "olivový olej"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Egg Muffins with Tomato, Basil and Spinach",
+          "category_label": "Breakfast",
+          "serving_unit_label": "muffins",
+          "instructions": [
+            "Preheat oven to 350°F.",
+            "Coat a standard 12 cup muffin pan with olive oil or vegetable oil of choice.",
+            "Whisk eggs in a large bowl. Stir in salt, pepper and basil (can substitute with dried Italian seasoning or dried oregano).",
+            "Pour egg mixture evenly between muffin tins. Be sure to not fill each cup more than halfway to allow space for add-ins.",
+            "Add onion, garlic, spinach, tomato and cheese evenly between muffin tins.",
+            "Bake uncovered for 15-20 minutes, or until eggs are set."
+          ],
+          "notes": "These can be made ahead of time and refrigerated or frozen, reheat before serving. Toppings can be changed for your favorite seasonings and vegetables."
+        },
+        "sk": {
+          "name": "Vaječné muffiny s paradajkami, bazalkou a špenátom",
+          "category_label": "Raňajky",
+          "serving_unit_label": "muffiny",
+          "instructions": [
+            "Rúru predhrejte na 175°C.",
+            "Vymažte štandardnú formu na 12 muffinov olivovým olejom alebo rastlinným olejom podľa vlastného výberu.",
+            "Vajcia vyšľahajte vo veľkej miske. Vmiešajte soľ, korenie a bazalku.",
+            "Nalejte vaječnú zmes rovnomerne do formičiek. Nezabudnite naplniť každú jamku maximálne do polovice, aby ste ponechali priestor pre ďalšie ingrediencie.",
+            "Do formičiek rovnomerne rozdeľte cibuľu, cesnak, špenát, paradajky a syr.",
+            "Pečte odkryté 15-20 minút, alebo kým nie sú vajcia stuhnuté."
+          ],
+          "notes": "Môžu byť pripravené vopred a skladované v chladničke alebo mrazené, pred podávaním ich znova zohrejte. Prísady môžete vymeniť za obľúbené koreniny a zeleninu."
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-spicy-matador-breakfast-burrito",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "vegetarian",
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-eggs",
+        "contains-dairy",
+        "contains-gluten"
+      ],
+      "servings": 4,
+      "prep_time_min": 10,
+      "total_time_min": 25,
+      "nutrition_per_serving": {
+        "calories": 510,
+        "protein_g": 30,
+        "carbohydrates_g": 63,
+        "fat_g": 16
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "egg",
+          "quantity": 5,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "5 eggs",
+              "ingredient_name": "egg"
+            },
+            "sk": {
+              "display_name": "5 vajec",
+              "ingredient_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chili-powder",
+          "quantity": 2,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "2 tsp chili powder",
+              "ingredient_name": "chili powder"
+            },
+            "sk": {
+              "display_name": "2 čl čili prášku",
+              "ingredient_name": "čili prášok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "red-onion",
+          "quantity": 0.25,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1/4 cup red onion, diced",
+              "ingredient_name": "red onion"
+            },
+            "sk": {
+              "display_name": "1/4 šálky červenej cibule, nakrájanej na kocky",
+              "ingredient_name": "červená cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "bell-pepper",
+          "quantity": 1,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1 bell pepper, diced",
+              "ingredient_name": "bell pepper"
+            },
+            "sk": {
+              "display_name": "1 paprika, nakrájaná na kocky",
+              "ingredient_name": "paprika"
+            }
+          }
+        },
+        {
+          "ingredient_key": "jalapeno",
+          "quantity": 1,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "1 jalapeno, de-seeded, minced",
+              "ingredient_name": "jalapeno"
+            },
+            "sk": {
+              "display_name": "1 jalapeño, bez semienok, nasekané",
+              "ingredient_name": "jalapeño"
+            }
+          }
+        },
+        {
+          "ingredient_key": "black-bean",
+          "quantity": 30,
+          "unit": "oz",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "30 oz black beans, canned, no salt added (about 2 cans)",
+              "ingredient_name": "black bean"
+            },
+            "sk": {
+              "display_name": "850 g čiernej fazule, z konzervy, bez pridanej soli (asi 2 konzervy)",
+              "ingredient_name": "čierna fazuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cheese",
+          "quantity": 0.5,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "1/2 cup cheese, shredded",
+              "ingredient_name": "cheese"
+            },
+            "sk": {
+              "display_name": "1/2 šálky strúhaného syra",
+              "ingredient_name": "syr"
+            }
+          }
+        },
+        {
+          "ingredient_key": "olive-oil",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "1 tsp olive oil or cooking oil of choice",
+              "ingredient_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "1 čl olivového oleja",
+              "ingredient_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "whole-wheat-tortilla",
+          "quantity": 4,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "4 8-inch whole wheat flour tortillas",
+              "ingredient_name": "whole wheat tortilla"
+            },
+            "sk": {
+              "display_name": "4 celozrnné tortilly (20 cm)",
+              "ingredient_name": "celozrnná tortilla"
+            }
+          }
+        },
+        {
+          "ingredient_key": "yogurt",
+          "quantity": 0.33,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "1/3 cup nonfat plain yogurt",
+              "ingredient_name": "yogurt"
+            },
+            "sk": {
+              "display_name": "1/3 šálky netučného bieleho jogurtu",
+              "ingredient_name": "jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "water",
+          "quantity": 0.25,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "1/4 cup water",
+              "ingredient_name": "water"
+            },
+            "sk": {
+              "display_name": "1/4 šálky vody",
+              "ingredient_name": "voda"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cilantro",
+          "quantity": 0.25,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "1/4 cup fresh cilantro, chopped",
+              "ingredient_name": "cilantro"
+            },
+            "sk": {
+              "display_name": "1/4 šálky čerstvého koriandra, nasekaného",
+              "ingredient_name": "koriander"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lime",
+          "quantity": 1,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 12,
+          "translations": {
+            "en": {
+              "display_name": "1 lime, quartered",
+              "ingredient_name": "lime"
+            },
+            "sk": {
+              "display_name": "1 limetka, rozštvrtená",
+              "ingredient_name": "limetka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt-and-pepper",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 13,
+          "translations": {
+            "en": {
+              "display_name": "salt and pepper to taste",
+              "ingredient_name": "salt and pepper"
+            },
+            "sk": {
+              "display_name": "soľ a korenie podľa chuti",
+              "ingredient_name": "soľ a čierne korenie"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Spicy Matador Breakfast Burrito",
+          "category_label": "Breakfast",
+          "serving_unit_label": "burritos",
+          "instructions": [
+            "Heat the olive oil in a skillet over medium heat. While the pan is warming, whisk the eggs and set aside.",
+            "Once skillet is warm, add onion, bell pepper, jalapeno, beans and chili powder and cook until softened, about 3-5 minutes. Transfer mixture to a covered bowl.",
+            "Add more olive oil to skillet, if needed, and add egg mixture. Cook eggs over medium-low heat, stirring occasionally until eggs are firm, about 3-5 minutes. Sprinkle cheese on top. Season with salt and pepper to taste.",
+            "Evenly divide egg mixture, beans and veggies between 4 tortillas. If eating immediately, top with cilantro, yogurt and a squeeze of fresh lime juice. If storing in refrigerator or freezer, top with cilantro, yogurt and lime after re-heating."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Pikantné raňajkové burrito Matador",
+          "category_label": "Raňajky",
+          "serving_unit_label": "burritos",
+          "instructions": [
+            "Na panvici zohrejte olivový olej na strednom ohni. Kým sa panvica zohrieva, vyšľahajte vajcia a odložte ich bokom.",
+            "Keď je panvica teplá, pridajte cibuľu, papriku, jalapeño, fazuľu a čili prášok a restujte, kým nezmäknú, asi 3-5 minút. Zmes presuňte do zakrytej misy.",
+            "V prípade potreby pridajte na panvicu viac olivového oleja a vylejte vaječnú zmes. Vajcia varte na miernom ohni za občasného miešania, kým nestuhnú, asi 3-5 minút. Vrch posypte syrom. Dochuťte soľou a korením podľa chuti.",
+            "Vaječnú zmes, fazuľu a zeleninu rovnomerne rozdeľte do 4 tortíll. Ak konzumujete ihneď, pridajte na vrch koriander, jogurt a pokvapkajte čerstvou limetkovou šťavou. Pri skladovaní v chladničke alebo mrazničke pridajte koriander, jogurt a limetku až po opätovnom zohriatí."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-honey-yogurt-and-oats",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "vegetarian",
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-gluten",
+        "contains-nuts"
+      ],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 5,
+      "nutrition_per_serving": {
+        "calories": 430,
+        "protein_g": 29,
+        "carbohydrates_g": 56,
+        "fat_g": 12
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "greek-yogurt",
+          "quantity": 1,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "1 cup Greek yogurt, nonfat",
+              "ingredient_name": "Greek yogurt"
+            },
+            "sk": {
+              "display_name": "1 šálka odtučneného gréckeho jogurtu",
+              "ingredient_name": "grécky jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rolled-oat",
+          "quantity": 0.25,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "1/4 cup rolled oats",
+              "ingredient_name": "rolled oat"
+            },
+            "sk": {
+              "display_name": "1/4 šálky ovsených vločiek",
+              "ingredient_name": "ovsené vločky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "berry",
+          "quantity": 1,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1 cup berries (fresh or frozen)",
+              "ingredient_name": "berry"
+            },
+            "sk": {
+              "display_name": "1 šálka bobuľového ovocia (čerstvého alebo mrazeného)",
+              "ingredient_name": "bobuľové ovocie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1 tbsp honey",
+              "ingredient_name": "honey"
+            },
+            "sk": {
+              "display_name": "1 PL medu",
+              "ingredient_name": "med"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cinnamon",
+          "quantity": 0.25,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "1/4 tsp cinnamon",
+              "ingredient_name": "cinnamon"
+            },
+            "sk": {
+              "display_name": "1/4 čl škorice",
+              "ingredient_name": "škorica"
+            }
+          }
+        },
+        {
+          "ingredient_key": "walnut",
+          "quantity": 0.5,
+          "unit": "oz",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "1/2 oz walnuts (about 6-8 walnut halves)",
+              "ingredient_name": "walnut"
+            },
+            "sk": {
+              "display_name": "15 g vlašských orechov (asi 6-8 polovíc)",
+              "ingredient_name": "vlašský orech"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Honey-Yogurt and Oats",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "In a mason jar or bowl, mix yogurt, cinnamon and honey until well combined.",
+            "On top of yogurt, layer the oats and berries. If eating immediately, top with walnuts and serve. If storing overnight in a refrigerator to allow oats to soften, top with walnuts when ready to eat."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Jogurt s medom a ovsenými vločkami",
+          "category_label": "Raňajky",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "V uzatvárateľnom pohári alebo miske dôkladne zmiešajte jogurt, škoricu a med.",
+            "Na jogurt navrstvite ovsené vločky a bobuľové ovocie. Ak jete ihneď, posypte vlašskými orechmi a podávajte. Ak skladujete cez noc v chladničke, aby vločky zmäkli, vlašské orechy pridajte až pred konzumáciou."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "pre-workout-fuel-almond-butter-and-banana-triangles",
+      "default_locale": "en",
+      "category_key": "pre-workout-fuel",
+      "diet_tags": [
+        "vegetarian"
+      ],
+      "restriction_flags": [
+        "contains-nuts",
+        "contains-gluten"
+      ],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 10,
+      "nutrition_per_serving": {
+        "calories": 580,
+        "protein_g": 16,
+        "carbohydrates_g": 83,
+        "fat_g": 25
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "almond-butter",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "2 tbsp almond butter (or nut butter of choice)",
+              "ingredient_name": "almond butter"
+            },
+            "sk": {
+              "display_name": "2 PL mandľového masla",
+              "ingredient_name": "mandľové maslo"
+            }
+          }
+        },
+        {
+          "ingredient_key": "whole-wheat-tortilla",
+          "quantity": 2,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "2 medium whole wheat tortillas",
+              "ingredient_name": "whole wheat tortilla"
+            },
+            "sk": {
+              "display_name": "2 stredne veľké celozrnné tortilly",
+              "ingredient_name": "celozrnná tortilla"
+            }
+          }
+        },
+        {
+          "ingredient_key": "banana",
+          "quantity": 1,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1 banana, ripe, sliced",
+              "ingredient_name": "banana"
+            },
+            "sk": {
+              "display_name": "1 zrelý banán, nakrájaný na plátky",
+              "ingredient_name": "banán"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1 tsp honey",
+              "ingredient_name": "honey"
+            },
+            "sk": {
+              "display_name": "1 čl medu",
+              "ingredient_name": "med"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Almond Butter and Banana Triangles",
+          "category_label": "Pre-Workout Fuel",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Soften tortillas by warming over medium heat in medium sized pan.",
+            "Once tortillas are gently warmed, spread almond butter evenly over 2 tortillas.",
+            "Arrange sliced bananas on one tortilla, sticking to the almond butter. Then drizzle honey on top of bananas.",
+            "Place other tortilla on top so that the almond butter and bananas are sandwiched together.",
+            "Add almond butter and banana tortillas to the warmed skillet and cook until golden brown, about 2 minutes. Flip and repeat on other side of tortilla.",
+            "Remove from heat and cut into quarters."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Trojuholníky s mandľovým maslom a banánom",
+          "category_label": "Predtréningové jedlo",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Tortilly zmäkčite jemným zohriatím na strednom ohni na panvici.",
+            "Po miernom zohriatí natrite na obe tortilly rovnomerne mandľové maslo.",
+            "Na jednu tortillu rozložte nakrájané banány tak, aby sa prilepili na mandľové maslo. Následne banány pokvapkajte medom.",
+            "Priložte druhú tortillu na vrch, aby sa ingrediencie spojili ako v sendviči.",
+            "Vložte spojené tortilly späť na zohriatu panvicu a opekajte do zlatohneda, asi 2 minúty. Otočte a zopakujte postup z druhej strany.",
+            "Odstavte z ohňa a nakrájajte na štvrtiny."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": false
+    },
+    {
+      "external_key": "post-workout-fuel-peanut-butter-energy-bites",
+      "default_locale": "en",
+      "category_key": "post-workout-fuel",
+      "diet_tags": [
+        "vegetarian",
+        "gluten-free"
+      ],
+      "restriction_flags": [
+        "contains-peanuts"
+      ],
+      "servings": 12,
+      "prep_time_min": 25,
+      "total_time_min": 25,
+      "nutrition_per_serving": {
+        "calories": 170,
+        "protein_g": 5,
+        "carbohydrates_g": 20,
+        "fat_g": 9
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "oat",
+          "quantity": 1,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "1 cup oats",
+              "ingredient_name": "oat"
+            },
+            "sk": {
+              "display_name": "1 šálka ovsených vločiek",
+              "ingredient_name": "ovsené vločky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "peanut-butter",
+          "quantity": 0.5,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "1/2 cup peanut butter",
+              "ingredient_name": "peanut butter"
+            },
+            "sk": {
+              "display_name": "1/2 šálky arašidového masla",
+              "ingredient_name": "arašidové maslo"
+            }
+          }
+        },
+        {
+          "ingredient_key": "shredded-coconut",
+          "quantity": 0.5,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1/2 cup unsweetened shredded coconut",
+              "ingredient_name": "shredded coconut"
+            },
+            "sk": {
+              "display_name": "1/2 šálky nesladeného strúhaného kokosu",
+              "ingredient_name": "strúhaný kokos"
+            }
+          }
+        },
+        {
+          "ingredient_key": "banana",
+          "quantity": 1,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1 ripe banana",
+              "ingredient_name": "banana"
+            },
+            "sk": {
+              "display_name": "1 zrelý banán",
+              "ingredient_name": "banán"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chia-seed",
+          "quantity": 1.5,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "1.5 tbsp chia seeds",
+              "ingredient_name": "chia seed"
+            },
+            "sk": {
+              "display_name": "1,5 PL chia semienok",
+              "ingredient_name": "chia semienko"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cocoa-powder",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "2 tbsp cocoa powder",
+              "ingredient_name": "cocoa powder"
+            },
+            "sk": {
+              "display_name": "2 PL kakaového prášku",
+              "ingredient_name": "kakaový prášok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "date",
+          "quantity": 6,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "6 dates, pitted",
+              "ingredient_name": "date"
+            },
+            "sk": {
+              "display_name": "6 datlí, bez kôstky",
+              "ingredient_name": "datľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "quantity": 1.5,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "1-2 tbsp honey",
+              "ingredient_name": "honey"
+            },
+            "sk": {
+              "display_name": "1-2 PL medu",
+              "ingredient_name": "med"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Peanut Butter Energy Bites",
+          "category_label": "Post-Workout Fuel",
+          "serving_unit_label": "bites",
+          "instructions": [
+            "If the dates are dry, soak them in warm water for 10 minutes until they are soft, then drain and set the liquid aside.",
+            "In a food processor or blender, add the dates and pulse until smooth. Add 1/2 Tbsp of the reserved date liquid, if a thinner consistency is desired.",
+            "Add the oats and coconut to date paste and blend until desired consistency.",
+            "In a separate large bowl, mash the banana with a fork. Add the oat and coconut mixture to the banana. Stir in all other ingredients: chia seeds, cocoa powder, honey and peanut butter. Stir the ingredients with a spoon until well combined.",
+            "Form dough into balls. Store in an airtight container in the refrigerator for up to 1 week."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Energetické guličky s arašidovým maslom",
+          "category_label": "Potréningové jedlo",
+          "serving_unit_label": "kúsky",
+          "instructions": [
+            "Ak sú datle suché, namočte ich na 10 minút do teplej vody, kým nezmäknú, potom vodu zlejte a trochu z nej odložte bokom.",
+            "V kuchynskom robote alebo mixéri rozmixujte datle dohladka. Ak chcete redšiu konzistenciu, pridajte 1/2 PL odloženej vody z datlí.",
+            "K datľovej paste pridajte ovsené vločky a kokos a mixujte do požadovanej konzistencie.",
+            "Vo veľkej miske rozlačte banán vidličkou. Pridajte ovseno-kokosovú zmes. Vmiešajte chia semienka, kakaový prášok, med a arašidové maslo. Ingrediencie dôkladne premiešajte lyžicou.",
+            "Z cesta vyformujte guličky. Skladujte vo vzduchotesnej nádobe v chladničke až 1 týždeň."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "post-workout-fuel-pomegranate-pistachio-no-bake-granola-bars",
+      "default_locale": "en",
+      "category_key": "post-workout-fuel",
+      "diet_tags": [
+        "vegetarian"
+      ],
+      "restriction_flags": [
+        "contains-peanuts",
+        "contains-nuts",
+        "contains-dairy"
+      ],
+      "servings": 12,
+      "prep_time_min": 15,
+      "total_time_min": 75,
+      "nutrition_per_serving": {
+        "calories": 270,
+        "protein_g": 8,
+        "carbohydrates_g": 25,
+        "fat_g": 17
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "quick-cooking-oat",
+          "quantity": 2,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "2 cups quick cooking oats",
+              "ingredient_name": "quick cooking oat"
+            },
+            "sk": {
+              "display_name": "2 šálky jemných ovsených vločiek",
+              "ingredient_name": "jemné ovsené vločky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "peanut-butter",
+          "quantity": 1,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "1 cup peanut butter",
+              "ingredient_name": "peanut butter"
+            },
+            "sk": {
+              "display_name": "1 šálka arašidového masla",
+              "ingredient_name": "arašidové maslo"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pistachio",
+          "quantity": 0.5,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1/2 cup pistachios, shelled",
+              "ingredient_name": "pistachio"
+            },
+            "sk": {
+              "display_name": "1/2 šálky lúpaných pistácií",
+              "ingredient_name": "pistácia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "dark-chocolate-chip",
+          "quantity": 0.5,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1/2 cup dark chocolate chips",
+              "ingredient_name": "dark chocolate chip"
+            },
+            "sk": {
+              "display_name": "1/2 šálky kúskov horkej čokolády",
+              "ingredient_name": "kúsok horkej čokolády"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "2 tbsp honey",
+              "ingredient_name": "honey"
+            },
+            "sk": {
+              "display_name": "2 PL medu",
+              "ingredient_name": "med"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pomegranate-aril",
+          "quantity": 0.5,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "1/2 cup pomegranate arils (seeds)",
+              "ingredient_name": "pomegranate aril"
+            },
+            "sk": {
+              "display_name": "1/2 šálky zrniečok z granátového jablka",
+              "ingredient_name": "zrniečko z granátového jablka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cinnamon",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "1 tsp cinnamon",
+              "ingredient_name": "cinnamon"
+            },
+            "sk": {
+              "display_name": "1 čl škorice",
+              "ingredient_name": "škorica"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Pomegranate + Pistachio No-Bake Granola Bars",
+          "category_label": "Post-Workout Fuel",
+          "serving_unit_label": "bars",
+          "instructions": [
+            "In a large mixing bowl, add oats, peanut butter, pistachios, pomegranate seeds, cinnamon, chocolate chips and honey. Stir all ingredients until well combined.",
+            "Line an 8x8 baking pan with parchment paper. Transfer the oat mixture to the pan and press down to compact the oats into an even layer.",
+            "Cover the pan and refrigerate for 30-60 minutes or until firm.",
+            "Transfer the oat mixture to a cutting board and slice into bars. Wrap bars individually to be stored in the refrigerator or freezer."
+          ],
+          "notes": "If pomegranate arils are not available, substitute with dried cranberries or dried cherries."
+        },
+        "sk": {
+          "name": "Nepečené granola tyčinky s granátovým jablkom a pistáciami",
+          "category_label": "Potréningové jedlo",
+          "serving_unit_label": "tyčinky",
+          "instructions": [
+            "Vo veľkej miske zmiešajte ovsené vločky, arašidové maslo, pistácie, zrniečka granátového jablka, škoricu, čokoládové kúsky a med. Dôkladne premiešajte.",
+            "Plech s rozmermi 20x20 cm vyložte papierom na pečenie. Zmes presuňte na plech a pevne ju vtlačte, aby vytvorila rovnomerne pevnú vrstvu.",
+            "Prikryte a vložte do chladničky na 30-60 minút, kým zmes nestuhne.",
+            "Zmes presuňte na dosku a nakrájajte na tyčinky. Tyčinky zabaľte jednotlivo a skladujte v chladničke alebo mrazničke."
+          ],
+          "notes": "Ak nemáte granátové jablko, môžete použiť sušené brusnice alebo sušené čerešne."
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "post-workout-fuel-recovery-smoothie",
+      "default_locale": "en",
+      "category_key": "post-workout-fuel",
+      "diet_tags": [
+        "vegetarian",
+        "gluten-free"
+      ],
+      "restriction_flags": [
+        "contains-dairy"
+      ],
+      "servings": 2,
+      "prep_time_min": 5,
+      "total_time_min": 5,
+      "nutrition_per_serving": {
+        "calories": 220,
+        "protein_g": 26,
+        "carbohydrates_g": 22,
+        "fat_g": 4
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "greek-yogurt",
+          "quantity": 1,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "1 cup Greek yogurt, non-fat, plain",
+              "ingredient_name": "Greek yogurt"
+            },
+            "sk": {
+              "display_name": "1 šálka bieleho odtučneného gréckeho jogurtu",
+              "ingredient_name": "grécky jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "blueberry",
+          "quantity": 0.25,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "1/4 cup frozen blueberries",
+              "ingredient_name": "blueberry"
+            },
+            "sk": {
+              "display_name": "1/4 šálky mrazených čučoriedok",
+              "ingredient_name": "čučoriedka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "blackberry",
+          "quantity": 0.25,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1/4 cup frozen blackberries",
+              "ingredient_name": "blackberry"
+            },
+            "sk": {
+              "display_name": "1/4 šálky mrazených černíc",
+              "ingredient_name": "černica"
+            }
+          }
+        },
+        {
+          "ingredient_key": "strawberry",
+          "quantity": 0.25,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1/4 cup frozen strawberries",
+              "ingredient_name": "strawberry"
+            },
+            "sk": {
+              "display_name": "1/4 šálky mrazených jahôd",
+              "ingredient_name": "jahoda"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tart-cherry-juice",
+          "quantity": 0.5,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "1/2 cup tart cherry juice",
+              "ingredient_name": "tart cherry juice"
+            },
+            "sk": {
+              "display_name": "1/2 šálky stopercentnej višňovej šťavy",
+              "ingredient_name": "višňová šťava"
+            }
+          }
+        },
+        {
+          "ingredient_key": "water",
+          "quantity": 2,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "2 cups water",
+              "ingredient_name": "water"
+            },
+            "sk": {
+              "display_name": "2 šálky vody",
+              "ingredient_name": "voda"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spinach",
+          "quantity": 2,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "2 cups spinach",
+              "ingredient_name": "spinach"
+            },
+            "sk": {
+              "display_name": "2 šálky špenátu",
+              "ingredient_name": "špenát"
+            }
+          }
+        },
+        {
+          "ingredient_key": "protein-powder",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "30 g protein powder of choice",
+              "ingredient_name": "protein powder"
+            },
+            "sk": {
+              "display_name": "30 g proteínového prášku podľa vlastného výberu",
+              "ingredient_name": "proteínový prášok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "hulled-hemp-heart",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "1 tbsp hulled hemp hearts",
+              "ingredient_name": "hulled hemp heart"
+            },
+            "sk": {
+              "display_name": "1 PL lúpaných konopných semienok",
+              "ingredient_name": "lúpané konopné semienko"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Recovery Smoothie",
+          "category_label": "Post-Workout Fuel",
+          "serving_unit_label": "smoothies",
+          "instructions": [
+            "Blend until smooth, adding additional liquid if needed."
+          ],
+          "notes": "Recommended protein powders: Garden of Life Sport Whey, Garden of Life Sport Plant Based, Vital Proteins Collagen Peptides, Vega Sport, Klean Athlete, Tera's Whey."
+        },
+        "sk": {
+          "name": "Regeneračné smoothie",
+          "category_label": "Potréningové jedlo",
+          "serving_unit_label": "smoothie",
+          "instructions": [
+            "Rozmixujte dohladka, v prípade potreby pridajte viac tekutiny."
+          ],
+          "notes": "Môžete použiť srvátkový alebo rastlinný proteín podľa vlastných preferencií."
+        }
+      },
+      "meal_prep_friendly": false
+    },
+    {
+      "external_key": "lunch-and-dinner-herbed-greek-yogurt-chicken-salad",
+      "default_locale": "en",
+      "category_key": "lunch",
+      "diet_tags": [
+        "gluten-free",
+        "high-protein",
+        "low-carb"
+      ],
+      "restriction_flags": [
+        "contains-dairy"
+      ],
+      "servings": 2,
+      "prep_time_min": 20,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 230,
+        "protein_g": 38,
+        "carbohydrates_g": 10,
+        "fat_g": 5
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "chicken-breast",
+          "quantity": 8,
+          "unit": "oz",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "8 oz chicken breast, cooked, shredded",
+              "ingredient_name": "chicken breast"
+            },
+            "sk": {
+              "display_name": "230 g varených kuracích pŕs, natrhaných",
+              "ingredient_name": "kuracie prsia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "greek-yogurt",
+          "quantity": 1,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "1 cup Greek yogurt, plain, non-fat",
+              "ingredient_name": "Greek yogurt"
+            },
+            "sk": {
+              "display_name": "1 šálka bieleho odtučneného gréckeho jogurtu",
+              "ingredient_name": "grécky jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cucumber",
+          "quantity": 0.5,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "1/2 cucumber, shredded",
+              "ingredient_name": "cucumber"
+            },
+            "sk": {
+              "display_name": "1/2 šalátovej uhorky, nastrúhanej",
+              "ingredient_name": "uhorka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chive",
+          "quantity": 0.25,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1/4 cup chives, chopped",
+              "ingredient_name": "chive"
+            },
+            "sk": {
+              "display_name": "1/4 šálky nasekanej pažítky",
+              "ingredient_name": "pažítka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "dill",
+          "quantity": 0.25,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "1/4 cup dill, chopped",
+              "ingredient_name": "dill"
+            },
+            "sk": {
+              "display_name": "1/4 šálky nasekaného kôpru",
+              "ingredient_name": "kôpor"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "quantity": 1,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "1 clove garlic, minced",
+              "ingredient_name": "garlic"
+            },
+            "sk": {
+              "display_name": "1 strúčik cesnaku, nasekaný najemno",
+              "ingredient_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lemon",
+          "quantity": 0.5,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "1/2 lemon, squeezed",
+              "ingredient_name": "lemon"
+            },
+            "sk": {
+              "display_name": "šťava z 1/2 citróna",
+              "ingredient_name": "citrón"
+            }
+          }
+        },
+        {
+          "ingredient_key": "red-wine-vinegar",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "1 tbsp red wine vinegar",
+              "ingredient_name": "red wine vinegar"
+            },
+            "sk": {
+              "display_name": "1 PL červeného vínneho octu",
+              "ingredient_name": "červený vínny ocot"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt-and-pepper",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "salt and pepper, to taste",
+              "ingredient_name": "salt and pepper"
+            },
+            "sk": {
+              "display_name": "soľ a korenie podľa chuti",
+              "ingredient_name": "soľ a čierne korenie"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Herbed Greek Yogurt Chicken Salad",
+          "category_label": "Lunch",
+          "serving_unit_label": "servings",
+          "instructions": [
+            "Grate cucumber, wrap in paper towel to squeeze out liquid. Discard liquid or save for another use.",
+            "In a large bowl, combine chicken, yogurt, cucumber, chives, dill, garlic, lemon juice and red wine vinegar. Mix well to combine. Season with salt and pepper to taste, if desired.",
+            "Serve in salads, sandwiches or with crackers."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Bylinkový kurací šalát s gréckym jogurtom",
+          "category_label": "Obed",
+          "serving_unit_label": "porcie",
+          "instructions": [
+            "Nastrúhajte uhorku, zabaľte do papierovej utierky a vytlačte z nej prebytočnú vodu.",
+            "Vo veľkej miske zmiešajte kuracie mäso, jogurt, uhorku, pažítku, kôpor, cesnak, citrónovú šťavu a červený vínny ocot. Dobre premiešajte. V prípade potreby dochuťte soľou a korením.",
+            "Podávajte so šalátom, v sendviči alebo s krekrami."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-and-dinner-quick-pesto-chicken",
+      "default_locale": "en",
+      "category_key": "dinner",
+      "diet_tags": [
+        "gluten-free",
+        "high-protein",
+        "low-carb"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-nuts"
+      ],
+      "servings": 2,
+      "prep_time_min": 5,
+      "total_time_min": 35,
+      "nutrition_per_serving": {
+        "calories": 350,
+        "protein_g": 44,
+        "carbohydrates_g": 10,
+        "fat_g": 16
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "chicken-breast",
+          "quantity": 8,
+          "unit": "oz",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "8 oz chicken breast",
+              "ingredient_name": "chicken breast"
+            },
+            "sk": {
+              "display_name": "230 g kuracích pŕs",
+              "ingredient_name": "kuracie prsia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pesto",
+          "quantity": 1,
+          "unit": "oz",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "1 oz pesto (can be prepared pesto in jar)",
+              "ingredient_name": "pesto"
+            },
+            "sk": {
+              "display_name": "30 g pesta",
+              "ingredient_name": "pesto"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato",
+          "quantity": 2,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "2 large tomatoes, sliced",
+              "ingredient_name": "tomato"
+            },
+            "sk": {
+              "display_name": "2 veľké paradajky, nakrájané na plátky",
+              "ingredient_name": "paradajka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "mozzarella-cheese",
+          "quantity": 2,
+          "unit": "oz",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "2 oz mozzarella cheese",
+              "ingredient_name": "mozzarella cheese"
+            },
+            "sk": {
+              "display_name": "60 g syru mozzarella",
+              "ingredient_name": "syr mozzarella"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Quick Pesto Chicken",
+          "category_label": "Dinner",
+          "serving_unit_label": "servings",
+          "instructions": [
+            "Preheat oven to 375°F.",
+            "Spray baking dish with non-stick vegetable oil.",
+            "Layer chicken breast with pesto, tomato, and mozzarella cheese.",
+            "Bake for 25-30 minutes or until chicken reached an internal temperature of 165°F."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Rýchle kuracie mäso s pestom",
+          "category_label": "Večera",
+          "serving_unit_label": "porcie",
+          "instructions": [
+            "Rúru predhrejte na 190°C.",
+            "Pekáč jemne vymažte olejom.",
+            "Kuracie prsia potrite pestom a poukladajte na ne plátky paradajky a mozzarelly.",
+            "Pečte 25-30 minút, kým kurča nie je celkom prepečené."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-and-dinner-protein-veggie-stuffed-bell-peppers",
+      "default_locale": "en",
+      "category_key": "dinner",
+      "diet_tags": [
+        "vegetarian",
+        "gluten-free",
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-soy",
+        "contains-dairy"
+      ],
+      "servings": 4,
+      "prep_time_min": 30,
+      "total_time_min": 90,
+      "nutrition_per_serving": {
+        "calories": 410,
+        "protein_g": 19,
+        "carbohydrates_g": 45,
+        "fat_g": 17
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "quinoa",
+          "quantity": 1,
+          "unit": "cup",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "1 cup quinoa, dry",
+              "ingredient_name": "quinoa"
+            },
+            "sk": {
+              "display_name": "1 šálka suchej quinoy",
+              "ingredient_name": "quinoa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "bell-pepper",
+          "quantity": 4,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "4 bell peppers, large",
+              "ingredient_name": "bell pepper"
+            },
+            "sk": {
+              "display_name": "4 veľké papriky",
+              "ingredient_name": "paprika"
+            }
+          }
+        },
+        {
+          "ingredient_key": "carrot",
+          "quantity": 2,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "2 carrots, minced",
+              "ingredient_name": "carrot"
+            },
+            "sk": {
+              "display_name": "2 mrkvy, nasekané najemno",
+              "ingredient_name": "mrkva"
+            }
+          }
+        },
+        {
+          "ingredient_key": "celery-stalk",
+          "quantity": 1,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "1 celery stalk, minced",
+              "ingredient_name": "celery stalk"
+            },
+            "sk": {
+              "display_name": "1 stonka zeleru, nasekaná najemno",
+              "ingredient_name": "stonkový zeler"
+            }
+          }
+        },
+        {
+          "ingredient_key": "white-button-mushroom",
+          "quantity": 5,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "5 white button mushrooms, minced",
+              "ingredient_name": "white button mushroom"
+            },
+            "sk": {
+              "display_name": "5 bielych šampiňónov, nasekaných najemno",
+              "ingredient_name": "biely šampiňón"
+            }
+          }
+        },
+        {
+          "ingredient_key": "white-onion",
+          "quantity": 0.25,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "1/4 white onion, minced",
+              "ingredient_name": "white onion"
+            },
+            "sk": {
+              "display_name": "1/4 bielej cibule, nasekanej najemno",
+              "ingredient_name": "biela cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "quantity": 2,
+          "unit": "ks",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "2 cloves garlic, minced",
+              "ingredient_name": "garlic"
+            },
+            "sk": {
+              "display_name": "2 strúčiky cesnaku, nasekané najemno",
+              "ingredient_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "olive-oil",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "1 tbsp olive oil",
+              "ingredient_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "1 PL olivového oleja",
+              "ingredient_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "firm-tofu",
+          "quantity": 8,
+          "unit": "oz",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "8 oz firm tofu, crumbled",
+              "ingredient_name": "firm tofu"
+            },
+            "sk": {
+              "display_name": "230 g pevného tofu, rozdrobeného",
+              "ingredient_name": "pevné tofu"
+            }
+          }
+        },
+        {
+          "ingredient_key": "oregano",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "1 tbsp dried oregano",
+              "ingredient_name": "oregano"
+            },
+            "sk": {
+              "display_name": "1 PL sušeného oregána",
+              "ingredient_name": "oregáno"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt-and-pepper",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "salt and pepper, to taste",
+              "ingredient_name": "salt and pepper"
+            },
+            "sk": {
+              "display_name": "soľ a korenie podľa chuti",
+              "ingredient_name": "soľ a čierne korenie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "feta-cheese",
+          "quantity": 1,
+          "unit": "cup",
+          "optional": true,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "1 cup feta cheese (optional)",
+              "ingredient_name": "feta cheese"
+            },
+            "sk": {
+              "display_name": "1 šálka syra feta (voliteľné)",
+              "ingredient_name": "syr feta"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Protein + Veggie Stuffed Bell Peppers",
+          "category_label": "Dinner",
+          "serving_unit_label": "servings",
+          "instructions": [
+            "Preheat oven to 375°F.",
+            "Rinse quinoa in a fine mesh sieve, drain and then add to a medium saucepan with 2 cups of water. Bring to a boil, then cover and simmer on medium-low until water is absorbed, about 15-20 minutes. Set aside to cool.",
+            "Prep the vegetables by mincing carrots, celery, mushroom, onion and garlic. Wash bell peppers and cut out the stem to remove the tops, set aside.",
+            "Heat olive oil in a skillet over medium heat. Once skillet is warm, add carrots, celery, mushroom, onion and garlic and cook until softened (about 3-5 minutes) adding a cup water as needed to keep the veggie mixture moist. Transfer mixture to a covered bowl.",
+            "Add more olive oil to skillet and cook tofu on medium heat until cooked through, about 6-8 minutes.",
+            "In a large bowl, mix quinoa, protein, and veggies until well combined. Season with dried oregano and salt/pepper to taste. Stuff mixture evenly into bell peppers. Top with feta cheese.",
+            "Arrange bell peppers in a square baking dish. Carefully add 1 cup water to bottom of baking dish to help steam the peppers as they are baking. Spray a sheet of aluminum foil and cover baking dish.",
+            "Bake at 375°F until bell peppers are soft, about 45-60 minutes."
+          ],
+          "notes": "Can substitute tofu with ground turkey, ground chicken or protein of choice."
+        },
+        "sk": {
+          "name": "Papriky plnené bielkovinami a zeleninou",
+          "category_label": "Večera",
+          "serving_unit_label": "porcie",
+          "instructions": [
+            "Rúru predhrejte na 190°C.",
+            "Quinou prepláchnite v hustom sitku, nechajte odkvapkať a dajte do stredného hrnca s 2 šálkami vody. Priveďte do varu, zakryte a na miernom ohni varte, kým sa voda nevstrebe, asi 15-20 minút. Odložte bokom a nechajte vychladnúť.",
+            "Zeleninu – mrkvu, zeler, šampiňóny, cibuľu a cesnak – nakrájajte najemno. Papriky umyte a zrežte ich vršky so stopkou, odstráňte semienka.",
+            "Na panvici zohrejte olivový olej. Pridajte nakrájanú zeleninu a restujte do zmäknutia (asi 3-5 minút), v prípade potreby podlejte trochou vody. Zmes presuňte do misky.",
+            "Pridajte na panvicu trochu viac oleja a za stáleho miešania opečte tofu (asi 6-8 minút).",
+            "Vo veľkej miske zmiešajte quinou, tofu a zeleninu. Dochuťte oregánom, soľou a korením. Zmesou naplňte papriky a vrch posypte fetou.",
+            "Papriky poukladajte do zapekacej misy. Na dno misy nalejte asi 1 šálku vody, aby sa papriky počas pečenia parili. Prikryte alobalom.",
+            "Pečte pri 190°C do zmäknutia, zhruba 45-60 minút."
+          ],
+          "notes": "Tofu môžete nahradiť mletým morčacím alebo kuracím mäsom."
+        }
+      },
+      "meal_prep_friendly": true
+    }
+  ]
+}

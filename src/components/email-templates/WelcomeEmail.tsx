@@ -106,7 +106,7 @@ export function WelcomeEmail({ userName, translations }: WelcomeEmailProps) {
           {/* CTA Button */}
           <Section style={styles.ctaSection}>
             <Button
-              href="https://eatrivo.sk/dashboard"
+              href="https://eatrivo.sk/home"
               style={styles.button}
             >
               {t?.cta || "Začať používať Eatrivo"}

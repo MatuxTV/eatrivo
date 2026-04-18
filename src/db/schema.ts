@@ -9,10 +9,12 @@ import {
   numeric,
   primaryKey,
   boolean,
+  index,
+  unique,
 } from "drizzle-orm/pg-core";
 
-// Define the role enum
-export const roleEnum = pgEnum("role", ["user", "coach", "admin"]);
+// Define the authorization role enum
+export const roleEnum = pgEnum("role", ["user", "admin"]);
 export const sexEnum = pgEnum("sex", ["man", "woman"]);
 export const activityLevelEnum = pgEnum("activity_level", [
   "sedentary",
@@ -30,6 +32,15 @@ export const dietEnum = pgEnum("diet", [
   "ketogenic",
   "paleolithic",
 ]);
+export const kitchenEquipmentEnum = pgEnum("kitchen_equipment", [
+  "oven",
+  "stove",
+  "microwave",
+  "blender",
+  "air_fryer",
+  "slow_cooker",
+  "pressure_cooker",
+]);
 export const timePrefEnum = pgEnum("time_pref", ["quick", "normal", "slow"]);
 export const budgetEnum = pgEnum("budget", ["low", "medium", "high"]);
 export const membershipEnum = pgEnum("membership", [
@@ -38,6 +49,11 @@ export const membershipEnum = pgEnum("membership", [
   "pro",
   "trainer",
 ]);
+export const cookingSkillLevelEnum = pgEnum("cooking_skill_level", [
+  "beginner",
+  "intermediate",
+  "advanced",
+]);
 export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "active",
   "canceled",
@@ -45,7 +61,10 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "gifted",
 ]);
 export const shoppingListStatusEnum = pgEnum("shopping_list_status", [
+  "draft",
   "active",
+  "approved",
+  "purchased",
   "completed",
   "cancelled",
 ]);
@@ -61,8 +80,30 @@ export const consentTypeEnum = pgEnum("consent_type", [
   "health_data_processing",
   "push_notifications",
 ]);
+export const tutorialStatusEnum = pgEnum("tutorial_status", [
+  "unseen",
+  "started",
+  "completed",
+  "dismissed",
+  "skipped",
+]);
 
 export const badgeTypeEnum = pgEnum("badge_type", ["legacy"]);
+
+export const pantryItemSourceEnum = pgEnum("pantry_item_source", [
+  "manual",
+  "shopping_list",
+]);
+
+export const pantryTrackingModeEnum = pgEnum("pantry_tracking_mode", [
+  "quantity",
+  "availability",
+]);
+
+export const recipeSourceEnum = pgEnum("recipe_source", [
+  "catalog",
+  "ai_custom",
+]);
 
 export const foodItems = pgTable("food_items", {
   id: integer("id").primaryKey().notNull(),
@@ -74,6 +115,100 @@ export const foodItems = pgTable("food_items", {
   carbs: numeric(),
   fat: numeric(),
 });
+
+export const recipes = pgTable("recipes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: text("slug").notNull().unique(),
+  externalKey: text("external_key").notNull().unique(),
+  source: recipeSourceEnum("source").default("catalog").notNull(),
+  userGenerated: boolean("user_generated").default(false).notNull(),
+  createdByUserId: uuid("created_by_user_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
+  sourceJobId: uuid("source_job_id"),
+  categoryKey: text("category_key").notNull(),
+  defaultLocale: text("default_locale").default("en").notNull(),
+  servings: integer("servings").notNull(),
+  prepTimeMin: integer("prep_time_min").notNull(),
+  totalTimeMin: integer("total_time_min").notNull(),
+  calories: integer("calories").notNull(),
+  proteinG: integer("protein_g").notNull(),
+  carbohydratesG: integer("carbohydrates_g").notNull(),
+  fatG: integer("fat_g").notNull(),
+  dietTags: jsonb("diet_tags").$type<string[]>().default([]).notNull(),
+  restrictionFlags: jsonb("restriction_flags").$type<string[]>().default([]).notNull(),
+  mealPrepFriendly: boolean("meal_prep_friendly").default(false).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const recipeIngredients = pgTable("recipe_ingredients", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  recipeId: uuid("recipe_id")
+    .notNull()
+    .references(() => recipes.id, { onDelete: "cascade" }),
+  canonicalName: text("canonical_name"),
+  ingredientKey: text("ingredient_key"),
+  ingredientSpecificKey: text("ingredient_specific_key"),
+  quantity: numeric("quantity", { precision: 8, scale: 3 }),
+  unit: text("unit"),
+  optional: boolean("optional").default(false).notNull(),
+  sortOrder: integer("sort_order").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const recipeTranslations = pgTable(
+  "recipe_translations",
+  {
+    recipeId: uuid("recipe_id")
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    locale: text("locale").notNull(),
+    name: text("name").notNull(),
+    categoryLabel: text("category_label"),
+    servingUnitLabel: text("serving_unit_label"),
+    instructions: jsonb("instructions").notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    compoundKey: primaryKey({ columns: [table.recipeId, table.locale] }),
+  }),
+);
+
+export const recipeIngredientTranslations = pgTable(
+  "recipe_ingredient_translations",
+  {
+    recipeIngredientId: uuid("recipe_ingredient_id")
+      .notNull()
+      .references(() => recipeIngredients.id, { onDelete: "cascade" }),
+    locale: text("locale").notNull(),
+    displayName: text("display_name").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    compoundKey: primaryKey({ columns: [table.recipeIngredientId, table.locale] }),
+  }),
+);
 
 // NextAuth users table (minimal, just for OAuth)
 export const users = pgTable("users", {
@@ -87,11 +222,47 @@ export const users = pgTable("users", {
   //Stamp for NewUpdate window tracking
   lastSeenWelcomeVersion: text("last_seen_welcome_version"),
   lastSeenWelcomeAt: timestamp("last_seen_welcome_at", { withTimezone: true }),
+  lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
   // PWA install prompt preference
   hideInstallPrompt: boolean("hide_install_prompt").default(false).notNull(),
   // Feature flags
   isBetaTester: boolean("is_beta_tester").default(false).notNull(),
 });
+
+export const userTutorialState = pgTable(
+  "user_tutorial_state",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tutorialKey: text("tutorial_key").notNull(),
+    surfaceKey: text("surface_key").notNull(),
+    version: text("version").notNull(),
+    status: tutorialStatusEnum("status").default("unseen").notNull(),
+    lastStepIndex: integer("last_step_index").default(0).notNull(),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
+    metadata: jsonb("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    userIdx: index("user_tutorial_state_user_idx").on(table.userId),
+    statusIdx: index("user_tutorial_state_status_idx").on(table.status),
+    userSurfaceUnique: unique("user_tutorial_state_user_surface_unique").on(
+      table.userId,
+      table.tutorialKey,
+      table.surfaceKey,
+    ),
+  }),
+);
 
 // Your app's main user profile table
 export const userProfiles = pgTable("user_profiles", {
@@ -110,6 +281,33 @@ export const userProfiles = pgTable("user_profiles", {
     .defaultNow()
     .notNull(),
 });
+
+export const recipeBookmarks = pgTable(
+  "recipe_bookmarks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userProfileId: uuid("user_profile_id")
+      .notNull()
+      .references(() => userProfiles.id, { onDelete: "cascade" }),
+    recipeId: uuid("recipe_id")
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    userProfileIdx: index("recipe_bookmarks_user_profile_idx").on(table.userProfileId),
+    recipeIdx: index("recipe_bookmarks_recipe_idx").on(table.recipeId),
+    userRecipeUnique: unique("recipe_bookmarks_user_recipe_unique").on(
+      table.userProfileId,
+      table.recipeId,
+    ),
+  }),
+);
 
 // Extended user info for food preferences
 export const userInfoTable = pgTable("user_info", {
@@ -133,13 +331,15 @@ export const userInfoTable = pgTable("user_info", {
   likes: text("likes"),
   dislikes: text("dislikes"),
   allergies: text("allergies"),
+  cooking_skill_level: cookingSkillLevelEnum("cooking_skill_level").default("intermediate"), 
+  kitchen_equipment: kitchenEquipmentEnum("kitchen_equipment").array(),
   profileSnapshot: jsonb("profile_snapshot"), // Complete user profile in JSON format
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });
 
-// Updated shopping lists table for PDF files
+// Shopping list parent record
 export const shoppingLists = pgTable("shopping_lists", {
   id: uuid("id").primaryKey().defaultRandom(),
   userProfileId: uuid("userProfileId")
@@ -149,12 +349,35 @@ export const shoppingLists = pgTable("shopping_lists", {
   description: text("description"),
   weekStartDate: timestamp("weekStartDate").notNull(),
   weekEndDate: timestamp("weekEndDate").notNull(),
-  markdownContent: text("markdownContent").notNull(),
   status: shoppingListStatusEnum("status").default("active").notNull(),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const shoppingListItems = pgTable("shopping_list_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  shoppingListId: uuid("shoppingListId")
+    .notNull()
+    .references(() => shoppingLists.id, { onDelete: "cascade" }),
+  sortOrder: integer("sort_order").notNull(),
+  name: text("name").notNull(),
+  ingredientName: text("ingredient_name"),
+  ingredientKey: text("ingredient_key"),
+  ingredientSpecificKey: text("ingredient_specific_key"),
+  quantity: numeric("quantity", { precision: 8, scale: 3 }),
+  unit: text("unit"),
+  amountLabel: text("amount_label"),
+  category: text("category"),
+  isChecked: boolean("is_checked").default(false).notNull(),
+  checkedAt: timestamp("checked_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });
@@ -189,68 +412,53 @@ export const mealPlans = pgTable("meal_plans", {
     .notNull(),
 });
 
-// Shopping List Templates - for admin to create reusable templates
-export const shoppingListTemplates = pgTable("shopping_list_templates", {
+export const pantryItems = pgTable("pantry_items", {
   id: uuid("id").primaryKey().defaultRandom(),
-  goal: goalEnum("goal").notNull(),
-  diet: dietEnum("diet").notNull(),
-  title: text("title").notNull(),
-  description: text("description"),
-  markdownContent: text("markdownContent").notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdBy: uuid("created_by")
-    .notNull()
-    .references(() => users.id),
-  created_at: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updated_at: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
-
-// Meal Plan Templates - paired with shopping list templates
-export const mealPlanTemplates = pgTable("meal_plan_templates", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  shoppingListTemplateId: uuid("shopping_list_template_id")
-    .notNull()
-    .references(() => shoppingListTemplates.id, { onDelete: "cascade" }),
-  goal: goalEnum("goal").notNull(),
-  diet: dietEnum("diet").notNull(),
-  meals: jsonb("meals").notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdBy: uuid("created_by")
-    .notNull()
-    .references(() => users.id),
-  created_at: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updated_at: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
-
-// Template Assignments - track which templates were assigned to users
-export const templateAssignments = pgTable("template_assignments", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userProfileId: uuid("user_profile_id")
+  userProfileId: uuid("userProfileId")
     .notNull()
     .references(() => userProfiles.id, { onDelete: "cascade" }),
-  shoppingListTemplateId: uuid("shopping_list_template_id")
-    .notNull()
-    .references(() => shoppingListTemplates.id),
-  mealPlanTemplateId: uuid("meal_plan_template_id").references(
-    () => mealPlanTemplates.id,
-  ),
+  name: text("name").notNull(),
+  ingredientName: text("ingredient_name"),
+  ingredientKey: text("ingredient_key"),
+  ingredientSpecificKey: text("ingredient_specific_key"),
+  trackingMode: pantryTrackingModeEnum("tracking_mode")
+    .default("quantity")
+    .notNull(),
+  inStock: boolean("in_stock").default(true).notNull(),
+  quantity: numeric("quantity", { precision: 8, scale: 3 }),
+  unit: text("unit"),
+  category: text("category"),
+  expiryDate: timestamp("expiry_date", { withTimezone: true }),
+  source: pantryItemSourceEnum("source").default("manual").notNull(),
   shoppingListId: uuid("shopping_list_id").references(() => shoppingLists.id, {
-    onDelete: "cascade",
+    onDelete: "set null",
   }),
-  mealPlanId: uuid("meal_plan_id").references(() => mealPlans.id, {
-    onDelete: "cascade",
-  }),
-  goal: goalEnum("goal").notNull(),
-  diet: dietEnum("diet").notNull(),
-  assigned_at: timestamp("assigned_at", { withTimezone: true })
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const pantryRestockItems = pgTable("pantry_restock_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userProfileId: uuid("userProfileId")
+    .notNull()
+    .references(() => userProfiles.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  ingredientName: text("ingredient_name"),
+  ingredientKey: text("ingredient_key"),
+  ingredientSpecificKey: text("ingredient_specific_key"),
+  defaultQuantity: numeric("default_quantity", { precision: 8, scale: 3 }),
+  defaultUnit: text("default_unit"),
+  category: text("category"),
+  isActive: boolean("is_active").default(true).notNull(),
+  lastRestockedAt: timestamp("last_restocked_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });
@@ -481,17 +689,57 @@ export const chatMessageRoleEnum = pgEnum("chat_message_role", [
   "assistant",
 ]);
 
-export const chatMessages = pgTable("chat_messages", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userProfileId: uuid("user_profile_id")
-    .notNull()
-    .references(() => userProfiles.id, { onDelete: "cascade" }),
-  sessionId: uuid("session_id").notNull(),
-  role: chatMessageRoleEnum("role").notNull(),
-  content: text("content").notNull(),
-  intent: text("intent"), // "meal_swap" | "macros" | "pantry" | "recipe" | "general"
-  metadata: jsonb("metadata"), // { model, latencyMs, tokenCount }
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const chatSessions = pgTable(
+  "chat_sessions",
+  {
+    id: uuid("id").primaryKey(),
+    userProfileId: uuid("user_profile_id")
+      .notNull()
+      .references(() => userProfiles.id, { onDelete: "cascade" }),
+    title: text("title"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    lastMessageAt: timestamp("last_message_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+  },
+  (table) => ({
+    userProfileIdx: index("chat_sessions_user_profile_idx").on(table.userProfileId),
+    lastMessageIdx: index("chat_sessions_last_message_idx").on(table.lastMessageAt),
+  }),
+);
+
+export const chatMessages = pgTable(
+  "chat_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userProfileId: uuid("user_profile_id")
+      .notNull()
+      .references(() => userProfiles.id, { onDelete: "cascade" }),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => chatSessions.id, { onDelete: "cascade" }),
+    role: chatMessageRoleEnum("role").notNull(),
+    content: text("content").notNull(),
+    intent: text("intent"), // "meal_swap" | "macros" | "pantry" | "recipe" | "general"
+    metadata: jsonb("metadata"), // { model, latencyMs, tokenCount }
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    sessionCreatedIdx: index("chat_messages_session_created_idx").on(
+      table.sessionId,
+      table.createdAt,
+    ),
+    userProfileCreatedIdx: index("chat_messages_user_profile_created_idx").on(
+      table.userProfileId,
+      table.createdAt,
+    ),
+  }),
+);

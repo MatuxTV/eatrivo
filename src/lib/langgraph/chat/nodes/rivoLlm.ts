@@ -2,7 +2,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import type { ChatState } from "../state";
 
 const rivoModel = new ChatGoogleGenerativeAI({
-  model: "gemini-3-flash-preview", // stable & capable model
+  model: "gemini-3.1-flash-lite-preview", // stable & capable model
   temperature: 0.7,
   maxOutputTokens: 2048,
   apiKey: process.env.GOOGLE_AI_API_KEY,

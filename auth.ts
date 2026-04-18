@@ -41,29 +41,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           user as { isBetaTester?: boolean }
         ).isBetaTester ?? false;
 
-        // Fetch user's language preference from user_info table
+        // Fetch user's profile, language and badges
         try {
           const userProfile = await db.query.userProfiles.findFirst({
             where: eq(userProfiles.userId, user.id),
           });
 
           if (userProfile) {
-            const userInfo = await db.query.userInfoTable.findFirst({
-              where: eq(userInfoTable.userProfileId, userProfile.id),
-              columns: {
-                language: true,
-              },
-            });
+            // Expose DB role on session for admin route-level checks
+            session.user.role = userProfile.role as "user" | "admin";
+
+            // Run language + badges queries in parallel (both depend on profile.id)
+            const [userInfo, userBadges] = await Promise.all([
+              db.query.userInfoTable.findFirst({
+                where: eq(userInfoTable.userProfileId, userProfile.id),
+                columns: { language: true },
+              }),
+              db.query.badges.findMany({
+                where: eq(badgesTable.userProfileId, userProfile.id),
+                columns: { type: true },
+              }),
+            ]);
 
             if (userInfo?.language) {
               session.user.locale = userInfo.language;
             }
-
-            // Fetch user badges
-            const userBadges = await db.query.badges.findMany({
-              where: eq(badgesTable.userProfileId, userProfile.id),
-              columns: { type: true },
-            });
             session.user.badges = userBadges.map((b) => b.type);
           }
         } catch (error) {
@@ -77,6 +79,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   events: {
     async signIn(message) {
       if (message.user?.id) {
+        await db
+          .update(users)
+          .set({ lastLoginAt: new Date() })
+          .where(eq(users.id, message.user.id));
+
         await Analytics.login(message.user.id, {
           provider: message.account?.provider,
         });

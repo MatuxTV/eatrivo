@@ -1,12 +1,26 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/../auth";
-import BillingPageClient from "./BillingPageClient";
 
-export default async function BillingPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/signin");
+interface BillingBridgeProps {
+  searchParams?: Promise<{
+    canceled?: string;
+    success?: string;
+  }>;
+}
+
+export default async function BillingBridge({ searchParams }: BillingBridgeProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const nextParams = new URLSearchParams({
+    section: "profile",
+    profileView: "billing",
+  });
+
+  if (resolvedSearchParams?.canceled === "true") {
+    nextParams.set("canceled", "true");
   }
 
-  return <BillingPageClient />;
+  if (resolvedSearchParams?.success === "true") {
+    nextParams.set("success", "true");
+  }
+
+  redirect(`/home?${nextParams.toString()}`);
 }

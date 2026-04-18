@@ -7,7 +7,7 @@ export interface EmailTranslations {
     copyright: string;
     links: {
       web: string;
-      dashboard: string;
+      home: string;
       support: string;
     };
   };
@@ -115,7 +115,7 @@ export interface ShoppingListNotificationEmailProps {
   clientEmail: string;
   shoppingListName: string;
   shoppingListDate: string;
-  dashboardUrl?: string;
+  homeUrl?: string;
   translations?: EmailTranslations;
 }
 
@@ -147,7 +147,7 @@ export interface UpdateNotificationEmailProps {
     description: string;
     type: "feature" | "improvement" | "fix";
   }>;
-  dashboardUrl?: string;
+  homeUrl?: string;
   translations?: EmailTranslations;
 }
 

@@ -6,6 +6,7 @@ import { userProfiles, userInfoTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { userFoodPreferencesSchema } from "@/lib/schemas/user";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { invalidateUserContextCaches } from "@/lib/user-context-cache";
 
 // PUT /api/user/nutrition - Update user's nutrition preferences
 export async function PUT(request: NextRequest) {
@@ -76,6 +77,8 @@ export async function PUT(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    await invalidateUserContextCaches(session.user.id);
 
     return NextResponse.json({
       success: true,

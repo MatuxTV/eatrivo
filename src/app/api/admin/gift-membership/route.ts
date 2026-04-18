@@ -5,6 +5,7 @@ import { db } from "@/index";
 import { users, subscriptions, userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { invalidateUserContextCaches } from "@/lib/user-context-cache";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
     const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
     if (!rl.success) return rl.response!;
 
-    // Check if user is admin/trainer
+    // Check if user has the admin role
     const profile = await db.query.userProfiles.findFirst({
       where: eq(userProfiles.userId, session.user.id),
     });
@@ -79,6 +80,8 @@ export async function POST(req: NextRequest) {
       giftedBy: session.user.id,
       giftReason: reason || `Gifted ${tier} membership`,
     });
+
+    await invalidateUserContextCaches(targetUserId);
 
     return NextResponse.json({
       success: true,

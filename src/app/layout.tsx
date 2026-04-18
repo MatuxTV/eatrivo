@@ -6,6 +6,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ConditionalAnalytics } from "@/components/ConditionalAnalytics";
 import { CookieConsentBanner } from "@/components/CookieConsent";
+import { GoogleConsentMode } from "@/components/GoogleConsentMode";
 import { defaultLocale } from "@/i18n/routing";
 
 const quicksand = Quicksand({
@@ -20,6 +21,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -122,13 +124,14 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={`${quicksand.variable} antialiased`}>
-        <Providers>
-          <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>
+            <GoogleConsentMode />
             {children}
             <ConditionalAnalytics />
             <CookieConsentBanner />
-          </NextIntlClientProvider>
-        </Providers>
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

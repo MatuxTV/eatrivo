@@ -3,14 +3,13 @@ import { NextResponse } from "next/server";
 import { auth } from "../../../../../auth";
 import { db } from "@/index";
 import {
-  users,
   userProfiles,
   userInfoTable,
-  badges as badgesTable,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { getUserContext, invalidateUserContextCaches } from "@/lib/user-context-cache";
 
 const profileUpdateSchema = z.object({
   fullName: z.string().min(2, "Meno musí mať aspoň 2 znaky"),
@@ -29,32 +28,13 @@ export async function GET() {
     const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
     if (!rl.success) return rl.response!;
 
-    // Fetch user profile
-    const profile = await db
-      .select()
-      .from(userProfiles)
-      .where(eq(userProfiles.userId, session.user.id))
-      .limit(1);
+    const context = await getUserContext(session.user.id);
 
-    if (!profile || profile.length === 0) {
+    if (!context.userProfile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
-    const userProfile = profile[0];
-
-    // Fetch user for membership
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, session.user.id))
-      .limit(1);
-
-    // Fetch nutrition data
-    const nutrition = await db
-      .select()
-      .from(userInfoTable)
-      .where(eq(userInfoTable.userProfileId, userProfile.id))
-      .limit(1);
+    const nutrition = context.userInfo ? [context.userInfo] : [];
 
     // Format nutrition data for the frontend
     const formattedNutrition =
@@ -75,21 +55,15 @@ export async function GET() {
           }
         : null;
 
-    // Fetch user badges
-    const userBadges = await db.query.badges.findMany({
-      where: eq(badgesTable.userProfileId, userProfile.id),
-      columns: { type: true },
-    });
-
     return NextResponse.json({
       profile: {
-        fullName: userProfile.fullName,
+        fullName: context.userProfile.fullName,
         email: session.user.email,
         dateOfBirth: nutrition[0]?.dateOfBirth
           ? new Date(nutrition[0].dateOfBirth).toISOString().split("T")[0]
           : "",
-        membership: user[0]?.membership || "basic",
-        badges: userBadges.map((b) => b.type),
+        membership: context.membership || "basic",
+        badges: context.badges,
       },
       nutrition: formattedNutrition,
     });
@@ -145,12 +119,9 @@ export async function PUT(request: NextRequest) {
       })
       .where(eq(userInfoTable.userProfileId, updated[0].id));
 
-    // Fetch user for membership
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, session.user.id))
-      .limit(1);
+    await invalidateUserContextCaches(session.user.id);
+
+    const context = await getUserContext(session.user.id);
 
     return NextResponse.json({
       success: true,
@@ -158,7 +129,7 @@ export async function PUT(request: NextRequest) {
         fullName: updated[0].fullName,
         email: session.user.email,
         dateOfBirth: dateOfBirth || "",
-        membership: user[0]?.membership || "basic",
+        membership: context.membership || "basic",
       },
     });
   } catch (error) {

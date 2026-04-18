@@ -278,6 +278,17 @@
     }
   },
   "auth": {
+    "welcome": {
+      "metaTitle": "Vitajte",
+      "metaDescription": "Prihláste sa do Eatrivo a pokračujte k personalizovaným jedlám na základe ingrediencií, ktoré už máte",
+      "logoAlt": "Logo Eatrivo",
+      "headlineTop": "Jedz lepšie,",
+      "headlineBottom": "cíť sa lepšie.",
+      "subtitle": "Prihláste sa a pokračujte k personalizovaným jedlám na základe ingrediencií, ktoré už máte",
+      "illustrationAlt": "Rivo pripravený pomôcť s plánovaním jedál",
+      "emailButton": "Pokračovať e-mailom",
+      "appleButton": "Pokračovať cez Apple"
+    },
     "signIn": {
       "metaTitle": "Prihlásenie",
       "tagline": "Prihláste sa a pokračujte",
@@ -297,6 +308,30 @@
         "personalized": "Personalizovaný jedálniček",
         "planning": "Jednoduchšie plánovanie nákupov",
         "nutrition": "Prehľad o výžive"
+      }
+    },
+    "intro": {
+      "common": {
+        "skip": "Preskočiť",
+        "continue": "Pokračovať",
+        "swipeHint": "Potiahni pre viac"
+      },
+      "slides": {
+        "introduction": {
+          "eyebrow": "Osobný AI asistent",
+          "title": "Jedz lepšie.\nCíť sa lepšie.",
+          "description": "Tvoj osobný AI asistent pre varenie, nákupy a dosahovanie cieľov. Bez stresu a plytvania jedlom."
+        },
+        "customRecipes": {
+          "eyebrow": "Rivo custom",
+          "title": "Recepty podľa toho, čo máš rád",
+          "description": "Rivo ti vyskladá vlastné recepty podľa cieľa, preferencií a toho, čo už doma máš. Menej hľadania, viac varenia."
+        },
+        "pantry": {
+          "eyebrow": "Inteligentná špajza",
+          "title": "Uvar z toho, čo už máš doma",
+          "description": "Sleduj svoju špajzu a objav jedlá, ktoré vieš pripraviť hneď. Keď niečo chýba, Rivo ti ukáže najrýchlejší dokup."
+        }
       }
     },
     "signOut": {
@@ -438,28 +473,35 @@
       "mustAgree": "Pre pokračovanie musíte súhlasiť so všetkými podmienkami."
     }
   },
-  "dashboard": {
+  "home": {
     "metadata": {
-      "title": "Dashboard",
+      "title": "Domov",
       "description": "Váš denný prehľad, jedálny plán a nákupné zoznamy."
     },
+    "common": {
+      "cancel": "Zrušiť",
+      "save": "Uložiť"
+    },
     "nav": {
-      "dashboard": "Dashboard",
+      "home": "Domov",
       "profile": "Profil",
       "signOut": "Odhlásiť sa",
       "pantry": "Špajza",
       "chatWithRivo": "Chat s Rivom",
-      "mealGallery": "Galerie jedál"
+      "kitchenCounter": "Kuchynský pult"
     },
     "navbar": {
       "language": "Jazyk"
     },
     "userAlt": "Používateľ",
-    "templateUsage": "Upozornenie: Tento jedálny plán a nákupný zoznam slúžia len ako inšpirácia. Oba sú len príklady na základe vašej úrovne aktivity a cieľa. Nie sú plne prispôsobené vašim preferenciám a stravovacím potrebám. Pre skutočne personalizovaný plán prejdite na Premium.",
     "membershipSuffix": "člen",
     "greeting": {
       "title": "Vitajte späť, {name}! 👋",
-      "subtitle": "Tu je váš prehľad na dnes,"
+      "subtitle": "Tu je váš prehľad na dnes,",
+      "actions": {
+        "recipes": "Recepty",
+        "shoppingList": "Nákupný zoznam"
+      }
     },
     "version": "Verzia {version}",
     "days": {
@@ -473,16 +515,285 @@
     },
     "dailyPlan": {
       "title": "Váš denný plán",
-      "today": "dnes"
+      "today": "dnes",
+      "waitingForApproval": "Plán čaká na schválenie",
+      "waitingForApprovalDesc": "Prezri si jedálniček a schváľ ho.",
+      "readyForPurchase": "Pripravené na nákup",
+      "readyForPurchaseDesc": "Jedálniček je aktívny, zostáva už len nakovť prísady."
     },
     "time": {
       "minutesShort": "min"
+    },
+    "basic": {
+      "recipeTags": {
+        "all": "Všetko",
+        "high-protein": "Veľa proteínov",
+        "vegetarian": "Vegetariánske",
+        "vegan": "Vegánske",
+        "pescatarian": "Pescetariánske",
+        "paleo": "Paleo",
+        "gluten-free": "Bez lepku",
+        "dairy-free": "Bez laktózy",
+        "ketogenic": "Keto",
+        "quick": "Rýchlovka"
+      },
+      "hero": {
+        "badge": "Tip dňa",
+        "mealPrep": "Meal prep"
+      },
+      "customRecipe": {
+        "badge": "Rivo custom",
+        "title": "Pozri, čo ti Rivo navarí zo špajze",
+        "description": "Skontrolujeme, čo už doma máš, a skúsime nájsť jeden recept pripravený hneď a jeden, ktorý odomkne malý dokup.",
+        "cta": "Spýtať sa Riva na vlastný recept",
+        "ctaGenerating": "Rivo generuje...",
+        "ctaRetry": "Skúsiť znova",
+        "setup": {
+          "title": "Najprv spresni recept",
+          "description": "Povedz Rivovi, na aké jedlo má recept sedieť a pre koľko porcií ho má pripraviť, ešte pred samotným generovaním.",
+          "modeLabel": "Režim generovania",
+          "modeHint": "Vyber, či má Rivo vychádzať zo špajze, alebo ju úplne ignorovať a riadiť sa len profilom.",
+          "servingsLabel": "Počet porcií",
+          "servingsHint": "Nastav, pre koľko ľudí má Rivo recept vyskladať.",
+          "mealTypeLabel": "Typ jedla",
+          "mealTypeHint": "Vyber, na aký moment dňa má recept sedieť.",
+          "mealTypePlaceholder": "Vyber typ jedla",
+          "mealTypes": {
+            "breakfast": "Raňajky",
+            "lunch": "Obed",
+            "dinner": "Večera",
+            "snack": "Snack"
+          },
+          "mealPrepLabel": "Chcem meal prep variant",
+          "mealPrepDescription": "Uprednostni recepty, ktoré sa dajú dobre odložiť a chutia dobre aj po ohriatí.",
+          "modes": {
+            "pantry": {
+              "title": "Použiť špajzu",
+              "description": "Rivo sa najprv pokúsi variť z toho, čo už máš doma, a malé dokúpenie navrhne len keď treba."
+            },
+            "preferencesOnly": {
+              "title": "Ignorovať špajzu",
+              "description": "Rivo vygeneruje recept len podľa diéty, alergií, neobľúbených jedál a preferencií jedla."
+            }
+          },
+          "profileHintLabel": "Profil klienta",
+          "profileHint": "Rivo bude stále rešpektovať tvoju diétu, alergie a jedlá, ktoré nemáš rád.",
+          "submit": "Generovať recept",
+          "cancel": "Zrušiť"
+        },
+        "loading": {
+          "badge": "Práve generujem",
+          "title": "Rivo skladá tvoj ďalší najlepší recept",
+          "description": "Prehľadávame špajzu, porovnávame rýchle dokúpenie a skladáme recept, ktorý sa hodí presne na teraz.",
+          "progressLabel": "Priebeh generovania",
+          "tipsLabel": "Aktuálny krok",
+          "tips": {
+            "scanning": "Prehľadávam tvoju špajzu a hľadám skryté možnosti.",
+            "matching": "Párujem suroviny s receptami, ktoré vieš uvariť hneď alebo skoro hneď.",
+            "finishing": "Finalizujem najlepší recept na dnešok."
+          }
+        },
+        "result": {
+          "badge": "Čerstvo od Riva",
+          "title": "Tvoj vlastný recept je pripravený",
+          "description": "Rivo pripravil {count} možností šitých na tento moment.",
+          "open": "Otvoriť výsledok receptu",
+          "regenerate": "Vygenerovať znova",
+          "readyNow": "Hneď uvariteľné",
+          "almostCookable": "Takmer uvariteľné",
+          "preferencesOnly": "Podľa tvojich preferencií"
+        },
+        "fallback": {
+          "badge": "Smart fallback",
+          "title": "Zatiaľ to nesadlo úplne presne",
+          "description": "Rivo z tvojej aktuálnej špajze nevedel poskladať uvariteľný recept, ale tieto rýchle úpravy by ho mali odomknúť.",
+          "retry": "Skúsiť znova",
+          "openPantry": "Upraviť špajzu",
+          "preferencesOnly": "Profilová zhoda",
+          "missingCount": "Chýba {count}",
+          "defaultSuggestions": {
+            "pantry": "Pridaj dve alebo tri základné suroviny, ktoré kupuješ najčastejšie.",
+            "protein": "Doplň jeden zdroj bielkovín a otvoríš viac jedál.",
+            "vegetables": "Pridaj jednu čerstvú zeleninu pre jednoduchšie obedové a večerné zhody.",
+            "preferences": "Rivo ti navrhne niekoľko receptov, ktoré sedia na tvoj profil aj bez špajze."
+          }
+        },
+        "error": {
+          "badge": "Problém pri generovaní",
+          "title": "Rivo narazil na malý zádrhel",
+          "description": "Vlastný recept sa teraz nepodarilo vygenerovať. Skús to prosím o chvíľu znova.",
+          "detailLabel": "Detail chyby",
+          "retry": "Skúsiť znova",
+          "codes": {
+            "AUTH_REQUIRED": "Pre generovanie vlastného receptu sa prosím prihlás znova.",
+            "RATE_LIMITED": "Rivo je teraz trochu vyťažený. Skús to prosím o chvíľu znova.",
+            "PROFILE_UNAVAILABLE": "Nepodarilo sa načítať tvoje profilové údaje pre generovanie receptu.",
+            "PANTRY_UNAVAILABLE": "Nepodarilo sa načítať tvoju špajzu.",
+            "GENERATION_IN_PROGRESS": "Rivo už práve pracuje na tvojom recepte.",
+            "GENERATION_INTERRUPTED": "Generovanie receptu bolo prerušené. Po obnovení stránky sa stream nedá obnoviť, takže ho spusti znova.",
+            "GENERATION_FAILED": "Rivo nedokázal dokončiť generovanie receptu.",
+            "TIMEOUT": "Generovanie receptu trvalo príliš dlho. Skús to prosím znova.",
+            "DEFAULT": "Vlastný recept sa teraz nepodarilo vygenerovať."
+          }
+        },
+        "message": {
+          "pantryRecipeReady": "Rivo ti našiel recept zo špajze: {recipeName}.",
+          "almostCookableReady": "Rivo našiel recept {recipeName}. Chýba už len {missingCount} surovina(y).",
+          "preferencesOnlyReady": "Rivo vytvoril recept podľa tvojich preferencií: {recipeName}.",
+          "preferencesFallbackReady": "Rivo pripravil {suggestionCount} profilovo vhodné odporúčania receptov.",
+          "fallbackSuggestionsReady": "Rivo pripravil {suggestionCount} záložné odporúčanie(a) z databázy.",
+          "emptyPantry": "Tvoja špajza je zatiaľ prázdna, tak Rivo pripravil aspoň pár šikovných štartov.",
+          "noRecipeAvailable": "Zatiaľ sa nenašla presná zhoda, ale Rivo vybral niekoľko užitočných ďalších možností.",
+          "noPreferencesRecipeAvailable": "Rivo zatiaľ nevytvoril silný recept len z preferencií, ale našiel pár užitočných alternatív."
+        },
+        "recipeUnavailable": {
+          "pantryEmpty": "Tvoja špajza je prázdna, takže sa z nej zatiaľ nedá nič uvariť.",
+          "noPantryRecipe": "Zo súčasnej špajze sa zatiaľ nedá uvariť plný recept bez dokúpenia.",
+          "noAlmostCookable": "Rivo nenašiel ani takmer uvariteľný recept s tromi alebo menej chýbajúcimi surovinami.",
+          "noPreferencesRecipe": "Rivo nedokázal vytvoriť recept, ktorý by dosť dobre sedel tvojim preferenciám."
+        },
+        "toasts": {
+          "ready": "Tvoj vlastný recept je pripravený.",
+          "empty": "Rivo zatiaľ našiel aspoň fallback odporúčania.",
+          "error": "Vlastný recept sa teraz nepodarilo vygenerovať.",
+          "resumed": "Rivo pokračuje v generovaní tvojho receptu."
+        }
+      },
+      "pantryDashboard": {
+        "badge": "Tvoja špajza",
+        "itemsUnit": "surovín",
+        "cookablePrefix": "Môžeš z nich uvariť až ",
+        "cookableSuffix": " jedál",
+        "openCta": "Otvor špajzu"
+      },
+      "cookableEmpty": {
+        "title": "Zatiaľ nemáš z čoho variť",
+        "description": "Pridaj viac surovín do špajze a my ti z nich vymyslíme recepty."
+      },
+      "almostCookable": {
+        "title": "Skoro na dosah",
+        "subtitle": "- chýba pár surovín",
+        "scrollLeft": "Posunúť recepty doľava",
+        "scrollRight": "Posunúť recepty doprava"
+      },
+      "recipeDialog": {
+        "mealPrep": "Meal prep",
+        "detail": "Detail receptu",
+        "oneServing": "{count} porcia",
+        "servings": "{count} porcie",
+        "addToPantry": "Pridať do špajze",
+        "addToShoppingList": "Pridať do nákupného zoznamu",
+        "cookThisRecipe": "Chcem variť tento recept",
+        "haveAmountInline": "máme {amount}",
+        "stapleAvailable": "základ",
+        "fallbackUsing": "Máme: {ingredient}",
+        "saveRecipe": "Uložiť recept",
+        "removeBookmark": "Odstrániť záložku",
+        "bookmarkSaved": "Recept bol uložený do záložiek.",
+        "bookmarkRemoved": "Recept bol odstránený zo záložiek.",
+        "bookmarkError": "Záložku sa nepodarilo upraviť."
+      },
+      "restrictionFlags": {
+        "contains-dairy": "Obsahuje mlieko",
+        "contains-eggs": "Obsahuje vajcia",
+        "contains-fish": "Obsahuje ryby",
+        "contains-gluten": "Obsahuje lepok",
+        "contains-nuts": "Obsahuje orechy",
+        "contains-peanuts": "Obsahuje arašidy",
+        "contains-shellfish": "Obsahuje mäkkýše",
+        "contains-soy": "Obsahuje sóju"
+      },
+      "shoppingList": {
+        "description": "Ťukni na chýbajúce suroviny v recepte a zobrazia sa tu.",
+        "itemsCount": "položiek",
+        "doneButton": "Hotovo",
+        "completing": "Dokončujem...",
+        "emptyTitle": "Tvoj nákupný zoznam je prázdny",
+        "emptyDescription": "Otvor recept, ktorý je skoro pripravený na varenie, a ťukni na chýbajúcu surovinu, aby sa pridala sem.",
+        "historyTitle": "História",
+        "historyEmpty": "Dokončené nákupné zoznamy sa zobrazia tu.",
+        "historyNoDate": "Zatiaľ bez dátumu",
+        "historyStatusDraft": "Koncept",
+        "historyStatusApproved": "Schválené",
+        "historyStatusPurchased": "Nakúpené",
+        "historyStatusCompleted": "Dokončené",
+        "historyStatusCancelled": "Zrušené",
+        "progressLabel": "{checked} z {total} hotovo",
+        "allDone": "Všetko nakúpené! 🎉",
+        "editTitleLabel": "Upraviť názov zoznamu",
+        "titleUpdateError": "Nepodarilo sa aktualizovať názov",
+        "editQuantityButton": "Upraviť množstvo",
+        "editQuantityLabel": "Množstvo",
+        "editQuantityPlaceholder": "napr. 2 ks alebo 500 g",
+        "removeItemLabel": "Odstrániť položku",
+        "removeError": "Nepodarilo sa odstrániť položku"
+      },
+      "kitchenCounter": {
+        "selectedRecipeBadge": "Vybraný recept",
+        "selectedRecipeDescription": "Prenesený z prehliadača receptov do Kuchynského pultu.",
+        "emptyTitle": "Nemáš vybraný recept",
+        "emptyDescription": "Otvor recept na domovskej stránke a použi akciu na varenie, aby sa preniesol do Kuchynského pultu.",
+        "backToHome": "Späť na domov",
+        "cancelRecipe": "Zrušiť recept",
+        "cancelShort": "Zrušiť",
+        "ingredientsTab": "Suroviny",
+        "stepsTab": "Postup",
+        "overviewTitle": "Nutričné hodnoty",
+        "ingredientsTitle": "Suroviny",
+        "stepsTitle": "Postup prípravy",
+        "readyAmount": "pripravené",
+        "missingAmount": "dopĺň",
+        "haveAmountInline": "máme {amount}",
+        "stapleAvailable": "základ",
+        "previousStep": "Späť",
+        "nextStep": "Ďalší krok",
+        "stepProgress": "Krok {current} z {total}",
+        "finishRecipe": "Dokončiť recept",
+        "finishPending": "Dokončujem...",
+        "recipeFinished": "Recept je hotový",
+        "pantryUpdated": "Špajza bola aktualizovaná pre {count} položky",
+        "finishError": "Nepodarilo sa odpísať suroviny zo špajze",
+        "missingIngredientsTitle": "Niektoré suroviny ti ešte chýbajú",
+        "missingIngredientsDescription": "Ak budeš pokračovať, Eatrivo odpíše len tie suroviny, ktoré momentálne v špajzi máš.",
+        "missingIngredientsListTitle": "Aktuálne chýba",
+        "missingIngredientsCancel": "Zrušiť",
+        "missingIngredientsContinue": "Viem o tom, dokončiť aj tak",
+        "progress": "{checked}/{total} surovín pripravených",
+        "step1Title": "Priprav si pracovnú plochu",
+        "step1Text": "Skontroluj ingrediencie pre recept {recipeTitle} a priprav si pracovnú plochu ešte pred varením.",
+        "step2Title": "Začni základom",
+        "step2Text": "Recept patrí do kategórie {category}, preto začni základom, ktorý sa hodí k tomuto typu jedla a sleduj čas prípravy {minutes} min.",
+        "step3Title": "Sleduj makrá",
+        "step3Text": "Počas varenia sa drž plánovaných hodnôt {calories} kcal, {protein} g bielkovín, {carbs} g sacharidov a {fat} g tukov.",
+        "step4Title": "Dokonči a naservíruj",
+        "step4Text": "Na záver dochuť podľa potreby, skontroluj posledné kroky a môžeš servírovať."
+      },
+      "filters": {
+        "title": "Filtre receptov",
+        "empty": "Žiadne recepty pre tento filter",
+        "openButton": "Filtre",
+        "closeButton": "Zavrieť filtre",
+        "save": "Uložiť",
+        "clearAll": "Vymazať",
+        "noSelection": "Bez vybraného filtra",
+        "selectedValue": "Vybrané: {value}",
+        "sections": {
+          "popular": "Začni tu",
+          "preferences": "Preferuj",
+          "special": "Vyhni sa / špeciálne"
+        }
+      },
+      "toasts": {
+        "pantryDraftReady": "\"{ingredientName}\" je pripravené na potvrdenie v špajzi.",
+        "pantryDraftAddError": "Nepodarilo sa pridať surovinu.",
+        "kitchenCounterNotify": "Upozornenie nastavené! Dáme ti vedieť hneď ako to spustíme. 🔔"
+      }
     },
     "toasts": {
       "mealPlanReady": "Jedálny plán je pripravený!",
       "mealPlanLoadError": "Nepodarilo sa načítať jedálny plán",
       "shoppingListsLoadError": "Nepodarilo sa načítať nákupné zoznamy",
-      "premiumOnly": "Táto funkcia je dostupná iba pre prémiových členov",
+        "premiumOnly": "Táto funkcia je dostupná iba pre členov Plus",
       "generatingShoppingList": "Generujem váš personalizovaný nákupný zoznam...",
       "shoppingListAndMealPlanGenerated": "Nákupný zoznam a jedálny lístok úspešne vygenerované! 🎉",
       "shoppingListGenerated": "Nákupný zoznam úspešne vygenerovaný!",
@@ -504,9 +815,33 @@
       "fats": "Tuky"
     },
     "recipe": {
-      "nutritionValues": "Nutričné hodnoty",
+      "nutritionValues": "Nutričné hodnoty (na porciu)",
       "ingredients": "Ingrediencie",
       "noIngredients": "Zoznam ingrediencií nie je k dispozícii"
+    },
+    "pantryMatches": {
+      "title": "Uvar z toho, čo už máš",
+      "subtitle": "Recepty poskladané z ingrediencií, ktoré už máš doma.",
+      "cookableTitle": "Môžeš variť hneď",
+      "almostCookableTitle": "Chýba už len málo",
+      "loadError": "Nepodarilo sa načítať recepty zo špajze.",
+      "emptyPantry": {
+        "title": "Tvoja špajza je prázdna",
+        "description": "Pridaj položky do špajze a ukážeme ti recepty, ktoré vieš uvariť okamžite."
+      },
+      "noMatches": {
+        "title": "Zatiaľ žiadne blízke zhody",
+        "description": "Aktuálne položky v tvojej špajzi sa ešte nezhodujú s celým receptom. Pridaj pár základných ingrediencií a táto sekcia sa začne plniť."
+      },
+      "availableIngredients": "Ingrediencie, ktoré už máš",
+      "missingIngredients": "Chýbajúce ingrediencie",
+      "readyNow": "Všetky potrebné ingrediencie máš doma",
+      "haveCount": "Máš {matched}/{total}",
+      "missingCount": "Chýba {count}",
+      "minutesShort": "min",
+      "proteinShortLabel": "Biel",
+      "carbsShortLabel": "Sach",
+      "fatShortLabel": "Tuky"
     },
     "mealPlan": {
       "loading": {
@@ -531,21 +866,21 @@
       "showActiveOnly": "Zobraziť iba aktívny",
       "empty": {
         "title": "Žiadne nákupné zoznamy",
-        "description": "Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Kliknite na tlačítko 'Nechaj ma varit' pre vygenerovanie noveho nákupného zoznamu pre tento týžden."
+        "description": "Zatiaľ nemáte vygenerované žiadne nákupné zoznamy. Kliknite na tlačidlo 'Nechaj ma variť' a vytvorte nový nákupný zoznam na tento týždeň."
       },
       "noActive": {
         "title": "Žiadne aktívne nákupné zoznamy",
         "description": "Momentálne nemáte žiadny aktívny nákupný zoznam. Zobrazte všetky zoznamy pre dokončené alebo zrušené."
       },
       "premiumCTA": {
-        "title": "Upgradnite na Premium a splnťe si svoje ciele rýchlejšie! 🚀",
-        "description": "Vygenerujte si personalizovaný nákupný zoznam na tento týžden",
+        "title": "Prejdite na Plus a plňte si svoje ciele rýchlejšie! 🚀",
+        "description": "Vygenerujte si personalizovaný nákupný zoznam na tento týždeň",
         "button": "Zobraziť plány"
       },
       "createNew": {
         "title": "Nechaj ma variť! 🍳",
         "subtitle": "Vytvorím personalizovaný plán len pre teba",
-        "locked": "Odomkni s Premium 🔒",
+        "locked": "Odomkni s Plus 🔒",
         "lockedSubtitle": "Vygeneruj si personalizovaný nákupný zoznam prispôsobený tvojim cieľom",
         "completeActiveError": "Najprv dokončite svoj aktívny nákupný zoznam! 🛒",
         "activeListExists": "Najprv dokonči aktívny zoznam! 🛒",
@@ -553,14 +888,30 @@
         "loader": {
           "scanning": "Prehľadávam tvoju špajzu 🔍",
           "optimizing": "Optimalizujem makrá 🧮",
-          "finishing": "Už to bude... ✨"
+          "finishing": "Už to bude... ✨",
+          "fetchingProfile": "Načítavam tvoj profil 👤",
+          "calculatingMacros": "Počítam tvoje makrá 🧮",
+          "checkingPantry": "Kontrolujem špajzu 🏥",
+          "fetchingHistory": "Prehľadávam históriu nákupov 📂",
+          "scanningInventory": "Skenujem zásoby 🔍",
+          "buildingPrompt": "Pripravujem personalizovaný plán 📝",
+          "generatingList": "AI vytvára tvoj nákupný zoznam 🤖",
+          "merging": "Optimalizujem zoznam ➕",
+          "validatingMacros": "Overujem makrá ⚖️",
+          "formatting": "Formátujem výsledok ✨",
+          "saving": "Ukladám zoznam 💾",
+          "done": "Hotovo! 🎉",
+          "retrying": "Opakujem pokus {count}/3 🔄"
         },
         "sitTight": "Pripravujem dokonalý jedálny plán prispôsobený tvojmu telu a cieľom."
       }
     },
     "shoppingList": {
       "status": {
+        "draft": "Návrh",
         "active": "Aktívny",
+        "approved": "Schválený",
+        "purchased": "Nakúpené",
         "completed": "Dokončený",
         "cancelled": "Zrušený",
         "unknown": "Neznámy"
@@ -568,6 +919,11 @@
       "pdfDocument": "PDF Dokument",
       "view": "Zobraziť",
       "download": "Stiahnuť",
+      "editQuantity": "Upraviť množstvo",
+      "saveQuantity": "Uložiť",
+      "cancelEditQuantity": "Zrušiť úpravu množstva",
+      "quantityLabel": "Množstvo",
+      "quantityPlaceholder": "napr. 2 ks alebo 500 g",
       "edit": {
         "title": "Upraviť nákupný zoznam",
         "nameLabel": "Názov",
@@ -684,7 +1040,7 @@
     "comingSoon": {
       "sectionTitle": "Čo príde ďalej",
       "badge": "Už čoskoro",
-      "backToDashboard": "Späť na Dashboard",
+      "backToHome": "Späť na Domov",
       "teaser": {
         "feature1": "AI technológia",
         "feature2": "Personalizované",
@@ -693,14 +1049,14 @@
       "pantry": {
         "title": "Inteligentná Špajza",
         "description": "Zabudni na manuálne zapisovanie. Rivo si čoskoro zapamätá tvoje nákupy a sám odpočíta suroviny, keď si jedlo uvaríš.",
-        "badge": "● UŽ ČOSKORO",
+        "badge": "● LIVE",
         "tags": {
           "tag1": "Automatické",
           "tag2": "Šetrí čas",
           "tag3": "Bez námahy"
         },
         "cta": "🔔 Upozorni ma pri spustení",
-        "secondaryAction": "Zatiaľ späť na Dashboard"
+        "secondaryAction": "Zatiaľ späť na Domov"
       },
       "mealGallery": {
         "title": "Knižnica chutí 📚",
@@ -712,19 +1068,41 @@
           "tag3": "1-klik do plánu ⚡"
         },
         "cta": "🔔 Upozorni ma pri spustení",
-        "secondaryAction": "Zatiaľ späť na Dashboard"
+        "secondaryAction": "Zatiaľ späť na Domov"
       },
       "chatWithRivo": {
         "title": "Chat s Rivom",
         "description": "Opýtaj sa Riva čokoľvek o výžive, receptoch alebo pláne jedál. Tvoj osobný AI šéfkuchár, vždy pripravený.",
         "badge": "● UŽ ČOSKORO",
+        "history": {
+          "title": "História chatov",
+          "description": "Vráť sa k predchádzajúcim konverzáciám alebo začni nový chat len pre aktuálnu tému.",
+          "currentLabel": "Aktívny chat",
+          "mobileListLabel": "Tvoje konverzácie",
+          "newChat": "Nový chat",
+          "untitled": "Nový chat",
+          "loading": "Načítavam históriu...",
+          "emptyTitle": "Zatiaľ tu nič nie je",
+          "emptyDescription": "Keď pošleš prvú správu, tento chat sa uloží do tvojej histórie.",
+          "inputPlaceholder": "Opýtaj sa na svoj jedálniček...",
+          "errors": {
+            "loadSessions": "Históriu chatov sa nepodarilo načítať.",
+            "loadSession": "Tento chat sa nepodarilo otvoriť.",
+            "createSession": "Nový chat sa nepodarilo vytvoriť.",
+            "refreshSessions": "Zoznam chatov sa nepodarilo obnoviť."
+          }
+        },
+        "warning": {
+          "title": "Rivo je stále vo vývoji",
+          "body": "Bohužiaľ, Rivo je stále vo vývoji. Môžeš ho používať ako informačného asistenta. Zatiaľ nedokáže meniť nič vo vašom profile ani pracovať s vašimi receptami. Tieto funkcie sprístupníme v budúcich aktualizáciách."
+        },
         "tags": {
           "tag1": "Inteligentný",
           "tag2": "Dostupný 24/7",
           "tag3": "Personalizovaný"
         },
         "cta": "🔔 Upozorni ma pri spustení",
-        "secondaryAction": "Zatiaľ späť na Dashboard"
+        "secondaryAction": "Zatiaľ späť na Domov"
       }
     }
   },
@@ -741,11 +1119,78 @@
       "nutrition": "Nutričné preferencie"
     },
     "navigation": {
-      "backToDashboard": "Späť na dashboard"
+      "backToHome": "Späť na domov",
+      "backToProfile": "Späť na profil"
     },
     "header": {
+      "kicker": "Tvoj profil",
+      "fallbackName": "Člen Eatrivo",
+      "badgesCount": "{count} odznak(ov)",
       "title": "Môj profil",
       "description": "Spravujte svoje osobné údaje a preferencie"
+    },
+    "stats": {
+      "placeholder": "placeholder",
+      "cookedMeals": {
+        "label": "Uvarené jedlá"
+      },
+      "dayStreak": {
+        "label": "Dňový streak"
+      }
+    },
+    "menu": {
+      "personal": {
+        "title": "Osobné informácie",
+        "description": "Spravuj svoje osobné údaje"
+      },
+      "nutrition": {
+        "title": "Nutričné preferencie",
+        "description": "Diéty, alergie a ciele"
+      },
+      "bookmarks": {
+        "title": "Uložené recepty",
+        "description": "Všetky tvoje záložky na jednom mieste"
+      },
+      "billing": {
+        "title": "Predplatné",
+        "description": "Spravuj svoj prémiový plán"
+      },
+      "logout": {
+        "title": "Odhlásenie",
+        "description": "Odhlásiť sa zo svojho účtu"
+      }
+    },
+    "billingPlaceholder": {
+      "title": "Predplatné pripravujeme",
+      "description": "Tento stav je zatiaľ placeholder. Billing flow doladíme v ďalšom kroku bez zásahu do zvyšku profilu.",
+      "helper": "Zatiaľ môžeš používať existujúcu pricing stránku alebo sa vrátiť späť do profilu.",
+      "cta": "Otvoriť pricing"
+    },
+    "bookmarks": {
+      "title": "Uložené recepty",
+      "description": "Všetko, čo si si uložil do záložiek, nájdeš tu pripravené na rýchly návrat alebo meal prep opakovanie.",
+      "helper": "{count, plural, =0 {Zatiaľ nemáš uložené žiadne recepty.} one {Uložený # recept.} few {Uložené # recepty.} other {Uložených # receptov.}}",
+      "empty": {
+        "title": "Zatiaľ nemáš uložené recepty",
+        "description": "Ulož si recept zo recipe dialogu a automaticky sa zobrazí tu v profile."
+      },
+      "card": {
+        "mealPrep": "Meal prep",
+        "savedOn": "Uložené {date}",
+        "remove": "Odstrániť záložku",
+        "minutes": "Minúty",
+        "servings": "Porcie",
+        "proteinLabel": "Proteín"
+      },
+      "actions": {
+        "loadMore": "Načítať ďalšie recepty",
+        "loadingMore": "Načítavam ďalšie"
+      },
+      "toast": {
+        "loadError": "Nepodarilo sa načítať uložené recepty",
+        "removed": "Recept bol odstránený zo záložiek",
+        "removeError": "Nepodarilo sa odstrániť záložku"
+      }
     },
     "personal": {
       "title": "Osobné informácie",
@@ -764,7 +1209,9 @@
       },
       "membership": {
         "label": "Členstvo",
-        "helper": "Váš súčasný plán"
+        "helper": "Váš súčasný plán",
+        "premiumBadge": "Člen Plus",
+        "freeBadge": "Free plán"
       },
       "validation": {
         "fullNameMin": "Meno musí mať aspoň 2 znaky",
@@ -912,7 +1359,7 @@
       "copyright": "© {year} Eatrivo · Všetky práva vyhradené",
       "links": {
         "web": "Web",
-        "dashboard": "Dashboard",
+        "home": "Domov",
         "support": "Podpora"
       }
     },
@@ -954,7 +1401,7 @@
         "text": "Nákupný zoznam je organizovaný podľa kategórií, aby ste mohli nakupovať rýchlejšie a efektívnejšie. Nezabudnite si ho stiahnuť alebo vytlačiť pred odchodom do obchodu!"
       },
       "cta": "Zobraziť Nákupný Zoznam",
-      "help": "Váš nákupný zoznam nájdete v sekcii <strong>Dashboard</strong> vo vašom Eatrivo účte."
+      "help": "Váš nákupný zoznam nájdete v sekcii <strong>Domov</strong> vo vašom Eatrivo účte."
     },
     "admin": {
       "preview": "Eatrivo - Email odoslaný: {emailTypeLabel}",
@@ -972,6 +1419,221 @@
       "types": {
         "welcome": "Welcome Email",
         "shoppingList": "Shopping List Notification"
+      },
+      "dashboard": {
+        "common": {
+          "membership": {
+            "plus": "Plus",
+            "basic": "Basic",
+            "trainer": "Trainer",
+            "free": "Free"
+          },
+          "noName": "Bez mena",
+          "notSpecified": "Neuvedené",
+          "status": {
+            "active": "Aktívny",
+            "completed": "Dokončený",
+            "cancelled": "Zrušený"
+          },
+          "sex": {
+            "man": "Muž",
+            "woman": "Žena"
+          },
+          "units": {
+            "years": "r."
+          },
+          "profile": {
+            "complete": "OK",
+            "incomplete": "Neúplný"
+          }
+        },
+        "statsCard": {
+          "title": "Prehľad používateľov",
+          "totalUsers": "Celkovo používateľov"
+        },
+        "tabs": {
+          "analytics": "Analytics",
+          "emails": "Emaily",
+          "notifications": "Notifikácie"
+        },
+        "userInfoCard": {
+          "loading": "Načítavam údaje používateľa...",
+          "empty": "Používateľ nemá vyplnené nutričné údaje",
+          "title": "Info o používateľovi",
+          "labels": {
+            "allergies": "Alergie:",
+            "dislikes": "Neobľúbené:"
+          }
+        },
+        "usersTab": {
+          "title": "Zoznam používateľov",
+          "description": "Prehľad registrovaných používateľov",
+          "loading": "Načítavajú sa používatelia...",
+          "emptyTitle": "Žiadni používatelia",
+          "emptyDescription": "V systéme ešte nie sú registrovaní žiadni používatelia",
+          "details": {
+            "id": "ID:",
+            "profile": "Profil:",
+            "username": "Username:"
+          },
+          "actions": {
+            "create": "Vytvoriť",
+            "list": "zoznam",
+            "copy": "Kopírovať",
+            "email": "email",
+            "emailCopied": "Email skopírovaný"
+          }
+        },
+        "shoppingListTab": {
+          "title": "Nový nákupný zoznam",
+          "description": "Vytvorte a priraďte nákupný zoznam používateľovi.",
+          "loadingUsers": "Načítavajú sa používatelia...",
+          "sections": {
+            "basicInfo": "Základné informácie",
+            "planning": "Plánovanie",
+            "assignment": "Priradenie",
+            "content": "Obsah (Markdown)"
+          },
+          "fields": {
+            "title": {
+              "label": "Názov zoznamu",
+              "placeholder": "Napr. Nákupný zoznam - Týždeň 42"
+            },
+            "description": {
+              "label": "Popis (voliteľné)",
+              "placeholder": "Krátky popis zoznamu..."
+            },
+            "startDate": "Začiatok",
+            "endDate": "Koniec",
+            "user": "Používateľ",
+            "userPlaceholder": "Vyberte používateľa",
+            "searchPlaceholder": "Hľadať...",
+            "unassignedTest": "Bez priradenia (Test)",
+            "status": {
+              "label": "Stav zoznamu",
+              "placeholder": "Vyberte stav"
+            },
+            "markdownPlaceholder": "# Nákupný zoznam...\n\nAlebo kliknite na 'Generovať AI' pre automatické vytvorenie."
+          },
+          "actions": {
+            "generateAi": "Generovať AI",
+            "generatingAi": "Generuje AI...",
+            "creating": "Vytvára sa...",
+            "createList": "Vytvoriť nákupný zoznam",
+            "createListShort": "Vytvoriť zoznam"
+          },
+          "tips": {
+            "title": "Rýchle tipy",
+            "markdown": "Používajte <strong>Markdown</strong> pre formátovanie zoznamov.",
+            "assignment": "Zoznamy priraďujte konkrétnemu používateľovi."
+          }
+        },
+        "emailsTab": {
+          "title": "Odoslať update email",
+          "description": "Informujte používateľov o nových funkciách a vylepšeniach",
+          "sections": {
+            "basicInfo": "Základné informácie",
+            "changes": "Zoznam zmien",
+            "testEmail": "Test email"
+          },
+          "fields": {
+            "version": {
+              "label": "Verzia *",
+              "placeholder": "napr. 1.2.0"
+            },
+            "updateTitle": {
+              "label": "Názov aktualizácie *",
+              "placeholder": "napr. Nové funkcie pre váš dashboard"
+            },
+            "updateDescription": {
+              "label": "Úvodný text *",
+              "placeholder": "Krátky úvodný text pre email..."
+            },
+            "changeType": "Typ",
+            "changeTitle": "Názov",
+            "changeTitlePlaceholder": "napr. Sledovanie váhy",
+            "changeDescription": "Popis",
+            "changeDescriptionPlaceholder": "Stručný popis zmeny...",
+            "testEmail": {
+              "label": "Testovacia adresa",
+              "placeholder": "vas@email.com"
+            }
+          },
+          "types": {
+            "feature": "Novinka",
+            "improvement": "Vylepšenie",
+            "fix": "Oprava"
+          },
+          "changeItem": "Zmena #{index}",
+          "result": {
+            "successTitle": "Úspech",
+            "errorTitle": "Chyba",
+            "sent": "Odoslaných: {count}",
+            "failed": "Zlyhalo: {count}",
+            "errors": "Chyby:"
+          },
+          "actions": {
+            "add": "Pridať",
+            "sending": "Odosielam...",
+            "sendTest": "Odoslať test",
+            "sendAll": "Odoslať všetkým"
+          },
+          "stats": {
+            "title": "Email štatistiky",
+            "totalUsers": "Celkový počet používateľov",
+            "withEmail": "S emailom"
+          },
+          "tips": {
+            "title": "Tipy pre emaily",
+            "first": "Najprv odošlite test na svoju adresu",
+            "second": "Používajte prehľadný zoznam zmien",
+            "third": "Rozdeľte zmeny podľa typu (novinka/vylepšenie/oprava)"
+          }
+        },
+        "profilesTab": {
+          "title": "Profil používateľa",
+          "description": "Zobrazenie detailných informácií o používateľovi",
+          "selectUser": "Vybrať používateľa",
+          "selectPlaceholder": "Vyberte používateľa...",
+          "selectOption": "-- Vyberte používateľa --",
+          "loading": "Načítavam údaje...",
+          "emptySelection": {
+            "title": "Žiadny používateľ nevybratý",
+            "description": "Vyberte používateľa pre zobrazenie jeho profilu"
+          },
+          "sections": {
+            "basicInfo": "Základné údaje",
+            "goals": "Ciele a aktivita",
+            "preferences": "Stravovacie preferencie",
+            "foodPreferences": "Preferencie jedál"
+          },
+          "fields": {
+            "sex": "Pohlavie",
+            "age": "Vek",
+            "height": "Výška",
+            "weight": "Váha",
+            "goal": "Cieľ",
+            "activityLevel": "Úroveň aktivity",
+            "diet": "Diéta",
+            "cookingTime": "Čas na varenie",
+            "budget": "Rozpočet",
+            "mealsPerDay": "Jedál denne",
+            "likes": "Obľúbené jedlá",
+            "dislikes": "Neobľúbené jedlá",
+            "allergies": "Alergie"
+          },
+          "yearsSuffix": "rokov",
+          "notSpecified": "Neuvedené",
+          "noData": {
+            "title": "Žiadne údaje",
+            "description": "Tento používateľ nemá vyplnené nutričné informácie"
+          },
+          "stats": {
+            "title": "Štatistiky profilov",
+            "completedProfiles": "Kompletných profilov",
+            "successRate": "Úspešnosť"
+          }
+        }
       }
     },
     "feedback": {
@@ -998,7 +1660,7 @@
       "heroLabel": "!NOVÁ AKTUALIZÁCIA!",
       "greeting": "Ahoj {recipientName},",
       "intro": "Máme pre teba nové vylepšenia. Pozri sa, čo sme pripravili.",
-      "cta": "OTVORIŤ DASHBOARD",
+      "cta": "OTVORIŤ DOMOV",
       "footer": "Ďakujeme, že si súčasťou Eatrivo."
     },
     "renewalReminder": {
@@ -1096,6 +1758,7 @@
       "disable": "Vypnúť notifikácie",
       "loginRequired": "Musíte byť prihlásený",
       "enabled": "Notifikácie boli zapnuté! Dostanete upozornenie pri novom nákupnom zozname.",
+      "pendingConfirmation": "Ešte jeden krok: skontrolujte email a potvrďte push notifikácie.",
       "disabled": "Notifikácie boli vypnuté",
       "enableError": "Nepodarilo sa aktivovať notifikácie. Skontrolujte nastavenia prehliadača.",
       "toggleError": "Chyba pri zmene nastavení notifikácií"
@@ -1111,16 +1774,17 @@
     },
     "title": "Investuj do seba",
     "subtitle": "Menej ako káva týždenne za plán, ktorý naozaj funguje.",
+    "freeLabel": "Zadarmo",
     "perMonth": "/mesiac",
     "features": "Funkcie",
     "currentPlan": "Aktuálny plán",
-    "upgrade": "Získať Premium",
+    "upgrade": "Upgrade",
     "getStarted": "Začať zadarmo",
     "popular": "Najlepšia hodnota",
     "signInToUpgrade": "Prihláste sa a odomknite plán",
     "valueAnchor": "Menej ako káva týždenne",
     "guarantee": "30-dňová garancia spokojnosti",
-    "manageSubscription": "Spravovať predplatné",
+    "manageSubscription": "Spravovať membership",
     "managingSubscription": "Otváram portál...",
     "back": "Späť",
     "trustCancel": "Zrušiť kedykoľvek",
@@ -1137,16 +1801,23 @@
         ]
       },
       "premium": {
-        "name": "Premium",
+        "name": "Plus",
         "description": "Všetky funkcie, ktoré vám pomôžu dosiahnuť vaše ciele",
         "features": [
-          "Úprava jedál podľa vašich chutí",
-          "Označovanie obľúbených a neoblíbených jedál pre lepšie prispôsobenie",
-          "Jedálničky vytvorené z jedál overených našimi odborníkmi a prispôsobené vašim preferenciám",
-          "Týždenné výzvy",
-          "Pokročilé sledovanie pokroku",
-          "Prednostný prístup k novým funkciam a vylepšeniam",
-          "Rivo ako váš osobní asistent bez obmedzení"
+          "Podpora nášho vývojového týmu pre rychlejší vývoj",
+          "(PRIPRAVUJEME) Skenovanie nákupného bločku pre rýchlejšie a pohodlnejšie pridanie potravín do Špajze",
+          "(PRIPRAVUJEME) Prispôsobenie jednotlivých receptov pre lepšiu personalizáciu založenú na vašich cieľoch, chutiach a vašej diéte"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "Pokročilé funkcie pre ambiciózne zdravotné ciele",
+        "features": [
+          "Všetko z Plus",
+          "Pokročilejšie vedenie stravovania",
+          "Rozšírené analytiky",
+          "Rodinné plánovanie jedál",
+          "Import a export receptov"
         ]
       }
     },
@@ -1160,8 +1831,8 @@
     "title": "Fakturácia",
     "back": "Späť",
     "currentPlan": "Aktuálny plán",
-    "managePlan": "Spravovať predplatné",
-    "upgradePlan": "Upgradovať plán",
+    "managePlan": "Spravovať membership",
+    "upgradePlan": "Upgrade plánu",
     "upgradeToProTitle": "Upgradovať na Pro",
     "status": {
       "active": "Aktívne",
@@ -1176,6 +1847,22 @@
     "noSubscription": "Žiadne aktívne predplatné",
     "freeAccount": "Používate bezplatný plán",
     "successMessage": "Predplatné bolo úspešne aktivované! 🎉",
+    "profileSection": {
+      "membershipEyebrow": "Membership",
+      "description": "Spravuj svoj membership, skontroluj aktívne členstvo a zisti, čo máš práve odomknuté.",
+      "currentPlanLabel": "Aktuálny plán",
+      "yourMembershipLabel": "Tvoje membership",
+      "paidDescription": "Máš aktívny platený plán a správu membershipu vybavíš jedným klikom.",
+      "basicDescription": "Momentálne si na základnom pláne. Ak chceš viac, nižšie nájdeš dostupný upgrade.",
+      "upgradeReady": "Upgrade je pripravený",
+      "availableUpgradesEyebrow": "Dostupné upgrady",
+      "availableUpgradesTitle": "Vyššie tiery pre tvoj účet",
+      "noUpgradeEyebrow": "Vyššie tiery",
+      "noUpgradeTitle": "Momentálne nemáš k dispozícii ďalší upgrade",
+      "noUpgradeDescription": "Tvoj aktuálny membership je najvyšší plán, ktorý v tejto časti aplikácie ponúkame.",
+      "consentEyebrow": "Checkout consent",
+      "consentTitle": "Potvrď právne súhlasy pred upgradeom"
+    },
     "errorMessages": {
       "portalFailed": "Nepodarilo sa otvoriť fakturačný portál",
       "checkoutFailed": "Nepodarilo sa spustiť platbu",
@@ -1212,16 +1899,16 @@
       "noNewPlans": "Generovať nové meal plány alebo nákupné zoznamy"
     },
     "tryAgain": "Skúsiť znova",
-    "goToDashboard": "Prejsť na Dashboard",
+    "goToHome": "Prejsť na Domov",
     "autoRefresh": "Po obnovení pripojenia sa stránka automaticky aktualizuje"
   },
   "upgrade": {
-    "title": "Získaj Premium prístup",
+    "title": "Získaj Plus prístup",
     "description": "Odomkni všetky funkcie a získaj neobmedzené AI jedálničky.",
     "feature1": "Neobmedzené AI jedálničky",
     "feature2": "Personalizované nutričné sledovanie",
     "feature3": "Pokročilé nákupné zoznamy",
-    "upgradeButton": "Prejsť na Premium",
+    "upgradeButton": "Upgrade na Plus",
     "maybeLater": "Možno neskôr",
     "socialProof": "Pridaj sa k 2 400+ členom, ktorí jedia múdrejšie",
     "trialDays": "{days} Dní Zadarmo"
@@ -1249,7 +1936,236 @@
       "termsAgree": "Oboznámil som sa s <terms>Všeobecnými obchodnými podmienkami</terms> a <privacy>Zásadami ochrany osobných údajov</privacy>",
       "digitalConsent": "Žiadam o okamžité začatie poskytovania digitálnej služby a beriem na vedomie, že tým strácam právo na odstúpenie od zmluvy v 14-dňovej lehote",
       "mustAgree": "Pre pokračovanie musíte súhlasiť s podmienkami",
-      "orderWithPayment": "Záväzne predplatiť"
+      "orderWithPayment": "Upgrade"
+    }
+  },
+  "pantry": {
+    "metadata": {
+      "title": "Špajza",
+      "description": "Maj prehľad o zásobách, rýchlo doplň nízky stav a pridávaj položky bez zdržania."
+    },
+    "title": "Špajza",
+    "eyebrow": "Potravinová zásoba",
+    "subtitle_empty": "Špajza je prázdna. Pridaj ingrediencie manuálne alebo ich importuj po označení nákupu ako nakúpené.",
+    "modal_title": "Pridať do spajzy",
+    "subtitle_count_one": "{count} položka",
+    "subtitle_count_few": "{count} položky",
+    "subtitle_count_many": "{count} položiek",
+    "add_item": "Pridať",
+    "refresh": "Obnoviť",
+    "filter_all": "Všetko",
+    "filter_restock": "Treba doplniť",
+    "filter_expiring": "Expiruje",
+    "filter_manual": "Manuálne",
+    "filter_shopping_list": "Z nákupu",
+    "search_placeholder": "Hľadaj potraviny, kategórie alebo pravidelné položky",
+    "category_filter_label": "Kategória",
+    "category_filter_all": "Všetky kategórie",
+    "summary_inventory": "V špajzi",
+    "summary_restock": "Na doplnenie",
+    "summary_expiring": "Expiruje",
+    "scan_bill":"Skenovat",
+    "inventory_title": "Tvoje položky",
+    "inventory_description": "Kompaktný zoznam pre rýchle úpravy množstva aj počas nákupu.",
+    "empty_state_title": "Špajza je prázdna",
+    "empty_state_description": "Pridaj ingrediencie manuálne alebo ich importuj z nákupného zoznamu po označení nákupu ako nakúpené.",
+    "add_first_item": "Pridať prvú položku",
+    "no_items_in_category": "Žiadne položky v tejto kategórii",
+    "expiry_warning_one": "1 položka čoskoro expiruje",
+    "expiry_warning_few": "{count} položky čoskoro expirujú",
+    "no_results_title": "Nič sa nenašlo",
+    "no_results_description": "Skús upraviť vyhľadávanie alebo zruš filtre a uvidíš celú špajzu.",
+    "clear_filters": "Zrušiť filtre",
+    "row_low_stock": "Málo",
+    "row_expiring": "Expirácia",
+    "row_track": "Sledovať",
+    "row_tracked": "Sledované",
+    "row_add_package": "Pridať balenie",
+    "row_add_package_again": "Pridať ďalšie",
+    "row_add_package_pending": "Pridávam",
+    "row_add_package_label": "Pridať ďalšie balenie do nákupného zoznamu",
+    "aria_expand_category": "Zobraziť položky v kategórii {category}",
+    "aria_collapse_category": "Skryť položky v kategórii {category}",
+    "aria_edit": "Upraviť položku",
+    "aria_decrease": "Znížiť množstvo",
+    "aria_increase": "Zvýšiť množstvo",
+    "aria_delete": "Odstrániť položku",
+    "save_changes": "Uložiť zmeny",
+    "cancel": "Zrušiť",
+    "load_error_title": "Špajzu sa nepodarilo načítať",
+    "drafts_badge": "Čaká",
+    "drafts_title": "Rýchle pridanie čaká na potvrdenie",
+    "drafts_description": "{count} čakajúcich zmien potrebuje potvrdenie pred uložením do špajze.",
+    "drafts_discard": "Zahodiť",
+    "drafts_confirm": "Potvrdiť",
+    "shopping_list_success": "Položka je v nákupnom zozname",
+    "shopping_list_error": "Položku sa nepodarilo pridať do nákupného zoznamu",
+    "field_name": "Názov",
+    "field_name_placeholder": "napr. Mlieko, Jablká, Cestoviny...",
+    "field_quantity": "Množstvo",
+    "field_quantity_placeholder": "napr. 500",
+    "field_tracking_mode": "Spôsob sledovania",
+    "tracking_mode_quantity": "Sledovať množstvo",
+    "tracking_mode_availability": "Sledovať dostupnosť",
+    "tracking_mode_availability_hint": "Režim dostupnosti uloží položku ako vec, ktorú máš doma, bez sledovania gramov alebo kusov.",
+    "tracking_mode_toggle_label": "Sledovanie množstva",
+    "tracking_mode_toggle_help": "Prepínač vypnutý znamená sledovanie presného množstva. Prepínač zapnutý prepne položku len na sledovanie dostupnosti v špajzi.",
+    "field_availability": "Dostupnosť",
+    "availability_in_stock": "V špajzi",
+    "availability_out_of_stock": "Minuté",
+    "toggle_availability": "Prepnúť dostupnosť",
+    "field_unit": "Jednotka",
+    "field_category": "Kategória",
+    "field_expiry": "Dátum expirácie",
+    "field_optional": "voliteľné",
+    "submit_single": "Pridať",
+    "submit_batch": "Pridať všetky",
+    "quick_add_title": "Rýchle pridanie",
+    "quick_add_description": "Pridaj položku za pár sekúnd a potvrď ju, keď ti to bude sedieť.",
+    "quick_add_hint": "Rýchle pridanie najprv vytvorí čakajúci návrh, aby si si položku mohol skontrolovať ešte pred uložením do špajze.",
+    "quick_add_cancel": "Zrušiť",
+    "quick_add_submit": "Uložiť návrh",
+    "batch_title": "Hromadné pridanie do spajzy",
+    "batch_description": "Pridaj viac položiek naraz. Backend ich spracuje v jednej dávke a použije AI normalizáciu tam, kde to pomôže.",
+    "batch_add_row": "Pridať ďalší riadok",
+    "batch_item_label": "Položka {index}",
+    "restock": {
+      "title": "Pravidelné nákupy",
+      "subtitle": "Jedným ťahom doplníš veci, ktoré kupuješ stále dookola.",
+      "section_title": "Treba doplniť",
+      "section_subtitle": "Pravidelné položky, ktoré chýbajú alebo dochádzajú.",
+      "cardInstruction": "Zadajte nové množstvo položky",
+      "saveDefault": "Uložiť",
+        "saveBadge": "Upravené",
+        "savedBadge": "Pripravené",
+      "makeRecurring": "Uložiť medzi pravidelné nákupy",
+      "removeRecurring": "Odstrániť z pravidelných nákupov",
+      "quantityMissing": "nastav",
+      "add_now": "Doplniť do špajze",
+      "add_to_list": "Do nákupu",
+      "current": "Teraz",
+      "target": "Cieľ",
+      "missing": "Chýba",
+      "empty_title": "Zásoby vyzerajú dobre",
+      "empty_description": "Keď pravidelné položky klesnú pod bežný stav, objavia sa tu na jedno klepnutie."
+    },
+    "source_manual": "Manuálne",
+    "source_shopping_list": "Z nákupu",
+    "categories": {
+      "dairy": "🥛 Mliečne výrobky",
+      "meat_fish": "🥩 Mäso a ryby",
+      "fruit": "🍎 Ovocie",
+      "vegetables": "🥦 Zelenina",
+      "grains": "🌾 Obilniny & pečivo",
+      "eggs": "🥚 Vajcia",
+      "condiments": "🧂 Koreniny & omáčky",
+      "beverages": "🥤 Nápoje",
+      "nuts_seeds": "🥜 Orechy & semená",
+      "other": "📦 Ostatné"
+    },
+    "push": {
+      "expiry_warning": {
+        "title": "⚠️ Potraviny čoskoro expirujú",
+        "body": "Skontroluj svoju spajzu — niektoré položky expirujú do 3 dní."
+      }
+    }
+  },
+  "tutorial": {
+    "common": {
+      "progress": "{current} z {total}",
+      "labels": {
+        "guidedTour": "Rýchly štart",
+        "quickTip": "Vysvetlivka"
+      },
+      "actions": {
+        "next": "Ďalej",
+        "back": "Späť",
+        "skip": "Preskočiť",
+        "finish": "Hotovo",
+        "startTour": "Ukáž mi aplikáciu",
+        "close": "Zavrieť"
+      }
+    },
+    "intro": {
+      "steps": {
+        "welcome": {
+          "eyebrow": "Vitaj v Eatrive",
+          "title": "Jedlo, nákup aj špajza na jednom mieste",
+          "description": "Eatrivo ti pomáha rýchlo sa rozhodnúť čo jesť, čo dokúpiť a čo máš doma ešte využiť."
+        },
+        "planning": {
+          "eyebrow": "Mobilný flow",
+          "title": "Najlepšie funguje v mobile, ale nestratíš sa ani na desktope",
+          "description": "Navigácia, sekcie aj coachmarks sú navrhnuté mobile-first. Na väčšej obrazovke dostaneš rovnaké kroky v širšom layoute."
+        },
+        "guidance": {
+          "eyebrow": "Krátka tour",
+          "title": "Najprv rýchly prehľad, potom konkrétne tipy pri prvkoch",
+          "description": "Najskôr ti ukážeme základné plochy aplikácie a potom ťa navedú zvýraznenia priamo pri dôležitých ovládacích prvkoch."
+        }
+      }
+    },
+    "coachmarks": {
+      "homeRecipes": {
+        "steps": {
+          "homeNav": {
+            "title": "Toto je tvoj hlavný dashboard",
+            "description": "Odtiaľto sa vieš rýchlo presúvať medzi receptami, chatom, špajzou a ďalšími sekciami."
+          },
+          "switcher": {
+            "title": "Prepínaj recepty a nákupný zoznam",
+            "description": "Na mobile je tento prepínač najrýchlejší spôsob, ako sa dostať medzi odporúčanými jedlami a aktuálnym nákupom."
+          },
+          "recipes": {
+            "title": "Tu objavíš jedlá podľa toho, čo chceš variť",
+            "description": "Sekcia receptov zobrazuje výber jedál, filtre a odporúčania podľa tvojej špajze a preferencií."
+          }
+        }
+      },
+      "shoppingList": {
+        "steps": {
+          "tab": {
+            "title": "Nákupný zoznam má vlastnú kartu",
+            "description": "Keď chceš riešiť nákup, prepni sa sem a Eatrivo ti ukáže položky pripravené na odškrtnutie."
+          },
+          "list": {
+            "title": "Takto vyzerá tvoj živý nákupný zoznam",
+            "description": "Môžeš priebežne odškrtávať položky, upravovať názov zoznamu a dokončiť celý nákup až keď je všetko hotové."
+          }
+        }
+      },
+      "pantry": {
+        "steps": {
+          "nav": {
+            "title": "Špajza je samostatná sekcia",
+            "description": "Oplatí sa sem chodiť často, lebo práve odtiaľ sa odvíjajú cookable recepty a restock návrhy."
+          },
+          "inventory": {
+            "title": "Tu spravuješ zásoby",
+            "description": "Vidíš prehľad položiek, stavy zásob, expiráciu aj návrhy na doplnenie."
+          },
+          "add": {
+            "title": "Pridanie položky je na jeden tap",
+            "description": "Keď niečo dokúpiš alebo objavíš doma, pridaj to hneď sem. Potom s tým Eatrivo ráta pri receptoch aj nákupoch."
+          }
+        }
+      },
+      "chat": {
+        "steps": {
+          "nav": {
+            "title": "Rivo je vždy poruke",
+            "description": "Do chatu sa dostaneš rýchlo z navigácie a vieš sa pýtať na jedlá, kalórie aj obsah špajze."
+          },
+          "history": {
+            "title": "Tu otvoríš históriu konverzácií",
+            "description": "Na mobile máš históriu schovanú za ikonou, aby composer a správy mali viac miesta."
+          },
+          "composer": {
+            "title": "Sem píšeš správu Rivovi",
+            "description": "Stačí napísať otázku alebo požiadavku. Composer je navrhnutý tak, aby zostal pohodlný aj pri otvorenej klávesnici."
+          }
+        }
+      }
     }
   }
 }

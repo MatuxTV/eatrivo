@@ -1,0 +1,202 @@
+{
+  "timestamp": "2026-03-18T16:59:20.327Z",
+  "projectDir": "C:\\Users\\matux\\Documents\\GitHub\\eatrivo",
+  "score": 13,
+  "maxScore": 18,
+  "findings": [
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Manifest nájdený: manifest.json"
+    },
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Pole \"name\" je prítomné"
+    },
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Pole \"short_name\" je prítomné"
+    },
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Pole \"start_url\" je prítomné"
+    },
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Pole \"display\" je prítomné"
+    },
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Pole \"icons\" je prítomné"
+    },
+    {
+      "category": "icons",
+      "severity": "pass",
+      "message": "Ikona 192x192 je prítomná"
+    },
+    {
+      "category": "icons",
+      "severity": "pass",
+      "message": "Ikona 512x512 je prítomná"
+    },
+    {
+      "category": "icons",
+      "severity": "pass",
+      "message": "Maskable ikona je prítomná"
+    },
+    {
+      "category": "service-worker",
+      "severity": "pass",
+      "message": "Service Worker nájdený: sw.js"
+    },
+    {
+      "category": "service-worker",
+      "severity": "warning",
+      "message": "Chýba install event handler",
+      "fix": "Pridaj install event pre precaching"
+    },
+    {
+      "category": "service-worker",
+      "severity": "warning",
+      "message": "Chýba activate event handler",
+      "fix": "Pridaj activate event pre cache cleanup"
+    },
+    {
+      "category": "service-worker",
+      "severity": "error",
+      "message": "Chýba fetch event handler",
+      "fix": "Pridaj fetch event pre cache stratégiu"
+    },
+    {
+      "category": "service-worker",
+      "severity": "pass",
+      "message": "Offline handling je pravdepodobne implementovaný"
+    },
+    {
+      "category": "service-worker",
+      "severity": "warning",
+      "message": "Nedetekované cache versioning",
+      "fix": "Použi verzie v cache názvoch (napr. \"app-cache-v1\")"
+    },
+    {
+      "category": "service-worker",
+      "severity": "pass",
+      "message": "skipWaiting() je implementovaný"
+    },
+    {
+      "category": "html",
+      "severity": "warning",
+      "message": "index.html nebol nájdený pre kontrolu meta tagov"
+    },
+    {
+      "category": "offline",
+      "severity": "pass",
+      "message": "Offline stránka nájdená: public/offline.html"
+    }
+  ],
+  "errors": [
+    {
+      "category": "service-worker",
+      "severity": "error",
+      "message": "Chýba fetch event handler",
+      "fix": "Pridaj fetch event pre cache stratégiu"
+    }
+  ],
+  "warnings": [
+    {
+      "category": "service-worker",
+      "severity": "warning",
+      "message": "Chýba install event handler",
+      "fix": "Pridaj install event pre precaching"
+    },
+    {
+      "category": "service-worker",
+      "severity": "warning",
+      "message": "Chýba activate event handler",
+      "fix": "Pridaj activate event pre cache cleanup"
+    },
+    {
+      "category": "service-worker",
+      "severity": "warning",
+      "message": "Nedetekované cache versioning",
+      "fix": "Použi verzie v cache názvoch (napr. \"app-cache-v1\")"
+    },
+    {
+      "category": "html",
+      "severity": "warning",
+      "message": "index.html nebol nájdený pre kontrolu meta tagov"
+    }
+  ],
+  "passed": [
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Manifest nájdený: manifest.json"
+    },
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Pole \"name\" je prítomné"
+    },
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Pole \"short_name\" je prítomné"
+    },
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Pole \"start_url\" je prítomné"
+    },
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Pole \"display\" je prítomné"
+    },
+    {
+      "category": "manifest",
+      "severity": "pass",
+      "message": "Pole \"icons\" je prítomné"
+    },
+    {
+      "category": "icons",
+      "severity": "pass",
+      "message": "Ikona 192x192 je prítomná"
+    },
+    {
+      "category": "icons",
+      "severity": "pass",
+      "message": "Ikona 512x512 je prítomná"
+    },
+    {
+      "category": "icons",
+      "severity": "pass",
+      "message": "Maskable ikona je prítomná"
+    },
+    {
+      "category": "service-worker",
+      "severity": "pass",
+      "message": "Service Worker nájdený: sw.js"
+    },
+    {
+      "category": "service-worker",
+      "severity": "pass",
+      "message": "Offline handling je pravdepodobne implementovaný"
+    },
+    {
+      "category": "service-worker",
+      "severity": "pass",
+      "message": "skipWaiting() je implementovaný"
+    },
+    {
+      "category": "offline",
+      "severity": "pass",
+      "message": "Offline stránka nájdená: public/offline.html"
+    }
+  ]
+}

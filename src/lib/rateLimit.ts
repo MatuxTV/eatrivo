@@ -18,8 +18,16 @@ export const rateLimiters = {
     ? new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(30, "1 m"),
-        analytics: true,
         prefix: "rl:standard",
+      })
+    : null,
+
+  // Pantry interactions are bursty because UI often chains pantry + matches refreshes.
+  pantry: redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(120, "1 m"),
+        prefix: "rl:pantry",
       })
     : null,
 
@@ -28,7 +36,6 @@ export const rateLimiters = {
     ? new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(10, "1 m"),
-        analytics: true,
         prefix: "rl:expensive",
       })
     : null,
@@ -38,7 +45,6 @@ export const rateLimiters = {
     ? new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(5, "1 m"),
-        analytics: true,
         prefix: "rl:auth",
       })
     : null,
@@ -48,7 +54,6 @@ export const rateLimiters = {
     ? new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(3, "1 m"),
-        analytics: true,
         prefix: "rl:feedback",
       })
     : null,
@@ -58,7 +63,6 @@ export const rateLimiters = {
     ? new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(100, "1 m"),
-        analytics: true,
         prefix: "rl:webhook",
       })
     : null,
@@ -68,7 +72,6 @@ export const rateLimiters = {
     ? new Ratelimit({
         redis,
         limiter: Ratelimit.slidingWindow(50, "1 m"),
-        analytics: true,
         prefix: "rl:analytics",
       })
     : null,

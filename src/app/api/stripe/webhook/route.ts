@@ -7,20 +7,37 @@ import {
   users,
   subscriptions,
   invoices,
-  shoppingLists,
-  userProfiles,
-  mealPlans,
 } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { Analytics } from "@/lib/analytics";
-import { CacheService } from "@/lib/redis";
+import { captureServerAnalyticsEvent } from "@/lib/analytics-server";
+
 import { sendRenewalReminderEmail } from "@/lib/emailService";
 
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
+import { invalidateUserContextCaches } from "@/lib/user-context-cache";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export const runtime = "nodejs";
+
+function mapInvoiceStatus(
+  stripeStatus: string | null | undefined,
+): "draft" | "open" | "paid" | "void" | "uncollectible" {
+  switch (stripeStatus) {
+    case "draft":
+      return "draft";
+    case "open":
+      return "open";
+    case "void":
+      return "void";
+    case "uncollectible":
+      return "uncollectible";
+    case "paid":
+    default:
+      return "paid";
+  }
+}
 
 export async function POST(req: NextRequest) {
   // Apply rate limit against webhook flooding
@@ -119,6 +136,13 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       await stripe.subscriptions.retrieve(subscriptionId);
     const priceId = stripeSubscription.items.data[0].price.id;
     const membership = getMembershipFromPriceId(priceId);
+    const existingSubscription = await db.query.subscriptions.findFirst({
+      where: eq(subscriptions.stripeSubscriptionId, subscriptionId),
+      columns: {
+        id: true,
+        stripePriceId: true,
+      },
+    });
 
     // Access current_period_end safely
     const rawSubscription = stripeSubscription as unknown as Record<
@@ -129,56 +153,25 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       | number
       | undefined;
 
-    // Get user's profile before updating
-    const [userProfile] = await db
-      .select()
-      .from(userProfiles)
-      .where(eq(userProfiles.userId, userId));
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    if (!user) {
+      console.error("No user found with id:", userId);
+      return;
+    }
+
+    const previousMembership = user.membership;
 
     // Update user with Stripe customer ID and membership
-    const updateResult = await db
+    await db
       .update(users)
       .set({
         stripeCustomerId: customerId,
         membership: membership,
       })
-      .where(eq(users.id, userId))
-      .returning({ id: users.id, membership: users.membership });
-
-    if (updateResult.length === 0) {
-      console.error("No user found with id:", userId);
-      return;
-    }
-
-    // CLEAN UP TEMPLATE ASSIGNMENTS - User upgraded to premium
-    if (userProfile && (membership === "premium" || membership === "pro")) {
-      try {
-        // Delete all associated meal plans first (due to foreign key constraints)
-        await db
-          .delete(mealPlans)
-          .where(eq(mealPlans.userProfileId, userProfile.id));
-
-        // Delete all shopping lists (completely remove template assignments)
-        await db
-          .delete(shoppingLists)
-          .where(eq(shoppingLists.userProfileId, userProfile.id));
-
-        console.warn(
-          `[Subscription] Deleted all template-based shopping lists and meal plans for upgraded user: ${userId}`,
-        );
-
-        // Invalidate cache so user gets fresh empty state
-        const cacheKey = `shopping-lists:${userId}`;
-        try {
-          await CacheService.delete(cacheKey);
-        } catch (cacheError) {
-          console.warn("Failed to invalidate shopping list cache:", cacheError);
-        }
-      } catch (cleanupError) {
-        console.error("Error cleaning up template assignments:", cleanupError);
-        // Continue anyway - subscription creation is more important
-      }
-    }
+      .where(eq(users.id, userId));
 
     // Calculate currentPeriodEnd date - use 30 days from now as fallback
     const periodEndDate = currentPeriodEnd
@@ -190,7 +183,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       stripeSubscription as unknown as { cancel_at: number | null }
     ).cancel_at;
 
-    // Create subscription record
+    // Create subscription record (upsert: idempotent for webhook replays)
     await db.insert(subscriptions).values({
       userId: userId,
       stripeSubscriptionId: subscriptionId,
@@ -199,13 +192,48 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       currentPeriodEnd: periodEndDate,
       cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end ?? false,
       cancelAt: cancelAtTimestamp ? new Date(cancelAtTimestamp * 1000) : null,
+    }).onConflictDoUpdate({
+      target: subscriptions.stripeSubscriptionId,
+      set: {
+        stripePriceId: priceId,
+        status: "active",
+        currentPeriodEnd: periodEndDate,
+        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end ?? false,
+        cancelAt: cancelAtTimestamp ? new Date(cancelAtTimestamp * 1000) : null,
+        updatedAt: new Date(),
+      },
     });
 
-    // Track subscription upgrade event
-    Analytics.subscriptionUpgrade(userId, {
-      from: "basic",
-      to: membership,
-    });
+    await invalidateUserContextCaches(userId);
+
+    if (!existingSubscription) {
+      const locale = session.metadata?.locale || "en";
+      const sourcePage = session.metadata?.sourcePage || "unknown";
+      const surface = session.metadata?.surface || "checkout";
+      const discountCodePresent = session.metadata?.discountCodePresent === "true";
+      const trialApplied = session.metadata?.trialApplied === "true";
+
+      await captureServerAnalyticsEvent({
+        userId,
+        eventName: "purchase_completed",
+        metadata: {
+          tier: membership,
+          price_id: priceId,
+          locale,
+          source_page: sourcePage,
+          surface,
+          discount_code_present: discountCodePresent,
+          trial_applied: trialApplied,
+        },
+      });
+
+      if (previousMembership !== membership) {
+        await Analytics.subscriptionUpgrade(userId, {
+          from: previousMembership,
+          to: membership,
+        });
+      }
+    }
   } catch (error) {
     console.error("Error in handleCheckoutComplete:", error);
     throw error;
@@ -365,6 +393,8 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     .update(subscriptions)
     .set(updateData)
     .where(eq(subscriptions.stripeSubscriptionId, subscriptionId));
+
+  await invalidateUserContextCaches(userId);
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -419,6 +449,8 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
   }
 
+  await invalidateUserContextCaches(userId);
+
   // Track cancellation event
   Analytics.subscriptionCancel(userId, {
     tier: existingUser.membership,
@@ -444,18 +476,6 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 
   const userId = user[0].id;
 
-  // Map Stripe status to our enum
-  const statusMap: Record<
-    string,
-    "draft" | "open" | "paid" | "void" | "uncollectible"
-  > = {
-    draft: "draft",
-    open: "open",
-    paid: "paid",
-    void: "void",
-    uncollectible: "uncollectible",
-  };
-
   // Create or update invoice record
   await db
     .insert(invoices)
@@ -463,7 +483,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       userId: userId,
       stripeInvoiceId: invoice.id,
       stripeSubscriptionId: subscriptionId,
-      status: statusMap[invoice.status || "paid"] || "paid",
+      status: mapInvoiceStatus(invoice.status),
       amountDue: invoice.amount_due,
       amountPaid: invoice.amount_paid,
       currency: invoice.currency,
@@ -535,13 +555,15 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     .limit(1);
 
   if (user.length) {
+    const failedStatus = mapInvoiceStatus(invoice.status);
+
     await db
       .insert(invoices)
       .values({
         userId: user[0].id,
         stripeInvoiceId: invoice.id,
         stripeSubscriptionId: subscriptionId,
-        status: "open", // Failed invoices stay open until paid/void
+        status: failedStatus,
         amountDue: invoice.amount_due,
         amountPaid: invoice.amount_paid || 0,
         currency: invoice.currency,
@@ -554,7 +576,33 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
           ? new Date(invoice.period_end * 1000)
           : null,
       })
-      .onConflictDoNothing();
+      .onConflictDoUpdate({
+        target: invoices.stripeInvoiceId,
+        set: {
+          stripeSubscriptionId: subscriptionId,
+          status: sql`
+            case
+              when ${invoices.status} in ('paid', 'void', 'uncollectible') then ${invoices.status}
+              else excluded.status
+            end
+          `,
+          amountDue: invoice.amount_due,
+          amountPaid: sql`
+            case
+              when ${invoices.status} = 'paid' then ${invoices.amountPaid}
+              else excluded.amount_paid
+            end
+          `,
+          invoiceUrl: invoice.hosted_invoice_url || null,
+          invoicePdf: invoice.invoice_pdf || null,
+          periodStart: invoice.period_start
+            ? new Date(invoice.period_start * 1000)
+            : null,
+          periodEnd: invoice.period_end
+            ? new Date(invoice.period_end * 1000)
+            : null,
+        },
+      });
   }
 }
 
@@ -597,7 +645,7 @@ async function handleInvoiceUpcoming(invoice: Stripe.Invoice) {
     membership === "pro"
       ? "Eatrivo Pro"
       : membership === "premium"
-        ? "Eatrivo Premium"
+        ? "Eatrivo Plus"
         : "Eatrivo";
 
   // Format renewal date from the invoice period end

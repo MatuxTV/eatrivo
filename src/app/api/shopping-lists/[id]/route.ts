@@ -1,68 +1,12 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { eq, and } from "drizzle-orm";
+
 import { auth } from "../../../../../auth";
 import { db } from "@/index";
 import { shoppingLists, userProfiles } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
-import { checkRateLimit } from "@/lib/rateLimit";
 import { CacheService } from "@/lib/redis";
-
-/**
- * GET /api/shopping-lists/[id]
- * Returns shopping list data as JSON (including markdownContent for inline viewer)
- */
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const rl = await checkRateLimit(`user:${session.user.id}`, "standard");
-    if (!rl.success) return rl.response!;
-
-    const [userProfile] = await db
-      .select({ id: userProfiles.id, role: userProfiles.role })
-      .from(userProfiles)
-      .where(eq(userProfiles.userId, session.user.id))
-      .limit(1);
-
-    if (!userProfile) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await params;
-    const isAdmin = ["admin", "coach"].includes(userProfile.role ?? "");
-
-    const rows = isAdmin
-      ? await db.select().from(shoppingLists).where(eq(shoppingLists.id, id)).limit(1)
-      : await db.select().from(shoppingLists).where(
-          and(eq(shoppingLists.id, id), eq(shoppingLists.userProfileId, userProfile.id)),
-        ).limit(1);
-
-    const item = rows[0];
-    if (!item) {
-      return NextResponse.json({ error: "Shopping list not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      markdownContent: item.markdownContent,
-      weekStartDate: item.weekStartDate,
-      weekEndDate: item.weekEndDate,
-      status: item.status,
-    });
-  } catch (error) {
-    apiLogger.error("Error fetching shopping list", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
 
 /**
  * PATCH /api/shopping-lists/[id]
@@ -89,10 +33,20 @@ export async function PATCH(
 
     // Input length validation
     if (typeof title !== "string" || title.length > 200) {
-      return NextResponse.json({ error: "Title must be a string of max 200 characters" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Title must be a string of max 200 characters" },
+        { status: 400 },
+      );
     }
-    if (description !== undefined && description !== null && (typeof description !== "string" || description.length > 5000)) {
-      return NextResponse.json({ error: "Description must be a string of max 5000 characters" }, { status: 400 });
+    if (
+      description !== undefined &&
+      description !== null &&
+      (typeof description !== "string" || description.length > 5000)
+    ) {
+      return NextResponse.json(
+        { error: "Description must be a string of max 5000 characters" },
+        { status: 400 },
+      );
     }
 
     // Verify ownership and existence
@@ -153,3 +107,4 @@ export async function PATCH(
     );
   }
 }
+

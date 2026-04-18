@@ -204,7 +204,7 @@
       "items": {
         "free": {
           "question": "Is Eatrivo free?",
-          "answer": "Yes! The basic version is completely free. You can create a profile, get personalized meal plans and shopping lists without any cost. The premium version offers advanced features for full utilization in achieving your goals, but the basic features are free for everyone."
+          "answer": "Yes. The Basic version is completely free. You can create a profile and get personalized meal plans and shopping lists at no cost. The Plus version adds advanced features to help you achieve your goals more effectively, while the core features remain free for everyone."
         },
         "time": {
           "question": "How long does it take to get a meal plan?",
@@ -278,6 +278,17 @@
     }
   },
   "auth": {
+    "welcome": {
+      "metaTitle": "Welcome",
+      "metaDescription": "Sign in to get your personalized meals based on the ingredients you already have",
+      "logoAlt": "Eatrivo logo",
+      "headlineTop": "Eat better,",
+      "headlineBottom": "feel better.",
+      "subtitle": "Sign in to get your personalized meals based on the ingredients you already have",
+      "illustrationAlt": "Rivo ready to help with meal planning",
+      "emailButton": "Continue with Email",
+      "appleButton": "Continue with Apple"
+    },
     "signIn": {
       "metaTitle": "Sign in",
       "tagline": "Sign in to continue",
@@ -297,6 +308,30 @@
         "personalized": "Personalized meal plans",
         "planning": "Smart shopping lists",
         "nutrition": "Nutrition tracking"
+      }
+    },
+    "intro": {
+      "common": {
+        "skip": "Skip",
+        "continue": "Continue",
+        "swipeHint": "Swipe for more"
+      },
+      "slides": {
+        "introduction": {
+          "eyebrow": "Personal AI assistant",
+          "title": "Eat better.\nFeel better.",
+          "description": "Your personal AI assistant for cooking, shopping, and reaching your goals. Less stress, less food waste."
+        },
+        "customRecipes": {
+          "eyebrow": "Rivo custom",
+          "title": "Recipes shaped around your taste",
+          "description": "Rivo builds custom recipes around your goals, preferences, and the ingredients you already have at home."
+        },
+        "pantry": {
+          "eyebrow": "Smart pantry",
+          "title": "Cook with what is already at home",
+          "description": "Track your pantry and instantly see meals you can cook right now. If something is missing, Rivo shows the fastest top-up path."
+        }
       }
     },
     "signOut": {
@@ -360,17 +395,17 @@
       "activityPlaceholder": "Select activity level",
       "activityOptions": {
         "sedentary": "Sedentary (desk job)",
-        "lightlyActive": "Lightly active (1–2x/week)",
-        "moderatelyActive": "Moderately active (3–5x/week)",
-        "veryActive": "Very active (6–7x/week)",
-        "athlete": "Athlete (multiple times/day)"
+        "lightlyActive": "Lightly active (1–2x per week)",
+        "moderatelyActive": "Moderately active (3–5x per week)",
+        "veryActive": "Very active (6–7x per week)",
+        "athlete": "Athlete (multiple times per day)"
       },
       "goal": "Goal",
-      "goalPlaceholder": "Select a goal",
+      "goalPlaceholder": "Select goal",
       "goalOptions": {
         "loseWeight": "Lose weight",
         "maintainWeight": "Maintain weight",
-        "gainMuscle": "Gain muscle"
+        "gainMuscle": "Build muscle"
       },
       "mealsPerDay": "Meals per day",
       "mealsPerDayPlaceholder": "3",
@@ -385,7 +420,7 @@
       "mealPrepYes": "Yes, I want to prep in advance",
       "mealPrepNo": "No, I prefer cooking daily",
       "mealPrepDays": "How many days ahead?",
-      "mealPrepDaysPlaceholder": "e.g., 3",
+      "mealPrepDaysPlaceholder": "e.g. 3",
       "mealPrepDaysHelp": "Choose how many days in advance you'd like to prepare meals",
       "mealPrepNote": {
         "title": "Why meal prep?",
@@ -438,28 +473,35 @@
       "mustAgree": "You must accept all agreements to continue."
     }
   },
-  "dashboard": {
+  "home": {
     "metadata": {
-      "title": "Dashboard",
+      "title": "Home",
       "description": "Your daily overview, meal plan, and shopping lists."
     },
+    "common": {
+      "cancel": "Cancel",
+      "save": "Save"
+    },
     "nav": {
-      "dashboard": "Dashboard",
+      "home": "Home",
       "profile": "Profile",
       "signOut": "Sign out",
       "pantry": "Pantry",
       "chatWithRivo": "Chat with Rivo",
-      "mealGallery": "Meal Gallery"
+      "kitchenCounter": "Kitchen Counter"
     },
     "navbar": {
       "language": "Language"
     },
     "userAlt": "User",
-    "templateUsage":"Notice: This meal plan and shopping list are just for inspiration. Both are just examples based on your acitivity level and goal. They are not fully personalized to your preferences and dietary needs. For a truly personalized plan, please upgrade to Premium tier.",
     "membershipSuffix": "member",
     "greeting": {
       "title": "Welcome back, {name}! 👋",
-      "subtitle": "Here's your overview for today,"
+      "subtitle": "Here's your overview for today,",
+      "actions": {
+        "recipes": "Recipes",
+        "shoppingList": "Shopping list"
+      }
     },
     "version": "Version {version}",
     "days": {
@@ -473,16 +515,285 @@
     },
     "dailyPlan": {
       "title": "Your daily plan",
-      "today": "today"
+      "today": "today",
+      "waitingForApproval": "Plan awaiting approval",
+      "waitingForApprovalDesc": "Review the meal plan and approve it.",
+      "readyForPurchase": "Ready to shop",
+      "readyForPurchaseDesc": "Your meal plan is active — just pick up the ingredients."
     },
     "time": {
       "minutesShort": "min"
+    },
+    "basic": {
+      "recipeTags": {
+        "all": "All",
+        "high-protein": "High protein",
+        "vegetarian": "Vegetarian",
+        "vegan": "Vegan",
+        "pescatarian": "Pescatarian",
+        "paleo": "Paleo",
+        "gluten-free": "Gluten free",
+        "dairy-free": "Dairy free",
+        "ketogenic": "Keto",
+        "quick": "Quick"
+      },
+      "hero": {
+        "badge": "Tip of the day",
+        "mealPrep": "Meal prep"
+      },
+      "customRecipe": {
+        "badge": "Rivo custom",
+        "title": "See what Rivo can cook from your pantry",
+        "description": "We will check what you already have, then suggest one pantry-first recipe and one easy top-up option when possible.",
+        "cta": "Ask Rivo for a custom recipe",
+        "ctaGenerating": "Rivo is generating...",
+        "ctaRetry": "Generate again",
+        "setup": {
+          "title": "Shape the recipe first",
+          "description": "Tell Rivo what kind of meal you want and how many portions to prepare before generation starts.",
+          "modeLabel": "Generation mode",
+          "modeHint": "Choose whether Rivo should use your pantry or ignore it and optimize only for your profile.",
+          "servingsLabel": "Portions",
+          "servingsHint": "Set how many servings Rivo should plan for.",
+          "mealTypeLabel": "Meal type",
+          "mealTypeHint": "Choose the moment this recipe should fit.",
+          "mealTypePlaceholder": "Select a meal type",
+          "mealTypes": {
+            "breakfast": "Breakfast",
+            "lunch": "Lunch",
+            "dinner": "Dinner",
+            "snack": "Snack"
+          },
+          "mealPrepLabel": "Make it meal prep friendly",
+          "mealPrepDescription": "Favor recipes that store well and still taste good after reheating.",
+          "modes": {
+            "pantry": {
+              "title": "Use pantry",
+              "description": "Rivo tries to cook from what you already have at home and suggests small top-ups only when needed."
+            },
+            "preferencesOnly": {
+              "title": "Ignore pantry",
+              "description": "Rivo generates a recipe only from your diet, allergies, dislikes, and meal preferences."
+            }
+          },
+          "profileHintLabel": "Client profile",
+          "profileHint": "Rivo will still respect your diet, allergies, and the foods you do not like.",
+          "submit": "Generate recipe",
+          "cancel": "Cancel"
+        },
+        "loading": {
+          "badge": "Generating now",
+          "title": "Rivo is building your next best recipe",
+          "description": "We are scanning your pantry, checking quick top-ups, and shaping a recipe that fits right now.",
+          "progressLabel": "Generation progress",
+          "tipsLabel": "Current step",
+          "tips": {
+            "scanning": "Scanning your pantry for hidden wins.",
+            "matching": "Matching ingredients with pantry-ready and almost-cookable ideas.",
+            "finishing": "Finishing the best option for today."
+          }
+        },
+        "result": {
+          "badge": "Fresh from Rivo",
+          "title": "Your custom recipe is ready",
+          "description": "Rivo prepared {count} tailored option(s) for this moment.",
+          "open": "Open recipe result",
+          "regenerate": "Generate again",
+          "readyNow": "Ready now",
+          "almostCookable": "Almost cookable",
+          "preferencesOnly": "For your preferences"
+        },
+        "fallback": {
+          "badge": "Smart fallback",
+          "title": "Nothing clicks perfectly yet",
+          "description": "Rivo could not build a cookable recipe from your current pantry, but these quick changes should unlock one fast.",
+          "retry": "Try again",
+          "openPantry": "Update pantry",
+          "preferencesOnly": "Profile match",
+          "missingCount": "Missing {count}",
+          "defaultSuggestions": {
+            "pantry": "Add two or three staple ingredients you buy often.",
+            "protein": "Top up one protein source to unlock more meals.",
+            "vegetables": "Add one fresh vegetable for easier lunch and dinner matches.",
+            "preferences": "Rivo will suggest a few profile-friendly recipes even when it ignores your pantry."
+          }
+        },
+        "error": {
+          "badge": "Generation issue",
+          "title": "Rivo hit a small snag",
+          "description": "We could not generate a custom recipe right now. Please try again in a moment.",
+          "detailLabel": "Error detail",
+          "retry": "Try again",
+          "codes": {
+            "AUTH_REQUIRED": "Sign in again to generate a custom recipe.",
+            "RATE_LIMITED": "Rivo is a bit busy right now. Please wait a moment and try again.",
+            "PROFILE_UNAVAILABLE": "We could not load your profile details for recipe generation.",
+            "PANTRY_UNAVAILABLE": "We could not load your pantry right now.",
+            "GENERATION_IN_PROGRESS": "Rivo is already working on your recipe.",
+            "GENERATION_INTERRUPTED": "Recipe generation was interrupted. Reloading cannot resume the stream, so please start it again.",
+            "GENERATION_FAILED": "Rivo could not finish the recipe generation.",
+            "TIMEOUT": "Recipe generation took too long. Please try again.",
+            "DEFAULT": "We could not generate a custom recipe right now."
+          }
+        },
+        "message": {
+          "pantryRecipeReady": "Rivo found a pantry recipe for you: {recipeName}.",
+          "almostCookableReady": "Rivo found {recipeName}. You only need {missingCount} more ingredient(s).",
+          "preferencesOnlyReady": "Rivo created a recipe for your preferences: {recipeName}.",
+          "preferencesFallbackReady": "Rivo prepared {suggestionCount} profile-friendly recipe suggestion(s).",
+          "fallbackSuggestionsReady": "Rivo prepared {suggestionCount} backup recipe suggestion(s) from the database.",
+          "emptyPantry": "Your pantry is still empty, so Rivo prepared a few smart starting points.",
+          "noRecipeAvailable": "Nothing matched perfectly yet, but Rivo found a few useful next options.",
+          "noPreferencesRecipeAvailable": "Rivo could not create a strong preference-only recipe yet, but it found a few useful alternatives."
+        },
+        "recipeUnavailable": {
+          "pantryEmpty": "Your pantry is empty, so there is nothing to cook from it yet.",
+          "noPantryRecipe": "Nothing can be cooked from your current pantry only.",
+          "noAlmostCookable": "Rivo could not find an almost-cookable option with three or fewer missing ingredients.",
+          "noPreferencesRecipe": "Rivo could not create a recipe that fit your preferences strongly enough."
+        },
+        "toasts": {
+          "ready": "Your custom recipe is ready.",
+          "empty": "Rivo found fallback recommendations instead.",
+          "error": "We could not generate a custom recipe right now.",
+          "resumed": "Rivo resumed your recipe generation."
+        }
+      },
+      "pantryDashboard": {
+        "badge": "Your Pantry",
+        "itemsUnit": "items",
+        "cookablePrefix": "You can cook up to ",
+        "cookableSuffix": " recipes",
+        "openCta": "Open pantry"
+      },
+      "cookableEmpty": {
+        "title": "Nothing to cook yet",
+        "description": "Add more ingredients to your pantry and we'll find recipes for you."
+      },
+      "almostCookable": {
+        "title": "Almost there",
+        "subtitle": "- missing a few ingredients",
+        "scrollLeft": "Scroll recipes left",
+        "scrollRight": "Scroll recipes right"
+      },
+      "recipeDialog": {
+        "mealPrep": "Meal prep",
+        "detail": "Recipe detail",
+        "oneServing": "{count} serving",
+        "servings": "{count} servings",
+        "addToPantry": "Add to pantry",
+        "addToShoppingList": "Add to shopping list",
+        "cookThisRecipe": "I want to cook this recipe",
+        "haveAmountInline": "have {amount}",
+        "stapleAvailable": "staple",
+        "fallbackUsing": "We have: {ingredient}",
+        "saveRecipe": "Save recipe",
+        "removeBookmark": "Remove bookmark",
+        "bookmarkSaved": "Recipe saved to bookmarks.",
+        "bookmarkRemoved": "Recipe removed from bookmarks.",
+        "bookmarkError": "Could not update bookmark."
+      },
+      "restrictionFlags": {
+        "contains-dairy": "Contains dairy",
+        "contains-eggs": "Contains eggs",
+        "contains-fish": "Contains fish",
+        "contains-gluten": "Contains gluten",
+        "contains-nuts": "Contains nuts",
+        "contains-peanuts": "Contains peanuts",
+        "contains-shellfish": "Contains shellfish",
+        "contains-soy": "Contains soy"
+      },
+      "shoppingList": {
+        "description": "Tap missing ingredients in a recipe and they will appear here.",
+        "itemsCount": "items",
+        "doneButton": "Done",
+        "completing": "Finishing...",
+        "emptyTitle": "Your shopping list is empty",
+        "emptyDescription": "Open an almost-cookable recipe and tap a missing ingredient to add it here.",
+        "historyTitle": "History",
+        "historyEmpty": "Completed shopping lists will appear here.",
+        "historyNoDate": "No date yet",
+        "historyStatusDraft": "Draft",
+        "historyStatusApproved": "Approved",
+        "historyStatusPurchased": "Purchased",
+        "historyStatusCompleted": "Completed",
+        "historyStatusCancelled": "Cancelled",
+        "progressLabel": "{checked} of {total} done",
+        "allDone": "All done! 🎉",
+        "editTitleLabel": "Edit list name",
+        "titleUpdateError": "Failed to update list name",
+        "editQuantityButton": "Edit quantity",
+        "editQuantityLabel": "Quantity",
+        "editQuantityPlaceholder": "e.g. 2 pcs or 500 g",
+        "removeItemLabel": "Remove item",
+        "removeError": "Failed to remove item"
+      },
+      "kitchenCounter": {
+        "selectedRecipeBadge": "Selected recipe",
+        "selectedRecipeDescription": "Passed from the recipe browser to Kitchen Counter.",
+        "emptyTitle": "No recipe selected",
+        "emptyDescription": "Open a recipe from home and use the cook action to send it to Kitchen Counter.",
+        "backToHome": "Back to home",
+        "cancelRecipe": "Cancel recipe",
+        "cancelShort": "Cancel",
+        "ingredientsTab": "Ingredients",
+        "stepsTab": "Steps",
+        "overviewTitle": "Nutrition values",
+        "ingredientsTitle": "Ingredients",
+        "stepsTitle": "Cooking steps",
+        "readyAmount": "ready",
+        "missingAmount": "missing",
+        "haveAmountInline": "have {amount}",
+        "stapleAvailable": "staple",
+        "previousStep": "Previous",
+        "nextStep": "Next step",
+        "stepProgress": "Step {current} of {total}",
+        "finishRecipe": "Finish recipe",
+        "finishPending": "Finishing...",
+        "recipeFinished": "Recipe finished",
+        "pantryUpdated": "Pantry updated for {count} items",
+        "finishError": "Failed to deduct ingredients from pantry",
+        "missingIngredientsTitle": "Some ingredients are still missing",
+        "missingIngredientsDescription": "If you continue, Eatrivo will deduct only the ingredients you currently have in pantry.",
+        "missingIngredientsListTitle": "Missing right now",
+        "missingIngredientsCancel": "Cancel",
+        "missingIngredientsContinue": "I know, finish anyway",
+        "progress": "{checked}/{total} ingredients ready",
+        "step1Title": "Prep your station",
+        "step1Text": "Check the ingredients for {recipeTitle} and set up your workspace before you start cooking.",
+        "step2Title": "Build the base",
+        "step2Text": "Start with a base that matches this {category} recipe and keep an eye on the target cook time of {minutes} min.",
+        "step3Title": "Track the nutrition",
+        "step3Text": "Stay close to the planned values: {calories} kcal, {protein} g protein, {carbs} g carbs, and {fat} g fat.",
+        "step4Title": "Finish and plate",
+        "step4Text": "Taste, adjust the seasoning, and serve while everything is fresh and hot."
+      },
+      "filters": {
+        "title": "Recipe filters",
+        "empty": "No recipes for this filter",
+        "openButton": "Filters",
+        "closeButton": "Close filters",
+        "save": "Save",
+        "clearAll": "Clear all",
+        "noSelection": "No filter selected",
+        "selectedValue": "Selected: {value}",
+        "sections": {
+          "popular": "Start here",
+          "preferences": "Prefer",
+          "special": "Avoid / special"
+        }
+      },
+      "toasts": {
+        "pantryDraftReady": "\"{ingredientName}\" is ready for confirmation in pantry.",
+        "pantryDraftAddError": "Failed to add ingredient.",
+        "kitchenCounterNotify": "Notification set! We'll let you know as soon as it launches. 🔔"
+      }
     },
     "toasts": {
       "mealPlanReady": "Meal plan is ready!",
       "mealPlanLoadError": "Couldn't load meal plan",
       "shoppingListsLoadError": "Couldn't load shopping lists",
-      "premiumOnly": "This feature is only available for premium members",
+      "premiumOnly": "This feature is only available for Plus members",
       "generatingShoppingList": "Generating your personalized shopping list...",
       "shoppingListAndMealPlanGenerated": "Shopping list and meal plan generated successfully! 🎉",
       "shoppingListGenerated": "Shopping list generated successfully!",
@@ -504,9 +815,33 @@
       "fats": "Fat"
     },
     "recipe": {
-      "nutritionValues": "Nutrition Values",
+      "nutritionValues": "Nutrition Values (per serving)",
       "ingredients": "Ingredients",
       "noIngredients": "Ingredients list not available"
+    },
+    "pantryMatches": {
+      "title": "Cook from your pantry",
+      "subtitle": "Recipes matched from ingredients you already have at home.",
+      "cookableTitle": "Ready to cook now",
+      "almostCookableTitle": "Almost there",
+      "loadError": "Couldn't load pantry recipe matches right now.",
+      "emptyPantry": {
+        "title": "Your pantry is empty",
+        "description": "Add pantry items and we will show recipes you can cook immediately."
+      },
+      "noMatches": {
+        "title": "No close recipe matches yet",
+        "description": "Your current pantry items do not fully match any recipe yet. Add a few more basics and this section will start filling up."
+      },
+      "availableIngredients": "Available ingredients",
+      "missingIngredients": "Missing ingredients",
+      "readyNow": "All required ingredients available",
+      "haveCount": "You have {matched}/{total}",
+      "missingCount": "Missing {count}",
+      "minutesShort": "min",
+      "proteinShortLabel": "Prot",
+      "carbsShortLabel": "Carbs",
+      "fatShortLabel": "Fat"
     },
     "mealPlan": {
       "loading": {
@@ -538,14 +873,14 @@
         "description": "You currently don't have any active shopping list. Show all lists to view completed or cancelled ones."
       },
       "premiumCTA": {
-        "title": "Upgrade to Premium and reach your goals faster! 🚀",
+        "title": "Upgrade to Plus and reach your goals faster! 🚀",
         "description": "Generate your personalized shopping list for this week",
         "button": "View Plans"
       },
       "createNew": {
         "title": "Let me cook! 🍳",
         "subtitle": "I'll create a personalized shopping list just for you",
-        "locked": "Unlock with Premium 🔒",
+        "locked": "Unlock with Plus 🔒",
         "lockedSubtitle": "Generate personalized shopping lists tailored to your goals",
         "completeActiveError": "Please complete your active shopping list first! 🛒",
         "activeListExists": "Complete active list first! 🛒",
@@ -553,14 +888,30 @@
         "loader": {
           "scanning": "Scanning your pantry 🔍",
           "optimizing": "Optimizing macros 🧮",
-          "finishing": "Almost ready... ✨"
+          "finishing": "Almost ready... ✨",
+          "fetchingProfile": "Loading your profile 👤",
+          "calculatingMacros": "Calculating your macros 🧮",
+          "checkingPantry": "Checking pantry 🏥",
+          "fetchingHistory": "Scanning shopping history 📂",
+          "scanningInventory": "Scanning inventory 🔍",
+          "buildingPrompt": "Building your personalized plan 📝",
+          "generatingList": "AI is generating your list 🤖",
+          "merging": "Optimizing the list ➕",
+          "validatingMacros": "Validating macros ⚖️",
+          "formatting": "Formatting result ✨",
+          "saving": "Saving your list 💾",
+          "done": "Done! 🎉",
+          "retrying": "Retrying {count}/3 🔄"
         },
         "sitTight": "Crafting the perfect meal plan tailored for your body and goals."
       }
     },
     "shoppingList": {
       "status": {
+        "draft": "Draft",
         "active": "Active",
+        "approved": "Approved",
+        "purchased": "Purchased",
         "completed": "Completed",
         "cancelled": "Cancelled",
         "unknown": "Unknown"
@@ -568,6 +919,11 @@
       "pdfDocument": "PDF Document",
       "view": "View",
       "download": "Download",
+      "editQuantity": "Edit quantity",
+      "saveQuantity": "Save",
+      "cancelEditQuantity": "Cancel quantity edit",
+      "quantityLabel": "Quantity",
+      "quantityPlaceholder": "e.g. 2 pcs or 500 g",
       "edit": {
         "title": "Edit Shopping List",
         "nameLabel": "Name",
@@ -684,7 +1040,7 @@
     "comingSoon": {
       "sectionTitle": "What's Next",
       "badge": "Coming Soon",
-      "backToDashboard": "Back to Dashboard",
+      "backToHome": "Back to Home",
       "teaser": {
         "feature1": "AI-Powered",
         "feature2": "Personalized",
@@ -693,38 +1049,48 @@
       "pantry": {
         "title": "Pantry",
         "description": "Track what's in your kitchen. Rivo will suggest meals based on what you already have.",
-        "badge": "● COMING SOON",
+        "badge": "● LIVE",
         "tags": {
           "tag1": "Automatic",
           "tag2": "Saves time",
           "tag3": "Effortless"
         },
         "cta": "🔔 Notify me when it launches",
-        "secondaryAction": "Back to Dashboard"
-      },
-      "mealGallery": {
-        "title": "Meal Library 📚",
-        "description": "Browse hundreds of new recipes for inspiration, or return to your favorite meals that Rivo has created for you in the past.",
-        "badge": "● IN PROGRESS",
-        "tags": {
-          "tag1": "Your favorites ❤️",
-          "tag2": "New inspiration 🌍",
-          "tag3": "1-click to plan ⚡"
-        },
-        "cta": "🔔 Notify me when it launches",
-        "secondaryAction": "Back to Dashboard for now"
+        "secondaryAction": "Back to Home"
       },
       "chatWithRivo": {
         "title": "Chat with Rivo",
         "description": "Ask Rivo anything about nutrition, recipes, or meal planning. Your personal AI chef, always ready.",
         "badge": "● COMING SOON",
+        "history": {
+          "title": "Chat history",
+          "description": "Jump back into previous conversations or start a fresh chat for a new topic.",
+          "currentLabel": "Active chat",
+          "mobileListLabel": "Your conversations",
+          "newChat": "New chat",
+          "untitled": "New chat",
+          "loading": "Loading chat history...",
+          "emptyTitle": "Nothing here yet",
+          "emptyDescription": "Once you send your first message, this chat will appear in your history.",
+          "inputPlaceholder": "Ask about your meal plan...",
+          "errors": {
+            "loadSessions": "Could not load chat history.",
+            "loadSession": "Could not open this chat.",
+            "createSession": "Could not create a new chat.",
+            "refreshSessions": "Could not refresh the chat list."
+          }
+        },
+        "warning": {
+          "title": "Rivo is still in development",
+          "body": "Unfortunately, Rivo is still in development. You can use him as your information assistant. For now, he cannot change anything in your profile or work with your recipes. These features will be released in future updates."
+        },
         "tags": {
           "tag1": "Smart",
           "tag2": "24/7 Available",
           "tag3": "Personalized"
         },
         "cta": "🔔 Notify me when it launches",
-        "secondaryAction": "Back to Dashboard"
+        "secondaryAction": "Back to Home"
       }
     }
   },
@@ -741,11 +1107,78 @@
       "nutrition": "Nutrition preferences"
     },
     "navigation": {
-      "backToDashboard": "Back to dashboard"
+      "backToHome": "Back to home",
+      "backToProfile": "Back to profile"
     },
     "header": {
+      "kicker": "Your profile",
+      "fallbackName": "Eatrivo member",
+      "badgesCount": "{count} badge(s)",
       "title": "My profile",
       "description": "Manage your personal details and preferences"
+    },
+    "stats": {
+      "placeholder": "placeholder",
+      "cookedMeals": {
+        "label": "Cooked meals"
+      },
+      "dayStreak": {
+        "label": "Day streak"
+      }
+    },
+    "menu": {
+      "personal": {
+        "title": "Personal information",
+        "description": "Manage your personal data"
+      },
+      "nutrition": {
+        "title": "Nutrition preferences",
+        "description": "Diets, allergies, and goals"
+      },
+      "bookmarks": {
+        "title": "Saved recipes",
+        "description": "Your bookmarked recipes in one place"
+      },
+      "billing": {
+        "title": "Billing",
+        "description": "Manage your Plus membership"
+      },
+      "logout": {
+        "title": "Sign out",
+        "description": "Sign out of your account"
+      }
+    },
+    "billingPlaceholder": {
+      "title": "Billing is coming next",
+      "description": "This state is only a placeholder for now. We will wire the full billing flow in a later step without changing the rest of the profile experience.",
+      "helper": "For now you can use the existing pricing page or jump back to the main profile dashboard.",
+      "cta": "Open pricing"
+    },
+    "bookmarks": {
+      "title": "Saved recipes",
+      "description": "Everything you've bookmarked lives here, ready when you want a fast fallback or a meal-prep repeat.",
+      "helper": "{count, plural, =0 {No saved recipes yet.} one {# recipe saved.} other {# recipes saved.}}",
+      "empty": {
+        "title": "No saved recipes yet",
+        "description": "Bookmark a recipe from the recipe dialog and it will show up here automatically."
+      },
+      "card": {
+        "mealPrep": "Meal prep",
+        "savedOn": "Saved {date}",
+        "remove": "Remove bookmark",
+        "minutes": "Minutes",
+        "servings": "Servings",
+        "proteinLabel": "Protein"
+      },
+      "actions": {
+        "loadMore": "Load more recipes",
+        "loadingMore": "Loading more"
+      },
+      "toast": {
+        "loadError": "Couldn't load saved recipes",
+        "removed": "Recipe removed from bookmarks",
+        "removeError": "Couldn't remove bookmark"
+      }
     },
     "personal": {
       "title": "Personal information",
@@ -764,7 +1197,9 @@
       },
       "membership": {
         "label": "Membership",
-        "helper": "Your current plan"
+        "helper": "Your current plan",
+        "premiumBadge": "Plus member",
+        "freeBadge": "Free plan"
       },
       "validation": {
         "fullNameMin": "Name must be at least 2 characters",
@@ -856,7 +1291,7 @@
           "options": {
             "low": "Low (budget-friendly)",
             "medium": "Medium (balanced)",
-            "high": "High (premium ingredients)"
+            "high": "High (premium-quality ingredients)"
           }
         },
         "likes": {
@@ -912,7 +1347,7 @@
       "copyright": "© {year} Eatrivo · All rights reserved",
       "links": {
         "web": "Web",
-        "dashboard": "Dashboard",
+        "home": "Home",
         "support": "Support"
       }
     },
@@ -954,7 +1389,7 @@
         "text": "The shopping list is organized by categories so you can shop faster and more efficiently. Don't forget to download or print it before leaving for the store!"
       },
       "cta": "View Shopping List",
-      "help": "You can find your shopping list in the <strong>Dashboard</strong> section of your Eatrivo account."
+      "help": "You can find your shopping list in the <strong>Home</strong> section of your Eatrivo account."
     },
     "admin": {
       "preview": "Eatrivo - Email sent: {emailTypeLabel}",
@@ -972,6 +1407,221 @@
       "types": {
         "welcome": "Welcome Email",
         "shoppingList": "Shopping List Notification"
+      },
+      "dashboard": {
+        "common": {
+          "membership": {
+            "plus": "Plus",
+            "basic": "Basic",
+            "trainer": "Trainer",
+            "free": "Free"
+          },
+          "noName": "No name",
+          "notSpecified": "Not specified",
+          "status": {
+            "active": "Active",
+            "completed": "Completed",
+            "cancelled": "Cancelled"
+          },
+          "sex": {
+            "man": "Man",
+            "woman": "Woman"
+          },
+          "units": {
+            "years": "yrs"
+          },
+          "profile": {
+            "complete": "OK",
+            "incomplete": "Incomplete"
+          }
+        },
+        "statsCard": {
+          "title": "User overview",
+          "totalUsers": "Total users"
+        },
+        "tabs": {
+          "analytics": "Analytics",
+          "emails": "Emails",
+          "notifications": "Notifications"
+        },
+        "userInfoCard": {
+          "loading": "Loading user data...",
+          "empty": "This user has not filled out nutrition details",
+          "title": "User info",
+          "labels": {
+            "allergies": "Allergies:",
+            "dislikes": "Dislikes:"
+          }
+        },
+        "usersTab": {
+          "title": "User list",
+          "description": "Overview of registered users",
+          "loading": "Loading users...",
+          "emptyTitle": "No users",
+          "emptyDescription": "There are no registered users in the system yet",
+          "details": {
+            "id": "ID:",
+            "profile": "Profile:",
+            "username": "Username:"
+          },
+          "actions": {
+            "create": "Create",
+            "list": "list",
+            "copy": "Copy",
+            "email": "email",
+            "emailCopied": "Email copied"
+          }
+        },
+        "shoppingListTab": {
+          "title": "New shopping list",
+          "description": "Create and assign a shopping list to a user.",
+          "loadingUsers": "Loading users...",
+          "sections": {
+            "basicInfo": "Basic information",
+            "planning": "Planning",
+            "assignment": "Assignment",
+            "content": "Content (Markdown)"
+          },
+          "fields": {
+            "title": {
+              "label": "List title",
+              "placeholder": "E.g. Shopping list - Week 42"
+            },
+            "description": {
+              "label": "Description (optional)",
+              "placeholder": "Short list description..."
+            },
+            "startDate": "Start",
+            "endDate": "End",
+            "user": "User",
+            "userPlaceholder": "Select a user",
+            "searchPlaceholder": "Search...",
+            "unassignedTest": "Unassigned (Test)",
+            "status": {
+              "label": "List status",
+              "placeholder": "Select status"
+            },
+            "markdownPlaceholder": "# Shopping list...\n\nOr click 'Generate with AI' to create it automatically."
+          },
+          "actions": {
+            "generateAi": "Generate with AI",
+            "generatingAi": "Generating with AI...",
+            "creating": "Creating...",
+            "createList": "Create shopping list",
+            "createListShort": "Create list"
+          },
+          "tips": {
+            "title": "Quick tips",
+            "markdown": "Use <strong>Markdown</strong> to format lists.",
+            "assignment": "Assign lists to a specific user."
+          }
+        },
+        "emailsTab": {
+          "title": "Send update email",
+          "description": "Inform users about new features and improvements",
+          "sections": {
+            "basicInfo": "Basic information",
+            "changes": "Change list",
+            "testEmail": "Test email"
+          },
+          "fields": {
+            "version": {
+              "label": "Version *",
+              "placeholder": "e.g. 1.2.0"
+            },
+            "updateTitle": {
+              "label": "Update title *",
+              "placeholder": "e.g. New features for your dashboard"
+            },
+            "updateDescription": {
+              "label": "Intro text *",
+              "placeholder": "Short intro text for the email..."
+            },
+            "changeType": "Type",
+            "changeTitle": "Title",
+            "changeTitlePlaceholder": "e.g. Weight tracking",
+            "changeDescription": "Description",
+            "changeDescriptionPlaceholder": "Brief description of the change...",
+            "testEmail": {
+              "label": "Test address",
+              "placeholder": "you@email.com"
+            }
+          },
+          "types": {
+            "feature": "Feature",
+            "improvement": "Improvement",
+            "fix": "Fix"
+          },
+          "changeItem": "Change #{index}",
+          "result": {
+            "successTitle": "Success",
+            "errorTitle": "Error",
+            "sent": "Sent: {count}",
+            "failed": "Failed: {count}",
+            "errors": "Errors:"
+          },
+          "actions": {
+            "add": "Add",
+            "sending": "Sending...",
+            "sendTest": "Send test",
+            "sendAll": "Send to all"
+          },
+          "stats": {
+            "title": "Email stats",
+            "totalUsers": "Total users",
+            "withEmail": "With email"
+          },
+          "tips": {
+            "title": "Email tips",
+            "first": "Send a test to your own address first",
+            "second": "Use a clear list of changes",
+            "third": "Group changes by type (feature/improvement/fix)"
+          }
+        },
+        "profilesTab": {
+          "title": "User profile",
+          "description": "View detailed information about a user",
+          "selectUser": "Select user",
+          "selectPlaceholder": "Select a user...",
+          "selectOption": "-- Select a user --",
+          "loading": "Loading data...",
+          "emptySelection": {
+            "title": "No user selected",
+            "description": "Select a user to view their profile"
+          },
+          "sections": {
+            "basicInfo": "Basic information",
+            "goals": "Goals and activity",
+            "preferences": "Dietary preferences",
+            "foodPreferences": "Food preferences"
+          },
+          "fields": {
+            "sex": "Sex",
+            "age": "Age",
+            "height": "Height",
+            "weight": "Weight",
+            "goal": "Goal",
+            "activityLevel": "Activity level",
+            "diet": "Diet",
+            "cookingTime": "Cooking time",
+            "budget": "Budget",
+            "mealsPerDay": "Meals per day",
+            "likes": "Favorite meals",
+            "dislikes": "Disliked meals",
+            "allergies": "Allergies"
+          },
+          "yearsSuffix": "years",
+          "notSpecified": "Not specified",
+          "noData": {
+            "title": "No data",
+            "description": "This user has not filled in nutrition information"
+          },
+          "stats": {
+            "title": "Profile statistics",
+            "completedProfiles": "Completed profiles",
+            "successRate": "Success rate"
+          }
+        }
       }
     },
     "feedback": {
@@ -998,7 +1648,7 @@
       "heroLabel": "!NEW UPDATE!",
       "greeting": "Hi {recipientName},",
       "intro": "We have new improvements for you. Check out what we've prepared.",
-      "cta": "OPEN DASHBOARD",
+      "cta": "OPEN HOME",
       "footer": "Thank you for being part of Eatrivo."
     },
     "renewalReminder": {
@@ -1095,6 +1745,7 @@
       "disable": "Disable notifications",
       "loginRequired": "You must be logged in",
       "enabled": "Notifications enabled! You will be notified when a new shopping list is available.",
+      "pendingConfirmation": "One more step: check your email and confirm push notifications.",
       "disabled": "Notifications disabled",
       "enableError": "Failed to enable notifications. Check your browser settings.",
       "toggleError": "Error changing notification settings"
@@ -1110,10 +1761,11 @@
     },
     "title": "Invest in yourself",
     "subtitle": "Less than a coffee a week for a plan that actually works.",
+    "freeLabel": "Free",
     "perMonth": "/month",
     "features": "Features",
     "currentPlan": "Current Plan",
-    "upgrade": "Get Premium",
+    "upgrade": "Upgrade",
     "getStarted": "Start for free",
     "popular": "Best value",
     "signInToUpgrade": "Sign in to unlock your plan",
@@ -1136,23 +1788,20 @@
         ]
       },
       "premium": {
-        "name": "Premium",
+        "name": "Plus",
         "description": "All features to help you achieve your goals",
         "features": [
-          "Customize meals to your taste",
-          "Mark favorite and disliked meals for better customization",
-          "Meal plans created from dishes verified by our experts and tailored to your preferences",
-          "Weekly challenges",
-          "Advanced progress tracking",
-          "Priority access to new features and improvements",
-          "Rivo as your personal assistant without limitations"
+          "Support our development team for faster product improvements",
+          "(IN DEVELOPMENT) Receipt scanning for faster and more convenient pantry item adding",
+          "(IN DEVELOPMENT) Customize individual recipes for better personalization based on your goals, tastes, and diet"
+          
         ]
       },
       "pro": {
         "name": "Pro",
         "description": "Advanced features for serious health goals",
         "features": [
-          "Everything in Premium",
+          "Everything in Plus",
           "Custom diet coaching",
           "Advanced analytics",
           "Family meal planning",
@@ -1190,6 +1839,22 @@
     "noSubscription": "No active subscription",
     "freeAccount": "You're using the free plan",
     "successMessage": "Subscription activated successfully! 🎉",
+    "profileSection": {
+      "membershipEyebrow": "Membership",
+      "description": "Manage your membership, check your active subscription, and see what you have unlocked right now.",
+      "currentPlanLabel": "Current plan",
+      "yourMembershipLabel": "Your membership",
+      "paidDescription": "You have an active paid plan, and you can manage your membership in one click.",
+      "basicDescription": "You are currently on the Basic plan. If you want more, you will find the available upgrade below.",
+      "upgradeReady": "Upgrade is ready",
+      "availableUpgradesEyebrow": "Available upgrades",
+      "availableUpgradesTitle": "Higher tiers for your account",
+      "noUpgradeEyebrow": "Higher tiers",
+      "noUpgradeTitle": "There is no higher upgrade available right now",
+      "noUpgradeDescription": "Your current membership is the highest plan we offer in this part of the app.",
+      "consentEyebrow": "Checkout consent",
+      "consentTitle": "Confirm legal consent before upgrading"
+    },
     "errorMessages": {
       "portalFailed": "Failed to open billing portal",
       "checkoutFailed": "Failed to start checkout",
@@ -1226,16 +1891,16 @@
       "noNewPlans": "Generate new meal plans or shopping lists"
     },
     "tryAgain": "Try Again",
-    "goToDashboard": "Go to Dashboard",
+    "goToHome": "Go to Home",
     "autoRefresh": "The page will automatically update once connection is restored"
   },
   "upgrade": {
-    "title": "Get Premium Access",
+    "title": "Get Plus Access",
     "description": "Unlock all features and get unlimited AI meal plans.",
     "feature1": "Unlimited AI meal plans",
     "feature2": "Personalized nutrition tracking",
     "feature3": "Advanced shopping lists",
-    "upgradeButton": "Upgrade to Premium",
+    "upgradeButton": "Upgrade to Plus",
     "maybeLater": "Maybe later",
     "socialProof": "Join 2,400+ members eating smarter",
     "trialDays": "{days} Days Free"
@@ -1263,7 +1928,236 @@
       "termsAgree": "I have read and agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>",
       "digitalConsent": "I request immediate access to the digital service and acknowledge that I lose my 14-day right of withdrawal",
       "mustAgree": "You must agree to the terms before proceeding",
-      "orderWithPayment": "Subscribe with obligation to pay"
+      "orderWithPayment": "Upgrade"
+    }
+  },
+  "pantry": {
+    "metadata": {
+      "title": "Pantry",
+      "description": "Track what you have, top up low stock, and add grocery items fast."
+    },
+    "title": "Pantry",
+    "eyebrow": "Grocery inventory",
+    "subtitle_empty": "Your pantry is empty. Add ingredients manually or import them after marking a shopping trip as purchased.",
+    "subtitle_count_one": "{count} item",
+    "subtitle_count_few": "{count} items",
+    "subtitle_count_many": "{count} items",
+    "modal_title": "Add to Pantry",
+    "add_item": "Add item",
+    "refresh": "Refresh",
+    "filter_all": "All",
+    "filter_restock": "Need restock",
+    "filter_expiring": "Expiring soon",
+    "filter_manual": "Manual",
+    "filter_shopping_list": "From shopping list",
+    "search_placeholder": "Search groceries, categories, or saved staples",
+    "category_filter_label": "Category",
+    "category_filter_all": "All categories",
+    "summary_inventory": "In pantry",
+    "summary_restock": "Need restock",
+    "summary_expiring": "Expiring",
+    "scan_bill":"Scan",
+    "inventory_title": "Your items",
+    "inventory_description": "Compact rows made for quick quantity updates on the go.",
+    "empty_state_title": "Pantry is empty",
+    "empty_state_description": "Add ingredients manually or import them from a shopping list after marking the purchase as done.",
+    "add_first_item": "Add first item",
+    "no_items_in_category": "No items in this category",
+    "expiry_warning_one": "1 item is expiring soon",
+    "expiry_warning_few": "{count} items are expiring soon",
+    "no_results_title": "No items match these filters",
+    "no_results_description": "Try a different search or clear the filters to see the full pantry again.",
+    "clear_filters": "Clear filters",
+    "row_low_stock": "Low stock",
+    "row_expiring": "Expiring",
+    "row_track": "Track",
+    "row_tracked": "Tracked",
+    "row_add_package": "Add pack",
+    "row_add_package_again": "Add another",
+    "row_add_package_pending": "Adding",
+    "row_add_package_label": "Add another package to the shopping list",
+    "aria_expand_category": "Show items in {category}",
+    "aria_collapse_category": "Hide items in {category}",
+    "aria_edit": "Edit item",
+    "aria_decrease": "Decrease quantity",
+    "aria_increase": "Increase quantity",
+    "aria_delete": "Delete item",
+    "save_changes": "Save changes",
+    "cancel": "Cancel",
+    "load_error_title": "Pantry couldn't load",
+    "drafts_badge": "Pending",
+    "drafts_title": "Quick add ready to confirm",
+    "drafts_description": "{count} pending changes are waiting for confirmation.",
+    "drafts_discard": "Discard",
+    "drafts_confirm": "Confirm",
+    "shopping_list_success": "Added to your shopping list",
+    "shopping_list_error": "Couldn't add the item to your shopping list",
+    "field_name": "Name",
+    "field_name_placeholder": "e.g. Milk, Apples, Pasta...",
+    "field_quantity": "Quantity",
+    "field_quantity_placeholder": "e.g. 500",
+    "field_tracking_mode": "Tracking mode",
+    "tracking_mode_quantity": "Track quantity",
+    "tracking_mode_availability": "Track availability",
+    "tracking_mode_availability_hint": "Availability mode stores this item as something you have on hand without tracking grams or pieces.",
+    "tracking_mode_toggle_label": "Track quantity",
+    "tracking_mode_toggle_help": "When the toggle is off, the item tracks exact quantity. When the toggle is on, the item only tracks whether it is currently in the pantry.",
+    "field_availability": "Availability",
+    "availability_in_stock": "In Pantry",
+    "availability_out_of_stock": "Out of Pantry",
+    "toggle_availability": "Toggle availability",
+    "field_unit": "Unit",
+    "field_category": "Category",
+    "field_expiry": "Expiry date",
+    "field_optional": "optional",
+    "submit_single": "Add item",
+    "submit_batch": "Add all items",
+    "quick_add_title": "Quick add",
+    "quick_add_description": "Capture a grocery item in seconds, then confirm it when you're ready.",
+    "quick_add_hint": "Quick add creates a pending pantry draft first, so you can review the item before it becomes part of your inventory.",
+    "quick_add_cancel": "Cancel",
+    "quick_add_submit": "Save draft",
+    "batch_title": "Batch add to pantry",
+    "batch_description": "Add multiple items at once. The backend processes them as one batch and uses AI normalization when it helps.",
+    "batch_add_row": "Add another row",
+    "batch_item_label": "Item {index}",
+    "restock": {
+      "title": "Repeat buys",
+      "subtitle": "Refill the things you buy all the time without retyping them.",
+      "section_title": "Need to restock",
+      "section_subtitle": "Saved staples that are missing or running low.",
+      "cardInstruction": "Enter a new item quantity",
+      "saveDefault": "Save",
+        "saveBadge": "Edited",
+        "savedBadge": "Ready",
+      "makeRecurring": "Save as recurring",
+      "removeRecurring": "Remove from recurring",
+      "quantityMissing": "set",
+      "add_now": "Top up pantry",
+      "add_to_list": "Send to list",
+      "current": "Current",
+      "target": "Target",
+      "missing": "Missing",
+      "empty_title": "Everything looks stocked",
+      "empty_description": "When saved staples run low, they will appear here for one-tap refill or shopping list handoff."
+    },
+    "source_manual": "Manual",
+    "source_shopping_list": "From shopping list",
+    "categories": {
+      "dairy": "🥛 Dairy",
+      "meat_fish": "🥩 Meat & Fish",
+      "fruit": "🍎 Fruit",
+      "vegetables": "🥦 Vegetables",
+      "grains": "🌾 Grains & Bread",
+      "eggs": "🥚 Eggs",
+      "condiments": "🧂 Condiments",
+      "beverages": "🥤 Beverages",
+      "nuts_seeds": "🥜 Nuts & Seeds",
+      "other": "📦 Other"
+    },
+    "push": {
+      "expiry_warning": {
+        "title": "⚠️ Items expiring soon",
+        "body": "Check your pantry — some items expire within 3 days."
+      }
+    }
+  },
+  "tutorial": {
+    "common": {
+      "progress": "{current} of {total}",
+      "labels": {
+        "guidedTour": "Quick start",
+        "quickTip": "Quick tip"
+      },
+      "actions": {
+        "next": "Next",
+        "back": "Back",
+        "skip": "Skip",
+        "finish": "Finish",
+        "startTour": "Show me around",
+        "close": "Close"
+      }
+    },
+    "intro": {
+      "steps": {
+        "welcome": {
+          "eyebrow": "Welcome to Eatrivo",
+          "title": "Meals, shopping, and pantry in one flow",
+          "description": "Eatrivo helps you decide what to eat, what to buy, and what you should use from your pantry right now."
+        },
+        "planning": {
+          "eyebrow": "Mobile first",
+          "title": "Built for mobile, still clean on desktop",
+          "description": "Navigation, sections, and coachmarks are designed for narrow screens first, then adapt into a wider desktop layout without breaking the flow."
+        },
+        "guidance": {
+          "eyebrow": "Short tour",
+          "title": "First the overview, then tips directly on the UI",
+          "description": "We start with a short intro and then show contextual highlights right where the important controls live."
+        }
+      }
+    },
+    "coachmarks": {
+      "homeRecipes": {
+        "steps": {
+          "homeNav": {
+            "title": "This is your main dashboard",
+            "description": "From here you can jump between recipes, chat, pantry, and the rest of the app without losing context."
+          },
+          "switcher": {
+            "title": "Switch between recipes and shopping",
+            "description": "On mobile this toggle is the fastest way to move between recipe discovery and your active shopping list."
+          },
+          "recipes": {
+            "title": "Your recipe feed lives here",
+            "description": "This section shows recommendations, filters, and pantry-aware suggestions for what you can cook next."
+          }
+        }
+      },
+      "shoppingList": {
+        "steps": {
+          "tab": {
+            "title": "Shopping has its own tab",
+            "description": "Move here when you want to focus on buying what you need instead of browsing recipes."
+          },
+          "list": {
+            "title": "This is your live shopping list",
+            "description": "You can check items off, rename the list, and only finish it once everything has been picked up."
+          }
+        }
+      },
+      "pantry": {
+        "steps": {
+          "nav": {
+            "title": "Pantry is a first-class section",
+            "description": "It is worth keeping this updated often because cookable recipes and restock suggestions depend on it."
+          },
+          "inventory": {
+            "title": "This is where inventory stays under control",
+            "description": "You get stock levels, expiry context, and quick actions for keeping your pantry useful."
+          },
+          "add": {
+            "title": "Adding an item should take one tap",
+            "description": "Whenever you buy something or find food at home, add it here so Eatrivo can use it in recipes and shopping suggestions."
+          }
+        }
+      },
+      "chat": {
+        "steps": {
+          "nav": {
+            "title": "Rivo is always close by",
+            "description": "Open chat from navigation any time you want help with meals, calories, or pantry-based ideas."
+          },
+          "history": {
+            "title": "Open conversation history here",
+            "description": "On mobile the history panel stays tucked away so the chat composer and messages have more room."
+          },
+          "composer": {
+            "title": "Type your request here",
+            "description": "Ask a question, request a suggestion, or describe what you have at home. The composer stays usable even with the mobile keyboard open."
+          }
+        }
+      }
     }
   }
 }

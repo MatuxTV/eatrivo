@@ -1,0 +1,282 @@
+erDiagram
+    %% ════════════════════════════════════════════════════════════
+    %% EATRIVO — Full ER Diagram
+    %% ════════════════════════════════════════════════════════════
+
+    users {
+        uuid id PK
+        text name
+        text email UK
+        timestamp emailVerified
+        membership membership "basic|premium|pro|trainer"
+        text image
+        text stripe_customer_id
+        text last_seen_welcome_version
+        timestamp last_seen_welcome_at
+        boolean hide_install_prompt
+        boolean is_beta_tester
+    }
+
+    user_profiles {
+        uuid id PK
+        uuid userId FK
+        text fullName
+        role role "user|coach|admin"
+        boolean isProfileComplete
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    user_info {
+        uuid id PK
+        uuid userProfileId FK
+        sex sex "man|woman"
+        language language "sk|en"
+        timestamp dateOfBirth
+        integer height
+        numeric weight
+        activity_level activity_level
+        goal goal "lose|maintain|gain"
+        integer meal_per_day
+        time_pref cooking_time_pref
+        boolean meal_prep
+        integer meal_prep_days
+        diet diet_preferences
+        budget budget_preference
+        text likes
+        text dislikes
+        text allergies
+        jsonb profileSnapshot
+        timestamp created_at
+    }
+
+    account {
+        uuid userId FK
+        text type
+        text provider PK
+        text providerAccountId PK
+        text refresh_token
+        text access_token
+        integer expires_at
+        text token_type
+        text scope
+        text id_token
+        text session_state
+    }
+
+    session {
+        text sessionToken PK
+        uuid userId FK
+        timestamp expires
+    }
+
+    verificationToken {
+        text identifier PK
+        text token PK
+        timestamp expires
+    }
+
+    shopping_lists {
+        uuid id PK
+        uuid userProfileId FK
+        text title
+        text description
+        timestamp weekStartDate
+        timestamp weekEndDate
+        text markdownContent
+        shopping_list_status status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    shopping_list_downloads {
+        uuid id PK
+        uuid shoppingListId FK
+        uuid userProfileId FK
+        timestamp downloadedAt
+    }
+
+    meal_plans {
+        uuid id PK
+        uuid userProfileId FK
+        uuid shoppingListId FK
+        timestamp weekStartDate
+        timestamp weekEndDate
+        jsonb meals
+        timestamp created_at
+    }
+
+    pantry_items {
+        uuid id PK
+        uuid userProfileId FK
+        text name
+        numeric quantity
+        text unit
+        text category
+        timestamp expiry_date
+        pantry_item_source source "manual|shopping_list"
+        uuid shopping_list_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    food_items {
+        integer id PK
+        text name
+        text category
+        text unit
+        integer kcal_per_unit
+        numeric protein
+        numeric carbs
+        numeric fat
+    }
+
+    ai_insights {
+        uuid id PK
+        uuid user_profile_id FK
+        text insight_type
+        text title
+        jsonb content
+        jsonb metadata
+        boolean is_active
+        timestamp generated_at
+        timestamp expires_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    feedback {
+        uuid id PK
+        uuid userProfileId FK
+        text userEmail
+        text userName
+        feedback_type type "bug|feature|improvement"
+        text title
+        text description
+        text status
+        timestamp created_at
+    }
+
+    weight_history {
+        uuid id PK
+        uuid userProfileId FK
+        numeric weight
+        timestamp recorded_at
+        text note
+        timestamp created_at
+    }
+
+    push_subscriptions {
+        uuid id PK
+        uuid userId FK
+        jsonb subscription
+        text user_agent
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    subscriptions {
+        uuid id PK
+        uuid userId FK
+        text stripe_subscription_id UK
+        text stripe_price_id
+        subscription_status status
+        timestamp current_period_end
+        boolean cancel_at_period_end
+        timestamp cancel_at
+        uuid gifted_by FK
+        text gift_reason
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    invoices {
+        uuid id PK
+        uuid userId FK
+        text stripe_invoice_id UK
+        text stripe_subscription_id
+        invoice_status status
+        integer amount_due
+        integer amount_paid
+        text currency
+        text invoice_url
+        text invoice_pdf
+        timestamp period_start
+        timestamp period_end
+        timestamp paid_at
+        timestamp created_at
+    }
+
+    consent_logs {
+        uuid id PK
+        uuid userId FK
+        consent_type type
+        boolean agreed
+        text ip_address
+        text user_agent
+        text document_version
+        timestamp created_at
+    }
+
+    analytics_events {
+        uuid id PK
+        uuid userId FK
+        analytics_event_type event_type
+        text event_name
+        jsonb metadata
+        timestamp created_at
+    }
+
+    badges {
+        uuid id PK
+        uuid userProfileId FK
+        badge_type type "legacy"
+        timestamp granted_at
+    }
+
+    chat_messages {
+        uuid id PK
+        uuid user_profile_id FK
+        uuid session_id
+        chat_message_role role "user|assistant"
+        text content
+        text intent
+        jsonb metadata
+        timestamp created_at
+    }
+
+    %% ════════════════════════════════════════════════════════════
+    %% RELATIONSHIPS
+    %% ════════════════════════════════════════════════════════════
+
+    %% Core user relationships
+    users ||--o| user_profiles : "has profile"
+    users ||--o{ account : "OAuth accounts"
+    users ||--o{ session : "active sessions"
+
+    %% Profile → detail tables
+    user_profiles ||--o| user_info : "health & preferences"
+    user_profiles ||--o{ shopping_lists : "owns"
+    user_profiles ||--o{ shopping_list_downloads : "downloads"
+    user_profiles ||--o{ meal_plans : "owns"
+    user_profiles ||--o{ pantry_items : "owns"
+    user_profiles ||--o{ ai_insights : "generated for"
+    user_profiles ||--o{ feedback : "submits"
+    user_profiles ||--o{ weight_history : "tracks weight"
+    user_profiles ||--o{ badges : "earns"
+    user_profiles ||--o{ chat_messages : "chat history"
+
+    %% Shopping list relationships
+    shopping_lists ||--o{ shopping_list_downloads : "tracked downloads"
+    shopping_lists ||--o| meal_plans : "has meal plan"
+    shopping_lists ||--o{ pantry_items : "imported to pantry"
+
+    %% Billing & payments (user-level, not profile)
+    users ||--o{ push_subscriptions : "push devices"
+    users ||--o{ subscriptions : "billing"
+    users ||--o{ invoices : "payment history"
+    users ||--o{ consent_logs : "GDPR consents"
+    users ||--o{ analytics_events : "tracked events"
+
+    %% Gifted subscriptions
+    users ||--o{ subscriptions : "gifted by"

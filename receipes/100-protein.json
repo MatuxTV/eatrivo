@@ -1,0 +1,652 @@
+{
+  "recipes": [
+    {
+      "external_key": "spanish-zucchini-tortilla",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "gluten-free",
+        "dairy-free",
+        "vegetarian",
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-eggs"
+      ],
+      "servings": 2,
+      "prep_time_min": 10,
+      "total_time_min": 35,
+      "nutrition_per_serving": {
+        "calories": 377,
+        "protein_g": 21,
+        "carbohydrates_g": 22,
+        "fat_g": 22
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "olive oil",
+              "ingredient_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej",
+              "ingredient_name": "olive oil"
+            }
+          }
+        },
+        {
+          "ingredient_key": "potato",
+          "ingredient_specific_key": "potato",
+          "canonical_name": "potato",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "potato",
+              "ingredient_name": "potato"
+            },
+            "sk": {
+              "display_name": "zemiak",
+              "ingredient_name": "potato"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "onion",
+              "ingredient_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa",
+              "ingredient_name": "onion"
+            }
+          }
+        },
+        {
+          "ingredient_key": "zucchini",
+          "ingredient_specific_key": "zucchini",
+          "canonical_name": "zucchini",
+          "quantity": 1.5,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "zucchini",
+              "ingredient_name": "zucchini"
+            },
+            "sk": {
+              "display_name": "cuketa",
+              "ingredient_name": "zucchini"
+            }
+          }
+        },
+        {
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "quantity": 6,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "egg",
+              "ingredient_name": "egg"
+            },
+            "sk": {
+              "display_name": "vajce",
+              "ingredient_name": "egg"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Spanish Zucchini Tortilla",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Heat oil in a non-stick pan and sear the potato and onion over medium-high heat, for about 4 minutes. Next, add the zucchini and sauté for another 4 minutes.",
+            "In a bowl, whisk eggs and season with salt and pepper. Transfer the vegetables from the pan into the bowl and mix well.",
+            "Using the same pan, add the egg mixture on low heat and make sure everything is evenly distributed. After about 3 minutes, run a spatula through the outer edges of the tortilla to make sure it does not stick to the pan.",
+            "After 8-10 minutes, flip the tortilla (this might take more or less, depending on heat, size and pan), using a plate over the pan. Slide the uncooked part back into the pan.",
+            "After another 5-6 minutes, the tortilla should be cooked. Remove from heat and serve."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Španielska cuketová tortilla",
+          "category_label": "Raňajky",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Na nepriľnavej panvici zohrejte olej a opečte zemiak s cibuľou na stredne silnom ohni asi 4 minúty. Následne pridajte cuketu a restujte ďalšie 4 minúty.",
+            "V miske vyšľahajte vajcia a dochuťte soľou a korením. Zeleninu z panvice presuňte do misky a dobre premiešajte.",
+            "Na tej istej panvici pridajte na miernom ohni vaječnú zmes a dbajte na to, aby bola rovnomerne rozložená. Asi po 3 minútach prejdite obracačkou po vonkajších okrajoch tortilly, aby sa neprilepila na panvicu.",
+            "Po 8 až 10 minútach tortillu otočte (môže to trvať viac alebo menej v závislosti od teploty, veľkosti a panvice) pomocou taniera, ktorý priložíte na panvicu. Nepečenú časť zosuňte späť do panvice.",
+            "Po ďalších 5 až 6 minútach by mala byť tortilla hotová. Odstavte z ohňa a podávajte."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "omelet-wraps",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "gluten-free",
+        "low-carb"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-eggs",
+        "contains-soy",
+        "contains-fish"
+      ],
+      "servings": 2,
+      "prep_time_min": 15,
+      "total_time_min": 25,
+      "nutrition_per_serving": {
+        "calories": 474,
+        "protein_g": 40,
+        "carbohydrates_g": 6,
+        "fat_g": 30
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "cottage-cheese",
+          "ingredient_specific_key": "cottage-cheese",
+          "canonical_name": "cottage cheese",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "cottage cheese",
+              "ingredient_name": "cottage cheese"
+            },
+            "sk": {
+              "display_name": "cottage syr",
+              "ingredient_name": "cottage cheese"
+            }
+          }
+        },
+        {
+          "ingredient_key": "watercress",
+          "ingredient_specific_key": "watercress",
+          "canonical_name": "watercress",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "watercress",
+              "ingredient_name": "watercress"
+            },
+            "sk": {
+              "display_name": "potočnica",
+              "ingredient_name": "watercress"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lemon-peel",
+          "ingredient_specific_key": "lemon-peel",
+          "canonical_name": "lemon peel",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "lemon peel",
+              "ingredient_name": "lemon peel"
+            },
+            "sk": {
+              "display_name": "citrónová kôra",
+              "ingredient_name": "lemon peel"
+            }
+          }
+        },
+        {
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "quantity": 6,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "egg",
+              "ingredient_name": "egg"
+            },
+            "sk": {
+              "display_name": "vajce",
+              "ingredient_name": "egg"
+            }
+          }
+        },
+        {
+          "ingredient_key": "soy-milk",
+          "ingredient_specific_key": "soy-milk",
+          "canonical_name": "soy milk",
+          "quantity": 60,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "soy milk",
+              "ingredient_name": "soy milk"
+            },
+            "sk": {
+              "display_name": "sójové mlieko",
+              "ingredient_name": "soy milk"
+            }
+          }
+        },
+        {
+          "ingredient_key": "mixed-herb",
+          "ingredient_specific_key": "mixed-herb",
+          "canonical_name": "mixed herb",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "mixed herb",
+              "ingredient_name": "mixed herb"
+            },
+            "sk": {
+              "display_name": "zmes byliniek",
+              "ingredient_name": "mixed herb"
+            }
+          }
+        },
+        {
+          "ingredient_key": "coconut-oil",
+          "ingredient_specific_key": "coconut-oil",
+          "canonical_name": "coconut oil",
+          "quantity": 4,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "coconut oil",
+              "ingredient_name": "coconut oil"
+            },
+            "sk": {
+              "display_name": "kokosový olej",
+              "ingredient_name": "coconut oil"
+            }
+          }
+        },
+        {
+          "ingredient_key": "smoked-salmon",
+          "ingredient_specific_key": "smoked-salmon",
+          "canonical_name": "smoked salmon",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "smoked salmon",
+              "ingredient_name": "smoked salmon"
+            },
+            "sk": {
+              "display_name": "údený losos",
+              "ingredient_name": "smoked salmon"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Omelet Wraps",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Place the cottage cheese, watercress and lemon peel in a high bowl and puree with the hand blender (or food processor) until smooth paste forms.",
+            "Beat the eggs with the milk and herbs in a separate bowl.",
+            "Heat 1 tsp. of oil in the medium size frying pan and fry 1/4 of the egg over medium heat for 2 minutes until the egg solidifies, then turn around. Bake the other side for 0.5 minute.",
+            "Remove the omelet from the pan and set aside. Fry the other omelets with the rest of the oil.",
+            "To serve, spread the cottage cheese paste over the omelets and top with smoked salmon. Roll up the omelet as a wrap and cut in half."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Omeletové wrapy",
+          "category_label": "Raňajky",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Cottage syr, potočnicu a citrónovú kôru dajte do vysokej misky a pomocou tyčového mixéra (alebo kuchynského robota) rozmixujte na hladkú pastu.",
+            "V inej miske vyšľahajte vajcia s mliekom a bylinkami.",
+            "V stredne veľkej panvici zohrejte 1 čl oleja a pražte 1/4 vaječnej zmesi na strednom ohni približne 2 minúty, kým vajíčko nestuhne, potom ho otočte. Opekajte z druhej strany pol minúty.",
+            "Omeletu vyberte z panvice a dajte bokom. Rovnako pripravte ďalšie omelety zo zvyšného oleja a zmesi.",
+            "Na podávanie natrite pastu z cottage syra na omelety a navrch dajte údeného lososa. Omeletu zrolujte ako wrap a prerežte na polovicu."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": false
+    },
+    {
+      "external_key": "egg-turkey-stuffed-peppers",
+      "default_locale": "en",
+      "category_key": "lunch",
+      "diet_tags": [
+        "gluten-free",
+        "low-carb",
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-eggs",
+        "contains-nuts",
+        "contains-dairy"
+      ],
+      "servings": 2,
+      "prep_time_min": 5,
+      "total_time_min": 25,
+      "nutrition_per_serving": {
+        "calories": 658,
+        "protein_g": 86,
+        "carbohydrates_g": 22,
+        "fat_g": 24
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "quantity": 4,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "egg",
+              "ingredient_name": "egg"
+            },
+            "sk": {
+              "display_name": "vajce",
+              "ingredient_name": "egg"
+            }
+          }
+        },
+        {
+          "ingredient_key": "egg-white",
+          "ingredient_specific_key": "egg-white",
+          "canonical_name": "egg white",
+          "quantity": 4,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "egg white",
+              "ingredient_name": "egg white"
+            },
+            "sk": {
+              "display_name": "vaječný bielok",
+              "ingredient_name": "egg white"
+            }
+          }
+        },
+        {
+          "ingredient_key": "almond-milk",
+          "ingredient_specific_key": "almond-milk",
+          "canonical_name": "almond milk",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "almond milk",
+              "ingredient_name": "almond milk"
+            },
+            "sk": {
+              "display_name": "mandľové mlieko",
+              "ingredient_name": "almond milk"
+            }
+          }
+        },
+        {
+          "ingredient_key": "coconut-oil",
+          "ingredient_specific_key": "coconut-oil",
+          "canonical_name": "coconut oil",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "coconut oil",
+              "ingredient_name": "coconut oil"
+            },
+            "sk": {
+              "display_name": "kokosový olej",
+              "ingredient_name": "coconut oil"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "onion",
+              "ingredient_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa",
+              "ingredient_name": "onion"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lean-ground-turkey",
+          "ingredient_specific_key": "lean-ground-turkey",
+          "canonical_name": "lean ground turkey",
+          "quantity": 450,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "lean ground turkey",
+              "ingredient_name": "lean ground turkey"
+            },
+            "sk": {
+              "display_name": "chudé mleté morčacie mäso",
+              "ingredient_name": "lean ground turkey"
+            }
+          }
+        },
+        {
+          "ingredient_key": "oregano",
+          "ingredient_specific_key": "oregano",
+          "canonical_name": "oregano",
+          "quantity": 2,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "oregano",
+              "ingredient_name": "oregano"
+            },
+            "sk": {
+              "display_name": "oregáno",
+              "ingredient_name": "oregano"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cumin",
+          "ingredient_specific_key": "cumin",
+          "canonical_name": "cumin",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "cumin",
+              "ingredient_name": "cumin"
+            },
+            "sk": {
+              "display_name": "rímska rasca",
+              "ingredient_name": "cumin"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spinach",
+          "ingredient_specific_key": "spinach",
+          "canonical_name": "spinach",
+          "quantity": 60,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "spinach",
+              "ingredient_name": "spinach"
+            },
+            "sk": {
+              "display_name": "špenát",
+              "ingredient_name": "spinach"
+            }
+          }
+        },
+        {
+          "ingredient_key": "red-bell-pepper",
+          "ingredient_specific_key": "red-bell-pepper",
+          "canonical_name": "red bell pepper",
+          "quantity": 4,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "red bell pepper",
+              "ingredient_name": "red bell pepper"
+            },
+            "sk": {
+              "display_name": "červená paprika",
+              "ingredient_name": "red bell pepper"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cheese",
+          "ingredient_specific_key": "cheese",
+          "canonical_name": "cheese",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "cheese",
+              "ingredient_name": "cheese"
+            },
+            "sk": {
+              "display_name": "syr",
+              "ingredient_name": "cheese"
+            }
+          }
+        },
+        {
+          "ingredient_key": "parsley",
+          "ingredient_specific_key": "parsley",
+          "canonical_name": "parsley",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "parsley",
+              "ingredient_name": "parsley"
+            },
+            "sk": {
+              "display_name": "petržlenová vňať",
+              "ingredient_name": "parsley"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Egg & Turkey Stuffed Peppers",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Heat oven to 200 °C.",
+            "Beat the eggs, egg whites and milk, then set aside.",
+            "Heat the coconut oil in a pan over medium heat. Add the onion and cook for 3 minutes until softened and browned.",
+            "Add in the turkey, oregano and cumin, season with salt and pepper. Cook until meat is cooked through, about 5 minutes. Then add the spinach, and mix until it wilts about 2 minutes.",
+            "Increase the heat and add in the eggs. Pull the eggs across the skillet with a spatula. Repeat for about 3 minutes until eggs are cooked. Then set aside.",
+            "Cut the peppers horizontally and remove the seeds, then stuff with the scrambled eggs and turkey.",
+            "Place the peppers in a baking dish and sprinkle them with grated cheese.",
+            "Bake in the oven for 15 minutes, until cheese has melted and the edges have browned.",
+            "To serve, sprinkle with chopped parsley."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Papriky plnené vajcom a morčacím mäsom",
+          "category_label": "Obed",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Rúru predhrejte na 200 °C.",
+            "Vyšľahajte vajcia, vaječné bielky a mlieko, a dajte bokom.",
+            "Na panvici zohrejte kokosový olej na strednom ohni. Pridajte cibuľu a restujte 3 minúty, kým nezmäkne a nezozlatne.",
+            "Pridajte morčacie mäso, oregáno a rímsku rascu, dochuťte soľou a korením. Opekajte asi 5 minút, kým nie je mäso prepečené. Potom pridajte špenát a miešajte asi 2 minúty, kým nezavädne.",
+            "Zvýšte teplotu a pridajte vajíčka. Obracačkou miešajte vajíčka po panvici. Opakujte asi 3 minúty, kým nie sú vajcia upečené. Potom dajte zmes bokom.",
+            "Papriky vodorovne rozkrojte, odstráňte semienka a naplňte ich praženicou s morčacím mäsom.",
+            "Papriky vložte do zapekacej misy a posypte nastrúhaným syrom.",
+            "Pečte v rúre 15 minút, kým sa syr neroztopí a okraje nezhnednú.",
+            "Podávajte posypané nasekanou petržlenovou vňaťou."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    }
+  ],
+  "rejected": []
+}

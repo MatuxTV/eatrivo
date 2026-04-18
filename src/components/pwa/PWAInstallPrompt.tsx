@@ -209,7 +209,7 @@ export function PWAInstallPrompt() {
           </button>
 
           {/* Content */}
-          <div className="p-6 sm:p-8 pb-safe overflow-hidden">
+          <div className="p-6 sm:p-8 pb-[max(1.5rem,env(safe-area-inset-bottom))] overflow-hidden">
             <AnimatePresence mode="wait" initial={false}>
               {!selectedPlatform ? (
                 <motion.div

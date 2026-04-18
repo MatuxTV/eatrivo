@@ -1,27 +1,20 @@
-﻿import { motion } from "framer-motion";
+﻿"use client";
+
 import {
-  Plus,
-  Users,
-  UserCircle,
   Mail,
   BarChart3,
-  FileText,
   Bell,
   type LucideIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type TabId =
-  | "upload"
-  | "users"
-  | "profiles"
   | "emails"
   | "notifications"
-  | "templates"
   | "analytics";
 
 interface Tab {
   id: TabId;
-  label: string;
   icon: LucideIcon;
 }
 
@@ -31,34 +24,29 @@ interface AdminTabsProps {
 }
 
 const tabs: Tab[] = [
-  { id: "upload", label: "Vytvoriť zoznam", icon: Plus },
-  { id: "users", label: "Používatelia", icon: Users },
-  { id: "profiles", label: "Profily", icon: UserCircle },
-  { id: "emails", label: "Emaily", icon: Mail },
-  { id: "notifications", label: "Notifikácie", icon: Bell },
-  { id: "templates", label: "Šablóny", icon: FileText },
-  { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "analytics", icon: BarChart3 },
+  { id: "emails", icon: Mail },
+  { id: "notifications", icon: Bell },
 ];
 
 export default function AdminTabs({ activeTab, onTabChange }: AdminTabsProps) {
+  const t = useTranslations("admin.dashboard.tabs");
+
   return (
-    <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div className="flex p-1 bg-white rounded-xl border border-gray-200 shadow-sm w-full sm:w-fit overflow-x-auto">
+    <div className="mb-5 sm:mb-8">
+      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className="relative px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 sm:gap-2 flex-1 sm:flex-initial justify-center sm:justify-start whitespace-nowrap"
+            className={`flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-200 sm:px-4 ${
+              activeTab === tab.id
+                ? "border border-eatrivo-purple/20 bg-eatrivo-purple/5 text-eatrivo-purple"
+                : "border border-transparent bg-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            }`}
           >
             <tab.icon className="w-4 h-4" />
-            <span className="hidden xs:inline sm:inline">{tab.label}</span>
-            {activeTab === tab.id && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute inset-0 border border-eatrivo-purple/20 rounded-lg"
-                transition={{ type: "spring", duration: 0.5 }}
-              />
-            )}
+            <span>{t(tab.id)}</span>
           </button>
         ))}
       </div>

@@ -1,46 +1,55 @@
 graph TD
-    START((Start)) --> FETCH_USER[📥 Fetch User Profile]
-    
-    FETCH_USER --> MACRO_CALC[🧮 Macro Calculator]
-    
-    MACRO_CALC --> PANTRY_HEALTH{🏥 Pantry Health Check}
-    PANTRY_HEALTH -- "Expired Items" --> ALERT_USER[⚠️ Alert User]
-    PANTRY_HEALTH -- "OK" --> FETCH_HISTORY
-    
-    FETCH_HISTORY[📂 Fetch Shopping History] --> INVENTORY_SCAN[🔍 Enhanced Inventory Scanner]
-    
-    INVENTORY_SCAN -- "Classify + Calculate Remaining" --> VIRTUAL_PANTRY[📦 Virtual Pantry State]
-    
-    VIRTUAL_PANTRY --> PROMPT_BUILDER[📝 Prompt Builder]
+    START((Start)) --> FETCH_USER["📥 Fetch User Profile\n5%"]
+
+    FETCH_USER -- "Error" --> ERROR_HANDLER["❌ Error Handler"]
+    FETCH_USER -- "OK" --> MACRO_CALC["🧮 Macro Calculator\n15%"]
+
+    MACRO_CALC --> PANTRY_HEALTH{"🏥 Pantry Health Check\n20%\n⚠️ STUB"}
+    PANTRY_HEALTH -- "Expired Items\n(not yet impl.)" --> ALERT_USER["⚠️ Alert User\n(stub)"]
+    PANTRY_HEALTH -- "Always OK (stub)" --> FETCH_HISTORY
+
+    FETCH_HISTORY["📂 Fetch Shopping History\n25%"] --> INVENTORY_SCAN["🔍 Inventory Scanner\n30%\n⚠️ STUB"]
+
+    INVENTORY_SCAN -- "Always null (stub)" --> VIRTUAL_PANTRY["📦 Virtual Pantry State\n⚠️ STUB → null"]
+
+    VIRTUAL_PANTRY --> PROMPT_BUILDER["📝 Prompt Builder\n40%"]
     MACRO_CALC --> PROMPT_BUILDER
-    
-    PROMPT_BUILDER --> AI_GEN[🤖 AI Generator]
-    
-    AI_GEN --> MERGER[➕ Smart Merger<br/>Deduplication + Cost Calc]
+    FEEDBACK_CTX["🔄 Feedback Context\n(retryCount)"] --> PROMPT_BUILDER
+
+    PROMPT_BUILDER --> AI_GEN["🤖 AI Generator\n70%\n→ estimatedMacros in JSON"]
+
+    AI_GEN --> MERGER["➕ Smart Merger\n80%\n(basic dedup, no cost calc yet)"]
     VIRTUAL_PANTRY --> MERGER
-    
-    MERGER --> MACRO_VALIDATOR{⚖️ Macro Validator<br/>90-110% Range}
-    
-    MACRO_VALIDATOR -- "Invalid & Retries<3" --> FEEDBACK[🔄 Structured Feedback]
-    FEEDBACK --> PROMPT_BUILDER
-    
-    MACRO_VALIDATOR -- "Valid" --> FINAL_FORMAT[✨ Dual Format Output]
-    
-    FINAL_FORMAT --> SAVE_DB[(💾 Save to DB<br/>+ Update Pantry State)]
-    
-    SAVE_DB --> NOTIFY_USER[📧 Notify User]
-    
+
+    MERGER --> MACRO_VALIDATOR{"⚖️ Macro Validator\n85%\n90–110% Range"}
+
+    MACRO_VALIDATOR -- "Invalid & retryCount < 3" --> FEEDBACK_CTX
+    MACRO_VALIDATOR -- "Valid OR retryCount ≥ 3" --> FINAL_FORMAT["✨ Final Format\n90%"]
+
+    FINAL_FORMAT --> SAVE_DB[("💾 Save to DB\n95%\nshoppingList + mealPlan + aiInsights")]
+
+    SAVE_DB --> NOTIFY_USER["📧 Notify User\n100%"]
     NOTIFY_USER --> END((End))
-    
+
+    ERROR_HANDLER --> END
+    ALERT_USER --> END
+
+    SSE["📡 SSE Stream\ndata: {node, progress%, label, retryCount}\n→ useShoppingListGeneration hook\n→ DailyMealPlan loading bar"]
+
     classDef user fill:#1F2937,stroke:#fff,stroke-width:2px,color:#fff;
     classDef math fill:#3B82F6,stroke:#fff,stroke-width:2px,color:#fff;
     classDef ai fill:#7B4FD6,stroke:#fff,stroke-width:2px,color:#fff;
     classDef logic fill:#EC4899,stroke:#fff,stroke-width:2px,color:#fff;
     classDef db fill:#10B981,stroke:#fff,stroke-width:2px,color:#fff;
     classDef error fill:#EF4444,stroke:#fff,stroke-width:2px,color:#fff;
-    
-    class FETCH_USER,ALERT_USER,NOTIFY_USER user
+    classDef stub fill:#374151,stroke:#F59E0B,stroke-width:2px,color:#F59E0B,stroke-dasharray:5 5;
+    classDef stream fill:#0F172A,stroke:#38BDF8,stroke-width:2px,color:#38BDF8;
+
+    class FETCH_USER,NOTIFY_USER user
     class MACRO_CALC,MACRO_VALIDATOR math
-    class AI_GEN,FEEDBACK ai
-    class PANTRY_HEALTH,INVENTORY_SCAN,MERGER,VIRTUAL_PANTRY,PROMPT_BUILDER,FINAL_FORMAT logic
+    class AI_GEN,FEEDBACK_CTX ai
+    class MERGER,PROMPT_BUILDER,FINAL_FORMAT logic
     class FETCH_HISTORY,SAVE_DB db
+    class ERROR_HANDLER,ALERT_USER error
+    class PANTRY_HEALTH,INVENTORY_SCAN,VIRTUAL_PANTRY stub
+    class SSE stream

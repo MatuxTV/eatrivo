@@ -5,15 +5,18 @@ import {
   sendWelcomeEmail,
   sendShoppingListNotification,
 } from "@/lib/emailService";
+import { db } from "@/index";
+import { userProfiles } from "@/db/schema";
 import { getUserLanguage } from "@/lib/user-utils";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
+import { eq } from "drizzle-orm";
 
 /**
  * Email sending endpoint - PROTECTED
  * POST /api/send-email
  *
  * - Welcome emails: Authenticated users can send to themselves
- * - Shopping list emails: Admin/Trainer only
+ * - Shopping list emails: Admin only
  */
 export async function POST(request: NextRequest) {
   try {
@@ -41,11 +44,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Security: Users can only send welcome emails to themselves
-    // Admins/trainers can send to anyone
-    const isAdmin = ["trainer", "admin"].includes(
-      session.user.membership?.toLowerCase() || "",
-    );
+    const userProfile = await db.query.userProfiles.findFirst({
+      where: eq(userProfiles.userId, session.user.id),
+      columns: { role: true },
+    });
+
+    // Users can only send welcome emails to themselves.
+    // Administrative sends are restricted to the admin role.
+    const isAdmin = userProfile?.role === "admin";
 
     if (!isAdmin && to !== session.user.email) {
       return NextResponse.json(
@@ -74,6 +80,12 @@ export async function POST(request: NextRequest) {
         break;
 
       case "shopping-list":
+        if (!isAdmin) {
+          return NextResponse.json(
+            { error: "Forbidden" },
+            { status: 403 },
+          );
+        }
         if (
           !props.clientName ||
           !props.shoppingListName ||
@@ -92,7 +104,7 @@ export async function POST(request: NextRequest) {
           clientEmail: to,
           shoppingListName: props.shoppingListName,
           shoppingListDate: props.shoppingListDate,
-          dashboardUrl: props.dashboardUrl,
+          homeUrl: props.homeUrl,
         }, userLocale);
         break;
 

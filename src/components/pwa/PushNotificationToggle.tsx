@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Bell, BellOff } from 'lucide-react';
-import { requestNotificationPermission, savePushSubscription, isPushNotificationSupported } from '@/lib/pwa/pushNotifications';
+import { requestNotificationPermission, savePushSubscription, isPushNotificationSupported, syncPushSubscriptionToDB } from '@/lib/pwa/pushNotifications';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 
@@ -20,6 +20,9 @@ export function PushNotificationToggle() {
     
     if (isPushNotificationSupported() && session?.user?.id) {
       checkSubscriptionStatus();
+      // Silently sync subscription to DB on mount — covers the case where
+      // permission was granted but the DB record was never saved
+      syncPushSubscriptionToDB().catch(() => {});
     }
   }, [session]);
 
@@ -61,9 +64,9 @@ export function PushNotificationToggle() {
         const subscription = await requestNotificationPermission();
         
         if (subscription) {
-          await savePushSubscription(subscription, session.user.id);
+          const result = await savePushSubscription(subscription);
           setIsSubscribed(true);
-          toast.success(t('enabled'));
+          toast.success(result.status === 'pending' ? t('pendingConfirmation') : t('enabled'));
         } else {
           toast.error(t('enableError'));
         }

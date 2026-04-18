@@ -8,8 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "drizzle-kit push",
+    "db:repair:chat-sessions": "tsx scripts/repair-chat-sessions.ts",
     "db:studio": "drizzle-kit studio",
-    "db:merge": "tsx scripts/merge-db.ts"
+    "db:merge": "tsx scripts/merge-db.ts",
+    "db:import:recipes": "tsx scripts/import-recipes.ts",
+    "db:import:recipe-url": "tsx scripts/import-recipe-url.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",
@@ -34,7 +37,7 @@
     "@vercel/analytics": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "country-flag-icons": "^1.6.13",
+    "country-flag-icons": "^1.6.15",
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
     "framer-motion": "^12.23.24",
@@ -51,6 +54,7 @@
     "nodemailer": "^7.0.7",
     "pdf-parse": "^2.3.12",
     "pdfmake": "^0.2.20",
+    "posthog-js": "^1.364.1",
     "radix-ui": "^1.4.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -60,8 +64,10 @@
     "recharts": "^3.5.1",
     "redis": "^5.8.3",
     "resend": "^6.5.2",
+    "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "stripe": "^20.3.0",
+    "swiper": "^12.1.2",
     "tailwind-merge": "^3.3.1",
     "web-push": "^3.6.7",
     "zod": "^4.1.11"

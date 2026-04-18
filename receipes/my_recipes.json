@@ -1,0 +1,4124 @@
+{
+  "recipes": [
+    {
+      "external_key": "dinner-authentic-italian-lasagne",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["high-protein"],
+      "restriction_flags": [
+        "contains-gluten",
+        "contains-dairy",
+        "contains-eggs"
+      ],
+          "ingredient_key": "ground-fenugreek",
+      "prep_time_min": 50,
+      "total_time_min": 130,
+          "pantry_tracking_hint": "availability",
+      "nutrition_per_serving": {
+        "calories": 672,
+        "protein_g": 32,
+        "carbohydrates_g": 54,
+        "fat_g": 36
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "minced-meat",
+          "pantry_tracking_hint": "availability",
+          "ingredient_specific_key": "minced-meat",
+          "canonical_name": "minced meat",
+          "quantity": 600,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "minced meat"
+            },
+            "sk": {
+              "display_name": "mleté mäso"
+            }
+          }
+        },
+        {
+          "ingredient_key": "beef-broth",
+          "ingredient_specific_key": "beef-broth",
+          "canonical_name": "beef broth",
+          "quantity": 300,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "beef broth"
+            },
+            "sk": {
+              "display_name": "hovädzí vývar"
+            }
+          }
+        },
+        {
+          "ingredient_key": "peeled-tomato",
+          "ingredient_specific_key": "peeled-tomato",
+          "canonical_name": "peeled tomato",
+          "quantity": 350,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "peeled tomato"
+            },
+            "sk": {
+              "display_name": "lúpaná paradajka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 4,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato-puree",
+          "ingredient_specific_key": "tomato-puree",
+          "canonical_name": "tomato puree",
+          "quantity": 3,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "tomato puree"
+            },
+            "sk": {
+              "display_name": "paradajkový pretlak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 3,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "ingredient_specific_key": "salt",
+          "canonical_name": "salt",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "salt"
+            },
+            "sk": {
+              "display_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "black-pepper",
+          "ingredient_specific_key": "black-pepper",
+          "canonical_name": "black pepper",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "black pepper"
+            },
+            "sk": {
+              "display_name": "čierne korenie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sweet-paprika",
+          "ingredient_specific_key": "sweet-paprika",
+          "canonical_name": "sweet paprika",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "sweet paprika"
+            },
+            "sk": {
+              "display_name": "sladká mletá paprika"
+            }
+          }
+        },
+        {
+          "ingredient_key": "basil",
+          "ingredient_specific_key": "basil",
+          "canonical_name": "basil",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "fresh basil"
+            },
+            "sk": {
+              "display_name": "čerstvá bazalka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "butter",
+          "ingredient_specific_key": "butter",
+          "canonical_name": "butter",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "butter"
+            },
+            "sk": {
+              "display_name": "maslo"
+            }
+          }
+        },
+        {
+          "ingredient_key": "wheat-flour",
+          "ingredient_specific_key": "wheat-flour",
+          "canonical_name": "wheat flour",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 12,
+          "translations": {
+            "en": {
+              "display_name": "wheat flour"
+            },
+            "sk": {
+              "display_name": "hladká múka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "parmesan",
+          "ingredient_specific_key": "parmesan",
+          "canonical_name": "parmesan",
+          "quantity": 40,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 13,
+          "translations": {
+            "en": {
+              "display_name": "parmesan"
+            },
+            "sk": {
+              "display_name": "parmezán"
+            }
+          }
+        },
+        {
+          "ingredient_key": "milk",
+          "ingredient_specific_key": "milk",
+          "canonical_name": "milk",
+          "quantity": 500,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 14,
+          "translations": {
+            "en": {
+              "display_name": "milk"
+            },
+            "sk": {
+              "display_name": "mlieko"
+            }
+          }
+        },
+        {
+          "ingredient_key": "nutmeg",
+          "ingredient_specific_key": "nutmeg",
+          "canonical_name": "nutmeg",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 15,
+          "translations": {
+            "en": {
+              "display_name": "nutmeg"
+            },
+            "sk": {
+              "display_name": "muškátový oriešok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lasagna-sheet",
+          "ingredient_specific_key": "lasagna-sheet",
+          "canonical_name": "lasagna sheet",
+          "quantity": 500,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 16,
+          "translations": {
+            "en": {
+              "display_name": "lasagna sheet"
+            },
+            "sk": {
+              "display_name": "lasagne"
+            }
+          }
+        },
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 17,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cheese",
+          "ingredient_specific_key": "cheese",
+          "canonical_name": "cheese",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 18,
+          "translations": {
+            "en": {
+              "display_name": "cheese"
+            },
+            "sk": {
+              "display_name": "syr"
+            }
+          }
+        },
+        {
+          "ingredient_key": "parmesan",
+          "ingredient_specific_key": "parmesan",
+          "canonical_name": "parmesan",
+          "quantity": 40,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 19,
+          "translations": {
+            "en": {
+              "display_name": "parmesan"
+            },
+            "sk": {
+              "display_name": "parmezán"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Authentic Italian Lasagna",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Peel and finely chop the onion and garlic. Heat the olive oil in a pan and sauté the onion and garlic until golden. Add the minced meat and cook until browned. Add black pepper and paprika, stir, and cook briefly. Pour in the beef broth and simmer for 15 to 20 minutes.",
+            "Meanwhile, prepare the tomato sauce. Blend the peeled tomatoes and mix with the tomato puree. Season with salt, paprika, black pepper, chopped basil, and crushed or grated garlic. Mix the sauce well, add it to the meat, and cook for another 10 minutes. Stir in more chopped basil if desired and remove from heat.",
+            "Melt the butter in a saucepan. Stir in the flour and mix until combined. Gradually pour in the milk while stirring continuously. Bring to a boil and cook for a few minutes, stirring constantly. Season with salt, black pepper, nutmeg, and grated parmesan. Mix well and set aside.",
+            "Place the lasagna sheets in boiling salted water and cook for about 3 minutes. Remove, rinse in cold water, and lay each sheet separately on a paper towel.",
+            "Preheat the oven to 190 °C and grease a baking dish with olive oil. Spread a thin layer of bechamel sauce on the bottom and arrange a layer of pasta sheets. Spread another thin layer of bechamel, add the bolognese mixture, sprinkle with grated cheese, top with more bechamel, and cover with pasta sheets. Repeat until all ingredients are used.",
+            "Finish with a layer of pasta sheets, spread the remaining bechamel on top, and sprinkle generously with cheese and parmesan. Bake in the preheated oven for about 45 minutes."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Pravé talianske lasagne",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Cibuľu a cesnak ošúpeme a nakrájame nadrobno. Na panvici rozhorúčime olivový olej a cibuľu s cesnakom opečieme dozlatista. Pridáme mleté mäso a opekáme, kým nezhnedne. Pridáme mleté čierne korenie a červenú papriku, premiešame a krátko opekáme. Nalejeme hovädzí vývar a varíme 15 až 20 minút.",
+            "Lúpané paradajky rozmixujeme a zmiešame s paradajkovým pretlakom. Pridáme soľ, červenú papriku, čierne korenie, bazalku a prelisovaný cesnak. Omáčku pridáme k mäsu a varíme ďalších 10 minút. Podľa chuti môžeme pridať ešte čerstvú bazalku. Odstavíme.",
+            "Maslo necháme roztopiť v hrnci. Pridáme múku a miešame, kým sa nespoja. Za stáleho miešania pomaly prilievame mlieko a povaríme pár minút. Pridáme soľ, čierne korenie, muškátový oriešok a nastrúhaný parmezán. Dobre premiešame a odstavíme.",
+            "Pláty lasagní vložíme do vriacej osolenej vody a varíme cca 3 minúty. Vyberieme, opláchneme v studenej vode a každý plát samostatne uložíme na papierovú utierku.",
+            "Rúru vyhrejeme na 190 °C a zapekaciu misu vymastíme olivovým olejom. Na dno rozotrieme tenkú vrstvu bešamelu a rozložíme pláty cesta. Na cesto rozotrieme bešamel, pridáme bolonskú zmes, posypeme syrom a zakryjeme ďalšími plátmi cesta. Postup opakujeme, kým neminieme suroviny.",
+            "Zakončíme plátmi cesta potretými bešamelom a posypanými syrom a parmezánom. Pečieme vo vyhriatej rúre približne 45 minút."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-baked-chicken-risotto",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["high-protein", "gluten-free"],
+      "restriction_flags": ["contains-dairy"],
+      "servings": 6,
+      "prep_time_min": 10,
+      "total_time_min": 45,
+      "nutrition_per_serving": {
+        "calories": 613,
+        "protein_g": 43,
+        "carbohydrates_g": 72,
+        "fat_g": 17
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "rice",
+          "ingredient_specific_key": "rice",
+          "canonical_name": "rice",
+          "quantity": 450,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "rice"
+            },
+            "sk": {
+              "display_name": "ryža"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vegetable-broth",
+          "ingredient_specific_key": "vegetable-broth",
+          "canonical_name": "vegetable broth",
+          "quantity": 720,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "vegetable broth"
+            },
+            "sk": {
+              "display_name": "zeleninový vývar"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chicken-breast",
+          "ingredient_specific_key": "chicken-breast",
+          "canonical_name": "chicken breast",
+          "quantity": 500,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "chicken breast"
+            },
+            "sk": {
+              "display_name": "kuracie prsia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "frozen-vegetable",
+          "ingredient_specific_key": "frozen-vegetable",
+          "canonical_name": "frozen vegetable",
+          "quantity": 300,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "frozen vegetable"
+            },
+            "sk": {
+              "display_name": "mrazená zelenina"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "oil",
+          "ingredient_specific_key": "oil",
+          "canonical_name": "oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "oil"
+            },
+            "sk": {
+              "display_name": "olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "paprika",
+          "ingredient_specific_key": "paprika",
+          "canonical_name": "paprika",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "paprika"
+            },
+            "sk": {
+              "display_name": "mletá paprika"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "ingredient_specific_key": "salt",
+          "canonical_name": "salt",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "salt"
+            },
+            "sk": {
+              "display_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "black-pepper",
+          "ingredient_specific_key": "black-pepper",
+          "canonical_name": "black pepper",
+          "pantry_tracking_hint": "availability",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "black pepper"
+            },
+            "sk": {
+              "display_name": "čierne korenie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "hard-cheese",
+          "ingredient_specific_key": "hard-cheese",
+          "canonical_name": "hard cheese",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "hard cheese"
+            },
+            "sk": {
+              "display_name": "tvrdý syr"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "One-Pot Baked Chicken Risotto",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Preheat the oven to 200 °C. Peel and finely chop the onion and garlic. Cut the chicken breasts into small cubes.",
+            "Prepare a small roasting pan with a lid or a cast-iron pot.",
+            "Heat oil in the pot on the stove, sauté the onion until translucent, add the meat, and fry until sealed.",
+            "Add the frozen vegetables and sauté together for about 3 minutes. Stir in the rice, salt, pepper, paprika, and crushed garlic. Sauté for a minute, then pour in the hot broth.",
+            "Cover the pot tightly with a lid or seal it with aluminum foil (matte side up) to keep the steam inside. Place in the oven and bake for about 30 to 40 minutes. Do not open during baking.",
+            "Fluff the risotto with a fork, mix in or top with grated hard cheese, and serve immediately."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Pečené kuracie rizoto z jedného hrnca",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Rúru predhrejeme na 200 °C. Cibuľu a cesnak ošúpeme a nakrájame nadrobno. Kuracie prsia nakrájame na menšie kocky.",
+            "Pripravíme si menší pekáč s vrchnákom alebo liatinový hrniec.",
+            "V hrnci alebo pekáči na sporáku zahrejeme olej, opražíme cibuľu dosklovita, pridáme mäso a restujeme, kým sa nezatiahne.",
+            "Pridáme mrazenú zeleninu a spoločne restujeme cca 3 minúty. Prisypeme ryžu, soľ, korenie, papriku a prelisovaný cesnak. Minútku restujeme a prilejeme horúci vývar.",
+            "Hrniec pevne zakryjeme vrchnákom alebo utesníme alobalom, aby neunikala para. Vložíme do rúry a pečieme približne 30 až 40 minút. Počas pečenia neotvárame.",
+            "Rizoto pred podávaním premiešame vidličkou, aby sa prevzdušnilo, posypeme alebo vmiešame tvrdý syr a ihneď servírujeme."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "spanish-zucchini-tortilla",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": ["gluten-free", "dairy-free", "vegetarian", "high-protein"],
+      "restriction_flags": ["contains-eggs"],
+      "servings": 2,
+      "prep_time_min": 10,
+      "total_time_min": 35,
+      "nutrition_per_serving": {
+        "calories": 377,
+        "protein_g": 21,
+        "carbohydrates_g": 22,
+        "fat_g": 22
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "potato",
+          "ingredient_specific_key": "potato",
+          "canonical_name": "potato",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "potato"
+            },
+            "sk": {
+              "display_name": "zemiak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "zucchini",
+          "ingredient_specific_key": "zucchini",
+          "canonical_name": "zucchini",
+          "quantity": 1.5,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "zucchini"
+            },
+            "sk": {
+              "display_name": "cuketa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "quantity": 6,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "egg"
+            },
+            "sk": {
+              "display_name": "vajce"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Spanish Zucchini Tortilla",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Heat oil in a non-stick pan and sear the potato and onion over medium-high heat, for about 4 minutes. Next, add the zucchini and sauté for another 4 minutes.",
+            "In a bowl, whisk eggs and season with salt and pepper. Transfer the vegetables from the pan into the bowl and mix well.",
+            "Using the same pan, add the egg mixture on low heat and make sure everything is evenly distributed. After about 3 minutes, run a spatula through the outer edges of the tortilla to make sure it does not stick to the pan.",
+            "After 8-10 minutes, flip the tortilla (this might take more or less, depending on heat, size and pan), using a plate over the pan. Slide the uncooked part back into the pan.",
+            "After another 5-6 minutes, the tortilla should be cooked. Remove from heat and serve."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Španielska cuketová tortilla",
+          "category_label": "Raňajky",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Na nepriľnavej panvici zohrejte olej a opečte zemiak s cibuľou na stredne silnom ohni asi 4 minúty. Následne pridajte cuketu a restujte ďalšie 4 minúty.",
+            "V miske vyšľahajte vajcia a dochuťte soľou a korením. Zeleninu z panvice presuňte do misky a dobre premiešajte.",
+            "Na tej istej panvici pridajte na miernom ohni vaječnú zmes a dbajte na to, aby bola rovnomerne rozložená. Asi po 3 minútach prejdite obracačkou po vonkajších okrajoch tortilly, aby sa neprilepila na panvicu.",
+            "Po 8 až 10 minútach tortillu otočte (môže to trvať viac alebo menej v závislosti od teploty, veľkosti a panvice) pomocou taniera, ktorý priložíte na panvicu. Nepečenú časť zosuňte späť do panvice.",
+            "Po ďalších 5 až 6 minútach by mala byť tortilla hotová. Odstavte z ohňa a podávajte."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-egg-muffins-with-tomato-basil-and-spinach",
+      "default_locale": "en",
+      "category_key": "breakfast",
+      "diet_tags": ["vegetarian", "gluten-free", "high-protein", "low-carb"],
+      "restriction_flags": ["contains-eggs", "contains-dairy"],
+      "servings": 3,
+      "prep_time_min": 15,
+      "total_time_min": 35,
+      "nutrition_per_serving": {
+        "calories": 400,
+        "protein_g": 32,
+        "carbohydrates_g": 8,
+        "fat_g": 24
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "quantity": 12,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "egg"
+            },
+            "sk": {
+              "display_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 40,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "basil",
+          "ingredient_specific_key": "dried-basil",
+          "canonical_name": "basil",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "basil"
+            },
+            "sk": {
+              "display_name": "bazalka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "ingredient_specific_key": "salt",
+          "canonical_name": "salt",
+          "pantry_tracking_hint": "availability",
+          "quantity": 0.25,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "salt"
+            },
+            "sk": {
+              "display_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pepper",
+          "ingredient_specific_key": "black-pepper",
+          "canonical_name": "pepper",
+          "pantry_tracking_hint": "availability",
+          "quantity": 0.25,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "pepper"
+            },
+            "sk": {
+              "display_name": "čierne korenie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spinach",
+          "ingredient_specific_key": "spinach",
+          "canonical_name": "spinach",
+          "quantity": 60,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "spinach"
+            },
+            "sk": {
+              "display_name": "špenát"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato",
+          "ingredient_specific_key": "cherry-tomato",
+          "canonical_name": "cherry tomato",
+          "quantity": 12,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "cherry tomato"
+            },
+            "sk": {
+              "display_name": "cherry paradajka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cheese",
+          "ingredient_specific_key": "mozzarella-cheese",
+          "canonical_name": "mozzarella cheese",
+          "quantity": 115,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "mozzarella cheese"
+            },
+            "sk": {
+              "display_name": "mozzarella"
+            }
+          }
+        },
+        {
+          "ingredient_key": "oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Egg Muffins with Tomato, Basil and Spinach",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Preheat oven to 175 °C.",
+            "Coat a standard 12 cup muffin pan with olive oil or vegetable oil of choice.",
+            "Whisk eggs in a large bowl. Stir in salt, pepper and basil.",
+            "Pour egg mixture evenly between muffin tins. Be sure to not fill each cup more than halfway to allow space for add-ins.",
+            "Add onion, garlic, spinach, tomato and cheese evenly between muffin tins.",
+            "Bake uncovered for 15-20 minutes, or until eggs are set."
+          ],
+          "notes": "These can be made ahead of time and refrigerated or frozen, reheat before serving. Toppings can be changed for your favorite seasonings and vegetables."
+        },
+        "sk": {
+          "name": "Vaječné muffiny s paradajkami, bazalkou a špenátom",
+          "category_label": "Raňajky",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Rúru predhrejte na 175 °C.",
+            "Vymažte štandardnú formu na 12 muffinov olivovým olejom alebo rastlinným olejom podľa vlastného výberu.",
+            "Vajcia vyšľahajte vo veľkej miske. Vmiešajte soľ, korenie a bazalku.",
+            "Nalejte vaječnú zmes rovnomerne do formičiek. Nezabudnite naplniť každú jamku maximálne do polovice, aby ste ponechali priestor pre ďalšie ingrediencie.",
+            "Do formičiek rovnomerne rozdeľte cibuľu, cesnak, špenát, paradajky a syr.",
+            "Pečte odkryté 15-20 minút, alebo kým nie sú vajcia stuhnuté."
+          ],
+          "notes": "Môžu byť pripravené vopred a skladované v chladničke alebo mrazené, pred podávaním ich znova zohrejte. Prísady môžete vymeniť za obľúbené koreniny a zeleninu."
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-spaghetti-puttanesca",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["pescatarian", "dairy-free"],
+      "restriction_flags": ["contains-fish", "contains-gluten"],
+      "servings": 4,
+      "prep_time_min": 15,
+      "total_time_min": 35,
+      "nutrition_per_serving": {
+        "calories": 495,
+        "protein_g": 13,
+        "carbohydrates_g": 66,
+        "fat_g": 19
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 3,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chili-flake",
+          "ingredient_specific_key": "chili-flake",
+          "canonical_name": "chili flake",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": true,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "chilli flake"
+            },
+            "sk": {
+              "display_name": "čili vločka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chopped-tomato",
+          "ingredient_specific_key": "chopped-tomato",
+          "canonical_name": "chopped tomato",
+          "quantity": 400,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "chopped tomato"
+            },
+            "sk": {
+              "display_name": "krájaná paradajka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "anchovy-fillet",
+          "ingredient_specific_key": "anchovy-fillet",
+          "canonical_name": "anchovy fillet",
+          "quantity": 5,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "anchovy fillet"
+            },
+            "sk": {
+              "display_name": "ančovička"
+            }
+          }
+        },
+        {
+          "ingredient_key": "black-olive",
+          "ingredient_specific_key": "black-olive",
+          "canonical_name": "black olive",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "black olive"
+            },
+            "sk": {
+              "display_name": "čierna oliva"
+            }
+          }
+        },
+        {
+          "ingredient_key": "caper",
+          "ingredient_specific_key": "caper",
+          "canonical_name": "caper",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "caper"
+            },
+            "sk": {
+              "display_name": "kapara"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spaghetti",
+          "ingredient_specific_key": "spaghetti",
+          "canonical_name": "spaghetti",
+          "quantity": 300,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "spaghetti"
+            },
+            "sk": {
+              "display_name": "špagety"
+            }
+          }
+        },
+        {
+          "ingredient_key": "parsley",
+          "ingredient_specific_key": "parsley",
+          "canonical_name": "parsley",
+          "quantity": 0.5,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "parsley"
+            },
+            "sk": {
+              "display_name": "petržlenová vňať"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Spaghetti Puttanesca",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Heat the oil in a non-stick pan over a medium-low heat. Add the onion along with a generous pinch of salt and fry for 10 mins, or until soft. Add the garlic and chilli, if using, and cook for a further minute.",
+            "Stir the tomatoes, anchovies, olives and capers into the onion, bring to a gentle simmer and cook, uncovered, for 15 mins. Season to taste.",
+            "Meanwhile, bring a large pan of salted water to the boil. Cook the spaghetti following pack instructions, then drain and toss with the sauce and parsley."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Špagety Puttanesca",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Na panvici s nepriľnavým povrchom zohrejte olej na stredne nízkej teplote. Pridajte cibuľu so štedrou štipkou soli a restujte 10 minút alebo kým nezmäkne. Pridajte cesnak a čili (ak ho používate) a restujte ďalšiu minútu.",
+            "K cibuli primiešajte paradajky, ančovičky, olivy a kapary. Priveďte do jemného varu a nezakryté varte 15 minút. Dochuťte podľa potreby.",
+            "Medzitým vo veľkom hrnci priveďte do varu osolenú vodu. Špagety uvarte podľa návodu na obale, sceďte a zmiešajte s omáčkou a petržlenovou vňaťou."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-marry-me-chicken",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["high-protein"],
+      "restriction_flags": ["contains-dairy", "contains-gluten"],
+      "servings": 4,
+      "prep_time_min": 20,
+      "total_time_min": 65,
+      "nutrition_per_serving": {
+        "calories": 584,
+        "protein_g": 38,
+        "carbohydrates_g": 21,
+        "fat_g": 38
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "wheat-flour",
+          "ingredient_specific_key": "wheat-flour",
+          "canonical_name": "wheat flour",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "plain flour"
+            },
+            "sk": {
+              "display_name": "hladká múka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chicken-breast",
+          "ingredient_specific_key": "chicken-breast",
+          "canonical_name": "chicken breast",
+          "quantity": 4,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "chicken breast"
+            },
+            "sk": {
+              "display_name": "kuracie prsia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato",
+          "ingredient_specific_key": "sun-dried-tomato",
+          "canonical_name": "sun-dried tomato in oil",
+          "quantity": 125,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "sundried tomato in oil"
+            },
+            "sk": {
+              "display_name": "sušená paradajka "
+            }
+          }
+        },
+        {
+          "ingredient_key": "oil",
+          "ingredient_specific_key": "sun-dried-tomato-oil",
+          "canonical_name": "sun-dried tomato oil",
+          "quantity": 3,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "sundried tomato oil"
+            },
+            "sk": {
+              "display_name": "olej zo sušených paradajok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "red-onion",
+          "ingredient_specific_key": "red-onion",
+          "canonical_name": "red onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "red onion"
+            },
+            "sk": {
+              "display_name": "červená cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 3,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chili-flake",
+          "ingredient_specific_key": "chili-flake",
+          "canonical_name": "chili flake",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "chilli flake"
+            },
+            "sk": {
+              "display_name": "čili vločka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "thyme",
+          "ingredient_specific_key": "thyme",
+          "canonical_name": "thyme",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "thyme"
+            },
+            "sk": {
+              "display_name": "tymian"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cream",
+          "ingredient_specific_key": "double-cream",
+          "canonical_name": "double cream",
+          "quantity": 150,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "double cream"
+            },
+            "sk": {
+              "display_name": "smotana na šľahanie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chicken-stock",
+          "ingredient_specific_key": "chicken-stock",
+          "canonical_name": "chicken stock",
+          "quantity": 250,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "chicken stock"
+            },
+            "sk": {
+              "display_name": "kurací vývar"
+            }
+          }
+        },
+        {
+          "ingredient_key": "parmesan",
+          "ingredient_specific_key": "parmesan",
+          "canonical_name": "parmesan",
+          "quantity": 35,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "parmesan"
+            },
+            "sk": {
+              "display_name": "parmezán"
+            }
+          }
+        },
+        {
+          "ingredient_key": "basil",
+          "ingredient_specific_key": "basil",
+          "canonical_name": "basil leaf",
+          "quantity": 8,
+          "unit": "pc",
+          "optional": true,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "basil leaf"
+            },
+            "sk": {
+              "display_name": "lístok bazalky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lemon",
+          "ingredient_specific_key": "lemon",
+          "canonical_name": "lemon",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 12,
+          "translations": {
+            "en": {
+              "display_name": "lemon"
+            },
+            "sk": {
+              "display_name": "citrón"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Marry Me Chicken",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Put the flour on a plate and season with salt and freshly ground black pepper. Coat the chicken in the flour.",
+            "Heat 2 tbsp of the sundried tomato oil in a large, lidded frying pan over a medium heat and fry the chicken for 8-10 mins until golden all over, but not cooked through. Set the chicken aside on a plate.",
+            "Drizzle the remaining 1 tbsp sundried tomato oil into the pan and reduce the heat to medium-low. Fry the onion for 8-10 mins until softened but not golden. Stir in the garlic and cook for another minute before adding the sundried tomatoes, chilli and thyme, stirring well.",
+            "Add the chicken back to the pan, then pour over the cream and chicken stock, and season well. Put the lid on the pan and cook on medium-low for about 20 mins, turning the chicken halfway through until it is cooked through and the sauce has thickened a little. Stir in the parmesan, then serve with a scattering of basil leaves and lemon wedges on the side for squeezing over."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Vezmi si ma! (Marry Me) kura",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Múku nasypte na tanier a dochuťte soľou a čerstvo mletým čiernym korením. Kúsky kuracieho mäsa v nej obaľte.",
+            "Vo veľkej panvici s pokrievkou zohrejte 2 PL oleja zo sušených paradajok na strednom ohni a opekajte kura 8-10 minút dozlatista. Kura vyberte a odložte bokom na tanier.",
+            "Do panvice pridajte zvyšnú 1 PL oleja a znížte teplotu na stredne nízku. Cibuľu restujte 8-10 minút, kým nezmäkne. Vmiešajte cesnak a opekajte ešte minútu. Potom pridajte sušené paradajky, čili a tymian a dobre premiešajte.",
+            "Kura vráťte späť do panvice, zalejte smotanou a kuracím vývarom a dobre dochuťte. Panvicu prikryte a na miernom ohni dusíte asi 20 minút, v polovici varenia kura otočte. Varte, kým kura nie je úplne prepečené a omáčka mierne nezhustne. Vmiešajte parmezán a podávajte posypané lístkami bazalky a s mesiačikmi citróna."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-best-spaghetti-bolognese",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": ["high-protein"],
+      "restriction_flags": ["contains-dairy", "contains-gluten"],
+      "servings": 6,
+      "prep_time_min": 25,
+      "total_time_min": 135,
+      "nutrition_per_serving": {
+        "calories": 624,
+        "protein_g": 35,
+        "carbohydrates_g": 58,
+        "fat_g": 25
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "smoked-streaky-bacon",
+          "ingredient_specific_key": "smoked-streaky-bacon",
+          "canonical_name": "smoked streaky bacon",
+          "quantity": 4,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "smoked streaky bacon"
+            },
+            "sk": {
+              "display_name": "údená prerastená slanina"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "carrot",
+          "ingredient_specific_key": "carrot",
+          "canonical_name": "carrot",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "carrot"
+            },
+            "sk": {
+              "display_name": "mrkva"
+            }
+          }
+        },
+        {
+          "ingredient_key": "celery-stalk",
+          "ingredient_specific_key": "celery-stalk",
+          "canonical_name": "celery stalk",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "celery stalk"
+            },
+            "sk": {
+              "display_name": "stonkový zeler"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rosemary",
+          "ingredient_specific_key": "rosemary",
+          "canonical_name": "rosemary",
+          "quantity": 2.5,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "rosemary"
+            },
+            "sk": {
+              "display_name": "rozmarín"
+            }
+          }
+        },
+        {
+          "ingredient_key": "beef-mince",
+          "ingredient_specific_key": "beef-mince",
+          "canonical_name": "beef mince",
+          "quantity": 500,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "beef mince"
+            },
+            "sk": {
+              "display_name": "mleté hovädzie mäso"
+            }
+          }
+        },
+        {
+          "ingredient_key": "plum-tomato",
+          "ingredient_specific_key": "plum-tomato",
+          "canonical_name": "plum tomato",
+          "quantity": 800,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "plum tomato"
+            },
+            "sk": {
+              "display_name": "slivková paradajka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "basil",
+          "ingredient_specific_key": "basil",
+          "canonical_name": "basil",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "basil"
+            },
+            "sk": {
+              "display_name": "bazalka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "oregano",
+          "ingredient_specific_key": "oregano",
+          "canonical_name": "oregano",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "oregano"
+            },
+            "sk": {
+              "display_name": "oregáno"
+            }
+          }
+        },
+        {
+          "ingredient_key": "bay-leaf",
+          "ingredient_specific_key": "bay-leaf",
+          "canonical_name": "bay leaf",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "bay leaf"
+            },
+            "sk": {
+              "display_name": "bobkový list"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato-puree",
+          "ingredient_specific_key": "tomato-puree",
+          "canonical_name": "tomato puree",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 12,
+          "translations": {
+            "en": {
+              "display_name": "tomato puree"
+            },
+            "sk": {
+              "display_name": "paradajkový pretlak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "beef-stock-cube",
+          "ingredient_specific_key": "beef-stock-cube",
+          "canonical_name": "beef stock cube",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 13,
+          "translations": {
+            "en": {
+              "display_name": "beef stock cube"
+            },
+            "sk": {
+              "display_name": "hovädzí bujón"
+            }
+          }
+        },
+        {
+          "ingredient_key": "red-chili",
+          "ingredient_specific_key": "red-chili",
+          "canonical_name": "red chili",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": true,
+          "sort_order": 14,
+          "translations": {
+            "en": {
+              "display_name": "red chili"
+            },
+            "sk": {
+              "display_name": "červená čili paprička"
+            }
+          }
+        },
+        {
+          "ingredient_key": "red-wine",
+          "ingredient_specific_key": "red-wine",
+          "canonical_name": "red wine",
+          "quantity": 125,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 15,
+          "translations": {
+            "en": {
+              "display_name": "red wine"
+            },
+            "sk": {
+              "display_name": "červené víno"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cherry-tomato",
+          "ingredient_specific_key": "cherry-tomato",
+          "canonical_name": "cherry tomato",
+          "quantity": 6,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 16,
+          "translations": {
+            "en": {
+              "display_name": "cherry tomato"
+            },
+            "sk": {
+              "display_name": "cherry paradajka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "parmesan",
+          "ingredient_specific_key": "parmesan",
+          "canonical_name": "parmesan",
+          "quantity": 75,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 17,
+          "translations": {
+            "en": {
+              "display_name": "parmesan"
+            },
+            "sk": {
+              "display_name": "parmezán"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spaghetti",
+          "ingredient_specific_key": "spaghetti",
+          "canonical_name": "spaghetti",
+          "quantity": 400,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 18,
+          "translations": {
+            "en": {
+              "display_name": "spaghetti"
+            },
+            "sk": {
+              "display_name": "špagety"
+            }
+          }
+        },
+        {
+          "ingredient_key": "crusty-bread",
+          "ingredient_specific_key": "crusty-bread",
+          "canonical_name": "crusty bread",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 19,
+          "translations": {
+            "en": {
+              "display_name": "crusty bread"
+            },
+            "sk": {
+              "display_name": "chrumkavý chlieb"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "The Best Spaghetti Bolognese",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Put a large saucepan on a medium heat and add 1 tbsp olive oil.",
+            "Add finely chopped bacon rashers and fry for 10 mins until golden and crisp.",
+            "Reduce the heat and add the onions, carrots, celery sticks, garlic cloves and rosemary leaves, all finely chopped, then fry for 10 mins. Stir the veg often until it softens.",
+            "Increase the heat to medium-high, add beef mince and cook stirring for 3-4 mins until the meat is browned all over.",
+            "Add plum tomatoes, chopped basil, dried oregano, bay leaves, tomato purée, beef stock, red chilli (if using), red wine and halved cherry tomatoes. Stir with a wooden spoon, breaking up the plum tomatoes.",
+            "Bring to the boil, reduce to a gentle simmer and cover with a lid. Cook for 1 hr 15 mins stirring occasionally, until you have a rich, thick sauce.",
+            "Add the grated parmesan, check the seasoning and stir.",
+            "When the bolognese is nearly finished, cook spaghetti following the pack instructions.",
+            "Drain the spaghetti and either stir into the bolognese sauce, or serve the sauce on top. Serve with more grated parmesan, the remaining basil leaves and crusty bread, if you like."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Najlepšie špagety bolognese",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Do veľkého hrnca na strednom ohni dajte 1 PL olivového oleja.",
+            "Pridajte nadrobno nakrájané plátky slaniny a opekajte 10 minút dozlatista a do chrumkava.",
+            "Znížte teplotu a pridajte cibule, mrkvy, stonky zeleru, strúčiky cesnaku a lístky rozmarínu, všetko nakrájané nadrobno. Restujte 10 minút za častého miešania, kým zelenina nezmäkne.",
+            "Zvýšte teplotu na stredne vysokú, pridajte mleté hovädzie mäso a za stáleho miešania opekajte 3-4 minúty, kým mäso nezhnedne.",
+            "Pridajte slivkové paradajky, nasekanú bazalku, sušené oregáno, bobkové listy, paradajkový pretlak, hovädzí bujón, čili papričku (ak používate), červené víno a rozpolené cherry paradajky. Miešajte varechou a paradajky pritom roztláčajte.",
+            "Priveďte do varu, znížte teplotu a prikryte pokrievkou. Varte 1 hodinu a 15 minút za občasného miešania, kým nevznikne bohatá a hustá omáčka.",
+            "Vmiešajte nastrúhaný parmezán, skontrolujte dochutenie a zamiešajte.",
+            "Keď je omáčka takmer hotová, uvarte špagety podľa návodu na obale.",
+            "Špagety sceďte a buď ich zmiešajte priamo s omáčkou, alebo omáčku podávajte na nich. Podľa chuti posypte ďalším parmezánom, lístkami bazalky a podávajte s chrumkavým chlebom."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+     {
+      "external_key": "dinner-vegan-ramen",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": [
+        "vegan",
+        "vegetarian",
+        "dairy-free"
+      ],
+      "restriction_flags": [
+        "contains-soy",
+        "contains-gluten",
+        "contains-sesame",
+        "contains-peanuts"
+      ],
+      "servings": 2,
+      "prep_time_min": 10,
+      "total_time_min": 25,
+      "nutrition_per_serving": {
+        "calories": 556,
+        "protein_g": 22,
+        "carbohydrates_g": 69,
+        "fat_g": 19
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "ginger",
+          "ingredient_specific_key": "ginger",
+          "canonical_name": "ginger",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "ginger"
+            },
+            "sk": {
+              "display_name": "zázvor"
+            }
+          }
+        },
+        {
+          "ingredient_key": "white-miso-paste",
+          "ingredient_specific_key": "white-miso-paste",
+          "canonical_name": "white miso paste",
+          "quantity": 1.5,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "white miso paste"
+            },
+            "sk": {
+              "display_name": "biela miso pasta"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sesame-paste",
+          "ingredient_specific_key": "sesame-paste",
+          "canonical_name": "sesame paste",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "sesame paste"
+            },
+            "sk": {
+              "display_name": "sezamová pasta"
+            }
+          }
+        },
+        {
+          "ingredient_key": "dried-shiitake-mushroom",
+          "ingredient_specific_key": "dried-shiitake-mushroom",
+          "canonical_name": "dried shiitake mushroom",
+          "quantity": 15,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "dried shiitake mushroom"
+            },
+            "sk": {
+              "display_name": "sušená shiitake"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vegan-stock",
+          "ingredient_specific_key": "vegan-stock",
+          "canonical_name": "vegan stock",
+          "quantity": 1000,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "vegan stock"
+            },
+            "sk": {
+              "display_name": "vegánsky vývar"
+            }
+          }
+        },
+        {
+          "ingredient_key": "soy-sauce",
+          "ingredient_specific_key": "soy-sauce",
+          "canonical_name": "soy sauce",
+          "pantry_tracking_hint": "availability",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "soy sauce"
+            },
+            "sk": {
+              "display_name": "sójová omáčka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "firm-tofu",
+          "ingredient_specific_key": "firm-tofu",
+          "canonical_name": "firm tofu",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "firm tofu"
+            },
+            "sk": {
+              "display_name": "pevné tofu"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cornflour",
+          "ingredient_specific_key": "cornflour",
+          "canonical_name": "cornflour",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "cornflour"
+            },
+            "sk": {
+              "display_name": "kukuričný škrob"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vegetable-oil",
+          "ingredient_specific_key": "vegetable-oil",
+          "canonical_name": "vegetable oil",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "vegetable oil"
+            },
+            "sk": {
+              "display_name": "rastlinný olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "ramen-noodle",
+          "ingredient_specific_key": "ramen-noodle",
+          "canonical_name": "ramen noodle",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "ramen noodle"
+            },
+            "sk": {
+              "display_name": "ramen rezance"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pak-choi",
+          "ingredient_specific_key": "pak-choi",
+          "canonical_name": "pak choi",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "pak choi"
+            },
+            "sk": {
+              "display_name": "pak choi"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spring-onion",
+          "ingredient_specific_key": "spring-onion",
+          "canonical_name": "spring onion",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 12,
+          "translations": {
+            "en": {
+              "display_name": "spring onion"
+            },
+            "sk": {
+              "display_name": "jarná cibuľka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "beansprout",
+          "ingredient_specific_key": "beansprout",
+          "canonical_name": "beansprout",
+          "quantity": 25,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 13,
+          "translations": {
+            "en": {
+              "display_name": "beansprout"
+            },
+            "sk": {
+              "display_name": "fazuľové klíčky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "carrot",
+          "ingredient_specific_key": "carrot",
+          "canonical_name": "carrot",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 14,
+          "translations": {
+            "en": {
+              "display_name": "carrot"
+            },
+            "sk": {
+              "display_name": "mrkva"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sesame-oil",
+          "ingredient_specific_key": "sesame-oil",
+          "canonical_name": "sesame oil",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 15,
+          "translations": {
+            "en": {
+              "display_name": "sesame oil"
+            },
+            "sk": {
+              "display_name": "sezamový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sriracha",
+          "ingredient_specific_key": "sriracha",
+          "canonical_name": "sriracha",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 16,
+          "translations": {
+            "en": {
+              "display_name": "sriracha"
+            },
+            "sk": {
+              "display_name": "sriracha"
+            }
+          }
+        },
+        {
+          "ingredient_key": "coriander",
+          "ingredient_specific_key": "coriander",
+          "canonical_name": "coriander",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 17,
+          "translations": {
+            "en": {
+              "display_name": "coriander"
+            },
+            "sk": {
+              "display_name": "koriander"
+            }
+          }
+        },
+        {
+          "ingredient_key": "peanut",
+          "ingredient_specific_key": "peanut",
+          "canonical_name": "peanut",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 18,
+          "translations": {
+            "en": {
+              "display_name": "peanut"
+            },
+            "sk": {
+              "display_name": "arašid"
+            }
+          }
+        },
+        {
+          "ingredient_key": "nori",
+          "ingredient_specific_key": "nori",
+          "canonical_name": "nori",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 19,
+          "translations": {
+            "en": {
+              "display_name": "nori"
+            },
+            "sk": {
+              "display_name": "riasa nori"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chili-thread",
+          "ingredient_specific_key": "chili-thread",
+          "canonical_name": "chili thread",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 20,
+          "translations": {
+            "en": {
+              "display_name": "chili thread"
+            },
+            "sk": {
+              "display_name": "čili vlákno"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Vegan Ramen",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Crush the garlic with the back of a big knife, then put it in a saucepan with the ginger, miso, sesame paste, mushrooms, stock and soy sauce. Bring to a gentle simmer, cover and bubble for 5 mins until the ginger is soft. Strain into a clean pan and discard everything left in the strainer.",
+            "Meanwhile, cook the tofu. Toss it in the cornflour and heat the oil in a frying pan. Fry for a few mins on each side, being careful as you turn it that it doesn't fall apart. Cook the noodles for 1 min less than pack instructions, so they retain a little bite. Drain and leave in the pan with a little cooking water so they don't stick together.",
+            "Add the pak choi and whites of the spring onions to the broth and gently reheat for 1-2 mins until the greens have just wilted.",
+            "Divide the noodles between two deep bowls, ladle over the broth and veg. Top with the tofu, beansprouts, carrot and ginger matchsticks, green parts of the spring onions and a drizzle of sesame oil, plus the other toppings, if you like."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Vegánsky ramen",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Roztlačte cesnak plochou stranou veľkého noža a dajte ho do hrnca so zázvorom, miso pastou, sezamovou pastou, hubami, vývarom a sójovou omáčkou. Priveďte do jemného varu, prikryte a varte 5 minút, kým zázvor nezmäkne. Preceďte zmes do čistého hrnca a všetko, čo zostalo v sitku, vyhoďte.",
+            "Medzitým si pripravte tofu. Obaľte ho v kukuričnom škrobe a na panvici zohrejte olej. Opekajte ho z každej strany niekoľko minút. Pri otáčaní buďte opatrní, aby sa nerozpadlo. Rezance varte o 1 minútu kratšie, ako uvádza návod, aby si zachovali jemnú tvrdosť. Sceďte a nechajte ich v hrnci s trochou vody z varenia, aby sa nezlepili.",
+            "Do vývaru pridajte pak choi a biele časti jarnej cibuľky a jemne zohrievajte 1-2 minúty, kým zelenina trochu nezvädne.",
+            "Rezance rozdeľte do dvoch hlbokých misiek, zalejte vývarom a zeleninou. Navrch poukladajte tofu, fazuľové klíčky, mrkvu a zázvor nakrájané na tenké prúžky, zelené časti jarnej cibuľky a pokvapkajte sezamovým olejom. Pridajte ďalšie voliteľné ingrediencie podľa chuti."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": false
+    },
+    {
+      "external_key": "breakfast-vegan-crepes",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "vegan",
+        "vegetarian",
+        "dairy-free"
+      ],
+      "restriction_flags": [
+        "contains-gluten"
+      ],
+      "servings": 2,
+      "prep_time_min": 5,
+        "total_time_min": 30,
+        "nutrition_per_serving": {
+          "calories": 324,
+          "protein_g": 11,
+          "carbohydrates_g": 49,
+          "fat_g": 9
+        },
+        "ingredients": [
+          {
+            "ingredient_key": "wheat-flour",
+            "ingredient_specific_key": "wheat-flour",
+            "canonical_name": "wheat flour",
+            "quantity": 125,
+            "unit": "g",
+            "optional": false,
+            "sort_order": 0,
+            "translations": {
+              "en": {
+                "display_name": "wheat flour"
+              },
+              "sk": {
+                "display_name": "hladká múka"
+              }
+            }
+          },
+          {
+            "ingredient_key": "vegan-egg-replacer",
+            "ingredient_specific_key": "vegan-egg-replacer",
+            "canonical_name": "vegan egg replacer",
+            "quantity": 1,
+            "unit": "pc",
+            "optional": false,
+            "sort_order": 1,
+            "translations": {
+              "en": {
+                "display_name": "vegan egg replacer"
+              },
+              "sk": {
+                "display_name": "vegánska náhrada vajca"
+              }
+            }
+          },
+          {
+            "ingredient_key": "plant-milk",
+            "ingredient_specific_key": "plant-milk",
+            "canonical_name": "plant milk",
+            "quantity": 250,
+            "unit": "ml",
+            "optional": false,
+            "sort_order": 2,
+            "translations": {
+              "en": {
+                "display_name": "plant milk"
+              },
+              "sk": {
+                "display_name": "rastlinné mlieko"
+              }
+            }
+          },
+          {
+            "ingredient_key": "sunflower-oil",
+            "ingredient_specific_key": "sunflower-oil",
+            "canonical_name": "sunflower oil",
+            "pantry_tracking_hint": "availability",
+            "quantity": null,
+            "unit": null,
+            "optional": false,
+            "sort_order": 3,
+            "translations": {
+              "en": {
+                "display_name": "sunflower oil"
+              },
+              "sk": {
+                "display_name": "slnečnicový olej"
+              }
+            }
+          },
+          {
+            "ingredient_key": "orange",
+            "ingredient_specific_key": "orange",
+            "canonical_name": "orange",
+            "quantity": null,
+            "unit": null,
+            "optional": true,
+            "sort_order": 4,
+            "translations": {
+              "en": {
+                "display_name": "orange"
+              },
+              "sk": {
+                "display_name": "pomaranč"
+              }
+            }
+          },
+          {
+            "ingredient_key": "agave-syrup",
+            "ingredient_specific_key": "agave-syrup",
+            "canonical_name": "agave syrup",
+            "quantity": null,
+            "unit": null,
+            "optional": true,
+            "sort_order": 5,
+            "translations": {
+              "en": {
+                "display_name": "agave syrup"
+              },
+              "sk": {
+                "display_name": "agávový sirup"
+              }
+            }
+          }
+        ],
+        "translations": {
+          "en": {
+            "name": "Vegan Crepes",
+            "category_label": "Breakfast",
+            "serving_unit_label": "serving",
+            "instructions": [
+              "Put the flour in a bowl and make a well in the centre. Pour in the egg replacement and a quarter of the milk.",
+              "Use an electric whisk to thoroughly combine the mixture, then beat in another quarter of the milk. Once lump free, mix in the remaining milk. Leave to rest for 20 mins. Stir again before using.",
+              "Heat a small non-stick frying pan with a splash of oil. When hot, pour a small amount of the mixture into the pan and swirl around to coat the base - you want a thin layer.",
+              "Cook for a few mins until golden brown on the bottom, then turn over and cook until golden on the other side. Repeat until you have used all the mixture, stirring the mixture between pancakes and adding more oil to the frying pan as necessary.",
+              "Serve with an orange wedge and a drizzle of agave syrup or filling of your choice."
+            ],
+            "notes": "Will keep refrigerated in a covered container for up to 2 days. Give it a good whisk before using."
+          },
+          "sk": {
+            "name": "Vegánske palacinky",
+            "category_label": "Raňajky",
+            "serving_unit_label": "porcia",
+            "instructions": [
+              "Do misky nasypte múku a v strede urobte jamku. Nalejte do nej náhradu vajca a štvrtinu rastlinného mlieka.",
+              "Pomocou elektrického šľahača zmes dôkladne premiešajte, potom zašľahajte ďalšiu štvrtinu mlieka. Keď je cesto bez hrudiek, primiešajte zvyšné mlieko. Nechajte 20 minút odpočívať. Pred použitím znova premiešajte.",
+              "Na malej nepriľnavej panvici zohrejte trochu oleja. Keď je panvica horúca, nalejte do nej malé množstvo cesta a krúžením ho rozlejte po celom dne - vrstva by mala byť tenká.",
+              "Opekajte niekoľko minút, kým spodná strana nie je zlatohnedá, potom obráťte a opekajte dozlatista aj z druhej strany. Postup opakujte, kým neminiete všetko cesto. Medzi jednotlivými palacinkami cesto premiešajte a podľa potreby pridajte do panvice viac oleja.",
+              "Podávajte s mesiačikmi pomaranča a pokvapkané agávovým sirupom alebo s vašou obľúbenou plnkou."
+            ],
+            "notes": "Cesto vydrží v chladničke v uzavretej nádobe až 2 dni. Pred použitím ho dobre premiešajte."
+          }
+        },
+        "meal_prep_friendly": false
+      },
+    {
+      "external_key": "dinner-chilli-con-carne",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein",
+        "dairy-free",
+        "gluten-free"
+      ],
+      "restriction_flags": [],
+      "servings": 4,
+      "prep_time_min": 10,
+      "total_time_min": 70,
+      "nutrition_per_serving": {
+        "calories": 360,
+        "protein_g": 33,
+        "carbohydrates_g": 21,
+        "fat_g": 16
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "red-bell-pepper",
+          "ingredient_specific_key": "red-bell-pepper",
+          "canonical_name": "red bell pepper",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "red bell pepper"
+            },
+            "sk": {
+              "display_name": "červená paprika"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "oil",
+          "ingredient_specific_key": "oil",
+          "canonical_name": "oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "oil"
+            },
+            "sk": {
+              "display_name": "olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chili-powder",
+          "ingredient_specific_key": "chili-powder",
+          "canonical_name": "chili powder",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "chilli powder"
+            },
+            "sk": {
+              "display_name": "čili prášok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "paprika",
+          "ingredient_specific_key": "paprika",
+          "canonical_name": "paprika",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "paprika"
+            },
+            "sk": {
+              "display_name": "mletá paprika"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cumin",
+          "ingredient_specific_key": "cumin",
+          "canonical_name": "cumin",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "ground cumin"
+            },
+            "sk": {
+              "display_name": "rímska rasca"
+            }
+          }
+        },
+        {
+          "ingredient_key": "beef-mince",
+          "ingredient_specific_key": "beef-mince",
+          "canonical_name": "beef mince",
+          "quantity": 500,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "beef mince"
+            },
+            "sk": {
+              "display_name": "mleté hovädzie mäso"
+            }
+          }
+        },
+        {
+          "ingredient_key": "beef-stock-cube",
+          "ingredient_specific_key": "beef-stock-cube",
+          "canonical_name": "beef stock cube",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "beef stock cube"
+            },
+            "sk": {
+              "display_name": "hovädzí bujón"
+            }
+          }
+        },
+        {
+          "ingredient_key": "hot-water",
+          "ingredient_specific_key": "hot-water",
+          "canonical_name": "hot water",
+          "quantity": 300,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "hot water"
+            },
+            "sk": {
+              "display_name": "horúca voda"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chopped-tomato",
+          "ingredient_specific_key": "chopped-tomato",
+          "canonical_name": "chopped tomato",
+          "quantity": 400,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "chopped tomato"
+            },
+            "sk": {
+              "display_name": "krájaná paradajka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "marjoram",
+          "ingredient_specific_key": "marjoram",
+          "canonical_name": "marjoram",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "marjoram"
+            },
+            "sk": {
+              "display_name": "majoránka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sugar",
+          "ingredient_specific_key": "sugar",
+          "canonical_name": "sugar",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 12,
+          "translations": {
+            "en": {
+              "display_name": "sugar"
+            },
+            "sk": {
+              "display_name": "cukor"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "ingredient_specific_key": "salt",
+          "canonical_name": "salt",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 13,
+          "translations": {
+            "en": {
+              "display_name": "salt"
+            },
+            "sk": {
+              "display_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "black-pepper",
+          "ingredient_specific_key": "black-pepper",
+          "canonical_name": "black pepper",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 14,
+          "translations": {
+            "en": {
+              "display_name": "black pepper"
+            },
+            "sk": {
+              "display_name": "čierne korenie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato-puree",
+          "ingredient_specific_key": "tomato-puree",
+          "canonical_name": "tomato puree",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 15,
+          "translations": {
+            "en": {
+              "display_name": "tomato purée"
+            },
+            "sk": {
+              "display_name": "paradajkový pretlak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "red-kidney-bean",
+          "ingredient_specific_key": "red-kidney-bean",
+          "canonical_name": "red kidney bean",
+          "quantity": 410,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 16,
+          "translations": {
+            "en": {
+              "display_name": "red kidney bean"
+            },
+            "sk": {
+              "display_name": "červená fazuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rice",
+          "ingredient_specific_key": "long-grain-rice",
+          "canonical_name": "long grain rice",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 17,
+          "translations": {
+            "en": {
+              "display_name": "long grain rice"
+            },
+            "sk": {
+              "display_name": "dlhozrnná ryža"
+            }
+          }
+        },
+        {
+          "ingredient_key": "soured-cream",
+          "ingredient_specific_key": "soured-cream",
+          "canonical_name": "soured cream",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 18,
+          "translations": {
+            "en": {
+              "display_name": "soured cream"
+            },
+            "sk": {
+              "display_name": "kyslá smotana"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Chilli Con Carne",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Prepare your vegetables. Chop the onion into small dice. Cut the red pepper in half lengthways, remove stalk and seeds, then chop. Peel and finely chop the garlic cloves.",
+            "Put your pan on the hob over a medium heat. Add the oil and leave it for 1-2 minutes until hot.",
+            "Add the onion and cook, stirring fairly frequently, for about 5 minutes, or until the onion is soft, squidgy and slightly translucent.",
+            "Tip in the garlic, red pepper, hot chilli powder, paprika and ground cumin. Give it a good stir, then leave it to cook for another 5 minutes, stirring occasionally.",
+            "Turn the heat up a bit, add the minced beef to the pan and break it up with your spoon or spatula. Keep stirring and prodding for at least 5 minutes, until all the mince is browned and there are no more pink bits.",
+            "Crumble the beef stock cube into the hot water. Pour this into the pan with the mince mixture.",
+            "Add the chopped tomatoes. Tip in the dried marjoram, sugar and add a good shake of salt and pepper. Squirt in the tomato purée and stir the sauce well.",
+            "Bring the whole thing to the boil, give it a good stir and put a lid on the pan. Turn down the heat until it is gently bubbling and leave it for 20 minutes.",
+            "Check on the pan occasionally to stir it and make sure the sauce doesn't catch on the bottom of the pan or isn't drying out. If it is, add a couple of tablespoons of water.",
+            "Drain and rinse the red kidney beans in a sieve and stir them into the chilli pot. Bring to the boil again, and gently bubble without the lid for another 10 minutes, adding a little more water if it looks too dry.",
+            "Taste a bit of the chilli and season if necessary.",
+            "Replace the lid, turn off the heat and leave your chilli to stand for 10 minutes before serving. Serve with soured cream and plain boiled long grain rice."
+          ],
+          "notes": "You can add a thumbnail-sized piece of dark chocolate along with the beans instead of sugar to add depth to the flavour."
+        },
+        "sk": {
+          "name": "Chilli con carne",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Pripravte si zeleninu. Cibuľu nakrájajte na malé kocky. Červenú papriku rozkrojte po dĺžke, odstráňte stopku a semienka a nakrájajte. Strúčiky cesnaku ošúpte a nasekajte najemno.",
+            "Panvicu dajte na sporák na stredný oheň. Pridajte olej a nechajte 1-2 minúty zohriať.",
+            "Pridajte cibuľu a za občasného miešania opekajte asi 5 minút, kým nezmäkne a nebude jemne priesvitná.",
+            "Pridajte cesnak, červenú papriku, čili prášok, mletú papriku a rímsku rascu. Dobre premiešajte a nechajte variť ďalších 5 minút za občasného miešania.",
+            "Zvýšte teplotu, pridajte mleté hovädzie mäso a vareškou ho rozdrvte. Miešajte aspoň 5 minút, kým mäso rovnomerne nezhnedne.",
+            "Bujón rozdrvte do horúcej vody. Vylejte ho do panvice k mäsovej zmesi.",
+            "Pridajte krájané paradajky, sušenú majoránku, cukor a štedrú štipku soli a čierneho korenia. Vytlačte paradajkový pretlak a omáčku dobre premiešajte.",
+            "Priveďte do varu, dobre premiešajte a prikryte pokrievkou. Znížte teplotu a nechajte jemne prebublávať 20 minút.",
+            "Občas skontrolujte a premiešajte, aby sa omáčka nepripálila. Ak je zmes príliš suchá, pridajte pár lyžíc vody.",
+            "Červenú fazuľu sceďte, prepláchnite a vmiešajte do chilli. Znova priveďte do varu a nezakryté varte ďalších 10 minút.",
+            "Ochutnajte a v prípade potreby dochuťte soľou a korením.",
+            "Zakryte pokrievkou, vypnite oheň a nechajte chilli odstáť 10 minút, aby sa prepojili chute. Podávajte s uvarenou ryžou a kyslou smotanou."
+          ],
+          "notes": "Pre hlbšiu chuť môžete namiesto cukru pridať spolu s fazuľou malý kúsok horkej čokolády (vo veľkosti nechta)."
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-sticky-chinese-chicken-traybake",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein",
+        "dairy-free"
+      ],
+      "restriction_flags": [
+        "contains-nuts",
+        "contains-soy",
+        "contains-sesame",
+        "contains-gluten"
+      ],
+      "servings": 4,
+      "prep_time_min": 10,
+      "total_time_min": 50,
+      "nutrition_per_serving": {
+        "calories": 447,
+        "protein_g": 32,
+        "carbohydrates_g": 19,
+        "fat_g": 27
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "chicken-thigh",
+          "ingredient_specific_key": "chicken-thigh",
+          "canonical_name": "chicken thigh",
+          "quantity": 8,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "chicken thigh"
+            },
+            "sk": {
+              "display_name": "kuracie stehno"
+            }
+          }
+        },
+        {
+          "ingredient_key": "hoisin-sauce",
+          "ingredient_specific_key": "hoisin-sauce",
+          "canonical_name": "hoisin sauce",
+          "quantity": 4,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "hoisin sauce"
+            },
+            "sk": {
+              "display_name": "hoisin omáčka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sesame-oil",
+          "ingredient_specific_key": "sesame-oil",
+          "canonical_name": "sesame oil",
+          "quantity": 2,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "sesame oil"
+            },
+            "sk": {
+              "display_name": "sezamový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "ingredient_specific_key": "honey",
+          "canonical_name": "honey",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "honey"
+            },
+            "sk": {
+              "display_name": "med"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chinese-five-spice-powder",
+          "ingredient_specific_key": "chinese-five-spice-powder",
+          "canonical_name": "chinese five-spice powder",
+          "quantity": 1.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "chinese five-spice powder"
+            },
+            "sk": {
+              "display_name": "čínske korenie piatich vôní"
+            }
+          }
+        },
+        {
+          "ingredient_key": "ginger",
+          "ingredient_specific_key": "ginger",
+          "canonical_name": "ginger",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "ginger"
+            },
+            "sk": {
+              "display_name": "zázvor"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "spring-onion",
+          "ingredient_specific_key": "spring-onion",
+          "canonical_name": "spring onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "spring onion"
+            },
+            "sk": {
+              "display_name": "jarná cibuľka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cashew-nut",
+          "ingredient_specific_key": "cashew-nut",
+          "canonical_name": "cashew nut",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "cashew nut"
+            },
+            "sk": {
+              "display_name": "kešu orech"
+            }
+          }
+        },
+        {
+          "ingredient_key": "brown-rice",
+          "ingredient_specific_key": "brown-rice",
+          "canonical_name": "brown rice",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "brown rice"
+            },
+            "sk": {
+              "display_name": "hnedá ryža"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Sticky Chinese Chicken Traybake",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Heat oven to 200 °C. Arrange the chicken thighs in a large roasting tin and slash the skin 2-3 times on each thigh. Mix together the hoisin, sesame oil, honey, five-spice, ginger, garlic and some seasoning. Pour over the chicken and toss to coat – you could now marinate the chicken for 2 hrs, or overnight if you have time. Roast, skin-side up, for 35 mins, basting at least once.",
+            "Stir through the cashew nuts and sprinkle the spring onions over the chicken. Return to the oven for 5 mins, then serve with brown rice."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Čínske kuracie stehná z jedného pekáča",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Rúru vyhrejte na 200 °C. Kuracie stehná rozložte do veľkého pekáča a kožu na každom z nich 2- až 3-krát narežte. Zmiešajte hoisin omáčku, sezamový olej, med, korenie piatich vôní, zázvor, cesnak a dochuťte koreninami podla vlastného výberu. Zmes nalejte na kurča a dobre premiešajte, aby sa mäso rovnomerne obalilo – kura môžete nechať marinovať 2 hodiny alebo aj cez noc, ak máte čas. Pečte kožou nahor 35 minút, pričom ho počas pečenia aspoň raz polejte výpekom.",
+            "K mäsu primiešajte kešu orechy a posypte ho jarnou cibuľkou. Vráťte do rúry na 5 minút a následne podávajte s hnedou ryžou."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+     
+   {
+      "external_key": "dinner-easy-butter-chicken",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-nuts"
+      ],
+      "servings": 4,
+      "prep_time_min": 15,
+      "total_time_min": 50,
+      "nutrition_per_serving": {
+        "calories": 395,
+        "protein_g": 34,
+        "carbohydrates_g": 13,
+        "fat_g": 23
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "chicken-thigh",
+          "ingredient_specific_key": "chicken-thigh",
+          "canonical_name": "chicken thigh",
+          "quantity": 500,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "chicken thigh"
+            },
+            "sk": {
+              "display_name": "kuracie stehno"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lemon",
+          "ingredient_specific_key": "lemon",
+          "canonical_name": "lemon",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "lemon"
+            },
+            "sk": {
+              "display_name": "citrón"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cumin",
+          "ingredient_specific_key": "cumin",
+          "canonical_name": "cumin",
+          "quantity": 2,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "cumin"
+            },
+            "sk": {
+              "display_name": "rímska rasca"
+            }
+          }
+        },
+        {
+          "ingredient_key": "paprika",
+          "ingredient_specific_key": "paprika",
+          "canonical_name": "paprika",
+          "quantity": 2,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "paprika"
+            },
+            "sk": {
+              "display_name": "mletá paprika"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chili-powder",
+          "ingredient_specific_key": "chili-powder",
+          "canonical_name": "chili powder",
+          "quantity": 1.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "chili powder"
+            },
+            "sk": {
+              "display_name": "čili prášok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "natural-yogurt",
+          "ingredient_specific_key": "natural-yogurt",
+          "canonical_name": "natural yogurt",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "natural yogurt"
+            },
+            "sk": {
+              "display_name": "biely jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vegetable-oil",
+          "ingredient_specific_key": "vegetable-oil",
+          "canonical_name": "vegetable oil",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "vegetable oil"
+            },
+            "sk": {
+              "display_name": "rastlinný olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 3,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "green-chili",
+          "ingredient_specific_key": "green-chili",
+          "canonical_name": "green chili",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": true,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "green chili"
+            },
+            "sk": {
+              "display_name": "zelená čili paprička"
+            }
+          }
+        },
+        {
+          "ingredient_key": "ginger",
+          "ingredient_specific_key": "ginger",
+          "canonical_name": "ginger",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "ginger"
+            },
+            "sk": {
+              "display_name": "zázvor"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garam-masala",
+          "ingredient_specific_key": "garam-masala",
+          "canonical_name": "garam masala",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "garam masala"
+            },
+            "sk": {
+              "display_name": "garam masala"
+            }
+          }
+        },
+        {
+          "ingredient_key": "ground-fenugreek",
+          "ingredient_specific_key": "ground-fenugreek",
+          "canonical_name": "ground fenugreek",
+          "quantity": 2,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 12,
+          "translations": {
+            "en": {
+              "display_name": "ground fenugreek"
+            },
+            "sk": {
+              "display_name": "mletá senovka grécka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato-puree",
+          "ingredient_specific_key": "tomato-puree",
+          "canonical_name": "tomato puree",
+          "quantity": 3,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 13,
+          "translations": {
+            "en": {
+              "display_name": "tomato puree"
+            },
+            "sk": {
+              "display_name": "paradajkový pretlak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chicken-stock",
+          "ingredient_specific_key": "chicken-stock",
+          "canonical_name": "chicken stock",
+          "quantity": 300,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 14,
+          "translations": {
+            "en": {
+              "display_name": "chicken stock"
+            },
+            "sk": {
+              "display_name": "kurací vývar"
+            }
+          }
+        },
+        {
+          "ingredient_key": "flaked-almond",
+          "ingredient_specific_key": "flaked-almond",
+          "canonical_name": "flaked almond",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 15,
+          "translations": {
+            "en": {
+              "display_name": "flaked almond"
+            },
+            "sk": {
+              "display_name": "plátková mandľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "basmati-rice",
+          "ingredient_specific_key": "basmati-rice",
+          "canonical_name": "basmati rice",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 16,
+          "translations": {
+            "en": {
+              "display_name": "basmati rice"
+            },
+            "sk": {
+              "display_name": "basmati ryža"
+            }
+          }
+        },
+        {
+          "ingredient_key": "naan-bread",
+          "ingredient_specific_key": "naan-bread",
+          "canonical_name": "naan bread",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 17,
+          "translations": {
+            "en": {
+              "display_name": "naan bread"
+            },
+            "sk": {
+              "display_name": "chlieb naan"
+            }
+          }
+        },
+        {
+          "ingredient_key": "mango-chutney",
+          "ingredient_specific_key": "mango-chutney",
+          "canonical_name": "mango chutney",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 18,
+          "translations": {
+            "en": {
+              "display_name": "mango chutney"
+            },
+            "sk": {
+              "display_name": "mangové chutney"
+            }
+          }
+        },
+        {
+          "ingredient_key": "coriander",
+          "ingredient_specific_key": "coriander",
+          "canonical_name": "coriander",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 19,
+          "translations": {
+            "en": {
+              "display_name": "coriander"
+            },
+            "sk": {
+              "display_name": "koriander"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lime",
+          "ingredient_specific_key": "lime",
+          "canonical_name": "lime",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 20,
+          "translations": {
+            "en": {
+              "display_name": "lime"
+            },
+            "sk": {
+              "display_name": "limetka"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Easy Butter Chicken",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "In a medium bowl, mix all the marinade ingredients with some seasoning. Chop the chicken into bite-sized pieces and toss with the marinade. Cover and chill in the fridge for 1 hr or overnight.",
+            "In a large, heavy saucepan, heat the oil. Add the onion, garlic, green chilli, ginger and some seasoning. Fry on a medium heat for 10 mins or until soft.",
+            "Add the spices with the tomato purée, cook for a further 2 mins until fragrant, then add the stock and marinated chicken. Cook for 15 mins, then add any remaining marinade left in the bowl. Simmer for 5 mins, then sprinkle with the toasted almonds.",
+            "Serve with rice, naan bread, chutney, coriander and lime wedges, if you like."
+          ],
+          "notes": "The meat can be marinaded the day before so you can get ahead on your prep."
+        },
+        "sk": {
+          "name": "Jednoduché maslové kura (Butter chicken)",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "V stredne veľkej miske zmiešajte všetky prísady na marinádu a dochuťte soľou a korením. Kuracie mäso nakrájajte na kúsky veľkosti sústa a obaľte v marináde. Prikryte a nechajte v chladničke odpočívať aspoň 1 hodinu, ideálne však cez noc.",
+            "Vo veľkom hrnci s hrubým dnom zohrejte olej. Pridajte cibuľu, cesnak, zelenú čili papričku, zázvor a trochu korenia. Restujte na strednom ohni asi 10 minút, kým zelenina nezmäkne.",
+            "Pridajte koreniny a paradajkový pretlak, opekajte ďalšie 2 minúty, kým zmes nezačne rozvoniavať. Potom prilejte vývar a pridajte marinované kura. Varte 15 minút, následne pridajte aj zvyšok marinády, ktorá ostala v miske. Duste na miernom ohni ešte 5 minút a nakoniec posypte opraženými plátkami mandlí.",
+            "Podávajte s uvarenou ryžou, chlebom naan, chutney, posypané lístkami koriandra a doplnené o mesiačiky limetky."
+          ],
+          "notes": "Mäso si môžete naložiť do marinády už deň vopred a ušetriť tak čas pri samotnej príprave."
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dessert-authentic-italian-tiramisu",
+      "default_locale": "sk",
+      "category_key": "dessert",
+      "diet_tags": [
+        "vegetarian"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-eggs",
+        "contains-gluten",
+        "contains-alcohol"
+      ],
+      "servings": 10,
+      "prep_time_min": 15,
+      "total_time_min": 255,
+      "nutrition_per_serving": {
+        "calories": 383,
+        "protein_g": 7,
+        "carbohydrates_g": 28,
+        "fat_g": 27
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "quantity": 5,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "egg"
+            },
+            "sk": {
+              "display_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sugar",
+          "ingredient_specific_key": "sugar",
+          "canonical_name": "sugar",
+          "quantity": 5,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "granulated sugar"
+            },
+            "sk": {
+              "display_name": "kryštálový cukor"
+            }
+          }
+        },
+        {
+          "ingredient_key": "mascarpone",
+          "ingredient_specific_key": "mascarpone",
+          "canonical_name": "mascarpone",
+          "quantity": 500,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "mascarpone"
+            },
+            "sk": {
+              "display_name": "mascarpone"
+            }
+          }
+        },
+        {
+          "ingredient_key": "ladyfinger",
+          "ingredient_specific_key": "ladyfinger",
+          "canonical_name": "ladyfinger",
+          "quantity": 250,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "ladyfinger"
+            },
+            "sk": {
+              "display_name": "cukrárska piškóta"
+            }
+          }
+        },
+        {
+          "ingredient_key": "coffee",
+          "ingredient_specific_key": "coffee",
+          "canonical_name": "coffee",
+          "quantity": 240,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "strong coffee"
+            },
+            "sk": {
+              "display_name": "silná káva"
+            }
+          }
+        },
+        {
+          "ingredient_key": "amaretto",
+          "ingredient_specific_key": "amaretto",
+          "canonical_name": "amaretto",
+          "quantity": 100,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "amaretto"
+            },
+            "sk": {
+              "display_name": "amaretto"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cocoa-powder",
+          "ingredient_specific_key": "cocoa-powder",
+          "canonical_name": "cocoa powder",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "cocoa powder"
+            },
+            "sk": {
+              "display_name": "kakao"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Authentic Italian Tiramisu",
+          "category_label": "Dessert",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Separate the egg yolks from the whites into two bowls. Whip the egg whites until stiff peaks form.",
+            "Add sugar to the yolks and beat until the sugar dissolves. Add the mascarpone and gently whisk it into the yolk mixture. Finally, carefully fold in the egg whites to keep as much air in the mixture as possible.",
+            "Mix the cooled coffee with Amaretto and pour it into a wide-bottomed bowl. Briefly dip the ladyfingers one by one into the coffee mixture on both sides so they don't get soggy, and arrange them in a square dish (approx. 30x30 cm).",
+            "Once the first layer of ladyfingers is arranged, spread half of the mascarpone cream over it. Arrange another layer of dipped ladyfingers and cover with the remaining cream. Dust the top with cocoa powder using a sieve and refrigerate for at least 4 hours (ideally overnight)."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Pravé talianske tiramisu",
+          "category_label": "Dezert",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Do dvoch misiek oddeľte žĺtky od bielkov. Z bielkov vyšľahajte tuhý sneh.",
+            "K žĺtkom pridajte cukor a šľahajte, kým sa cukor nerozpustí. Pridajte mascarpone a jemne ho zašľahajte do žĺtkového krému. Nakoniec opatrne vmiešajte sneh tak, aby v ňom zostalo čo najviac vzduchu.",
+            "Vychladnutú kávu zmiešajte s amarettom a nalejte do širšej misky. Piškóty jednu po druhej z oboch strán krátko namáčajte v kávovej zmesi, aby sa nerozmočili, a ukladajte ich na dno hranatej formy (cca 30x30 cm).",
+            "Na prvú vrstvu piškót naneste polovicu krému. Potom uložte ďalšiu vrstvu namočených piškót a zakryte ich druhou polovicou krému. Povrch posypte kakaom preosiatym cez sitko a uložte do chladničky aspoň na 4 hodiny (ideálne cez noc)."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-burrito-with-kale-and-avocado",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "vegetarian"
+      ],
+      "restriction_flags": [
+        "contains-eggs",
+        "contains-gluten"
+      ],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 15,
+      "nutrition_per_serving": {
+        "calories": 357,
+        "protein_g": 16,
+        "carbohydrates_g": 26,
+        "fat_g": 21
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "chipotle-paste",
+          "ingredient_specific_key": "chipotle-paste",
+          "canonical_name": "chipotle paste",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "chipotle paste"
+            },
+            "sk": {
+              "display_name": "chipotle pasta"
+            }
+          }
+        },
+        {
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "egg"
+            },
+            "sk": {
+              "display_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "oil",
+          "ingredient_specific_key": "oil",
+          "canonical_name": "oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "rapeseed oil"
+            },
+            "sk": {
+              "display_name": "repkový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "kale",
+          "ingredient_specific_key": "kale",
+          "canonical_name": "kale",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "kale"
+            },
+            "sk": {
+              "display_name": "kel"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cherry-tomato",
+          "ingredient_specific_key": "cherry-tomato",
+          "canonical_name": "cherry tomato",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 7,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "cherry tomato"
+            },
+            "sk": {
+              "display_name": "cherry paradajka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "avocado",
+          "ingredient_specific_key": "avocado",
+          "canonical_name": "avocado",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 0.5,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "avocado"
+            },
+            "sk": {
+              "display_name": "avokádo"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tortilla",
+          "ingredient_specific_key": "tortilla",
+          "canonical_name": "tortilla",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "tortilla"
+            },
+            "sk": {
+              "display_name": "tortilla"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Breakfast Burrito",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Whisk the chipotle paste with the egg and some seasoning in a jug. Heat the oil in a large frying pan, add the kale and tomatoes.",
+            "Cook until the kale is wilted and the tomatoes have softened, then push everything to the side of the pan. Pour the beaten egg into the cleared half of the pan and scramble. Layer everything into the centre of your wrap, topping with the avocado, then wrap up and eat immediately."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Raňajkové burrito",
+          "category_label": "Raňajky",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "V miske rozšľahajte chipotle pastu s vajcom a trochou korenia. Vo veľkej panvici zohrejte olej, pridajte kel a paradajky.",
+            "Opekajte, kým kel nezvädne a paradajky nezmäknú, potom všetko presuňte na okraj panvice. Rozšľahané vajce vylejte na uvoľnenú polovicu panvice a urobte praženicu. Všetko navrstvite do stredu tortilly, obložte avokádom, zabaľte a ihneď podávajte."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": false
+    },
+    {
+      "external_key": "dinner-hamburger-helper-pasta",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-gluten"
+      ],
+      "servings": 4,
+      "prep_time_min": 10,
+      "total_time_min": 35,
+      "nutrition_per_serving": {
+        "calories": 835,
+        "protein_g": 47,
+        "carbohydrates_g": 65,
+        "fat_g": 43
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "beef-mince",
+          "ingredient_specific_key": "beef-mince",
+          "canonical_name": "beef mince",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 500,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "beef mince"
+            },
+            "sk": {
+              "display_name": "mleté hovädzie mäso"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion",
+          "ingredient_specific_key": "onion",
+          "canonical_name": "onion",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "onion"
+            },
+            "sk": {
+              "display_name": "cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "ground-paprika",
+          "ingredient_specific_key": "ground-paprika",
+          "canonical_name": "ground paprika",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "ground paprika"
+            },
+            "sk": {
+              "display_name": "mletá sladká paprika"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic-powder",
+          "ingredient_specific_key": "garlic-powder",
+          "canonical_name": "garlic powder",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "garlic powder"
+            },
+            "sk": {
+              "display_name": "sušený cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "onion-powder",
+          "ingredient_specific_key": "onion-powder",
+          "canonical_name": "onion powder",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "onion powder"
+            },
+            "sk": {
+              "display_name": "sušená cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "ingredient_specific_key": "salt",
+          "canonical_name": "salt",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "salt"
+            },
+            "sk": {
+              "display_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "black-pepper",
+          "ingredient_specific_key": "black-pepper",
+          "canonical_name": "black pepper",
+          "pantry_tracking_hint": "availability",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "black pepper"
+            },
+            "sk": {
+              "display_name": "čierne korenie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato-puree",
+          "ingredient_specific_key": "tomato-puree",
+          "canonical_name": "tomato puree",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "tomato puree"
+            },
+            "sk": {
+              "display_name": "paradajkový pretlak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "beef-stock",
+          "ingredient_specific_key": "beef-stock",
+          "canonical_name": "beef stock",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 500,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "beef stock"
+            },
+            "sk": {
+              "display_name": "hovädzí vývar"
+            }
+          }
+        },
+        {
+          "ingredient_key": "milk",
+          "ingredient_specific_key": "milk",
+          "canonical_name": "milk",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 250,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "milk"
+            },
+            "sk": {
+              "display_name": "mlieko"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pasta",
+          "ingredient_specific_key": "pasta",
+          "canonical_name": "pasta",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 300,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 12,
+          "translations": {
+            "en": {
+              "display_name": "pasta"
+            },
+            "sk": {
+              "display_name": "cestovina"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cheddar-cheese",
+          "ingredient_specific_key": "cheddar-cheese",
+          "canonical_name": "cheddar cheese",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 13,
+          "translations": {
+            "en": {
+              "display_name": "cheddar cheese"
+            },
+            "sk": {
+              "display_name": "čedar"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Homemade Hamburger Helper Pasta",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Heat oil in a large deep pan. Add chopped onion and sauté until soft. Add minced garlic and cook for 1 minute.",
+            "Add the minced beef and cook until browned, breaking it up with a wooden spoon.",
+            "Stir in the ground paprika, garlic powder, onion powder, salt, black pepper, and tomato puree. Cook for another 2 minutes.",
+            "Pour in the beef stock and milk. Add the uncooked pasta and stir well. Bring to a simmer.",
+            "Reduce the heat to low, cover the pan, and simmer for 15 minutes, or until the pasta is cooked and the liquid is mostly absorbed. Stir occasionally to prevent sticking.",
+            "Remove from heat and stir in the grated cheddar cheese until melted and the sauce is creamy. Let it sit for 5 minutes before serving."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Cestoviny Hamburger Helper (z jednej panvice)",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Vo veľkej hlbokej panvici zohrejte olivový olej. Pridajte nadrobno nakrájanú cibuľu a restujte do zmäknutia. Pridajte nasekaný cesnak a opekajte ešte 1 minútu.",
+            "Pridajte mleté hovädzie mäso a za stáleho miešania a roztláčania vareškou ho opekajte, kým úplne nezhnedne.",
+            "Vmiešajte koreniny (mletú sladkú papriku, sušený cesnak, sušenú cibuľu, soľ, čierne korenie) a paradajkový pretlak. Restujte ďalšie 2 minúty.",
+            "Prilejte hovädzí vývar a mlieko. Pridajte surové cestoviny a dobre premiešajte. Priveďte do jemného varu.",
+            "Znížte teplotu na minimum, prikryte pokrievkou a duste asi 15 minút, alebo kým nie sú cestoviny uvarené a tekutina takmer úplne vsiaknutá. Občas premiešajte, aby sa cestoviny nepripálili o dno.",
+            "Odstavte z ohňa a vmiešajte nastrúhaný čedar, kým sa úplne nerozpustí a omáčka nebude krémová. Pred podávaním nechajte 5 minút odstáť."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    }
+  ],
+  "rejected": [
+    {
+      "external_key": "dessert-mango-crepe-cake",
+      "reason": "insufficient_quantities_for_required_ingredients"
+    }
+  ]
+}

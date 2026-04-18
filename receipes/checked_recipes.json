@@ -1,0 +1,219 @@
+{
+  "recipes": [
+    {
+      "external_key": "breakfast-oat-fitness-pancakes",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "vegetarian",
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-eggs",
+        "contains-gluten"
+      ],
+      "servings": 3,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 423,
+        "protein_g": 24,
+        "carbohydrates_g": 48,
+        "fat_g": 15
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "milk",
+          "ingredient_specific_key": "milk",
+          "canonical_name": "milk",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 150,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "milk"
+            },
+            "sk": {
+              "display_name": "mlieko"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rolled-oat",
+          "ingredient_specific_key": "rolled-oat",
+          "canonical_name": "rolled oat",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "rolled oats"
+            },
+            "sk": {
+              "display_name": "ovsené vločky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "banana",
+          "ingredient_specific_key": "banana",
+          "canonical_name": "banana",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "banana"
+            },
+            "sk": {
+              "display_name": "banán"
+            }
+          }
+        },
+        {
+          "ingredient_key": "protein-powder",
+          "ingredient_specific_key": "protein-powder",
+          "canonical_name": "protein powder",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "protein powder"
+            },
+            "sk": {
+              "display_name": "proteínový prášok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 4,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "egg"
+            },
+            "sk": {
+              "display_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "strawberry",
+          "ingredient_specific_key": "strawberry",
+          "canonical_name": "strawberry",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 50,
+          "unit": "g",
+          "optional": true,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "strawberry"
+            },
+            "sk": {
+              "display_name": "jahoda"
+            }
+          }
+        },
+        {
+          "ingredient_key": "yogurt",
+          "ingredient_specific_key": "yogurt",
+          "canonical_name": "yogurt",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": true,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "yogurt"
+            },
+            "sk": {
+              "display_name": "jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pistachio-butter",
+          "ingredient_specific_key": "pistachio-butter",
+          "canonical_name": "pistachio butter",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": true,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "pistachio butter"
+            },
+            "sk": {
+              "display_name": "pistáciové maslo"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Oatmeal Fitness Pancakes",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Add milk, eggs, ripe bananas, rolled oats, and protein powder into a blender. Blend thoroughly until you have a smooth pancake batter.",
+            "Heat the olive oil in a pan over medium heat. Pour in small amounts of batter to form pancakes.",
+            "Cook until the edges set and bubbles form on the surface, then flip and cook until golden brown on the other side.",
+            "Serve the pancakes topped with fresh strawberries, a dollop of yogurt, and a drizzle of pistachio butter."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Ovsené fitness lievance",
+          "category_label": "Raňajky",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Do mixéra pridajte mlieko, vajcia, zrelé banány, ovsené vločky a proteínový prášok. Poriadne rozmixujte, kým nevznikne hladké cesto na lievance.",
+            "Na panvici zohrejte olivový olej. Nalejte menšie porcie cesta a vytvarujte lievance.",
+            "Opekajte, kým sa na povrchu nezačnú tvoriť bublinky a okraje nestuhnú. Potom lievance pretočte a opečte dozlatista aj z druhej strany.",
+            "Hotové lievance podávajte ozdobené čerstvými jahodami, jogurtom a pistáciovým maslom."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    }
+  ],
+  "rejected": []
+}

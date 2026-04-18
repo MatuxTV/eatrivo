@@ -1,5 +1,8 @@
-﻿import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+﻿"use client";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { User } from "../types";
 
 interface StatsCardProps {
@@ -7,6 +10,8 @@ interface StatsCardProps {
 }
 
 export default function StatsCard({ users }: StatsCardProps) {
+  const t = useTranslations("admin.dashboard.statsCard");
+  const tCommon = useTranslations("admin.dashboard.common");
   const totalUsers = users.length;
   const premiumUsers = users.filter(u => u.membership?.toLowerCase() === "premium").length;
   const basicUsers = users.filter(u => u.membership?.toLowerCase() === "basic").length;
@@ -20,7 +25,7 @@ export default function StatsCard({ users }: StatsCardProps) {
       <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-2">
         <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
           <Users className="w-4 h-4 sm:w-5 sm:h-5" />
-          Prehľad používateľov
+          {t("title")}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-2 sm:pt-2">
@@ -28,7 +33,7 @@ export default function StatsCard({ users }: StatsCardProps) {
           <div className="flex items-end justify-between">
             <div>
               <p className="text-3xl sm:text-4xl font-bold text-white">{totalUsers}</p>
-              <p className="text-xs text-white/80">Celkovo používateľov</p>
+              <p className="text-xs text-white/80">{t("totalUsers")}</p>
             </div>
             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
               <Users className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
@@ -38,15 +43,15 @@ export default function StatsCard({ users }: StatsCardProps) {
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pt-3 sm:pt-4 border-t border-white/20">
             <div className="text-center">
               <p className="text-lg sm:text-xl font-bold text-white">{premiumUsers}</p>
-              <p className="text-[10px] text-white/70 uppercase tracking-wide">Premium</p>
+              <p className="text-[10px] text-white/70 uppercase tracking-wide">{tCommon("membership.plus")}</p>
             </div>
             <div className="text-center border-x border-white/20">
               <p className="text-lg sm:text-xl font-bold text-white">{basicUsers}</p>
-              <p className="text-[10px] text-white/70 uppercase tracking-wide">Basic</p>
+              <p className="text-[10px] text-white/70 uppercase tracking-wide">{tCommon("membership.basic")}</p>
             </div>
             <div className="text-center">
               <p className="text-lg sm:text-xl font-bold text-white">{trainerUsers}</p>
-              <p className="text-[10px] text-white/70 uppercase tracking-wide">Trainer</p>
+              <p className="text-[10px] text-white/70 uppercase tracking-wide">{tCommon("membership.trainer")}</p>
             </div>
           </div>
         </div>

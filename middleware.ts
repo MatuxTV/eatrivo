@@ -1,10 +1,17 @@
-import { permissions, hasAccess } from "@/app/config/permission";
+import { permissions, hasAdminRole } from "@/app/config/permission";
 import { auth } from "./auth";
 import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { defaultLocale, isLocale, locales } from "./src/i18n/routing";
+import {
+  defaultLocale,
+  isLocale,
+  locales,
+  LOCALE_COOKIE_NAME,
+  LOCALE_HEADER_NAME,
+  isAppShellRoute,
+} from "./src/i18n/routing";
 
 // Extend NextRequest type for Vercel Edge geo property
 interface NextRequestWithGeo extends NextRequest {
@@ -37,6 +44,10 @@ function stripLocaleFromPathname(pathname: string) {
 }
 
 function negotiateLocale(req: Parameters<Parameters<typeof auth>[0]>[0]) {
+  // 0. Highest priority: explicit locale cookie (set by LanguageSwitcher)
+  const cookieLocale = req.cookies.get(LOCALE_COOKIE_NAME)?.value;
+  if (isLocale(cookieLocale)) return cookieLocale;
+
   // 1. Priority: User's saved locale from database
   const userLocale = req.auth?.user?.locale;
   if (isLocale(userLocale)) return userLocale;
@@ -44,11 +55,11 @@ function negotiateLocale(req: Parameters<Parameters<typeof auth>[0]>[0]) {
   // 2. Check geolocation (Vercel Edge - Slovakia or Czech Republic → SK, otherwise EN)
   const country = (req as unknown as NextRequestWithGeo).geo?.country;
   if (country) {
-    if (country === "SK" || country === "CZ") {
-      return "sk";
+    if (!(country === "SK" || country === "CZ")) {
+      return "en";
     }
-    // Any other country → English
-    return "en";
+    // Slovakia or Czech Republic → Slovak
+    return "sk";
   }
 
   // 3. Fallback to browser Accept-Language header (for local dev or non-Vercel)
@@ -68,6 +79,12 @@ function negotiateLocale(req: Parameters<Parameters<typeof auth>[0]>[0]) {
   return "sk";
 }
 
+function buildLocaleHeaders(requestHeaders: Headers, locale: string) {
+  const nextHeaders = new Headers(requestHeaders);
+  nextHeaders.set(LOCALE_HEADER_NAME, locale);
+  return nextHeaders;
+}
+
 export default auth((req) => {
   const { nextUrl } = req;
 
@@ -76,25 +93,104 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  const { locale: localeInPath } = stripLocaleFromPathname(nextUrl.pathname);
-  if (!localeInPath) {
-    const preferred = negotiateLocale(req);
-    const url = nextUrl.clone();
-    url.pathname = `/${preferred}${nextUrl.pathname}`;
-    return NextResponse.redirect(url);
+  const localeInPath = getLocaleFromPathname(nextUrl.pathname);
+  const preferred = negotiateLocale(req);
+
+  // --- ROUTE CLASSIFICATION ---
+
+  if (localeInPath) {
+    // URL has a locale segment, e.g. /sk/home or /en/pricing
+    const { pathname: bare } = stripLocaleFromPathname(nextUrl.pathname);
+
+    // If this is an app shell route under /{locale}/..., redirect to canonical route
+    if (isAppShellRoute(bare)) {
+      const url = nextUrl.clone();
+      url.pathname = bare;
+      // Preserve query string
+      const response = NextResponse.redirect(url);
+      response.cookies.set(LOCALE_COOKIE_NAME, localeInPath, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: "lax",
+      });
+      return response;
+    }
+
+    // Public/legal route with locale — handle with intlMiddleware
+    // But first, if cookie locale differs, redirect to correct locale
+    if (isLocale(preferred) && preferred !== localeInPath) {
+      const cookieLocale = req.cookies.get(LOCALE_COOKIE_NAME)?.value;
+      // Only redirect if there's an explicit cookie preference (not just negotiated)
+      if (isLocale(cookieLocale) && cookieLocale !== localeInPath) {
+        const url = nextUrl.clone();
+        url.pathname = `/${cookieLocale}${bare}`;
+        return NextResponse.redirect(url);
+      }
+    }
+
+    return handleAuthAndIntl(req, localeInPath, bare);
   }
+
+  // No locale in path
+  const pathname = nextUrl.pathname;
+
+  if (isAppShellRoute(pathname)) {
+    // Canonical app shell route — no locale prefix needed
+    const response = NextResponse.next({
+      request: {
+        headers: buildLocaleHeaders(req.headers, preferred),
+      },
+    });
+    response.cookies.set(LOCALE_COOKIE_NAME, preferred, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+    });
+
+    // Auth checks for app shell routes
+    const isLoggedIn = !!req.auth?.user;
+    const protectedRoute = Object.keys(permissions).some((route) =>
+      new RegExp(`^/${route}(/|$)`).test(pathname),
+    );
+
+    if (!isLoggedIn && protectedRoute) {
+      return NextResponse.redirect(
+        new URL(`/${preferred}/signin`, nextUrl),
+      );
+    }
+
+    if (
+      pathname.startsWith("/admin") &&
+      !hasAdminRole(req.auth?.user?.role)
+    ) {
+      return NextResponse.redirect(
+        new URL(`/${preferred}/not-authorized`, nextUrl),
+      );
+    }
+
+    return response;
+  }
+
+  // Non-locale, non-app-shell route — must be a public route missing its locale
+  // Redirect to /{locale}/...
+  const url = nextUrl.clone();
+  url.pathname = `/${preferred}${pathname}`;
+  return NextResponse.redirect(url);
+});
+
+/**
+ * Handle auth checks + intlMiddleware for locale-prefixed public routes.
+ */
+function handleAuthAndIntl(
+  req: Parameters<Parameters<typeof auth>[0]>[0],
+  locale: string,
+  pathnameWithoutLocale: string,
+) {
+  const { nextUrl } = req;
 
   const intlResponse = intlMiddleware(req);
 
-  const { pathname: pathnameWithoutLocale } = stripLocaleFromPathname(
-    nextUrl.pathname,
-  );
-  const locale = localeInPath;
-
   const isLoggedIn = !!req.auth?.user;
-
-  // Get user role (membership)
-  const userRole = req.auth?.user?.membership ?? "";
 
   // Protect all routes defined in permissions config
   const protectedRoute = Object.keys(permissions).some((route) =>
@@ -110,29 +206,31 @@ export default auth((req) => {
     return NextResponse.redirect(new URL(`/${locale}/signin`, nextUrl));
   }
 
-  // Check admin access specifically
+  // Check admin access
   if (
     pathnameWithoutLocale.startsWith("/admin") &&
-    !hasAccess(pathnameWithoutLocale, userRole)
+    !hasAdminRole(req.auth?.user?.role)
   ) {
-    return NextResponse.redirect(new URL(`/${locale}/not-authorized`, nextUrl));
+    return NextResponse.redirect(
+      new URL(`/${locale}/not-authorized`, nextUrl),
+    );
   }
 
-  // If user is logged in and trying to access auth routes, redirect to dashboard
+  // If user is logged in and trying to access auth routes, redirect to app home
   if (isLoggedIn && isAuthRoute) {
-    return NextResponse.redirect(new URL(`/${locale}/dashboard`, nextUrl));
+    return NextResponse.redirect(new URL("/home", nextUrl));
   }
 
-  // If user is logged in and accessing root path, redirect to dashboard
+  // If user is logged in and accessing locale root, redirect to app home
   if (isLoggedIn && pathnameWithoutLocale === "/") {
-    return NextResponse.redirect(new URL(`/${locale}/dashboard`, nextUrl));
+    return NextResponse.redirect(new URL("/home", nextUrl));
   }
 
   return intlResponse;
-});
+}
 
 export const config = {
   matcher: [
-    "/((?!api/stripe/webhook|api|_next/static|_next/image|images|rivo|favicon.ico|manifest.json|site.webmanifest|logo/.*).*)",
+    "/((?!api/stripe/webhook|api|_next/static|_next/image|images|rivo|favicon.ico|manifest.json|site.webmanifest|logo/.*|sw\\.js|workbox-.*\\.js|custom-sw\\.js).*)",
   ],
 };

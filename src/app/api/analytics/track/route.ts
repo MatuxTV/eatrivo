@@ -1,8 +1,16 @@
 // Client-side analytics tracking endpoint
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { trackEvent, type AnalyticsEventType } from "@/lib/analytics";
 import { auth } from "@/../auth";
+import {
+  getAnalyticsEventDefinition,
+  getAnalyticsMetadataSize,
+  isAnalyticsEventName,
+  isClientAnalyticsEvent,
+  MAX_ANALYTICS_METADATA_BYTES,
+  sanitizeAnalyticsMetadata,
+} from "@/lib/analytics-events";
+import { captureServerAnalyticsEvent } from "@/lib/analytics-server";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
@@ -18,45 +26,66 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    const { eventType, eventName, metadata } = body;
+    const { eventType, eventName, metadata } = body as {
+      eventType?: unknown;
+      eventName?: unknown;
+      metadata?: unknown;
+    };
 
     // Validate required fields
-    if (!eventType || !eventName) {
+    if (typeof eventName !== "string") {
       return NextResponse.json(
-        { error: "eventType and eventName are required" },
+        { error: "eventName is required" },
         { status: 400 },
       );
     }
 
-    // Validate event type
-    const validTypes: AnalyticsEventType[] = [
-      "auth",
-      "feature",
-      "subscription",
-      "page_view",
-      "engagement",
-    ];
-    if (!validTypes.includes(eventType)) {
-      return NextResponse.json({ error: "Invalid eventType" }, { status: 400 });
+    if (!isAnalyticsEventName(eventName)) {
+      return NextResponse.json({ error: "Invalid eventName" }, { status: 400 });
+    }
+
+    if (!isClientAnalyticsEvent(eventName)) {
+      return NextResponse.json(
+        { error: "Event not allowed from client" },
+        { status: 400 },
+      );
+    }
+
+    const definition = getAnalyticsEventDefinition(eventName);
+    if (eventType !== undefined && eventType !== definition.eventType) {
+      return NextResponse.json(
+        { error: "Invalid eventType for eventName" },
+        { status: 400 },
+      );
+    }
+
+    if (
+      metadata !== undefined &&
+      metadata !== null &&
+      (typeof metadata !== "object" || Array.isArray(metadata))
+    ) {
+      return NextResponse.json(
+        { error: "metadata must be an object" },
+        { status: 400 },
+      );
     }
 
     // Validate metadata size to prevent abuse
-    if (metadata !== undefined && metadata !== null) {
-      const metadataStr = JSON.stringify(metadata);
-      if (metadataStr.length > 2048) {
+    const sanitizedMetadata = sanitizeAnalyticsMetadata(
+      (metadata as Record<string, unknown> | undefined) ?? null,
+    );
+    if (getAnalyticsMetadataSize(sanitizedMetadata) > MAX_ANALYTICS_METADATA_BYTES) {
         return NextResponse.json(
           { error: "Metadata too large (max 2KB)" },
           { status: 400 },
         );
-      }
     }
 
     // Track the event
-    await trackEvent({
+    await captureServerAnalyticsEvent({
       userId: session?.user?.id || null,
-      eventType,
       eventName,
-      metadata,
+      metadata: sanitizedMetadata || undefined,
     });
 
     return NextResponse.json({ success: true });
