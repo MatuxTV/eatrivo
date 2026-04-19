@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 // Import types
 import type {
@@ -21,6 +22,7 @@ import AnalyticsTab from "./tabs/AnalyticsTab";
 import NotificationsTab from "./tabs/NotificationsTab";
 
 export default function AdminDashboard() {
+  const t = useTranslations("emails.admin.dashboard.page");
   const [activeTab, setActiveTab] = useState<TabId>("analytics");
   const [users, setUsers] = useState<UserType[]>([]);
 
@@ -55,17 +57,17 @@ export default function AdminDashboard() {
             setUsers([]);
           }
         } else {
-          toast.error("Nepodarilo sa načítať používateľov");
+          toast.error(t("toasts.loadUsersError"));
         }
       } catch (error) {
         console.error("Error fetching users:", error);
-        toast.error("Chyba pri načítavaní používateľov");
+        toast.error(t("toasts.loadUsersNetworkError"));
         setUsers([]);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [t]);
 
   // const handleTestShoppingListEmail = async () => {
   //   setIsTestingEmail(true);
@@ -150,13 +152,29 @@ export default function AdminDashboard() {
     }
   };
 
+  const subscribedUsersCount = users.filter(
+    (user) => user.email && user.isEmailSubscriptionActive !== false,
+  ).length;
+
   const handleSendTestEmail = async () => {
+    const normalizedTestEmail = emailFormData.testEmail.trim().toLowerCase();
+    const hasSubscribedRecipient = users.some(
+      (user) =>
+        user.email?.trim().toLowerCase() === normalizedTestEmail &&
+        user.isEmailSubscriptionActive !== false,
+    );
+
     if (
       !emailFormData.testEmail ||
       !emailFormData.version ||
       !emailFormData.updateTitle
     ) {
-      toast.error("Vyplňte verziu, názov aktualizácie a testovací email");
+      toast.error(t("toasts.emailMissingTestFields"));
+      return;
+    }
+
+    if (!hasSubscribedRecipient) {
+      toast.error(t("toasts.testEmailSubscriptionRequired"));
       return;
     }
 
@@ -169,29 +187,29 @@ export default function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...emailFormData,
-          testEmail: emailFormData.testEmail,
+          testEmail: emailFormData.testEmail.trim(),
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Failed to send email");
+        throw new Error(result.error || t("errors.failedToSendEmail"));
       }
 
       setEmailSendResult({
         success: true,
-        message: "Test email odoslaný!",
+        message: t("results.testEmailSent"),
         sent: 1,
       });
-      toast.success("Test email bol úspešne odoslaný!");
+      toast.success(t("toasts.testEmailSent"));
     } catch (error) {
       setEmailSendResult({
         success: false,
         message:
-          error instanceof Error ? error.message : "Chyba pri odosielaní",
+          error instanceof Error ? error.message : t("errors.sendError"),
       });
-      toast.error("Nepodarilo sa odoslať test email");
+      toast.error(t("toasts.testEmailSendError"));
     } finally {
       setIsSendingEmail(false);
     }
@@ -203,7 +221,7 @@ export default function AdminDashboard() {
       !emailFormData.updateTitle ||
       !emailFormData.updateDescription
     ) {
-      toast.error("Vyplňte všetky povinné polia");
+      toast.error(t("toasts.emailMissingRequiredFields"));
       return;
     }
 
@@ -211,14 +229,19 @@ export default function AdminDashboard() {
       (u) => u.title && u.description,
     );
     if (validUpdates.length === 0) {
-      toast.error("Pridajte aspoň jednu aktualizáciu s názvom a popisom");
+      toast.error(t("toasts.emailMissingChanges"));
+      return;
+    }
+
+    if (subscribedUsersCount === 0) {
+      toast.error(t("toasts.noSubscribedUsers"));
       return;
     }
 
     // Confirm before sending to all
     if (
       !confirm(
-        `Naozaj chcete odoslať update email všetkým ${users.length} používateľom?`,
+        t("confirm.sendToAll", { count: subscribedUsersCount }),
       )
     ) {
       return;
@@ -243,7 +266,7 @@ export default function AdminDashboard() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Failed to send emails");
+        throw new Error(result.error || t("errors.failedToSendEmails"));
       }
 
       setEmailSendResult({
@@ -253,14 +276,14 @@ export default function AdminDashboard() {
         failed: result.failed,
         errors: result.errors,
       });
-      toast.success(`Emaily odoslané ${result.sent} používateľom!`);
+      toast.success(t("toasts.emailsSent", { count: result.sent }));
     } catch (error) {
       setEmailSendResult({
         success: false,
         message:
-          error instanceof Error ? error.message : "Chyba pri odosielaní",
+          error instanceof Error ? error.message : t("errors.sendError"),
       });
-      toast.error("Nepodarilo sa odoslať emaily");
+      toast.error(t("toasts.emailsSendError"));
     } finally {
       setIsSendingEmail(false);
     }

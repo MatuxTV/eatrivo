@@ -19,6 +19,7 @@ export async function GET() {
         profileId: userProfiles.id,
         fullName: userProfiles.fullName,
         isProfileComplete: userProfiles.isProfileComplete,
+        isEmailSubscriptionActive: userProfiles.isEmailSubscriptionActive,
       })
       .from(users)
       .leftJoin(userProfiles, eq(users.id, userProfiles.userId))

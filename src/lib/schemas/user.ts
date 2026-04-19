@@ -114,6 +114,7 @@ export const updateUserProfileSchema = z.object({
     .date()
     .max(new Date(), "Dátum narodenia nemôže byť v budúcnosti")
     .optional(),
+  isEmailSubscriptionActive: z.boolean().optional(),
 });
 
 export const userProfileForAIInsightsSchema = z.object({

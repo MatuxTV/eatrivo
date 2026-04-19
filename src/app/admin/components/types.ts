@@ -7,6 +7,7 @@
   fullName: string | null;
   username: string | null;
   isProfileComplete: boolean | null;
+  isEmailSubscriptionActive: boolean | null;
 }
 
 export interface UserInfo {

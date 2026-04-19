@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
         fullName: profile.fullName,
         // username: profile.username,
         isProfileComplete: true,
+        isEmailSubscriptionActive: true,
       })
       .returning();
 

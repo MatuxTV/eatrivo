@@ -1214,6 +1214,15 @@
         },
         "email": {
           "helper": "Email can't be changed because it's linked to your account"
+        },
+        "emailSubscription": {
+          "label": "Email subscription",
+          "toggleTitle": "Product update emails",
+          "helper": "Turn this off if you no longer want feature updates and release emails from Eatrivo.",
+          "status": {
+            "enabled": "Subscribed",
+            "disabled": "Unsubscribed"
+          }
         }
       },
       "membership": {
@@ -1465,6 +1474,43 @@
           "emails": "Emails",
           "notifications": "Notifications"
         },
+        "metadata": {
+          "title": "Admin dashboard",
+          "description": "Admin panel for Eatrivo operations, notifications, analytics, and email updates"
+        },
+        "header": {
+          "title": "Admin Dashboard",
+          "description": "Manage the Eatrivo application",
+          "backHome": "Back to Home",
+          "beta": "Beta",
+          "version": "Version"
+        },
+        "page": {
+          "toasts": {
+            "loadUsersError": "Couldn't load users",
+            "loadUsersNetworkError": "Network error while loading users",
+            "emailMissingTestFields": "Fill in version, update title, and test email",
+            "testEmailSubscriptionRequired": "Test email must belong to a user with an active email subscription",
+            "testEmailSent": "Test email sent successfully",
+            "testEmailSendError": "Couldn't send test email",
+            "emailMissingRequiredFields": "Fill in all required fields",
+            "emailMissingChanges": "Add at least one change with title and description",
+            "noSubscribedUsers": "There are no users with an active email subscription",
+            "emailsSent": "Emails sent to {count} users",
+            "emailsSendError": "Couldn't send emails"
+          },
+          "errors": {
+            "failedToSendEmail": "Failed to send email",
+            "failedToSendEmails": "Failed to send emails",
+            "sendError": "Sending failed"
+          },
+          "results": {
+            "testEmailSent": "Test email sent!"
+          },
+          "confirm": {
+            "sendToAll": "Do you really want to send an update email to all {count} users?"
+          }
+        },
         "userInfoCard": {
           "loading": "Loading user data...",
           "empty": "This user has not filled out nutrition details",
@@ -1565,7 +1611,8 @@
             "changeDescriptionPlaceholder": "Brief description of the change...",
             "testEmail": {
               "label": "Test address",
-              "placeholder": "you@email.com"
+              "placeholder": "you@email.com",
+              "helper": "Only addresses belonging to users with an active email subscription can receive admin update emails."
             }
           },
           "types": {
@@ -1590,13 +1637,202 @@
           "stats": {
             "title": "Email stats",
             "totalUsers": "Total users",
-            "withEmail": "With email"
+            "withEmail": "With email",
+            "activeSubscribers": "Active subscribers"
           },
           "tips": {
             "title": "Email tips",
             "first": "Send a test to your own address first",
             "second": "Use a clear list of changes",
             "third": "Group changes by type (feature/improvement/fix)"
+          }
+        },
+        "notificationsTab": {
+          "sections": {
+            "test": {
+              "title": "Test Push Notifications",
+              "description": "Send a test push notification to a selected user"
+            },
+            "broadcast": {
+              "title": "Broadcast to Everyone",
+              "description": "Send a push notification to all signed-in users as a cron job simulation"
+            },
+            "debug": {
+              "title": "Debug / System Status",
+              "description": "Check VAPID keys, database subscriptions, and send a test notification to yourself"
+            }
+          },
+          "fields": {
+            "user": "User",
+            "userPlaceholder": "Select a user...",
+            "notificationType": "Notification type",
+            "language": "Language",
+            "message": "Message",
+            "broadcastType": "Broadcast type"
+          },
+          "types": {
+            "motivational": {
+              "label": "Motivational notification",
+              "description": "Rotating motivational messages, same schedule as the cron job every 2 days"
+            },
+            "mealPlanReminder": {
+              "label": "Meal plan reminder",
+              "description": "Reminder to create this week's meal plan"
+            }
+          },
+          "languages": {
+            "sk": "Slovak",
+            "en": "English"
+          },
+          "preview": {
+            "title": "Notification preview"
+          },
+          "payloads": {
+            "motivational": {
+              "sk": {
+                "items": {
+                  "1": {
+                    "title": "🍽️ Ako vyzerá tvoj dnešný jedálniček?",
+                    "body": "Pozri sa na svoje jedlá a naplánuj si deň plný energie!"
+                  },
+                  "2": {
+                    "title": "💪 Nezabudni na svoje ciele!",
+                    "body": "Sleduj svoj pokrok a drž sa plánu. Rivo ti pomôže!"
+                  },
+                  "3": {
+                    "title": "🥗 Čas na zdravý návyk!",
+                    "body": "Otvor Eatrivo a pozri si svoje jedlá na dnes."
+                  },
+                  "4": {
+                    "title": "📊 Kontrola výživy",
+                    "body": "Ako sa ti darí s kalorickým príjmom? Skontroluj si to!"
+                  },
+                  "5": {
+                    "title": "🔥 Pokračuj v skvelej práci!",
+                    "body": "Každý deň sa počíta. Otvor si Eatrivo a naplánuj si jedlá."
+                  },
+                  "6": {
+                    "title": "🍎 Tvoje telo ti poďakuje!",
+                    "body": "Sledovanie stravy je kľúč k úspechu. Pokračuj!"
+                  }
+                }
+              },
+              "en": {
+                "items": {
+                  "1": {
+                    "title": "🍽️ What does your menu look like today?",
+                    "body": "Check your meals and plan a day full of energy!"
+                  },
+                  "2": {
+                    "title": "💪 Don't forget your goals!",
+                    "body": "Track your progress and stick to the plan. Rivo will help!"
+                  },
+                  "3": {
+                    "title": "🥗 Time for a healthy habit!",
+                    "body": "Open Eatrivo and check your meals for today."
+                  },
+                  "4": {
+                    "title": "📊 Nutrition check",
+                    "body": "How's your calorie intake going? Check it out!"
+                  },
+                  "5": {
+                    "title": "🔥 Keep up the great work!",
+                    "body": "Every day counts. Open Eatrivo and plan your meals."
+                  },
+                  "6": {
+                    "title": "🍎 Your body will thank you!",
+                    "body": "Tracking your diet is the key to success. Keep going!"
+                  }
+                }
+              }
+            },
+            "mealPlanReminder": {
+              "sk": {
+                "title": "📋 Nový týždeň, nový jedálniček!",
+                "body": "Ešte nemáš jedálny plán na tento týždeň. Nechaj Riva uvariť! 🍳"
+              },
+              "en": {
+                "title": "📋 New week, new meal plan!",
+                "body": "You don't have a meal plan for this week yet. Let Rivo cook! 🍳"
+              }
+            }
+          },
+          "broadcastTypes": {
+            "motivational": "Motivational — send to everyone",
+            "mealReminder": "Meal plan reminder — only for users without a plan this week"
+          },
+          "actions": {
+            "sending": "Sending...",
+            "sendTest": "Send test notification",
+            "broadcasting": "Sending broadcast...",
+            "runBroadcast": "Run broadcast",
+            "refresh": "Refresh",
+            "sendTestToSelf": "Send a test notification to myself"
+          },
+          "results": {
+            "notificationSent": "Notification sent. ({count} devices)",
+            "sendFailed": "Sending failed",
+            "sendError": "Sending error",
+            "broadcastMotivational": "Sent to {successful}/{total} devices",
+            "broadcastMealReminder": "Notified: {notified}, skipped: {skipped}",
+            "broadcastFailed": "Broadcast failed",
+            "networkError": "Network error"
+          },
+          "debug": {
+            "serverStatus": "Server status",
+            "vapidPublicKey": "VAPID public key",
+            "vapidPrivateKey": "VAPID private key",
+            "adminEmail": "ADMIN_EMAIL",
+            "dbSubscriptions": "Subscriptions in DB",
+            "uniqueUsers": "Unique users",
+            "loading": "Loading...",
+            "userSubscriptions": "Subscriptions for a specific user",
+            "deviceCount": "Device count",
+            "device": "Device {index}",
+            "endpoint": "Endpoint",
+            "keys": "Keys",
+            "userAgent": "User-agent",
+            "addedAt": "Added: {date}",
+            "sendToSelfHint": "Sends a notification to your account. You must be signed in and have notifications enabled.",
+            "ok": "OK",
+            "missing": "MISSING",
+            "emptyValue": "-"
+          },
+          "toasts": {
+            "loadDebugStatsError": "Couldn't load debug stats",
+            "loadDebugStatsNetworkError": "Network error while loading debug stats",
+            "loadUserSubsError": "Couldn't load user subscriptions",
+            "loadUserSubsNetworkError": "Network error while loading user subscriptions",
+            "testFailed": "Test failed",
+            "networkError": "Network error",
+            "selectUser": "Select a user",
+            "notificationSent": "Notification sent successfully",
+            "notificationSendError": "Couldn't send notification",
+            "notificationSendNetworkError": "Network error while sending notification",
+            "broadcastSent": "Broadcast sent",
+            "broadcastError": "Broadcast failed",
+            "broadcastNetworkError": "Network error while sending broadcast"
+          }
+        },
+        "analyticsTab": {
+          "hero": {
+            "title": "Admin Analytics",
+            "description": "Active surfaces only: pantry, kitchen counter, chat with Rivo, recipe opens, and custom recipe creation for the last {days} days.",
+            "lastUpdated": "Last refresh: {date}"
+          },
+          "filters": {
+            "rangePlaceholder": "Range",
+            "last7Days": "Last 7 days",
+            "last30Days": "Last 30 days",
+            "last90Days": "Last 90 days"
+          },
+          "actions": {
+            "refresh": "Refresh",
+            "retry": "Try again"
+          },
+          "errors": {
+            "fetchAnalytics": "Failed to fetch analytics",
+            "fetchMessages": "Failed to fetch messages"
           }
         },
         "profilesTab": {

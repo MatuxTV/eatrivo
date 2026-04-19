@@ -10,6 +10,7 @@ export interface UserProfileSnapshot {
   dateOfBirth: string;
   membership: string;
   badges?: string[];
+  isEmailSubscriptionActive: boolean;
 }
 
 export interface UserNutritionSnapshot {

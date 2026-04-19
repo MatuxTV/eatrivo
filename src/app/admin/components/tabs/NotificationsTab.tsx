@@ -17,6 +17,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Bell, Send, CheckCircle2, AlertCircle, Radio, Bug, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useLocale, useTranslations } from "next-intl";
 import type { User as UserType } from "../types";
 
 interface NotificationsTabProps {
@@ -27,88 +28,21 @@ type NotificationType = "motivational" | "meal-plan-reminder";
 
 const NOTIFICATION_TYPES: {
   value: NotificationType;
-  label: string;
-  description: string;
 }[] = [
   {
     value: "motivational",
-    label: "Motivačná notifikácia",
-    description: "Rotujúce motivačné správy (rovnaké ako cron každé 2 dni)",
   },
   {
     value: "meal-plan-reminder",
-    label: "Pripomienka jedálneho plánu",
-    description: "Pripomienka na vytvorenie jedálneho plánu na tento týždeň",
   },
 ];
 
-const MOTIVATIONAL_MESSAGES = {
-  sk: [
-    {
-      title: "🍽️ Ako vyzerá tvoj dnešný jedálniček?",
-      body: "Pozri sa na svoje jedlá a naplánuj si deň plný energie!",
-    },
-    {
-      title: "💪 Nezabudni na svoje ciele!",
-      body: "Sleduj svoj pokrok a drž sa plánu. Rivo ti pomôže!",
-    },
-    {
-      title: "🥗 Čas na zdravý návyk!",
-      body: "Otvor Eatrivo a pozri si svoje jedlá na dnes.",
-    },
-    {
-      title: "📊 Kontrola výživy",
-      body: "Ako sa ti darí s kalorickým príjmom? Skontroluj si to!",
-    },
-    {
-      title: "🔥 Pokračuj v skvelej práci!",
-      body: "Každý deň sa počíta. Otvor si Eatrivo a naplánuj si jedlá.",
-    },
-    {
-      title: "🍎 Tvoje telo ti poďakuje!",
-      body: "Sledovanie stravy je kľúč k úspechu. Pokračuj!",
-    },
-  ],
-  en: [
-    {
-      title: "🍽️ What does your menu look like today?",
-      body: "Check your meals and plan a day full of energy!",
-    },
-    {
-      title: "💪 Don't forget your goals!",
-      body: "Track your progress and stick to the plan. Rivo will help!",
-    },
-    {
-      title: "🥗 Time for a healthy habit!",
-      body: "Open Eatrivo and check your meals for today.",
-    },
-    {
-      title: "📊 Nutrition check",
-      body: "How's your calorie intake going? Check it out!",
-    },
-    {
-      title: "🔥 Keep up the great work!",
-      body: "Every day counts. Open Eatrivo and plan your meals.",
-    },
-    {
-      title: "🍎 Your body will thank you!",
-      body: "Tracking your diet is the key to success. Keep going!",
-    },
-  ],
-};
-
-const MEAL_PLAN_MESSAGES = {
-  sk: {
-    title: "📋 Nový týždeň, nový jedálniček!",
-    body: "Ešte nemáš jedálny plán na tento týždeň. Nechaj Riva uvariť! 🍳",
-  },
-  en: {
-    title: "📋 New week, new meal plan!",
-    body: "You don't have a meal plan for this week yet. Let Rivo cook! 🍳",
-  },
-};
+const MOTIVATIONAL_MESSAGE_COUNT = 6;
 
 export default function NotificationsTab({ users }: NotificationsTabProps) {
+  const t = useTranslations("emails.admin.dashboard.notificationsTab");
+  const tCommon = useTranslations("emails.admin.dashboard.common");
+  const locale = useLocale();
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [notificationType, setNotificationType] =
     useState<NotificationType>("motivational");
@@ -150,9 +84,9 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
       const res = await fetch("/api/push/debug");
       const data = await res.json();
       if (res.ok) setDebugStats(data);
-      else toast.error(data.error || "Failed to load debug stats");
+      else toast.error(data.error || t("toasts.loadDebugStatsError"));
     } catch {
-      toast.error("Network error loading debug stats");
+      toast.error(t("toasts.loadDebugStatsNetworkError"));
     } finally {
       setIsLoadingDebug(false);
     }
@@ -164,9 +98,9 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
       const res = await fetch(`/api/push/debug?userId=${uid}`);
       const data = await res.json();
       if (res.ok) setDebugUserSubs(data);
-      else toast.error(data.error || "Failed to load user subs");
+      else toast.error(data.error || t("toasts.loadUserSubsError"));
     } catch {
-      toast.error("Network error loading user subs");
+      toast.error(t("toasts.loadUserSubsNetworkError"));
     }
   };
 
@@ -178,10 +112,10 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
       if (res.ok && data.success) {
         toast.success(data.message);
       } else {
-        toast.error(data.message || data.error || "Test failed");
+        toast.error(data.message || data.error || t("toasts.testFailed"));
       }
     } catch {
-      toast.error("Network error");
+      toast.error(t("toasts.networkError"));
     } finally {
       setIsSendingTestSelf(false);
     }
@@ -193,19 +127,26 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
 
   const getPayload = () => {
     if (notificationType === "meal-plan-reminder") {
-      const msg = MEAL_PLAN_MESSAGES[selectedLang];
-      return { title: msg.title, body: msg.body, url: "/home" };
+      return {
+        title: t(`payloads.mealPlanReminder.${selectedLang}.title`),
+        body: t(`payloads.mealPlanReminder.${selectedLang}.body`),
+        url: "/home",
+      };
     }
-    const messages = MOTIVATIONAL_MESSAGES[selectedLang];
-    const msg = messages[selectedMessageIndex % messages.length];
-    return { title: msg.title, body: msg.body, url: "/home" };
+    const messageIndex = (selectedMessageIndex % MOTIVATIONAL_MESSAGE_COUNT) + 1;
+
+    return {
+      title: t(`payloads.motivational.${selectedLang}.items.${messageIndex}.title`),
+      body: t(`payloads.motivational.${selectedLang}.items.${messageIndex}.body`),
+      url: "/home",
+    };
   };
 
   const currentPayload = getPayload();
 
   const handleSend = async () => {
     if (!selectedUserId) {
-      toast.error("Vyber používateľa");
+      toast.error(t("toasts.selectUser"));
       return;
     }
 
@@ -227,20 +168,20 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
       if (response.ok && data.success) {
         setSendResult({
           success: true,
-          message: `Notifikácia odoslaná! (${data.sent} zariadení)`,
+          message: t("results.notificationSent", { count: data.sent }),
         });
-        toast.success("Notifikácia bola úspešne odoslaná!");
+        toast.success(t("toasts.notificationSent"));
       } else {
         setSendResult({
           success: false,
-          message: data.error || data.message || "Odoslanie zlyhalo",
+          message: data.error || data.message || t("results.sendFailed"),
         });
-        toast.error(data.error || "Nepodarilo sa odoslať notifikáciu");
+        toast.error(data.error || t("toasts.notificationSendError"));
       }
     } catch (error) {
       console.error("Error sending notification:", error);
-      setSendResult({ success: false, message: "Chyba pri odosielaní" });
-      toast.error("Chyba pri odosielaní notifikácie");
+      setSendResult({ success: false, message: t("results.sendError") });
+      toast.error(t("toasts.notificationSendNetworkError"));
     } finally {
       setIsSending(false);
     }
@@ -259,17 +200,23 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
       if (response.ok && data.success) {
         const detail =
           broadcastType === "motivational"
-            ? `Odoslané ${data.successful}/${data.totalUsers} zariadení`
-            : `Notifikované: ${data.notified}, preskočené: ${data.skipped}`;
+            ? t("results.broadcastMotivational", {
+                successful: data.successful,
+                total: data.totalUsers,
+              })
+            : t("results.broadcastMealReminder", {
+                notified: data.notified,
+                skipped: data.skipped,
+              });
         setBroadcastResult({ success: true, message: detail });
-        toast.success("Broadcast odoslaný!");
+        toast.success(t("toasts.broadcastSent"));
       } else {
-        setBroadcastResult({ success: false, message: data.error || "Broadcast zlyhal" });
-        toast.error("Broadcast zlyhal");
+        setBroadcastResult({ success: false, message: data.error || t("results.broadcastFailed") });
+        toast.error(t("toasts.broadcastError"));
       }
     } catch {
-      setBroadcastResult({ success: false, message: "Chyba siete" });
-      toast.error("Chyba pri odosielaní broadcastu");
+      setBroadcastResult({ success: false, message: t("results.networkError") });
+      toast.error(t("toasts.broadcastNetworkError"));
     } finally {
       setIsBroadcasting(false);
     }
@@ -285,24 +232,24 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-eatrivo-purple/10 flex items-center justify-center text-eatrivo-purple">
             <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          Test Push Notifikácie
+          {t("sections.test.title")}
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          Odošli testovaciu push notifikáciu vybranému používateľovi
+          {t("sections.test.description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0 space-y-5">
         {/* User selection */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Používateľ</Label>
+          <Label className="text-sm font-medium">{t("fields.user")}</Label>
           <Select value={selectedUserId} onValueChange={setSelectedUserId}>
             <SelectTrigger className="bg-white">
-              <SelectValue placeholder="Vyber používateľa..." />
+              <SelectValue placeholder={t("fields.userPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {users.map((user) => (
                 <SelectItem key={user.id} value={user.id}>
-                  {user.fullName || user.name || "Bez mena"} — {user.email}
+                  {user.fullName || user.name || tCommon("noName")} — {user.email}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -311,7 +258,7 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
 
         {/* Notification type */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Typ notifikácie</Label>
+          <Label className="text-sm font-medium">{t("fields.notificationType")}</Label>
           <Select
             value={notificationType}
             onValueChange={(v) => setNotificationType(v as NotificationType)}
@@ -322,22 +269,23 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
             <SelectContent>
               {NOTIFICATION_TYPES.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
-                  {type.label}
+                  {type.value === "motivational"
+                    ? t("types.motivational.label")
+                    : t("types.mealPlanReminder.label")}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <p className="text-xs text-gray-500">
-            {
-              NOTIFICATION_TYPES.find((t) => t.value === notificationType)
-                ?.description
-            }
+            {notificationType === "motivational"
+              ? t("types.motivational.description")
+              : t("types.mealPlanReminder.description")}
           </p>
         </div>
 
         {/* Language */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Jazyk</Label>
+          <Label className="text-sm font-medium">{t("fields.language")}</Label>
           <Select
             value={selectedLang}
             onValueChange={(v) => setSelectedLang(v as "sk" | "en")}
@@ -346,8 +294,8 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="sk">🇸🇰 Slovenčina</SelectItem>
-              <SelectItem value="en">🇬🇧 English</SelectItem>
+              <SelectItem value="sk">🇸🇰 {t("languages.sk")}</SelectItem>
+              <SelectItem value="en">🇬🇧 {t("languages.en")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -355,7 +303,7 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
         {/* Message selector (motivational only) */}
         {notificationType === "motivational" && (
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Správa</Label>
+            <Label className="text-sm font-medium">{t("fields.message")}</Label>
             <Select
               value={String(selectedMessageIndex)}
               onValueChange={(v) => setSelectedMessageIndex(Number(v))}
@@ -364,9 +312,9 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {MOTIVATIONAL_MESSAGES[selectedLang].map((msg, i) => (
+                {Array.from({ length: MOTIVATIONAL_MESSAGE_COUNT }, (_, i) => i + 1).map((itemIndex, i) => (
                   <SelectItem key={i} value={String(i)}>
-                    {msg.title}
+                    {t(`payloads.motivational.${selectedLang}.items.${itemIndex}.title`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -377,7 +325,7 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
         {/* Preview */}
         <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-1">
           <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">
-            Náhľad notifikácie
+            {t("preview.title")}
           </p>
           <p className="text-sm font-semibold text-gray-900">
             {currentPayload.title}
@@ -399,12 +347,12 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
           {isSending ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Odosiela sa...
+              {t("actions.sending")}
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <Send className="w-4 h-4" />
-              Odoslať testovaciu notifikáciu
+              {t("actions.sendTest")}
             </div>
           )}
         </Button>
@@ -436,15 +384,15 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
             <Radio className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          Broadcast na všetkých
+          {t("sections.broadcast.title")}
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          Odošli push notifikáciu všetkým prihláseným používateľom (simulácia cron jobu)
+          {t("sections.broadcast.description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Typ broadcastu</Label>
+          <Label className="text-sm font-medium">{t("fields.broadcastType")}</Label>
           <Select
             value={broadcastType}
             onValueChange={(v) => setBroadcastType(v as "motivational" | "meal-reminder")}
@@ -454,10 +402,10 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="motivational">
-                💪 Motivačná — odošle všetkým
+                💪 {t("broadcastTypes.motivational")}
               </SelectItem>
               <SelectItem value="meal-reminder">
-                📋 Pripomienka plánu — len tým bez plánu tento týždeň
+                📋 {t("broadcastTypes.mealReminder")}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -471,12 +419,12 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
           {isBroadcasting ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Odosiela sa broadcast...
+              {t("actions.broadcasting")}
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <Radio className="w-4 h-4" />
-              Spustiť broadcast
+              {t("actions.runBroadcast")}
             </div>
           )}
         </Button>
@@ -507,17 +455,17 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
             <Bug className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          Debug / Stav systému
+          {t("sections.debug.title")}
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          Skontroluj konfiguráciu VAPID kľúčov, databázové subscriptions a otestuj notifikáciu sebe
+          {t("sections.debug.description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
 
         {/* Env / DB stats */}
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">Stav servera</span>
+          <span className="text-sm font-medium">{t("debug.serverStatus")}</span>
           <Button
             size="sm"
             variant="outline"
@@ -526,46 +474,46 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
             className="h-8 text-xs"
           >
             <RefreshCw className={`w-3 h-3 mr-1 ${isLoadingDebug ? "animate-spin" : ""}`} />
-            Obnoviť
+            {t("actions.refresh")}
           </Button>
         </div>
 
         {debugStats ? (
           <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-2 text-xs font-mono">
             <div className="flex justify-between">
-              <span className="text-gray-500">VAPID public key</span>
+              <span className="text-gray-500">{t("debug.vapidPublicKey")}</span>
               <span className={debugStats.vapidPublicKeyConfigured ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
-                {debugStats.vapidPublicKeyConfigured ? "✅ OK" : "❌ MISSING"}
+                {debugStats.vapidPublicKeyConfigured ? t("debug.ok") : t("debug.missing")}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">VAPID private key</span>
+              <span className="text-gray-500">{t("debug.vapidPrivateKey")}</span>
               <span className={debugStats.vapidPrivateKeyConfigured ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
-                {debugStats.vapidPrivateKeyConfigured ? "✅ OK" : "❌ MISSING"}
+                {debugStats.vapidPrivateKeyConfigured ? t("debug.ok") : t("debug.missing")}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">ADMIN_EMAIL</span>
+              <span className="text-gray-500">{t("debug.adminEmail")}</span>
               <span className={debugStats.adminEmailConfigured ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
-                {debugStats.adminEmailConfigured ? "✅ OK" : "❌ MISSING"}
+                {debugStats.adminEmailConfigured ? t("debug.ok") : t("debug.missing")}
               </span>
             </div>
             <div className="border-t border-gray-100 pt-2 flex justify-between">
-              <span className="text-gray-500">Subscriptions v DB</span>
+              <span className="text-gray-500">{t("debug.dbSubscriptions")}</span>
               <span className="font-semibold text-gray-800">{debugStats.totalSubscriptions}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Unikátnych používateľov</span>
+              <span className="text-gray-500">{t("debug.uniqueUsers")}</span>
               <span className="font-semibold text-gray-800">{debugStats.uniqueUsers}</span>
             </div>
           </div>
         ) : (
-          <div className="text-xs text-gray-400 italic">Načítava sa...</div>
+          <div className="text-xs text-gray-400 italic">{t("debug.loading")}</div>
         )}
 
         {/* Per-user subscription lookup */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Subscriptions konkrétneho používateľa</Label>
+          <Label className="text-sm font-medium">{t("debug.userSubscriptions")}</Label>
           <Select
             value={debugUserId}
             onValueChange={(v) => {
@@ -575,12 +523,12 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
             }}
           >
             <SelectTrigger className="bg-white">
-              <SelectValue placeholder="Vyber používateľa..." />
+              <SelectValue placeholder={t("fields.userPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {users.map((u) => (
                 <SelectItem key={u.id} value={u.id}>
-                  {u.fullName || u.name || "Bez mena"} — {u.email}
+                  {u.fullName || u.name || tCommon("noName")} — {u.email}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -589,27 +537,27 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
           {debugUserSubs && (
             <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-2 text-xs font-mono">
               <div className="flex justify-between">
-                <span className="text-gray-500">Počet zariadení</span>
+                <span className="text-gray-500">{t("debug.deviceCount")}</span>
                 <span className={debugUserSubs.subscriptionCount > 0 ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
                   {debugUserSubs.subscriptionCount}
                 </span>
               </div>
               {debugUserSubs.subscriptions.map((s, i) => (
                 <div key={s.id} className="border-t border-gray-100 pt-2 space-y-1">
-                  <div className="text-gray-400">Zariadenie {i + 1}</div>
+                  <div className="text-gray-400">{t("debug.device", { index: i + 1 })}</div>
                   <div className="flex justify-between gap-2">
-                    <span className="text-gray-500 flex-shrink-0">Endpoint</span>
-                    <span className="text-gray-700 truncate max-w-[60%]">{s.endpoint ?? "—"}</span>
+                    <span className="text-gray-500 flex-shrink-0">{t("debug.endpoint")}</span>
+                    <span className="text-gray-700 truncate max-w-[60%]">{s.endpoint ?? t("debug.emptyValue")}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Kľúče</span>
-                    <span className={s.hasKeys ? "text-green-600" : "text-red-600"}>{s.hasKeys ? "✅" : "❌"}</span>
+                    <span className="text-gray-500">{t("debug.keys")}</span>
+                    <span className={s.hasKeys ? "text-green-600" : "text-red-600"}>{s.hasKeys ? t("debug.ok") : t("debug.missing")}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">User-agent</span>
-                    <span className="text-gray-700 truncate max-w-[60%]">{s.userAgent ?? "—"}</span>
+                    <span className="text-gray-500">{t("debug.userAgent")}</span>
+                    <span className="text-gray-700 truncate max-w-[60%]">{s.userAgent ?? t("debug.emptyValue")}</span>
                   </div>
-                  <div className="text-gray-400">Pridané: {new Date(s.createdAt).toLocaleString("sk-SK")}</div>
+                  <div className="text-gray-400">{t("debug.addedAt", { date: new Date(s.createdAt).toLocaleString(locale === "sk" ? "sk-SK" : "en-GB") })}</div>
                 </div>
               ))}
             </div>
@@ -627,17 +575,17 @@ export default function NotificationsTab({ users }: NotificationsTabProps) {
             {isSendingTestSelf ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin" />
-                Odosiela sa...
+                {t("actions.sending")}
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4" />
-                Odoslať test notifikáciu sebe samému
+                {t("actions.sendTestToSelf")}
               </div>
             )}
           </Button>
           <p className="text-xs text-gray-400 mt-1 text-center">
-            Odošle notifikáciu na tvoj účet — musis byť prihlásený a mať povolené notifikácie
+            {t("debug.sendToSelfHint")}
           </p>
         </div>
 

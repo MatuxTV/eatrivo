@@ -21,8 +21,8 @@ interface UserInfoCardProps {
 }
 
 export default function UserInfoCard({ userInfo, isLoading }: UserInfoCardProps) {
-  const t = useTranslations("admin.dashboard.userInfoCard");
-  const tCommon = useTranslations("admin.dashboard.common");
+  const t = useTranslations("emails.admin.dashboard.userInfoCard");
+  const tCommon = useTranslations("emails.admin.dashboard.common");
 
   if (isLoading) {
     return (

@@ -211,6 +211,7 @@ async function getInitialProfileSectionData(userId: string, email?: string | nul
         : "",
       membership: context.membership || "basic",
       badges: context.badges,
+      isEmailSubscriptionActive: context.userProfile.isEmailSubscriptionActive,
     },
     nutrition,
   };

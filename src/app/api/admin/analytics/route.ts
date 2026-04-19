@@ -274,7 +274,7 @@ export async function GET(req: NextRequest) {
 
       db
         .select({ count: count() })
-        .from(analyticsEvents)
+        .from(recipes)
         .where(
           and(eq(recipes.source, "ai_custom"), gte(recipes.createdAt, rangeStart)),
         ),
@@ -312,7 +312,7 @@ export async function GET(req: NextRequest) {
 
       db
         .select({ count: count() })
-        .from(analyticsEvents)
+          .from(chatMessages)
         .where(
           gte(chatMessages.createdAt, rangeStart),
         ),

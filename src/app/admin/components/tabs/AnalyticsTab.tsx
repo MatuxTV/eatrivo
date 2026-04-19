@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Activity,
   AlertTriangle,
@@ -464,6 +465,8 @@ function MiniBarChart({
 }
 
 export default function AnalyticsTab() {
+  const t = useTranslations("emails.admin.dashboard.analyticsTab");
+  const locale = useLocale();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [rangeDays, setRangeDays] = useState("30");
   const [isLoading, setIsLoading] = useState(true);
@@ -481,7 +484,7 @@ export default function AnalyticsTab() {
         `/api/admin/analytics?rangeDays=${selectedRangeDays}`,
       );
       if (!response.ok) {
-        throw new Error("Failed to fetch analytics");
+        throw new Error(t("errors.fetchAnalytics"));
       }
 
       const result = (await response.json()) as AnalyticsData;
@@ -500,7 +503,7 @@ export default function AnalyticsTab() {
     try {
       const response = await fetch(`/api/admin/chat-analytics?sessionId=${sessionId}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch messages");
+        throw new Error(t("errors.fetchMessages"));
       }
 
       const result = await response.json();
@@ -530,7 +533,7 @@ export default function AnalyticsTab() {
       <div className="rounded-lg bg-red-50 p-6 text-center">
         <p className="text-red-600">{error}</p>
         <Button onClick={() => void fetchAnalytics(rangeDays)} variant="outline" className="mt-4">
-          Skúsiť znova
+          {t("actions.retry")}
         </Button>
       </div>
     );
@@ -548,29 +551,33 @@ export default function AnalyticsTab() {
       <div className="flex flex-col gap-3 rounded-2xl border bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.08),_transparent_42%),linear-gradient(180deg,_#ffffff,_#f8fafc)] p-4 shadow-sm sm:p-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
-            Admin Analytics
+            {t("hero.title")}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Aktivne surfaces only: pantry, kitchen counter, chat with Rivo, recipe opens a custom recipe creation za posledných {data.rangeDays} dní.
+            {t("hero.description", { days: data.rangeDays })}
           </p>
           <p className="mt-2 text-xs text-muted-foreground">
-            Posledné obnovenie: {new Date(data.generatedAt).toLocaleString("sk-SK")}
+            {t("hero.lastUpdated", {
+              date: new Date(data.generatedAt).toLocaleString(
+                locale === "sk" ? "sk-SK" : "en-GB",
+              ),
+            })}
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Select value={rangeDays} onValueChange={setRangeDays}>
             <SelectTrigger className="min-w-36 bg-white">
-              <SelectValue placeholder="Rozsah" />
+              <SelectValue placeholder={t("filters.rangePlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7">Posledných 7 dní</SelectItem>
-              <SelectItem value="30">Posledných 30 dní</SelectItem>
-              <SelectItem value="90">Posledných 90 dní</SelectItem>
+              <SelectItem value="7">{t("filters.last7Days")}</SelectItem>
+              <SelectItem value="30">{t("filters.last30Days")}</SelectItem>
+              <SelectItem value="90">{t("filters.last90Days")}</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={() => void fetchAnalytics(rangeDays)} variant="outline" disabled={isLoading}>
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            Obnoviť
+            {t("actions.refresh")}
           </Button>
         </div>
       </div>

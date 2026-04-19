@@ -274,6 +274,9 @@ export const userProfiles = pgTable("user_profiles", {
   // username: text("username").unique(),
   role: roleEnum("role").default("user").notNull(),
   isProfileComplete: boolean("isProfileComplete").default(false).notNull(),
+  isEmailSubscriptionActive: boolean("isEmailSubscriptionActive")
+    .default(true)
+    .notNull(),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
