@@ -26,6 +26,39 @@ test("resolvePantryTrackingMode treats common spices as availability staples", (
     }),
     "availability",
   );
+
+  assert.equal(
+    resolvePantryTrackingMode({
+      name: "Dried basil",
+      ingredientKey: "basil",
+      ingredientSpecificKey: "dried-basil",
+      quantity: 1,
+      unit: "tbsp",
+    }),
+    "availability",
+  );
+
+  assert.equal(
+    resolvePantryTrackingMode({
+      name: "Chili flake",
+      ingredientKey: "chili-flake",
+      ingredientSpecificKey: "chili-flake",
+      quantity: 0.5,
+      unit: "tsp",
+    }),
+    "availability",
+  );
+
+  assert.equal(
+    resolvePantryTrackingMode({
+      name: "Onion powder",
+      ingredientKey: "onion-powder",
+      ingredientSpecificKey: "onion-powder",
+      quantity: 1,
+      unit: "tsp",
+    }),
+    "availability",
+  );
 });
 
 test("resolvePantryTrackingMode treats condiments and oils as availability staples", () => {

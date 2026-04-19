@@ -778,11 +778,30 @@
         "save": "Save",
         "clearAll": "Clear all",
         "noSelection": "No filter selected",
+        "selectedCount": "{count} filters selected",
         "selectedValue": "Selected: {value}",
+        "loading": "Loading recipes...",
+        "loadMore": "Load 8 more recipes",
+        "loadingMore": "Loading more recipes...",
+        "loadError": "Couldn't load recipes right now",
+        "retry": "Try again",
         "sections": {
           "popular": "Start here",
+          "categories": "Meal type",
           "preferences": "Prefer",
           "special": "Avoid / special"
+        },
+        "categories": {
+          "breakfast": "Breakfast",
+          "lunch": "Lunch",
+          "dinner": "Dinner",
+          "snack": "Snack",
+          "smoothies": "Smoothies",
+          "dessert": "Dessert",
+          "treats": "Treats",
+          "pre-workout-fuel": "Pre-workout fuel",
+          "post-workout-fuel": "Post-workout fuel",
+          "lunch-and-dinner": "Lunch and dinner"
         }
       },
       "toasts": {

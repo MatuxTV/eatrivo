@@ -132,7 +132,7 @@ export function TutorialModal({
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
-                  className="rounded-full border-gray-200 bg-white/90 px-4 text-gray-700"
+                  className="rounded-full border-eatrivo-black-primary/50 bg-eatrivo-white-primary px-4 text-eatrivo-black-primary"
                   onClick={onSkip}
                 >
                   {t("common.actions.skip")}
@@ -140,7 +140,7 @@ export function TutorialModal({
                 {stepIndex > 0 ? (
                   <Button
                     type="button"
-                    variant="ghost"
+                    
                     className="rounded-full px-4 text-eatrivo-purple hover:bg-eatrivo-purple/8 hover:text-eatrivo-purple"
                     onClick={onBack}
                   >

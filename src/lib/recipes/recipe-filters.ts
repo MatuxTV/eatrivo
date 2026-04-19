@@ -2,7 +2,7 @@ import { sql, type SQL } from "drizzle-orm";
 
 import { recipes } from "@/db/schema";
 
-type DietPreference =
+export type DietPreference =
   | "none"
   | "lactosefree"
   | "vegetarian"
@@ -13,7 +13,7 @@ type DietPreference =
   | null
   | undefined;
 
-function jsonArrayContains(column: typeof recipes.dietTags, value: string): SQL {
+export function jsonArrayContains(column: typeof recipes.dietTags, value: string): SQL {
   return sql`${column} @> ${JSON.stringify([value])}::jsonb`;
 }
 

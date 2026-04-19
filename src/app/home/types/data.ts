@@ -33,3 +33,8 @@ export interface BasicHomePantrySummary {
   itemCount: number;
   cookableCount: number;
 }
+
+export interface RecipeBrowseAvailableFilters {
+  categoryKeys: string[];
+  dietTags: string[];
+}

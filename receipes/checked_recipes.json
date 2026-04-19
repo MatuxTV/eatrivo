@@ -1,97 +1,67 @@
 {
   "recipes": [
     {
-      "external_key": "breakfast-oat-fitness-pancakes",
+      "external_key": "dessert-protein-chocolate-cheesecake",
       "default_locale": "sk",
-      "category_key": "breakfast",
+      "category_key": "dessert",
       "diet_tags": [
         "vegetarian",
-        "high-protein"
+        "high-protein",
+        "gluten-free"
       ],
       "restriction_flags": [
         "contains-dairy",
-        "contains-eggs",
-        "contains-gluten"
+        "contains-eggs"
       ],
-      "servings": 3,
-      "prep_time_min": 5,
-      "total_time_min": 20,
+      "servings": 8,
+      "prep_time_min": 10,
+      "total_time_min": 40,
       "nutrition_per_serving": {
-        "calories": 423,
-        "protein_g": 24,
-        "carbohydrates_g": 48,
-        "fat_g": 15
+        "calories": 309,
+        "protein_g": 11,
+        "carbohydrates_g": 19,
+        "fat_g": 21
       },
       "ingredients": [
         {
-          "ingredient_key": "milk",
-          "ingredient_specific_key": "milk",
-          "canonical_name": "milk",
+          "ingredient_key": "greek-yogurt",
+          "ingredient_specific_key": "greek-yogurt",
+          "canonical_name": "greek yogurt",
           "pantry_tracking_hint": "quantity",
-          "quantity": 150,
-          "unit": "ml",
+          "quantity": 400,
+          "unit": "g",
           "optional": false,
           "sort_order": 0,
           "translations": {
             "en": {
-              "display_name": "milk"
+              "display_name": "greek yogurt"
+            },
+            "cs": {
+              "display_name": "řecký jogurt"
             },
             "sk": {
-              "display_name": "mlieko"
+              "display_name": "grécky jogurt"
             }
           }
         },
         {
-          "ingredient_key": "rolled-oat",
-          "ingredient_specific_key": "rolled-oat",
-          "canonical_name": "rolled oat",
+          "ingredient_key": "dark-chocolate",
+          "ingredient_specific_key": "dark-chocolate",
+          "canonical_name": "dark chocolate",
           "pantry_tracking_hint": "quantity",
-          "quantity": 120,
+          "quantity": 300,
           "unit": "g",
           "optional": false,
           "sort_order": 1,
           "translations": {
             "en": {
-              "display_name": "rolled oats"
+              "display_name": "dark chocolate"
+            },
+            "cs": {
+              "display_name": "hořká čokoláda"
             },
             "sk": {
-              "display_name": "ovsené vločky"
-            }
-          }
-        },
-        {
-          "ingredient_key": "banana",
-          "ingredient_specific_key": "banana",
-          "canonical_name": "banana",
-          "pantry_tracking_hint": "quantity",
-          "quantity": 2,
-          "unit": "pc",
-          "optional": false,
-          "sort_order": 2,
-          "translations": {
-            "en": {
-              "display_name": "banana"
-            },
-            "sk": {
-              "display_name": "banán"
-            }
-          }
-        },
-        {
-          "ingredient_key": "protein-powder",
-          "ingredient_specific_key": "protein-powder",
-          "canonical_name": "protein powder",
-          "pantry_tracking_hint": "quantity",
-          "quantity": 30,
-          "unit": "g",
-          "optional": false,
-          "sort_order": 3,
-          "translations": {
-            "en": {
-              "display_name": "protein powder"
-            },
-            "sk": {
-              "display_name": "proteínový prášok"
+              "display_name": "horká čokoláda"
             }
           }
         },
@@ -100,13 +70,16 @@
           "ingredient_specific_key": "egg",
           "canonical_name": "egg",
           "pantry_tracking_hint": "quantity",
-          "quantity": 4,
+          "quantity": 6,
           "unit": "pc",
           "optional": false,
-          "sort_order": 4,
+          "sort_order": 2,
           "translations": {
             "en": {
               "display_name": "egg"
+            },
+            "cs": {
+              "display_name": "vejce"
             },
             "sk": {
               "display_name": "vajce"
@@ -114,100 +87,58 @@
           }
         },
         {
-          "ingredient_key": "olive-oil",
-          "ingredient_specific_key": "olive-oil",
-          "canonical_name": "olive oil",
+          "ingredient_key": "sweetener",
+          "ingredient_specific_key": "sweetener",
+          "canonical_name": "sweetener",
           "pantry_tracking_hint": "availability",
-          "quantity": 1,
-          "unit": "tbsp",
-          "optional": false,
-          "sort_order": 5,
-          "translations": {
-            "en": {
-              "display_name": "olive oil"
-            },
-            "sk": {
-              "display_name": "olivový olej"
-            }
-          }
-        },
-        {
-          "ingredient_key": "strawberry",
-          "ingredient_specific_key": "strawberry",
-          "canonical_name": "strawberry",
-          "pantry_tracking_hint": "quantity",
-          "quantity": 50,
-          "unit": "g",
+          "quantity": 0.5,
+          "unit": "tsp",
           "optional": true,
-          "sort_order": 6,
+          "sort_order": 3,
           "translations": {
             "en": {
-              "display_name": "strawberry"
+              "display_name": "vanilla sweetener"
+            },
+            "cs": {
+              "display_name": "vanilkové sladidlo"
             },
             "sk": {
-              "display_name": "jahoda"
-            }
-          }
-        },
-        {
-          "ingredient_key": "yogurt",
-          "ingredient_specific_key": "yogurt",
-          "canonical_name": "yogurt",
-          "pantry_tracking_hint": "quantity",
-          "quantity": 2,
-          "unit": "tbsp",
-          "optional": true,
-          "sort_order": 7,
-          "translations": {
-            "en": {
-              "display_name": "yogurt"
-            },
-            "sk": {
-              "display_name": "jogurt"
-            }
-          }
-        },
-        {
-          "ingredient_key": "pistachio-butter",
-          "ingredient_specific_key": "pistachio-butter",
-          "canonical_name": "pistachio butter",
-          "pantry_tracking_hint": "quantity",
-          "quantity": 1,
-          "unit": "tbsp",
-          "optional": true,
-          "sort_order": 8,
-          "translations": {
-            "en": {
-              "display_name": "pistachio butter"
-            },
-            "sk": {
-              "display_name": "pistáciové maslo"
+              "display_name": "vanilkové sladidlo"
             }
           }
         }
       ],
       "translations": {
         "en": {
-          "name": "Oatmeal Fitness Pancakes",
-          "category_label": "Breakfast",
+          "name": "High-Protein Chocolate Cheesecake",
+          "category_label": "Dessert",
           "serving_unit_label": "serving",
           "instructions": [
-            "Add milk, eggs, ripe bananas, rolled oats, and protein powder into a blender. Blend thoroughly until you have a smooth pancake batter.",
-            "Heat the olive oil in a pan over medium heat. Pour in small amounts of batter to form pancakes.",
-            "Cook until the edges set and bubbles form on the surface, then flip and cook until golden brown on the other side.",
-            "Serve the pancakes topped with fresh strawberries, a dollop of yogurt, and a drizzle of pistachio butter."
+            "Melt the dark chocolate and mix it thoroughly with the Greek yogurt, eggs, and vanilla sweetener.",
+            "Pour the smooth mixture into a round baking pan.",
+            "Bake in an air fryer at 155 °C for 30 minutes. Let it cool completely before serving."
+          ],
+          "notes": null
+        },
+        "cs": {
+          "name": "Vysokoproteinový čokoládový cheesecake",
+          "category_label": "Dezert",
+          "serving_unit_label": "porce",
+          "instructions": [
+            "Hořkou čokoládu rozpusťte a důkladně ji smíchejte s řeckým jogurtem, vejci a vanilkovým sladidlem.",
+            "Vzniklou hladkou směs nalijte do kulaté formy vhodné pro pečení.",
+            "Pečte v horkovzdušné fritéze (air fryer) 30 minut při teplotě 155 °C. Před podáváním nechte zcela vychladnout."
           ],
           "notes": null
         },
         "sk": {
-          "name": "Ovsené fitness lievance",
-          "category_label": "Raňajky",
+          "name": "Vysokoproteínový čokoládový cheesecake",
+          "category_label": "Dezert",
           "serving_unit_label": "porcia",
           "instructions": [
-            "Do mixéra pridajte mlieko, vajcia, zrelé banány, ovsené vločky a proteínový prášok. Poriadne rozmixujte, kým nevznikne hladké cesto na lievance.",
-            "Na panvici zohrejte olivový olej. Nalejte menšie porcie cesta a vytvarujte lievance.",
-            "Opekajte, kým sa na povrchu nezačnú tvoriť bublinky a okraje nestuhnú. Potom lievance pretočte a opečte dozlatista aj z druhej strany.",
-            "Hotové lievance podávajte ozdobené čerstvými jahodami, jogurtom a pistáciovým maslom."
+            "Horkú čokoládu rozpusťte a dôkladne ju zmiešajte s gréckym jogurtom, vajcami a vanilkovým sladidlom.",
+            "Vzniknutú hladkú zmes nalejte do okrúhlej formy vhodnej na pečenie.",
+            "Pečte v teplovzdušnej fritéze (air fryer) 30 minút pri teplote 155 °C. Pred podávaním nechajte úplne vychladnúť."
           ],
           "notes": null
         }

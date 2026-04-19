@@ -17,6 +17,7 @@ import { buildPantryPromptContext } from "../pantryPromptContext";
 import type { CustomRecipeState } from "../state";
 
 setMaxListeners(30);
+
 const localeNeutralKeySchema = z
   .string()
   .trim()
@@ -66,6 +67,14 @@ const customRecipeProviderNutritionSchema = z.object({
   fatG: z.number().min(0).max(200),
 });
 
+const customRecipeAllowedCategoryKeySchema = z.enum([
+  "breakfast",
+  "lunch",
+  "dinner",
+  "snack",
+  "dessert",
+]);
+
 const customRecipeProviderCandidateSchema = z.object({
   status: z.enum(["available", "unavailable"]),
   reason: z
@@ -77,7 +86,7 @@ const customRecipeProviderCandidateSchema = z.object({
     ])
     .optional(),
   name: z.string().min(1).max(120).optional(),
-  category: z.string().min(1).max(80).optional(),
+  category: customRecipeAllowedCategoryKeySchema.optional(),
   description: z.string().min(1).max(280).optional(),
   dietTags: z.array(localeNeutralKeySchema).max(8).optional(),
   restrictionFlags: z.array(localeNeutralKeySchema).max(12).optional(),
@@ -335,6 +344,9 @@ Hard rules:
 - Respect allergies, dislikes, and diet preference.
 - Keep the recipe realistic and concise.
 - If status is "available", include all required fields: name, category, description, servings, servingUnit, prepTimeMin, totalTimeMin, difficulty, mealPrepFriendly, tags, nutrition, ingredients, instructions.
+  \`category\` field must be exactly one of these locale-neutral keys: breakfast, lunch, dinner, snack, dessert.
+- Never invent category values such as main-course, main-dish, lunch-and-dinner, treats, smoothies, or other freeform labels.
+- \`translations.en.category_label\` and \`translations.sk.category_label\` should be localized display labels, but \`category\` itself must stay one of the allowed keys above.
 - If status is "unavailable", return only status and reason.
 - translations.en and translations.sk are mandatory and are the source of truth for the official persisted recipe.
 - Every available recipe must include locale-neutral dietTags and restrictionFlags arrays in kebab-case. Use [] when none apply.

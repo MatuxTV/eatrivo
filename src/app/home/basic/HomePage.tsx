@@ -14,12 +14,12 @@ import type { CustomRecipeHeroSnapshot } from "../components/RivoCustomRecipeExp
 import type {
   BasicHomePantrySummary,
   BasicHomeRecipePreview,
+  RecipeBrowseAvailableFilters,
 } from "@/app/home/types/data";
 import {
   type AppHomeSection,
   getPrimaryAppHomeSection,
   isHomeSection,
-  isProfileSection
 } from "../types/navigation";
 
 /* ---- Layout shells ---- */
@@ -120,6 +120,9 @@ function readStoredKitchenCounterRecipe(): BasicHomeRecipePreview | null {
 
 interface HomePageProps {
   featuredRecipes?: BasicHomeRecipePreview[];
+  recipeBrowseAvailableFilters?: RecipeBrowseAvailableFilters;
+  initialRecipeHasMore?: boolean;
+  initialRecipeTotalCount?: number;
   pantrySummary?: BasicHomePantrySummary;
   cookableRecipes?: BasicHomeRecipePreview[];
   almostCookableRecipes?: BasicHomeRecipePreview[];
@@ -135,6 +138,9 @@ interface HomePageProps {
 
 export default function HomePage({
   featuredRecipes = [],
+  recipeBrowseAvailableFilters = { categoryKeys: [], dietTags: [] },
+  initialRecipeHasMore = false,
+  initialRecipeTotalCount = featuredRecipes.length,
   pantrySummary = { itemCount: 0, cookableCount: 0 },
   cookableRecipes = [],
   almostCookableRecipes = [],
@@ -175,7 +181,6 @@ export default function HomePage({
 
   /* ---- Recipes state (owned here, passed to RecipesSection) ---- */
 
-  const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const [customRecipeState, setCustomRecipeState] =
     useState<CustomRecipeHeroSnapshot>({
       status: "idle",
@@ -407,14 +412,15 @@ export default function HomePage({
                 ) : (
                   <RecipesSection
                     featuredRecipes={featuredRecipes}
+                    recipeBrowseAvailableFilters={recipeBrowseAvailableFilters}
+                    initialRecipeHasMore={initialRecipeHasMore}
+                    initialRecipeTotalCount={initialRecipeTotalCount}
                     livePantryNames={pantrySync.livePantryNames}
                     livePantrySummary={pantrySync.livePantrySummary}
                     liveCookableRecipes={pantrySync.liveCookableRecipes}
                     liveAlmostCookableRecipes={pantrySync.liveAlmostCookableRecipes}
                     customRecipeState={customRecipeState}
                     onCustomRecipeStateChange={handleCustomRecipeStateChange}
-                    selectedFilter={selectedFilter}
-                    onFilterChange={setSelectedFilter}
                     onOpenPantrySection={openPantrySection}
                     onAddToShoppingList={shopping.handleAddToShoppingList}
                     onCookRecipe={handleCookRecipe}

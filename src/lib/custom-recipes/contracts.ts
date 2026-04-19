@@ -47,6 +47,14 @@ const localeNeutralKeySchema = z
   .max(80)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 
+export const customRecipeAllowedCategoryKeySchema = z.enum([
+  "breakfast",
+  "lunch",
+  "dinner",
+  "snack",
+  "dessert",
+]);
+
 const customRecipeIngredientTranslationSchema = z.object({
   display_name: z.string().trim().min(1).max(120),
 });
@@ -83,7 +91,7 @@ const customRecipeCanonicalIngredientSchema = z.object({
 
 export const customRecipeCanonicalRecipeSchema = z.object({
   default_locale: localeSchema,
-  category_key: localeNeutralKeySchema,
+  category_key: customRecipeAllowedCategoryKeySchema,
   diet_tags: z.array(localeNeutralKeySchema).max(8),
   restriction_flags: z.array(localeNeutralKeySchema).max(12),
   servings: z.number().int().min(1).max(12),
@@ -204,7 +212,7 @@ const customRecipeAvailableAiCandidateSchema = z
   .object({
     status: z.literal("available"),
     name: z.string().min(1).max(120),
-    category: z.string().min(1).max(80),
+    category: customRecipeAllowedCategoryKeySchema,
     description: z.string().min(1).max(280),
     dietTags: z.array(localeNeutralKeySchema).max(8),
     restrictionFlags: z.array(localeNeutralKeySchema).max(12),
@@ -678,14 +686,9 @@ function buildCanonicalRecipe(
   >,
   ingredientItems: CustomRecipeGeneratedRecipe["ingredientItems"],
 ): NonNullable<CustomRecipeGeneratedRecipe["canonicalRecipe"]> {
-  const categoryKey =
-    normalizeLocaleNeutralKey(
-      candidate.translations.en.category_label ?? candidate.category,
-    ) || "custom-recipe";
-
   return customRecipeCanonicalRecipeSchema.parse({
     default_locale: "en",
-    category_key: categoryKey,
+    category_key: candidate.category,
     diet_tags: [...new Set(candidate.dietTags.map(normalizeLocaleNeutralKey).filter(Boolean))],
     restriction_flags: [
       ...new Set(candidate.restrictionFlags.map(normalizeLocaleNeutralKey).filter(Boolean)),

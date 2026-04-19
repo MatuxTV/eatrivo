@@ -41,13 +41,13 @@ test("customRecipeStartRequestSchema defaults to pantry mode", () => {
   assert.equal(parsed.mode, "pantry");
 });
 
-test("customRecipeAiOutputSchema rejects ingredients without explicit unit", () => {
+test("customRecipeAiOutputSchema rejects missing ingredients without explicit unit", () => {
   assert.throws(() =>
     customRecipeAiOutputSchema.parse({
       pantryRecipe: {
         status: "available",
         name: "Oil Pasta",
-        category: "Dinner",
+        category: "dinner",
         description: "Needs proper unit.",
         dietTags: [],
         restrictionFlags: [],
@@ -68,8 +68,8 @@ test("customRecipeAiOutputSchema rejects ingredients without explicit unit", () 
           {
             name: "Olive oil",
             amount: "0,5",
-            pantryStatus: "pantry",
-            pantryMatchName: "Olive oil",
+            pantryStatus: "missing",
+            pantryMatchName: null,
             translations: buildIngredientTranslations("Olive oil"),
           },
         ],
@@ -93,7 +93,7 @@ test("customRecipeAiOutputSchema allows semantically questionable units for late
     almostCookableRecipe: {
       status: "available",
       name: "Pasta al pretlak",
-      category: "Dinner",
+      category: "dinner",
       description: "Wrong unit test.",
       dietTags: [],
       restrictionFlags: [],
@@ -136,7 +136,7 @@ test("customRecipeAiOutputSchema accepts a valid payload", () => {
     pantryRecipe: {
       status: "available",
       name: "Pantry Pasta",
-      category: "Dinner",
+      category: "dinner",
       description: "Fast pantry-friendly pasta.",
       dietTags: [],
       restrictionFlags: [],
@@ -188,7 +188,7 @@ test("customRecipeAiOutputSchema rejects too many missing ingredients", () => {
       almostCookableRecipe: {
         status: "available",
         name: "Almost Soup",
-        category: "Lunch",
+        category: "lunch",
         description: "Needs too many extras.",
         dietTags: [],
         restrictionFlags: [],
@@ -309,7 +309,7 @@ test("mapAiCandidateToGeneratedRecipe enriches pantry keys from pantry context",
     {
       status: "available",
       name: "Steak Bowl",
-      category: "Dinner",
+      category: "dinner",
       description: "Protein bowl from pantry items.",
       dietTags: ["high-protein"],
       restrictionFlags: ["contains-beef"],
@@ -389,7 +389,7 @@ test("mapAiCandidateToGeneratedRecipe flags availability staples from pantry con
     {
       status: "available",
       name: "Pepper Eggs",
-      category: "Breakfast",
+      category: "breakfast",
       description: "Eggs finished with staples.",
       dietTags: ["vegetarian"],
       restrictionFlags: ["contains-eggs"],
@@ -445,6 +445,53 @@ test("mapAiCandidateToGeneratedRecipe flags availability staples from pantry con
   assert.equal(recipe.ingredientItems[0]?.pantryTrackingMode, "availability");
   assert.equal(recipe.ingredientItems[0]?.isAvailabilityStaple, true);
   assert.equal(recipe.matchedIngredients[0]?.isAvailabilityStaple, true);
+});
+
+test("customRecipeAiOutputSchema rejects invented category keys", () => {
+  assert.throws(() =>
+    customRecipeAiOutputSchema.parse({
+      pantryRecipe: {
+        status: "available",
+        name: "Main Dish Pasta",
+        category: "main-course",
+        description: "Invalid category key.",
+        dietTags: [],
+        restrictionFlags: [],
+        servings: 2,
+        servingUnit: null,
+        prepTimeMin: 10,
+        totalTimeMin: 20,
+        difficulty: "easy",
+        mealPrepFriendly: false,
+        tags: ["quick"],
+        nutrition: {
+          calories: 520,
+          proteinG: 24,
+          carbohydratesG: 62,
+          fatG: 18,
+        },
+        ingredients: [
+          {
+            name: "Pasta",
+            amount: "200 g",
+            pantryStatus: "pantry",
+            pantryMatchName: "Pasta",
+            translations: buildIngredientTranslations("Pasta"),
+          },
+        ],
+        instructions: [{ title: "", text: "Cook and serve." }],
+        translations: buildAiTranslations(
+          "Main Dish Pasta",
+          "Dinner",
+          "Invalid category key.",
+        ),
+      },
+      almostCookableRecipe: {
+        status: "unavailable",
+        reason: "INSUFFICIENT_PANTRY",
+      },
+    }),
+  );
 });
 
 test("mapMatchedRecipeToSuggestion separates quantity and staple matches", () => {

@@ -31,6 +31,11 @@ import {
   customRecipeLatestResultResponseSchema,
   customRecipeStreamEventSchema,
 } from "@/lib/custom-recipes/contracts";
+import {
+  getRecipeCategoryGradient,
+  normalizeRecipeCategoryKey,
+  type CanonicalRecipeCategoryKey,
+} from "@/lib/recipes/category-keys";
 import type { RecipeIngredientItem } from "@/lib/recipes/recipe-ingredients";
 import type { RecipeInstruction } from "@/lib/recipes/recipe-instructions";
 import { Button } from "@/components/ui/button";
@@ -230,7 +235,7 @@ const CUSTOM_RECIPE_ACCEPT_ENDPOINT = "/api/recipes/custom/accept";
 const CUSTOM_RECIPE_LATEST_ENDPOINT = "/api/recipes/custom/latest";
 const CUSTOM_RECIPE_MOCK_STORAGE_KEY = "eatrivo:customRecipeMock";
 const CUSTOM_RECIPE_STATE_STORAGE_KEY = "eatrivo:customRecipeState";
-const DEFAULT_CATEGORY_KEY = "lunch-and-dinner";
+const DEFAULT_CATEGORY_KEY: CanonicalRecipeCategoryKey = "dinner";
 const DEFAULT_REQUEST_PREFERENCES: CustomRecipeRequestPreferences = {
   servings: 2,
   mealType: "dinner",
@@ -247,22 +252,6 @@ interface PersistedCustomRecipeState {
   status: Exclude<CustomRecipeGenerationStatus, "generating">;
   rawResultPayload: CustomRecipeApiResultPayload | null;
   error: string | null;
-}
-
-function getCategoryGradient(categoryKey: string): string {
-  switch (categoryKey) {
-    case "breakfast":
-      return "from-amber-500 via-orange-500 to-rose-500";
-    case "lunch":
-    case "lunch-and-dinner":
-      return "from-emerald-500 via-teal-500 to-cyan-500";
-    case "dinner":
-      return "from-indigo-500 via-violet-500 to-fuchsia-500";
-    case "smoothies":
-      return "from-pink-500 via-rose-500 to-orange-400";
-    default:
-      return "from-purple-600 via-fuchsia-500 to-pink-500";
-  }
 }
 
 function delay(ms: number): Promise<void> {
@@ -514,7 +503,7 @@ function adaptGeneratedRecipe(
     slug: toSlug(recipe.name) || fallbackId,
     title: recipe.name,
     category: recipe.category,
-    categoryKey: DEFAULT_CATEGORY_KEY,
+    categoryKey: normalizeRecipeCategoryKey(recipe.category, DEFAULT_CATEGORY_KEY),
     servings: recipe.servings,
     totalTimeMin: recipe.totalTimeMin,
     calories: recipe.calories,
@@ -573,7 +562,10 @@ function adaptSuggestionRecipe(
     slug: recipe.slug,
     title: recipe.name,
     category: recipe.category,
-    categoryKey: recipe.categoryKey || DEFAULT_CATEGORY_KEY,
+    categoryKey: normalizeRecipeCategoryKey(
+      recipe.categoryKey || recipe.category,
+      DEFAULT_CATEGORY_KEY,
+    ),
     servings: recipe.servings,
     totalTimeMin: recipe.totalTimeMin,
     calories: recipe.calories,
@@ -1595,9 +1587,9 @@ const RivoCustomRecipeExperience = forwardRef<
     bookmarkedRecipeId,
     isBookmarked,
     isBookmarkPending,
-    locale,
     persistGeneratedRecipeForBookmark,
     replaceRecipeReference,
+    t,
     triggerHaptic,
   ]);
 
@@ -2227,7 +2219,7 @@ const RivoCustomRecipeExperience = forwardRef<
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 >
                   <div
-                    className={`relative mx-4 overflow-hidden rounded-[1.5rem] bg-gradient-to-br ${getCategoryGradient(activeDialogRecipe.categoryKey)} p-6 text-white sm:p-8`}
+                    className={`relative mx-4 overflow-hidden rounded-[1.5rem] bg-gradient-to-br ${getRecipeCategoryGradient(activeDialogRecipe.categoryKey)} p-6 text-white sm:p-8`}
                   >
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.3),transparent_45%)]" />
                     <div className="relative z-10 space-y-4">

@@ -4,16 +4,17 @@
       "external_key": "dinner-authentic-italian-lasagne",
       "default_locale": "sk",
       "category_key": "dinner",
-      "diet_tags": ["high-protein"],
+      "diet_tags": [
+        "high-protein"
+      ],
       "restriction_flags": [
         "contains-gluten",
         "contains-dairy",
         "contains-eggs"
       ],
-          "ingredient_key": "ground-fenugreek",
+      "servings": 4,
       "prep_time_min": 50,
       "total_time_min": 130,
-          "pantry_tracking_hint": "availability",
       "nutrition_per_serving": {
         "calories": 672,
         "protein_g": 32,
@@ -23,7 +24,6 @@
       "ingredients": [
         {
           "ingredient_key": "minced-meat",
-          "pantry_tracking_hint": "availability",
           "ingredient_specific_key": "minced-meat",
           "canonical_name": "minced meat",
           "quantity": 600,
@@ -78,8 +78,8 @@
           "ingredient_specific_key": "olive-oil",
           "canonical_name": "olive oil",
           "pantry_tracking_hint": "availability",
-          "quantity": 4,
-          "unit": "tbsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 3,
           "translations": {
@@ -130,8 +130,8 @@
           "ingredient_specific_key": "garlic",
           "canonical_name": "garlic",
           "pantry_tracking_hint": "availability",
-          "quantity": 3,
-          "unit": "pc",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 6,
           "translations": {
@@ -183,6 +183,7 @@
           "ingredient_key": "sweet-paprika",
           "ingredient_specific_key": "sweet-paprika",
           "canonical_name": "sweet paprika",
+          "pantry_tracking_hint": "availability",
           "quantity": null,
           "unit": null,
           "optional": true,
@@ -200,6 +201,7 @@
           "ingredient_key": "basil",
           "ingredient_specific_key": "basil",
           "canonical_name": "basil",
+          "pantry_tracking_hint": "availability",
           "quantity": null,
           "unit": null,
           "optional": true,
@@ -404,8 +406,13 @@
       "external_key": "dinner-baked-chicken-risotto",
       "default_locale": "sk",
       "category_key": "dinner",
-      "diet_tags": ["high-protein", "gluten-free"],
-      "restriction_flags": ["contains-dairy"],
+      "diet_tags": [
+        "high-protein",
+        "gluten-free"
+      ],
+      "restriction_flags": [
+        "contains-dairy"
+      ],
       "servings": 6,
       "prep_time_min": 10,
       "total_time_min": 45,
@@ -506,8 +513,8 @@
           "ingredient_specific_key": "garlic",
           "canonical_name": "garlic",
           "pantry_tracking_hint": "availability",
-          "quantity": 2,
-          "unit": "pc",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 5,
           "translations": {
@@ -524,8 +531,8 @@
           "ingredient_specific_key": "oil",
           "canonical_name": "oil",
           "pantry_tracking_hint": "availability",
-          "quantity": 2,
-          "unit": "tbsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 6,
           "translations": {
@@ -541,8 +548,9 @@
           "ingredient_key": "paprika",
           "ingredient_specific_key": "paprika",
           "canonical_name": "paprika",
-          "quantity": 1,
-          "unit": "tsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 7,
           "translations": {
@@ -559,8 +567,8 @@
           "ingredient_specific_key": "salt",
           "canonical_name": "salt",
           "pantry_tracking_hint": "availability",
-          "quantity": 1,
-          "unit": "tsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 8,
           "translations": {
@@ -577,8 +585,8 @@
           "ingredient_specific_key": "black-pepper",
           "canonical_name": "black pepper",
           "pantry_tracking_hint": "availability",
-          "quantity": 0.5,
-          "unit": "tsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 9,
           "translations": {
@@ -644,8 +652,15 @@
       "external_key": "spanish-zucchini-tortilla",
       "default_locale": "en",
       "category_key": "breakfast",
-      "diet_tags": ["gluten-free", "dairy-free", "vegetarian", "high-protein"],
-      "restriction_flags": ["contains-eggs"],
+      "diet_tags": [
+        "gluten-free",
+        "dairy-free",
+        "vegetarian",
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-eggs"
+      ],
       "servings": 2,
       "prep_time_min": 10,
       "total_time_min": 35,
@@ -661,8 +676,8 @@
           "ingredient_specific_key": "olive-oil",
           "canonical_name": "olive oil",
           "pantry_tracking_hint": "availability",
-          "quantity": 1,
-          "unit": "tbsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 0,
           "translations": {
@@ -777,8 +792,16 @@
       "external_key": "breakfast-egg-muffins-with-tomato-basil-and-spinach",
       "default_locale": "en",
       "category_key": "breakfast",
-      "diet_tags": ["vegetarian", "gluten-free", "high-protein", "low-carb"],
-      "restriction_flags": ["contains-eggs", "contains-dairy"],
+      "diet_tags": [
+        "vegetarian",
+        "gluten-free",
+        "high-protein",
+        "low-carb"
+      ],
+      "restriction_flags": [
+        "contains-eggs",
+        "contains-dairy"
+      ],
       "servings": 3,
       "prep_time_min": 15,
       "total_time_min": 35,
@@ -828,8 +851,8 @@
           "ingredient_specific_key": "garlic",
           "canonical_name": "garlic",
           "pantry_tracking_hint": "availability",
-          "quantity": 2,
-          "unit": "pc",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 2,
           "translations": {
@@ -845,8 +868,9 @@
           "ingredient_key": "basil",
           "ingredient_specific_key": "dried-basil",
           "canonical_name": "basil",
-          "quantity": 1,
-          "unit": "tbsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 3,
           "translations": {
@@ -863,8 +887,8 @@
           "ingredient_specific_key": "salt",
           "canonical_name": "salt",
           "pantry_tracking_hint": "availability",
-          "quantity": 0.25,
-          "unit": "tsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 4,
           "translations": {
@@ -881,8 +905,8 @@
           "ingredient_specific_key": "black-pepper",
           "canonical_name": "pepper",
           "pantry_tracking_hint": "availability",
-          "quantity": 0.25,
-          "unit": "tsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 5,
           "translations": {
@@ -1000,8 +1024,14 @@
       "external_key": "dinner-spaghetti-puttanesca",
       "default_locale": "sk",
       "category_key": "dinner",
-      "diet_tags": ["pescatarian", "dairy-free"],
-      "restriction_flags": ["contains-fish", "contains-gluten"],
+      "diet_tags": [
+        "pescatarian",
+        "dairy-free"
+      ],
+      "restriction_flags": [
+        "contains-fish",
+        "contains-gluten"
+      ],
       "servings": 4,
       "prep_time_min": 15,
       "total_time_min": 35,
@@ -1017,8 +1047,8 @@
           "ingredient_specific_key": "olive-oil",
           "canonical_name": "olive oil",
           "pantry_tracking_hint": "availability",
-          "quantity": 3,
-          "unit": "tbsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 0,
           "translations": {
@@ -1052,8 +1082,8 @@
           "ingredient_specific_key": "garlic",
           "canonical_name": "garlic",
           "pantry_tracking_hint": "availability",
-          "quantity": 2,
-          "unit": "pc",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 2,
           "translations": {
@@ -1069,8 +1099,9 @@
           "ingredient_key": "chili-flake",
           "ingredient_specific_key": "chili-flake",
           "canonical_name": "chili flake",
-          "quantity": 0.5,
-          "unit": "tsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": true,
           "sort_order": 3,
           "translations": {
@@ -1215,8 +1246,13 @@
       "external_key": "dinner-marry-me-chicken",
       "default_locale": "sk",
       "category_key": "dinner",
-      "diet_tags": ["high-protein"],
-      "restriction_flags": ["contains-dairy", "contains-gluten"],
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-gluten"
+      ],
       "servings": 4,
       "prep_time_min": 20,
       "total_time_min": 65,
@@ -1317,8 +1353,8 @@
           "ingredient_specific_key": "garlic",
           "canonical_name": "garlic",
           "pantry_tracking_hint": "availability",
-          "quantity": 3,
-          "unit": "pc",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 5,
           "translations": {
@@ -1334,8 +1370,9 @@
           "ingredient_key": "chili-flake",
           "ingredient_specific_key": "chili-flake",
           "canonical_name": "chili flake",
-          "quantity": 0.5,
-          "unit": "tsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 6,
           "translations": {
@@ -1351,8 +1388,9 @@
           "ingredient_key": "thyme",
           "ingredient_specific_key": "thyme",
           "canonical_name": "thyme",
-          "quantity": 1,
-          "unit": "tsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 7,
           "translations": {
@@ -1482,8 +1520,13 @@
       "external_key": "dinner-best-spaghetti-bolognese",
       "default_locale": "sk",
       "category_key": "dinner",
-      "diet_tags": ["high-protein"],
-      "restriction_flags": ["contains-dairy", "contains-gluten"],
+      "diet_tags": [
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-gluten"
+      ],
       "servings": 6,
       "prep_time_min": 25,
       "total_time_min": 135,
@@ -1499,8 +1542,8 @@
           "ingredient_specific_key": "olive-oil",
           "canonical_name": "olive oil",
           "pantry_tracking_hint": "availability",
-          "quantity": 1,
-          "unit": "tbsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 0,
           "translations": {
@@ -1585,8 +1628,8 @@
           "ingredient_specific_key": "garlic",
           "canonical_name": "garlic",
           "pantry_tracking_hint": "availability",
-          "quantity": 2,
-          "unit": "pc",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 5,
           "translations": {
@@ -1670,8 +1713,9 @@
           "ingredient_key": "oregano",
           "ingredient_specific_key": "oregano",
           "canonical_name": "oregano",
-          "quantity": 1,
-          "unit": "tsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 10,
           "translations": {
@@ -1687,8 +1731,9 @@
           "ingredient_key": "bay-leaf",
           "ingredient_specific_key": "bay-leaf",
           "canonical_name": "bay leaf",
-          "quantity": 2,
-          "unit": "pc",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 11,
           "translations": {
@@ -1875,7 +1920,7 @@
       },
       "meal_prep_friendly": true
     },
-     {
+    {
       "external_key": "dinner-vegan-ramen",
       "default_locale": "sk",
       "category_key": "dinner",
@@ -1905,8 +1950,8 @@
           "ingredient_specific_key": "garlic",
           "canonical_name": "garlic",
           "pantry_tracking_hint": "availability",
-          "quantity": 2,
-          "unit": "pc",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 0,
           "translations": {
@@ -2008,8 +2053,8 @@
           "ingredient_specific_key": "soy-sauce",
           "canonical_name": "soy sauce",
           "pantry_tracking_hint": "availability",
-          "quantity": 2,
-          "unit": "tbsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 6,
           "translations": {
@@ -2161,6 +2206,7 @@
           "ingredient_key": "sesame-oil",
           "ingredient_specific_key": "sesame-oil",
           "canonical_name": "sesame oil",
+          "pantry_tracking_hint": "availability",
           "quantity": null,
           "unit": null,
           "optional": true,
@@ -2178,6 +2224,7 @@
           "ingredient_key": "sriracha",
           "ingredient_specific_key": "sriracha",
           "canonical_name": "sriracha",
+          "pantry_tracking_hint": "availability",
           "quantity": null,
           "unit": null,
           "optional": true,
@@ -2195,6 +2242,7 @@
           "ingredient_key": "coriander",
           "ingredient_specific_key": "coriander",
           "canonical_name": "coriander",
+          "pantry_tracking_hint": "availability",
           "quantity": null,
           "unit": null,
           "optional": true,
@@ -2212,6 +2260,7 @@
           "ingredient_key": "peanut",
           "ingredient_specific_key": "peanut",
           "canonical_name": "peanut",
+          "pantry_tracking_hint": "availability",
           "quantity": null,
           "unit": null,
           "optional": true,
@@ -2229,6 +2278,7 @@
           "ingredient_key": "nori",
           "ingredient_specific_key": "nori",
           "canonical_name": "nori",
+          "pantry_tracking_hint": "availability",
           "quantity": null,
           "unit": null,
           "optional": true,
@@ -2243,19 +2293,20 @@
           }
         },
         {
-          "ingredient_key": "chili-thread",
-          "ingredient_specific_key": "chili-thread",
-          "canonical_name": "chili thread",
+          "ingredient_key": "chili",
+          "ingredient_specific_key": "chili",
+          "canonical_name": "chili",
+          "pantry_tracking_hint": "availability",
           "quantity": null,
           "unit": null,
           "optional": true,
           "sort_order": 20,
           "translations": {
             "en": {
-              "display_name": "chili thread"
+              "display_name": "chili"
             },
             "sk": {
-              "display_name": "čili vlákno"
+              "display_name": "čili "
             }
           }
         }
@@ -2302,148 +2353,148 @@
       ],
       "servings": 2,
       "prep_time_min": 5,
-        "total_time_min": 30,
-        "nutrition_per_serving": {
-          "calories": 324,
-          "protein_g": 11,
-          "carbohydrates_g": 49,
-          "fat_g": 9
-        },
-        "ingredients": [
-          {
-            "ingredient_key": "wheat-flour",
-            "ingredient_specific_key": "wheat-flour",
-            "canonical_name": "wheat flour",
-            "quantity": 125,
-            "unit": "g",
-            "optional": false,
-            "sort_order": 0,
-            "translations": {
-              "en": {
-                "display_name": "wheat flour"
-              },
-              "sk": {
-                "display_name": "hladká múka"
-              }
-            }
-          },
-          {
-            "ingredient_key": "vegan-egg-replacer",
-            "ingredient_specific_key": "vegan-egg-replacer",
-            "canonical_name": "vegan egg replacer",
-            "quantity": 1,
-            "unit": "pc",
-            "optional": false,
-            "sort_order": 1,
-            "translations": {
-              "en": {
-                "display_name": "vegan egg replacer"
-              },
-              "sk": {
-                "display_name": "vegánska náhrada vajca"
-              }
-            }
-          },
-          {
-            "ingredient_key": "plant-milk",
-            "ingredient_specific_key": "plant-milk",
-            "canonical_name": "plant milk",
-            "quantity": 250,
-            "unit": "ml",
-            "optional": false,
-            "sort_order": 2,
-            "translations": {
-              "en": {
-                "display_name": "plant milk"
-              },
-              "sk": {
-                "display_name": "rastlinné mlieko"
-              }
-            }
-          },
-          {
-            "ingredient_key": "sunflower-oil",
-            "ingredient_specific_key": "sunflower-oil",
-            "canonical_name": "sunflower oil",
-            "pantry_tracking_hint": "availability",
-            "quantity": null,
-            "unit": null,
-            "optional": false,
-            "sort_order": 3,
-            "translations": {
-              "en": {
-                "display_name": "sunflower oil"
-              },
-              "sk": {
-                "display_name": "slnečnicový olej"
-              }
-            }
-          },
-          {
-            "ingredient_key": "orange",
-            "ingredient_specific_key": "orange",
-            "canonical_name": "orange",
-            "quantity": null,
-            "unit": null,
-            "optional": true,
-            "sort_order": 4,
-            "translations": {
-              "en": {
-                "display_name": "orange"
-              },
-              "sk": {
-                "display_name": "pomaranč"
-              }
-            }
-          },
-          {
-            "ingredient_key": "agave-syrup",
-            "ingredient_specific_key": "agave-syrup",
-            "canonical_name": "agave syrup",
-            "quantity": null,
-            "unit": null,
-            "optional": true,
-            "sort_order": 5,
-            "translations": {
-              "en": {
-                "display_name": "agave syrup"
-              },
-              "sk": {
-                "display_name": "agávový sirup"
-              }
-            }
-          }
-        ],
-        "translations": {
-          "en": {
-            "name": "Vegan Crepes",
-            "category_label": "Breakfast",
-            "serving_unit_label": "serving",
-            "instructions": [
-              "Put the flour in a bowl and make a well in the centre. Pour in the egg replacement and a quarter of the milk.",
-              "Use an electric whisk to thoroughly combine the mixture, then beat in another quarter of the milk. Once lump free, mix in the remaining milk. Leave to rest for 20 mins. Stir again before using.",
-              "Heat a small non-stick frying pan with a splash of oil. When hot, pour a small amount of the mixture into the pan and swirl around to coat the base - you want a thin layer.",
-              "Cook for a few mins until golden brown on the bottom, then turn over and cook until golden on the other side. Repeat until you have used all the mixture, stirring the mixture between pancakes and adding more oil to the frying pan as necessary.",
-              "Serve with an orange wedge and a drizzle of agave syrup or filling of your choice."
-            ],
-            "notes": "Will keep refrigerated in a covered container for up to 2 days. Give it a good whisk before using."
-          },
-          "sk": {
-            "name": "Vegánske palacinky",
-            "category_label": "Raňajky",
-            "serving_unit_label": "porcia",
-            "instructions": [
-              "Do misky nasypte múku a v strede urobte jamku. Nalejte do nej náhradu vajca a štvrtinu rastlinného mlieka.",
-              "Pomocou elektrického šľahača zmes dôkladne premiešajte, potom zašľahajte ďalšiu štvrtinu mlieka. Keď je cesto bez hrudiek, primiešajte zvyšné mlieko. Nechajte 20 minút odpočívať. Pred použitím znova premiešajte.",
-              "Na malej nepriľnavej panvici zohrejte trochu oleja. Keď je panvica horúca, nalejte do nej malé množstvo cesta a krúžením ho rozlejte po celom dne - vrstva by mala byť tenká.",
-              "Opekajte niekoľko minút, kým spodná strana nie je zlatohnedá, potom obráťte a opekajte dozlatista aj z druhej strany. Postup opakujte, kým neminiete všetko cesto. Medzi jednotlivými palacinkami cesto premiešajte a podľa potreby pridajte do panvice viac oleja.",
-              "Podávajte s mesiačikmi pomaranča a pokvapkané agávovým sirupom alebo s vašou obľúbenou plnkou."
-            ],
-            "notes": "Cesto vydrží v chladničke v uzavretej nádobe až 2 dni. Pred použitím ho dobre premiešajte."
-          }
-        },
-        "meal_prep_friendly": false
+      "total_time_min": 30,
+      "nutrition_per_serving": {
+        "calories": 324,
+        "protein_g": 11,
+        "carbohydrates_g": 49,
+        "fat_g": 9
       },
+      "ingredients": [
+        {
+          "ingredient_key": "wheat-flour",
+          "ingredient_specific_key": "wheat-flour",
+          "canonical_name": "wheat flour",
+          "quantity": 125,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "wheat flour"
+            },
+            "sk": {
+              "display_name": "hladká múka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vegan-egg-replacer",
+          "ingredient_specific_key": "vegan-egg-replacer",
+          "canonical_name": "vegan egg replacer",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "vegan egg replacer"
+            },
+            "sk": {
+              "display_name": "vegánska náhrada vajca"
+            }
+          }
+        },
+        {
+          "ingredient_key": "plant-milk",
+          "ingredient_specific_key": "plant-milk",
+          "canonical_name": "plant milk",
+          "quantity": 250,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "plant milk"
+            },
+            "sk": {
+              "display_name": "rastlinné mlieko"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sunflower-oil",
+          "ingredient_specific_key": "sunflower-oil",
+          "canonical_name": "sunflower oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "sunflower oil"
+            },
+            "sk": {
+              "display_name": "slnečnicový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "orange",
+          "ingredient_specific_key": "orange",
+          "canonical_name": "orange",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "orange"
+            },
+            "sk": {
+              "display_name": "pomaranč"
+            }
+          }
+        },
+        {
+          "ingredient_key": "agave-syrup",
+          "ingredient_specific_key": "agave-syrup",
+          "canonical_name": "agave syrup",
+          "quantity": null,
+          "unit": null,
+          "optional": true,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "agave syrup"
+            },
+            "sk": {
+              "display_name": "agávový sirup"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Vegan Crepes",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Put the flour in a bowl and make a well in the centre. Pour in the egg replacement and a quarter of the milk.",
+            "Use an electric whisk to thoroughly combine the mixture, then beat in another quarter of the milk. Once lump free, mix in the remaining milk. Leave to rest for 20 mins. Stir again before using.",
+            "Heat a small non-stick frying pan with a splash of oil. When hot, pour a small amount of the mixture into the pan and swirl around to coat the base - you want a thin layer.",
+            "Cook for a few mins until golden brown on the bottom, then turn over and cook until golden on the other side. Repeat until you have used all the mixture, stirring the mixture between pancakes and adding more oil to the frying pan as necessary.",
+            "Serve with an orange wedge and a drizzle of agave syrup or filling of your choice."
+          ],
+          "notes": "Will keep refrigerated in a covered container for up to 2 days. Give it a good whisk before using."
+        },
+        "sk": {
+          "name": "Vegánske palacinky",
+          "category_label": "Raňajky",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Do misky nasypte múku a v strede urobte jamku. Nalejte do nej náhradu vajca a štvrtinu rastlinného mlieka.",
+            "Pomocou elektrického šľahača zmes dôkladne premiešajte, potom zašľahajte ďalšiu štvrtinu mlieka. Keď je cesto bez hrudiek, primiešajte zvyšné mlieko. Nechajte 20 minút odpočívať. Pred použitím znova premiešajte.",
+            "Na malej nepriľnavej panvici zohrejte trochu oleja. Keď je panvica horúca, nalejte do nej malé množstvo cesta a krúžením ho rozlejte po celom dne - vrstva by mala byť tenká.",
+            "Opekajte niekoľko minút, kým spodná strana nie je zlatohnedá, potom obráťte a opekajte dozlatista aj z druhej strany. Postup opakujte, kým neminiete všetko cesto. Medzi jednotlivými palacinkami cesto premiešajte a podľa potreby pridajte do panvice viac oleja.",
+            "Podávajte s mesiačikmi pomaranča a pokvapkané agávovým sirupom alebo s vašou obľúbenou plnkou."
+          ],
+          "notes": "Cesto vydrží v chladničke v uzavretej nádobe až 2 dni. Pred použitím ho dobre premiešajte."
+        }
+      },
+      "meal_prep_friendly": false
+    },
     {
       "external_key": "dinner-chilli-con-carne",
       "default_locale": "sk",
@@ -2503,8 +2554,8 @@
           "ingredient_specific_key": "garlic",
           "canonical_name": "garlic",
           "pantry_tracking_hint": "availability",
-          "quantity": 2,
-          "unit": "pc",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 2,
           "translations": {
@@ -2521,8 +2572,8 @@
           "ingredient_specific_key": "oil",
           "canonical_name": "oil",
           "pantry_tracking_hint": "availability",
-          "quantity": 1,
-          "unit": "tbsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 3,
           "translations": {
@@ -2538,8 +2589,9 @@
           "ingredient_key": "chili-powder",
           "ingredient_specific_key": "chili-powder",
           "canonical_name": "chili powder",
-          "quantity": 1,
-          "unit": "tsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 4,
           "translations": {
@@ -2555,8 +2607,9 @@
           "ingredient_key": "paprika",
           "ingredient_specific_key": "paprika",
           "canonical_name": "paprika",
-          "quantity": 1,
-          "unit": "tsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 5,
           "translations": {
@@ -2572,8 +2625,9 @@
           "ingredient_key": "cumin",
           "ingredient_specific_key": "cumin",
           "canonical_name": "cumin",
-          "quantity": 1,
-          "unit": "tsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 6,
           "translations": {
@@ -2967,8 +3021,8 @@
           "ingredient_specific_key": "garlic",
           "canonical_name": "garlic",
           "pantry_tracking_hint": "availability",
-          "quantity": 2,
-          "unit": "pc",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 6,
           "translations": {
@@ -3056,8 +3110,7 @@
       },
       "meal_prep_friendly": true
     },
-     
-   {
+    {
       "external_key": "dinner-easy-butter-chicken",
       "default_locale": "sk",
       "category_key": "dinner",
@@ -3116,8 +3169,9 @@
           "ingredient_key": "cumin",
           "ingredient_specific_key": "cumin",
           "canonical_name": "cumin",
-          "quantity": 2,
-          "unit": "tsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 2,
           "translations": {
@@ -3133,8 +3187,9 @@
           "ingredient_key": "paprika",
           "ingredient_specific_key": "paprika",
           "canonical_name": "paprika",
-          "quantity": 2,
-          "unit": "tsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 3,
           "translations": {
@@ -3150,8 +3205,9 @@
           "ingredient_key": "chili-powder",
           "ingredient_specific_key": "chili-powder",
           "canonical_name": "chili powder",
-          "quantity": 1.5,
-          "unit": "tsp",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 4,
           "translations": {
@@ -3219,8 +3275,8 @@
           "ingredient_specific_key": "garlic",
           "canonical_name": "garlic",
           "pantry_tracking_hint": "availability",
-          "quantity": 3,
-          "unit": "pc",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 8,
           "translations": {
@@ -3698,8 +3754,8 @@
           "ingredient_specific_key": "oil",
           "canonical_name": "oil",
           "pantry_tracking_hint": "availability",
-          "quantity": 1,
-          "unit": "tsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 2,
           "translations": {
@@ -3870,8 +3926,8 @@
           "ingredient_specific_key": "garlic",
           "canonical_name": "garlic",
           "pantry_tracking_hint": "availability",
-          "quantity": 2,
-          "unit": "pc",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 2,
           "translations": {
@@ -3888,8 +3944,8 @@
           "ingredient_specific_key": "olive-oil",
           "canonical_name": "olive oil",
           "pantry_tracking_hint": "availability",
-          "quantity": 1,
-          "unit": "tbsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 3,
           "translations": {
@@ -3906,8 +3962,8 @@
           "ingredient_specific_key": "ground-paprika",
           "canonical_name": "ground paprika",
           "pantry_tracking_hint": "availability",
-          "quantity": 1,
-          "unit": "tbsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 4,
           "translations": {
@@ -3924,8 +3980,8 @@
           "ingredient_specific_key": "garlic-powder",
           "canonical_name": "garlic powder",
           "pantry_tracking_hint": "availability",
-          "quantity": 1,
-          "unit": "tsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 5,
           "translations": {
@@ -3942,8 +3998,8 @@
           "ingredient_specific_key": "onion-powder",
           "canonical_name": "onion powder",
           "pantry_tracking_hint": "availability",
-          "quantity": 1,
-          "unit": "tsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 6,
           "translations": {
@@ -3960,8 +4016,8 @@
           "ingredient_specific_key": "salt",
           "canonical_name": "salt",
           "pantry_tracking_hint": "availability",
-          "quantity": 1,
-          "unit": "tsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 7,
           "translations": {
@@ -3978,8 +4034,8 @@
           "ingredient_specific_key": "black-pepper",
           "canonical_name": "black pepper",
           "pantry_tracking_hint": "availability",
-          "quantity": 0.5,
-          "unit": "tsp",
+          "quantity": null,
+          "unit": null,
           "optional": false,
           "sort_order": 8,
           "translations": {
@@ -4108,6 +4164,220 @@
             "Prilejte hovädzí vývar a mlieko. Pridajte surové cestoviny a dobre premiešajte. Priveďte do jemného varu.",
             "Znížte teplotu na minimum, prikryte pokrievkou a duste asi 15 minút, alebo kým nie sú cestoviny uvarené a tekutina takmer úplne vsiaknutá. Občas premiešajte, aby sa cestoviny nepripálili o dno.",
             "Odstavte z ohňa a vmiešajte nastrúhaný čedar, kým sa úplne nerozpustí a omáčka nebude krémová. Pred podávaním nechajte 5 minút odstáť."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "breakfast-oat-fitness-pancakes",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "vegetarian",
+        "high-protein"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-eggs",
+        "contains-gluten"
+      ],
+      "servings": 3,
+      "prep_time_min": 5,
+      "total_time_min": 20,
+      "nutrition_per_serving": {
+        "calories": 423,
+        "protein_g": 24,
+        "carbohydrates_g": 48,
+        "fat_g": 15
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "milk",
+          "ingredient_specific_key": "milk",
+          "canonical_name": "milk",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 150,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "milk"
+            },
+            "sk": {
+              "display_name": "mlieko"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rolled-oat",
+          "ingredient_specific_key": "rolled-oat",
+          "canonical_name": "rolled oat",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 120,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "rolled oats"
+            },
+            "sk": {
+              "display_name": "ovsené vločky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "banana",
+          "ingredient_specific_key": "banana",
+          "canonical_name": "banana",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "banana"
+            },
+            "sk": {
+              "display_name": "banán"
+            }
+          }
+        },
+        {
+          "ingredient_key": "protein-powder",
+          "ingredient_specific_key": "protein-powder",
+          "canonical_name": "protein powder",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 30,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "protein powder"
+            },
+            "sk": {
+              "display_name": "proteínový prášok"
+            }
+          }
+        },
+        {
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 4,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "egg"
+            },
+            "sk": {
+              "display_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "olive-oil",
+          "ingredient_specific_key": "olive-oil",
+          "canonical_name": "olive oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": null,
+          "unit": null,
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "olive oil"
+            },
+            "sk": {
+              "display_name": "olivový olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "strawberry",
+          "ingredient_specific_key": "strawberry",
+          "canonical_name": "strawberry",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 50,
+          "unit": "g",
+          "optional": true,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "strawberry"
+            },
+            "sk": {
+              "display_name": "jahoda"
+            }
+          }
+        },
+        {
+          "ingredient_key": "yogurt",
+          "ingredient_specific_key": "yogurt",
+          "canonical_name": "yogurt",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": true,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "yogurt"
+            },
+            "sk": {
+              "display_name": "jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "pistachio-butter",
+          "ingredient_specific_key": "pistachio-butter",
+          "canonical_name": "pistachio butter",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": true,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "pistachio butter"
+            },
+            "sk": {
+              "display_name": "pistáciové maslo"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Oatmeal Fitness Pancakes",
+          "category_label": "Breakfast",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Add milk, eggs, ripe bananas, rolled oats, and protein powder into a blender. Blend thoroughly until you have a smooth pancake batter.",
+            "Heat the olive oil in a pan over medium heat. Pour in small amounts of batter to form pancakes.",
+            "Cook until the edges set and bubbles form on the surface, then flip and cook until golden brown on the other side.",
+            "Serve the pancakes topped with fresh strawberries, a dollop of yogurt, and a drizzle of pistachio butter."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Ovsené fitness lievance",
+          "category_label": "Raňajky",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Do mixéra pridajte mlieko, vajcia, zrelé banány, ovsené vločky a proteínový prášok. Poriadne rozmixujte, kým nevznikne hladké cesto na lievance.",
+            "Na panvici zohrejte olivový olej. Nalejte menšie porcie cesta a vytvarujte lievance.",
+            "Opekajte, kým sa na povrchu nezačnú tvoriť bublinky a okraje nestuhnú. Potom lievance pretočte a opečte dozlatista aj z druhej strany.",
+            "Hotové lievance podávajte ozdobené čerstvými jahodami, jogurtom a pistáciovým maslom."
           ],
           "notes": null
         }

@@ -222,8 +222,7 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
             <Button
               type="button"
               onClick={() => setIsOpen(false)}
-              variant="outline"
-              className="flex-1 h-11 border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+              className="flex-1 h-11 bg-eatrivo-white-primary border-eatrivo-black-secondary/30 border-2 text-eatrivo-black-primary hover:bg-gray-50 hover:text-gray-900"
               disabled={isSubmitting}
             >
               <X className="w-4 h-4 mr-2" />

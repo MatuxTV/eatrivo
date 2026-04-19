@@ -778,11 +778,30 @@
         "save": "Uložiť",
         "clearAll": "Vymazať",
         "noSelection": "Bez vybraného filtra",
+        "selectedCount": "Vybrané filtre: {count}",
         "selectedValue": "Vybrané: {value}",
+        "loading": "Načítavam recepty...",
+        "loadMore": "Načítať ďalších 8 receptov",
+        "loadingMore": "Načítavam ďalšie recepty...",
+        "loadError": "Nepodarilo sa načítať recepty",
+        "retry": "Skúsiť znova",
         "sections": {
           "popular": "Začni tu",
+          "categories": "Typ jedla",
           "preferences": "Preferuj",
           "special": "Vyhni sa / špeciálne"
+        },
+        "categories": {
+          "breakfast": "Raňajky",
+          "lunch": "Obed",
+          "dinner": "Večera",
+          "snack": "Snack",
+          "smoothies": "Smoothies",
+          "dessert": "Dezerty",
+          "treats": "Maškrty",
+          "pre-workout-fuel": "Pred tréningom",
+          "post-workout-fuel": "Po tréningu",
+          "lunch-and-dinner": "Obed aj večera"
         }
       },
       "toasts": {
