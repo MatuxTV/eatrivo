@@ -1,10 +1,10 @@
 import { resend, DEFAULT_FROM_EMAIL } from "./resend";
 import { getMessages } from "next-intl/server";
-import WelcomeEmail from "../components/email-templates/WelcomeEmail";
-import ShoppingListNotificationEmail from "../components/email-templates/ShoppingListNotificationEmail";
-import AdminNotificationEmail from "../components/email-templates/AdminNotificationEmail";
-import FeedbackNotificationEmail from "../components/email-templates/FeedbackNotificationEmail";
-import RenewalReminderEmail from "../components/email-templates/RenewalReminderEmail";
+import WelcomeEmail from "../../components/email-templates/WelcomeEmail";
+import ShoppingListNotificationEmail from "../../components/email-templates/ShoppingListNotificationEmail";
+import AdminNotificationEmail from "../../components/email-templates/AdminNotificationEmail";
+import FeedbackNotificationEmail from "../../components/email-templates/FeedbackNotificationEmail";
+import RenewalReminderEmail from "../../components/email-templates/RenewalReminderEmail";
 import type {
   WelcomeEmailProps,
   ShoppingListNotificationEmailProps,

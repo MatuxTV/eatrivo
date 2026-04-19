@@ -2,7 +2,7 @@ import { db } from "@/index";
 import { userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
-import { getUserContext } from "@/lib/user-context-cache";
+import { getUserContext } from "@/lib/user/user-context-cache";
 import type { ShoppingListState } from "../state";
 
 const REQUIRED_FIELDS = [

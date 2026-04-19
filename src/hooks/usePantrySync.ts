@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { logger } from "@/lib/logger";
 import { useLocale } from "next-intl";
-import { normalizeRecipeInstructions } from "@/lib/recipe-instructions";
+import { normalizeRecipeInstructions } from "@/lib/recipes/recipe-instructions";
 import type {
   BasicHomePantrySummary,
   BasicHomeRecipePreview,

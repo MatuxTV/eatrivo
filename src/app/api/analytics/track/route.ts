@@ -9,8 +9,8 @@ import {
   isClientAnalyticsEvent,
   MAX_ANALYTICS_METADATA_BYTES,
   sanitizeAnalyticsMetadata,
-} from "@/lib/analytics-events";
-import { captureServerAnalyticsEvent } from "@/lib/analytics-server";
+} from "@/lib/analytics/analytics-events";
+import { captureServerAnalyticsEvent } from "@/lib/analytics/analytics-server";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {

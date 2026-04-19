@@ -9,30 +9,30 @@ import {
   recipeTranslations,
   userInfoTable,
 } from "@/db/schema";
-import { getDietFilterCondition } from "@/lib/recipe-filters";
+import { getDietFilterCondition } from "@/lib/recipes/recipe-filters";
 import {
   resolveIngredientDisplayName,
   normalizeRecipeLocale,
   resolveIngredientTranslation,
   resolveRecipeTranslation,
-} from "@/lib/recipe-localization";
+} from "@/lib/recipes/recipe-localization";
 import {
   normalizeRecipeInstructions,
   type RecipeInstruction,
-} from "@/lib/recipe-instructions";
+} from "@/lib/recipes/recipe-instructions";
 import {
   formatRecipeIngredientAmount,
   type RecipeIngredientItem,
-} from "@/lib/recipe-ingredients";
+} from "@/lib/recipes/recipe-ingredients";
 import {
   buildRecipeIngredientPantryComparison,
   type RecipeIngredientPantryComparison,
-} from "@/lib/recipe-quantity-comparison";
-import { guessFoodCategory } from "@/lib/units";
+} from "@/lib/recipes/recipe-quantity-comparison";
+import { guessFoodCategory } from "@/lib/ingredients/units";
 import {
   isLessSpecificIngredientMatch,
   pantryKeySatisfiesRecipeKey,
-} from "@/lib/ingredient-family";
+} from "@/lib/ingredients/ingredient-family";
 
 export interface RecipeMatchOptions {
   maxMissingIngredients?: number;

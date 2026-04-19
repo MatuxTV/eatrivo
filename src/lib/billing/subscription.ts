@@ -1,7 +1,7 @@
 import { db } from "@/index";
 import { users, subscriptions, userProfiles, badges } from "@/db/schema";
 import { eq, and, lt, or } from "drizzle-orm";
-import { invalidateUserContextCaches } from "@/lib/user-context-cache";
+import { invalidateUserContextCaches } from "@/lib/user/user-context-cache";
 
 // Trial period configuration
 export const TRIAL_PERIODS = {

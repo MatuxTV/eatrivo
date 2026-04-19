@@ -1,5 +1,5 @@
-import { getOwnedChatSession, getAuthenticatedChatContext } from "@/lib/chat-auth";
-import { getOwnedChatMessages } from "@/lib/chat-history";
+import { getOwnedChatSession, getAuthenticatedChatContext } from "@/lib/chat/chat-auth";
+import { getOwnedChatMessages } from "@/lib/chat/chat-history";
 
 export async function GET(
   _req: Request,

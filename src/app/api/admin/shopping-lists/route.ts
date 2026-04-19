@@ -1,10 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
+import { requireAdminAuth, isAuthError } from "@/lib/auth/adminAuth";
 import { db } from '@/index';
 import { shoppingLists, userProfiles, pushSubscriptions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { CacheService } from '@/lib/redis';
+import { CacheService } from '@/lib/cache/redis';
 import { apiLogger } from '@/lib/logger';
 import webpush from 'web-push';
 

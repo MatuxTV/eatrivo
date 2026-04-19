@@ -5,7 +5,7 @@ import ProfileSetup from "./ProfileSetup";
 import FoodPreferences from "./FoodPreferences";
 import type { UserProfileOnboarding, UserFoodPreferences } from "../../../lib/schemas/user";
 import type { OnboardingConsents } from "./FoodPreferences";
-import { trackClientEvent } from "@/lib/analytics-client";
+import { trackClientEvent } from "@/lib/analytics/analytics-client";
 import { logger } from "@/lib/logger";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";

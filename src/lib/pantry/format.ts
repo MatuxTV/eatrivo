@@ -1,6 +1,6 @@
-import { formatNumber } from "@/lib/formatters";
-import { localizeUnitLabel } from "@/lib/unit-localization";
-import { normalizeUnit } from "@/lib/units";
+import { formatNumber } from "@/lib/utils/formatters";
+import { localizeUnitLabel } from "@/lib/ingredients/unit-localization";
+import { normalizeUnit } from "@/lib/ingredients/units";
 
 interface FormatLocalizedAmountLabelOptions {
   maximumFractionDigits?: number;

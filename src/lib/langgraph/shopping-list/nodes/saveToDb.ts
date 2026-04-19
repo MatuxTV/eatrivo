@@ -1,12 +1,12 @@
 import { db } from "@/index";
 import { shoppingLists, shoppingListItems, mealPlans, aiInsights } from "@/db/schema";
 import { apiLogger } from "@/lib/logger";
-import { CacheService } from "@/lib/redis";
-import { Analytics } from "@/lib/analytics";
+import { CacheService } from "@/lib/cache/redis";
+import { Analytics } from "@/lib/analytics/analytics";
 import { EatrivoAIService } from "@/lib/langchain";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { normalizeShoppingListAmount } from "@/lib/pantry/shopping-list-amount";
-import { guessFoodCategory } from "@/lib/units";
+import { guessFoodCategory } from "@/lib/ingredients/units";
 import type { ShoppingListState } from "../state";
 
 export async function saveToDb(

@@ -36,6 +36,37 @@ const RivoCustomRecipeExperience = dynamic(
     ssr: false,
   },
 );
+
+const HeroCardSkeleton = () => (
+  <div className="relative mb-6 overflow-hidden rounded-[1.75rem] border border-gray-100 bg-white shadow-sm sm:mb-8 xl:min-h-[380px]">
+    <div className="relative flex h-full min-h-[300px] w-full flex-col bg-white text-gray-900 sm:min-h-[360px] animate-pulse p-6 sm:p-8">
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="h-4 sm:h-5 w-24 rounded-full bg-emerald-50" />
+          <div className="h-8 sm:h-12 w-3/4 rounded-xl bg-gray-100" />
+        </div>
+        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-[1.1rem] sm:rounded-[1.4rem] bg-gray-100 shrink-0" />
+      </div>
+      <div className="flex gap-4 mb-6 mt-2">
+        <div className="h-4 w-16 rounded bg-gray-100" />
+        <div className="h-4 w-16 rounded bg-gray-100" />
+        <div className="h-4 w-20 rounded bg-gray-100" />
+      </div>
+      <div className="h-px w-full bg-gray-50 mb-6" />
+      <div className="flex flex-1 flex-col justify-between gap-6">
+        <div className="flex justify-center">
+          <div className="h-28 w-28 sm:h-36 sm:w-36 lg:h-44 lg:w-44 rounded-full bg-gray-100 border-[8px] border-gray-50" />
+        </div>
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="h-20 sm:h-24 rounded-[1.1rem] sm:rounded-[1.35rem] bg-gray-50" />
+          <div className="h-20 sm:h-24 rounded-[1.1rem] sm:rounded-[1.35rem] bg-gray-50" />
+          <div className="h-20 sm:h-24 rounded-[1.1rem] sm:rounded-[1.35rem] bg-gray-50" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const RecipeBrowserDialog = dynamic(() => import("./RecipeBrowserDialog"), {
   ssr: false,
 });
@@ -458,6 +489,26 @@ export default function RecipesSection({
   }, [onOpenPantrySection]);
 
   /* ---- render ---- */
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <motion.div
+        data-tutorial-anchor="home-recipes-section"
+        key="home-recipes"
+        initial={{ opacity: 0, y: 16, scale: 0.992 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -12, scale: 0.992 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <HeroCardSkeleton />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

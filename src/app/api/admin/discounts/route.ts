@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth } from "@/../auth";
-import { createDiscountCoupon, stripe } from "@/lib/stripe";
+import { createDiscountCoupon, stripe } from "@/lib/billing/stripe";
 import { db } from "@/index";
 import { userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";

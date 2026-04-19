@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { LogOut, User, DiamondPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getMembershipStatus } from "@/lib/functions";
+import { getMembershipStatus } from "@/lib/utils/functions";
 import { useSession } from "next-auth/react";
 import { UserBadge } from "@/components/ui/UserBadge";
 import type { AppHomeSection } from "../types/navigation";

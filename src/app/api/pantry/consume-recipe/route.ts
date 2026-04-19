@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { auth } from "../../../../../auth";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent } from "@/lib/analytics/analytics";
 import { apiLogger } from "@/lib/logger";
 import { consumeRecipeFromPantry } from "@/lib/pantry/consumption";
 import { getUserProfileByUserId } from "@/lib/pantry/restock";

@@ -7,8 +7,8 @@ import {
   getStoredAnalyticsEventName,
   sanitizeAnalyticsMetadata,
   type AnalyticsEventName,
-} from "@/lib/analytics-events";
-import type { TrackEventParams } from "@/lib/analytics-types";
+} from "@/lib/analytics/analytics-events";
+import type { TrackEventParams } from "@/lib/analytics/analytics-types";
 
 function getPostHogEndpoint() {
   const host = process.env.NEXT_PUBLIC_POSTHOG_HOST?.trim();

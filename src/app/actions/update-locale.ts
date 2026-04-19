@@ -11,7 +11,7 @@ import {
   LOCALE_COOKIE_MAX_AGE,
   type Locale,
 } from "@/i18n/routing";
-import { invalidateUserContextCaches } from "@/lib/user-context-cache";
+import { invalidateUserContextCaches } from "@/lib/user/user-context-cache";
 
 /**
  * Update the user's locale preference.

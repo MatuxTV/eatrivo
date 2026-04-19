@@ -1,5 +1,5 @@
-import type { RecipeIngredientItem } from "@/lib/recipe-ingredients";
-import type { RecipeInstruction } from "@/lib/recipe-instructions";
+import type { RecipeIngredientItem } from "@/lib/recipes/recipe-ingredients";
+import type { RecipeInstruction } from "@/lib/recipes/recipe-instructions";
 
 export interface BasicHomeRecipePreview {
   id: string;

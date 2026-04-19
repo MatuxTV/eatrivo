@@ -34,7 +34,7 @@ import {
   userFoodPreferencesSchema,
   type UserFoodPreferences,
 } from "@/lib/schemas/user";
-import { trackClientEvent } from "@/lib/analytics-client";
+import { trackClientEvent } from "@/lib/analytics/analytics-client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Utensils,

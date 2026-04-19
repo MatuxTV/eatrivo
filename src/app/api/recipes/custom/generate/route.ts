@@ -19,13 +19,14 @@ import {
 import { db } from "@/lib/db/pool";
 import { buildCustomRecipeGraph } from "@/lib/langgraph/custom-recipe";
 import {
+  CUSTOM_RECIPE_GRAPH_RECURSION_LIMIT,
   INITIAL_PROGRESS,
   NODE_PROGRESS,
 } from "@/lib/langgraph/custom-recipe/constants";
 import type { CustomRecipeState } from "@/lib/langgraph/custom-recipe/state";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent } from "@/lib/analytics/analytics";
 import { apiLogger } from "@/lib/logger";
-import { RequestLock } from "@/lib/redis";
+import { RequestLock } from "@/lib/cache/redis";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
@@ -268,7 +269,10 @@ export async function POST(request: NextRequest) {
               requestedMealType: parsedBody.data.mealType,
               requestedMealPrep: parsedBody.data.mealPrep,
             },
-            { streamMode: "updates" },
+            {
+              streamMode: "updates",
+              recursionLimit: CUSTOM_RECIPE_GRAPH_RECURSION_LIMIT,
+            },
           );
 
           for await (const update of stream) {

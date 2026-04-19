@@ -31,8 +31,8 @@ import {
   customRecipeLatestResultResponseSchema,
   customRecipeStreamEventSchema,
 } from "@/lib/custom-recipes/contracts";
-import type { RecipeIngredientItem } from "@/lib/recipe-ingredients";
-import type { RecipeInstruction } from "@/lib/recipe-instructions";
+import type { RecipeIngredientItem } from "@/lib/recipes/recipe-ingredients";
+import type { RecipeInstruction } from "@/lib/recipes/recipe-instructions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -1577,21 +1577,15 @@ const RivoCustomRecipeExperience = forwardRef<
 
       setIsBookmarked(!previousBookmarked);
       toast.success(
-        locale === "sk"
-          ? previousBookmarked
-            ? "Recept bol odstranený zo záložiek."
-            : "Recept bol uložený do záložiek."
-          : previousBookmarked
-            ? "Recipe removed from bookmarks."
-            : "Recipe saved to bookmarks.",
+        t(
+          previousBookmarked
+            ? "basic.recipeDialog.bookmarkRemoved"
+            : "basic.recipeDialog.bookmarkSaved",
+        ),
       );
     } catch (bookmarkError) {
       setIsBookmarked(previousBookmarked);
-      toast.error(
-        locale === "sk"
-          ? "Záložku sa nepodarilo uložiť."
-          : "Could not update bookmark.",
-      );
+      toast.error(t("basic.recipeDialog.bookmarkError"));
       console.error("[CustomRecipe] bookmark toggle failed", bookmarkError);
     } finally {
       setIsBookmarkPending(false);
@@ -2459,6 +2453,10 @@ const RivoCustomRecipeExperience = forwardRef<
                             category: null,
                             available: true,
                             matchType: ingredient.matchType,
+                            isStaple:
+                              ingredientByName.get(
+                                ingredient.recipeIngredientName.trim().toLowerCase(),
+                              )?.pantryComparison?.status === "available-staple",
                             tone: resolveTone(
                               ingredient.recipeIngredientName,
                               true,
@@ -2479,6 +2477,8 @@ const RivoCustomRecipeExperience = forwardRef<
                                 category: null,
                                 available: true,
                                 matchType: "exact" as const,
+                                isStaple:
+                                  ingredient.pantryComparison?.status === "available-staple",
                                 tone: resolveTone(ingredient.name, true, "exact"),
                               }))
                             : [];
@@ -2494,6 +2494,7 @@ const RivoCustomRecipeExperience = forwardRef<
                               )?.category ?? null,
                             available: false,
                             matchType: "exact" as const,
+                            isStaple: false,
                             tone: "red" as const,
                           }),
                         );
@@ -2527,7 +2528,7 @@ const RivoCustomRecipeExperience = forwardRef<
                                       : "bg-red-50/60 ring-red-200/50"
                                 }`}
                               >
-                                {ingredient.available ? (
+                                {ingredient.available && !ingredient.isStaple ? (
                                   <div
                                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full shadow-sm ${
                                       ingredient.tone === "orange"
@@ -2555,7 +2556,9 @@ const RivoCustomRecipeExperience = forwardRef<
                                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-all active:scale-90 ${
                                       selectedMissingIngredients.has(ingredient.name)
                                         ? "bg-gray-200"
-                                        : "bg-red-500 shadow-sm shadow-red-200 hover:bg-red-600"
+                                        : ingredient.isStaple
+                                          ? "bg-eatrivo-green shadow-sm shadow-green-200 hover:bg-green-600"
+                                          : "bg-red-500 shadow-sm shadow-red-200 hover:bg-red-600"
                                     }`}
                                     title={t("basic.recipeDialog.addToShoppingList")}
                                   >
@@ -2587,7 +2590,7 @@ const RivoCustomRecipeExperience = forwardRef<
                                     ) : null}
                                   </div>
                                   {ingredient.amount ? (
-                                    <span className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500 ring-1 ring-gray-200/70">
+                                    <span className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-gray-500 ring-1 ring-gray-200/70">
                                       {ingredient.amount}
                                     </span>
                                   ) : null}

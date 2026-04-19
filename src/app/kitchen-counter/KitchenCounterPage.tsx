@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   AlertTriangle,
   Check,
@@ -26,7 +26,10 @@ import {
 } from "@/components/ui/dialog";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import AppShellViewport from "@/app/home/components/AppShellViewport";
+import type { PantryItem } from "@/hooks/usePantry";
+import { pantryKeySatisfiesRecipeKey } from "@/lib/ingredients/ingredient-family";
 import { logger } from "@/lib/logger";
+import { buildRecipeIngredientPantryComparison } from "@/lib/recipes/recipe-quantity-comparison";
 import { toast } from "sonner";
 
 const PANTRY_CHANGED_EVENT = "pantry:changed";
@@ -48,29 +51,119 @@ type KitchenCounterStep = {
   text: string;
 };
 
+function normalizeLookup(value: string | null | undefined) {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function buildMatchedPantryNameMap(recipe: BasicHomeRecipePreview) {
+  const matchedNameMap = new Map<string, Set<string>>();
+
+  for (const match of recipe.matchedIngredients ?? []) {
+    const recipeIngredientName = normalizeLookup(match.recipeIngredientName);
+    const pantryIngredientName = normalizeLookup(match.pantryIngredientName);
+
+    if (!recipeIngredientName || !pantryIngredientName) {
+      continue;
+    }
+
+    const existing = matchedNameMap.get(recipeIngredientName);
+    if (existing) {
+      existing.add(pantryIngredientName);
+      continue;
+    }
+
+    matchedNameMap.set(recipeIngredientName, new Set([pantryIngredientName]));
+  }
+
+  return matchedNameMap;
+}
+
+function pantryRowMatchesIngredient(
+  row: PantryItem,
+  ingredient: BasicHomeRecipePreview["ingredientItems"][number],
+  pantryNameTargets: Set<string> | undefined,
+) {
+  if (
+    ingredient.ingredientSpecificKey &&
+    row.ingredientSpecificKey === ingredient.ingredientSpecificKey
+  ) {
+    return true;
+  }
+
+  if (
+    ingredient.ingredientKey &&
+    ((row.ingredientSpecificKey &&
+      pantryKeySatisfiesRecipeKey(row.ingredientSpecificKey, ingredient.ingredientKey)) ||
+      (row.ingredientKey &&
+        pantryKeySatisfiesRecipeKey(row.ingredientKey, ingredient.ingredientKey)))
+  ) {
+    return true;
+  }
+
+  if (!pantryNameTargets || pantryNameTargets.size === 0) {
+    return false;
+  }
+
+  return (
+    pantryNameTargets.has(normalizeLookup(row.ingredientName)) ||
+    pantryNameTargets.has(normalizeLookup(row.name))
+  );
+}
+
+function resolveCurrentPantryComparison(
+  recipe: BasicHomeRecipePreview,
+  ingredient: BasicHomeRecipePreview["ingredientItems"][number],
+  pantryItems: PantryItem[] | null,
+  locale: string,
+) {
+  if (!pantryItems) {
+    return ingredient.pantryComparison ?? null;
+  }
+
+  const matchedPantryNames = buildMatchedPantryNameMap(recipe);
+  const pantryNameTargets = matchedPantryNames.get(normalizeLookup(ingredient.name));
+  const matchedRows = pantryItems.filter((row) =>
+    pantryRowMatchesIngredient(row, ingredient, pantryNameTargets),
+  );
+
+  if (
+    matchedRows.length === 0 &&
+    ingredient.amount === null &&
+    ingredient.pantryComparison?.status === "available-staple"
+  ) {
+    return ingredient.pantryComparison;
+  }
+
+  return buildRecipeIngredientPantryComparison(
+    ingredient.quantityValue,
+    ingredient.unit,
+    matchedRows.map((row) => ({
+      trackingMode: row.trackingMode,
+      inStock: row.inStock,
+      quantity: row.quantity,
+      unit: row.unit,
+    })),
+    locale,
+  );
+}
+
 function buildKitchenCounterIngredients(
   recipe: BasicHomeRecipePreview,
+  pantryItems: PantryItem[] | null,
+  locale: string,
   t: ReturnType<typeof useTranslations>,
 ): KitchenCounterIngredient[] {
   if (recipe.ingredientItems && recipe.ingredientItems.length > 0) {
     return recipe.ingredientItems.map((ingredient) => {
-      const comparison = ingredient.pantryComparison;
-      const isFallback = (recipe.matchedIngredients ?? []).some(
-        (matchedIngredient) =>
-          matchedIngredient.recipeIngredientName.trim().toLowerCase() ===
-            ingredient.name.trim().toLowerCase() &&
-          matchedIngredient.matchType === "fallback",
+      const comparison = resolveCurrentPantryComparison(
+        recipe,
+        ingredient,
+        pantryItems,
+        locale,
       );
-
-      const tone =
-        comparison?.status === "unavailable"
-          ? "red"
-          : isFallback ||
-              comparison?.status === "insufficient" ||
-              comparison?.status === "unit-mismatch" ||
-              comparison?.status === "missing-pantry-quantity"
-            ? "orange"
-            : "green";
+      const isAvailable =
+        comparison?.status === "enough" ||
+        comparison?.status === "available-staple";
 
       const amount =
         comparison?.status === "available-staple"
@@ -86,14 +179,14 @@ function buildKitchenCounterIngredients(
             )})`
           : (comparison?.requiredLabel ??
               ingredient.amount ??
-              (tone === "green"
+              (isAvailable
                 ? t("basic.kitchenCounter.readyAmount")
                 : t("basic.kitchenCounter.missingAmount")));
 
       return {
         name: ingredient.name,
         amount,
-        isAvailable: tone === "green",
+        isAvailable,
       };
     });
   }
@@ -140,11 +233,37 @@ export default function KitchenCounterPage({
   onBack,
 }: KitchenCounterPageProps) {
   const t = useTranslations("home");
+  const locale = useLocale();
   const shouldReduceMotion = useReducedMotion();
   const activeRecipe = recipe ?? null;
+  const [pantryItems, setPantryItems] = useState<PantryItem[] | null>(null);
+
+  const loadPantryItems = useCallback(async () => {
+    try {
+      const response = await fetch("/api/pantry", { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("Failed to fetch pantry items");
+      }
+
+      const payload = (await response.json()) as { items?: PantryItem[] };
+      setPantryItems(payload.items ?? []);
+    } catch (error) {
+      logger.warn("[kitchen-counter] failed to refresh pantry availability", {
+        context: "KitchenCounterPage.loadPantryItems",
+        metadata: {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
+      setPantryItems(null);
+    }
+  }, []);
+
   const ingredients = useMemo(
-    () => (activeRecipe ? buildKitchenCounterIngredients(activeRecipe, t) : []),
-    [activeRecipe, t],
+    () =>
+      activeRecipe
+        ? buildKitchenCounterIngredients(activeRecipe, pantryItems, locale, t)
+        : [],
+    [activeRecipe, locale, pantryItems, t],
   );
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const steps = useMemo(
@@ -169,6 +288,30 @@ export default function KitchenCounterPage({
     setCurrentStepIndex(0);
     setIsMissingIngredientsDialogOpen(false);
   }, [activeRecipe?.id]);
+
+  useEffect(() => {
+    if (!activeRecipe) {
+      setPantryItems(null);
+      return;
+    }
+
+    void loadPantryItems();
+  }, [activeRecipe, loadPantryItems]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handlePantryChanged = () => {
+      void loadPantryItems();
+    };
+
+    window.addEventListener(PANTRY_CHANGED_EVENT, handlePantryChanged);
+    return () => {
+      window.removeEventListener(PANTRY_CHANGED_EVENT, handlePantryChanged);
+    };
+  }, [loadPantryItems]);
 
   useEffect(() => {
     if (!activeRecipe) {

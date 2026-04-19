@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { stripe, getMembershipFromPriceId } from "@/lib/stripe";
+import { stripe, getMembershipFromPriceId } from "@/lib/billing/stripe";
 import { db } from "@/index";
 import {
   users,
@@ -9,13 +9,13 @@ import {
   invoices,
 } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
-import { Analytics } from "@/lib/analytics";
-import { captureServerAnalyticsEvent } from "@/lib/analytics-server";
+import { Analytics } from "@/lib/analytics/analytics";
+import { captureServerAnalyticsEvent } from "@/lib/analytics/analytics-server";
 
-import { sendRenewalReminderEmail } from "@/lib/emailService";
+import { sendRenewalReminderEmail } from "@/lib/email/emailService";
 
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
-import { invalidateUserContextCaches } from "@/lib/user-context-cache";
+import { invalidateUserContextCaches } from "@/lib/user/user-context-cache";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 

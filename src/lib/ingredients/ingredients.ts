@@ -1,4 +1,4 @@
-import { normalizeUnit } from "@/lib/units";
+import { normalizeUnit } from "@/lib/ingredients/units";
 
 const UNICODE_FRACTIONS: Record<string, string> = {
   "¼": "1/4",

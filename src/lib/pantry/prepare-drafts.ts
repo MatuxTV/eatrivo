@@ -19,7 +19,7 @@ import {
   resolvePantryTrackingMode,
   shouldPreservePantryQuantity,
 } from "@/lib/pantry/tracking";
-import { guessFoodCategory, normalizeUnit } from "@/lib/units";
+import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
 
 interface PreparePantryDraftsInput {
   userId: string;

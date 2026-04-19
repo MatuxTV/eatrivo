@@ -8,11 +8,11 @@ import {
 import {
   buildIngredientIdentity,
   normalizeIngredientName,
-} from "@/lib/ingredients";
+} from "@/lib/ingredients/ingredients";
 import {
   buildIngredientAliasForms,
   deriveIngredientFamilyKey,
-} from "@/lib/ingredient-family";
+} from "@/lib/ingredients/ingredient-family";
 
 export interface IngredientAliasRow {
   ingredientKey: string;

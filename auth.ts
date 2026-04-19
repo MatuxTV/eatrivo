@@ -12,7 +12,7 @@ import {
   badges as badgesTable,
 } from "./src/db/schema";
 import { eq } from "drizzle-orm";
-import { Analytics } from "@/lib/analytics";
+import { Analytics } from "@/lib/analytics/analytics";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: DrizzleAdapter(db, {

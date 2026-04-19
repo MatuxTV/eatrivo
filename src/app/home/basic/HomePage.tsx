@@ -9,7 +9,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { normalizeRecipeInstructions } from "@/lib/recipe-instructions";
+import { normalizeRecipeInstructions } from "@/lib/recipes/recipe-instructions";
 import type { CustomRecipeHeroSnapshot } from "../components/RivoCustomRecipeExperience";
 import type {
   BasicHomePantrySummary,
@@ -29,7 +29,6 @@ import MobileNavigation from "../components/MobileNavigation";
 import AppShellViewport from "../components/AppShellViewport";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
 import { NotificationBanner } from "@/components/pwa/NotificationBanner";
-import FeedbackButton from "@/components/FeedbackButton";
 
 /* ---- Extracted modules ---- */
 import { usePantrySync } from "@/hooks/usePantrySync";
@@ -43,20 +42,37 @@ import type {
   UserProfileSnapshot,
 } from "@/app/home/types/section-data";
 
+const ChatWithRivoSkeleton = () => (
+  <div className="h-full w-full bg-gray-50/50" />
+);
+
+const KitchenCounterSkeleton = () => (
+  <div className="h-full w-full max-w-7xl mx-auto p-0 md:px-4 md:py-6 bg-gray-50/50 rounded-2xl" />
+);
+
+const ShoppingListSkeleton = () => (
+  <div className="mb-8 rounded-2xl border border-eatrivo-purple/10 bg-white p-4 shadow-sm sm:p-6 md:p-8 min-h-[400px] w-full" />
+);
+
 const ChatWithRivoPage = dynamic(
   () => import("@/app/chat-with-rivo/ChatWithRivoPage"),
   {
     ssr: false,
+    loading: () => <ChatWithRivoSkeleton />,
   },
 );
 const KitchenCounterPage = dynamic(
   () => import("@/app/kitchen-counter/KitchenCounterPage"),
   {
     ssr: false,
+    loading: () => <KitchenCounterSkeleton />,
   },
 );
 const ShoppingListSection = dynamic(
   () => import("../components/ShoppingListSection"),
+  {
+    loading: () => <ShoppingListSkeleton />,
+  }
 );
 
 /* ------------------------------------------------------------------ */
@@ -475,11 +491,6 @@ export default function HomePage({
       />
       <PWAInstallPrompt />
       <NotificationBanner />
-      {isProfileSection(activeSection) && (
-        <div className="hidden md:block">
-          <FeedbackButton />
-        </div>
-      )}
     </div>
   );
 }

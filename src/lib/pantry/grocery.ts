@@ -6,7 +6,7 @@ import type {
 import { formatAmountLabel } from "@/lib/pantry/format";
 import { normalizeShoppingListAmount } from "@/lib/pantry/shopping-list-amount";
 import { isStampedAvailabilityCandidate } from "@/lib/pantry/tracking";
-import { guessFoodCategory } from "@/lib/units";
+import { guessFoodCategory } from "@/lib/ingredients/units";
 
 import {
   findMatchingRestockItem,

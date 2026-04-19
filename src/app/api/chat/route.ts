@@ -7,13 +7,13 @@ import {
   AIMessage,
 } from "@langchain/core/messages";
 import { buildChatGraph } from "@/lib/langgraph/chat";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent } from "@/lib/analytics/analytics";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import {
   getAuthenticatedChatContext,
   getOwnedChatSession,
-} from "@/lib/chat-auth";
-import { getRecentOwnedChatMessages } from "@/lib/chat-history";
+} from "@/lib/chat/chat-auth";
+import { getRecentOwnedChatMessages } from "@/lib/chat/chat-history";
 
 const MAX_INPUT_CHARS = 600;  // ~4 vety / ~100 slov
 const MAX_HISTORY = 10;       // posledných 10 správ

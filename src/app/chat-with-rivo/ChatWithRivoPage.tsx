@@ -18,7 +18,7 @@ import Link from "next/link";
 import AppShellViewport from "@/app/home/components/AppShellViewport";
 import { MOBILE_BOTTOM_NAV_OFFSET } from "@/app/home/constants/app-shell";
 import { useTutorialSurface } from "@/components/tutorial/TutorialProvider";
-import { trackClientEvent } from "@/lib/analytics-client";
+import { trackClientEvent } from "@/lib/analytics/analytics-client";
 import {
   Dialog,
   DialogContent,

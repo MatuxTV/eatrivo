@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { formatRecipeIngredientAmount } from "./recipe-ingredients";
-import { localizeUnitLabel } from "./unit-localization";
+import { localizeUnitLabel } from "../ingredients/unit-localization";
 
 test("localizeUnitLabel returns Slovak unit labels", () => {
   assert.equal(localizeUnitLabel("tbsp", "sk"), "pl");

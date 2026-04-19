@@ -14,8 +14,8 @@ import {
 } from "../src/db/schema";
 import {
   createIngredientKey,
-} from "../src/lib/ingredients";
-import { pantryKeySatisfiesRecipeKey } from "../src/lib/ingredient-family";
+} from "../src/lib/ingredients/ingredients";
+import { pantryKeySatisfiesRecipeKey } from "../src/lib/ingredients/ingredient-family";
 
 interface RecipeTranslationJson {
   name: string;

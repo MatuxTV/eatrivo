@@ -14,7 +14,7 @@ import { useSession } from "next-auth/react";
 import { APP_CONFIG } from "@/app/config/app";
 import { TutorialCoachmark } from "@/components/tutorial/TutorialCoachmark";
 import { TutorialModal } from "@/components/tutorial/TutorialModal";
-import { trackClientEvent } from "@/lib/analytics-client";
+import { trackClientEvent } from "@/lib/analytics/analytics-client";
 import {
   introTutorialDefinition,
   surfaceTutorialRegistry,

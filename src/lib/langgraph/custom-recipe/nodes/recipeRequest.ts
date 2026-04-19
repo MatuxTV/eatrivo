@@ -12,7 +12,7 @@ import { apiLogger } from "@/lib/logger";
 import {
   getPreferenceRecipeSuggestionsForUserProfile,
   getRecipeMatchesForUserProfile,
-} from "@/lib/recipe-matches";
+} from "@/lib/recipes/recipe-matches";
 import { buildPantryPromptContext } from "../pantryPromptContext";
 import type { CustomRecipeState } from "../state";
 
@@ -207,10 +207,28 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   });
 }
 
+function normalizeRecipeComparisonValue(value: string | null | undefined) {
+  return value
+    ?.normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ") ?? "";
+}
+
 function buildReferenceRecipesSection(
   referenceRecipes: Awaited<ReturnType<typeof getRecipeMatchesForUserProfile>>,
+  previousRecipe?: typeof CustomRecipeState.State.previousGeneratedRecipe,
 ): string {
+  const previousRecipeName = normalizeRecipeComparisonValue(previousRecipe?.name);
   const references = [...referenceRecipes.cookable, ...referenceRecipes.almostCookable]
+    .filter((recipe) => {
+      if (!previousRecipeName) {
+        return true;
+      }
+
+      return normalizeRecipeComparisonValue(recipe.name) !== previousRecipeName;
+    })
     .slice(0, 1)
     .map((recipe, index) => {
       const ingredientPreview = recipe.ingredientItems
@@ -254,6 +272,25 @@ function getDefaultServingUnit(locale: typeof CustomRecipeState.State.locale) {
   return locale === "sk" ? "porcia" : "serving";
 }
 
+function buildSingleServingGuidance(state: typeof CustomRecipeState.State) {
+  if (state.requestedServings !== 1) {
+    return "";
+  }
+
+  return `
+- A request for 1 serving is fully valid. Do not refuse or default to multiple servings.
+- Build a realistic single-portion meal for one person with naturally scaled ingredient amounts.
+- For 1 serving, prefer simpler recipes with fewer ingredients and shorter instructions.`;
+}
+
+function getPreferredIngredientRange(state: typeof CustomRecipeState.State) {
+  return state.requestedServings === 1 ? "4 to 7" : "4 to 10";
+}
+
+function getPreferredInstructionRange(state: typeof CustomRecipeState.State) {
+  return state.requestedServings === 1 ? "2 to 5" : "2 to 6";
+}
+
 function buildBasePrompt(
   state: typeof CustomRecipeState.State,
   firstName: string,
@@ -270,11 +307,12 @@ function buildBasePrompt(
     state.mode === "preferences_only"
       ? `- Ignore pantry inventory completely in this mode.
 - Pantry fields are only structural here: every ingredient must use pantryStatus "pantry" and pantryMatchName equal to the ingredient name.
-- Do not optimize for ingredients the user already has at home.`
+- Do not optimize for ingredients the user already has at home.
+- In preferences_only mode, status "unavailable" is exceptional and should be used only when the user's dietary constraints make a reasonable recipe impossible.`
       : `- For pantry ingredients, pantryMatchName must exactly match one pantry item from the list below.
-- Never invent pantryMatchName values.
-- Pantry ingredients must use pantryStatus "pantry" with a non-null pantryMatchName.
-- Missing ingredients must use pantryStatus "missing" with pantryMatchName null.`;
+- Never invent pantryMatchName values, EXCEPT for basic kitchen staples.
+- Basic kitchen staples (salt, pepper, spices, herbs, cooking oils, vinegar) MUST ALWAYS use pantryStatus "pantry" and their own name as pantryMatchName, even if they are not listed in the pantry. Assume the user always has them.
+- Other missing ingredients must use pantryStatus "missing" with pantryMatchName null.`;
   const pantryContextSection =
     state.mode === "preferences_only"
       ? "Pantry is intentionally ignored for this request."
@@ -286,7 +324,7 @@ function buildBasePrompt(
 
 Pantry context summary:
 - Quantity-tracked pantry items: ${pantryContext.quantityTrackedCount}
-- Always-available staples: ${pantryContext.availabilityStapleCount}`;
+- Availability items: ${pantryContext.availabilityStapleCount}`;
 
   return `
 You are Rivo, the recipe generation workflow for Eatrivo.
@@ -303,13 +341,13 @@ Hard rules:
 - Every ingredient must include translations.en.display_name and translations.sk.display_name.
 - English and Slovak translations must describe the same recipe, not two variants.
 - The English translation must stay stable regardless of the user's current locale.
-- Always include amount for every ingredient. Use null when amount is unknown.
+- Always include \`amount\` for every ingredient. Use \`null\` ONLY when the amount is for a basic seasoning (spices, salt, herbs, oils). Never use \`null\` for main ingredients like meat, pasta, or vegetables.
 ${pantryRules}
-- Ingredients listed under always-available staples are already available in stock even without a tracked pantry quantity.
-- Always-available staples should be treated as normal pantry ingredients, not as missing ingredients.
+- Ingredients listed under availability items are already available in stock even without a tracked pantry quantity.
+- Availability items should be treated as normal pantry ingredients, not as missing ingredients.
 - Never omit servingUnit. Use "${getDefaultServingUnit(state.locale)}" unless there is a better explicit serving label.
 - Always include instruction title and text. Title may be an empty string when no short label fits.
-- Every ingredient amount must include an explicit unit.
+- Every required ingredient amount must include an explicit unit, UNLESS it's a basic seasoning (spices, salt, oil) where amount should be \`null\`.
 - Allowed ingredient units are only: g, kg, ml, l, dl, ks, bal, plechovka, fľaša, zväzok, hlávka.
 - Do not use kitchen units like tbsp, tsp, cup, pinch, handful, scoop, dash, clove.
 - Liquids such as oils, vinegars, milk, broths, and sauces should prefer ml, l, or dl.
@@ -317,11 +355,12 @@ ${pantryRules}
 - Countable items like eggs, onions, tomatoes, lemons, and garlic should use ks.
 - Tomato paste and olive oil must never use ks.
 - Availability staples are especially useful for oils, seasonings, spices, vinegars, and sauces.
-- Even when a staple is availability-tracked, still output a realistic recipe amount and unit for it.
+- Ingredients like salt, pepper, spices, dried herbs, olive oil, and basic condiments MUST omit the exact amount (return null for \`amount\`). They are assumed to be seasoned "to taste".
 - If a previous recipe is provided below, the new recipe must be at least ${Math.round(
     CUSTOM_RECIPE_MIN_DIVERSITY * 100,
   )}% different overall.
 - When regenerating after a diversity failure, make a clearly different recipe, not a rename or light tweak.
+${buildSingleServingGuidance(state)}
 
 Request preferences:
 - Name: ${firstName}
@@ -369,7 +408,7 @@ function buildRetryGuidance(state: typeof CustomRecipeState.State): string {
     return `
 
 Previous attempt failed amount formatting validation.
-- Every ingredient amount must include a numeric quantity and an explicit allowed unit.
+- Every ingredient amount must include a numeric quantity and an explicit allowed unit (unless it is a spice/staple, then return null).
 - Do not output bare values like 0,5 or 2 without a unit.
 - Use only g, kg, ml, l, dl, ks, bal, plechovka, fľaša, zväzok, hlávka.${stapleHint}`;
   }
@@ -388,7 +427,20 @@ Previous attempt failed ingredient unit semantics.
 
 Previous unit repair attempt still failed validation.
 - Rebuild the ingredient amounts from scratch with correct units.
-- Use only the allowed unit set and make each amount explicit.${stapleHint}`;
+- Use only the allowed unit set and make each amount explicit, except for staples (spices, salt, herbs) which should remain \`null\`.${stapleHint}`;
+  }
+
+  if (state.validationErrorType === "preferences_only_unavailable") {
+    return `
+
+Previous attempt incorrectly returned status unavailable for a preferences-only request.
+- In preferences_only mode you must compose a realistic available recipe unless the user's diet or allergies truly make it impossible.
+- Do not refuse just because pantry data is absent; pantry is intentionally ignored here.
+- If a previous recipe is shown, use it only as a diversity constraint. Do not treat it as evidence that no new recipe can be created.
+- If a reference recipe is shown, use it only as a style anchor. Do not copy it and do not treat it as a requirement.
+- Prefer changing the main protein/base, cooking method, or flavor profile over returning unavailable.
+- A request for 1 serving is fully valid. When 1 serving is requested, return a true single-portion recipe instead of scaling up to multiple portions.
+- Return a complete available recipe with all required fields and realistic ingredient amounts/units (leaving amounts \`null\` for staples as instructed).${stapleHint}`;
   }
 
   if (!state.requestError.toLowerCase().includes("similar")) {
@@ -409,18 +461,22 @@ Previous attempt was rejected for being too similar to the last generated recipe
 function buildCandidatePrompt(
   kind: "pantry" | "almost_cookable",
   basePrompt: string,
-  mode: typeof CustomRecipeState.State.mode,
+  state: typeof CustomRecipeState.State,
 ): string {
+  const mode = state.mode;
+
   if (mode === "preferences_only") {
     return `${basePrompt}
 
 Generate one recipe candidate based only on the user profile and request preferences.
 - Ignore pantry availability and home inventory entirely.
+- Default to status "available" in this mode. Use "unavailable" only when the user's constraints make a reasonable recipe genuinely impossible.
 - Every ingredient in this mode must use pantryStatus "pantry" and pantryMatchName equal to the ingredient name.
 - Match the requested meal type and requested number of servings.
 - When meal prep friendly is requested, prefer recipes that store and reheat well.
-- Keep ingredients focused, ideally 4 to 10 items.
-- Keep instructions to 2 to 6 steps.`;
+- Keep ingredients focused, ideally ${getPreferredIngredientRange(state)} items.
+- Keep instructions to ${getPreferredInstructionRange(state)} steps.
+- If 1 serving is requested, prefer naturally single-portion meals over recipes that feel scaled down awkwardly.`;
   }
 
   if (kind === "pantry") {
@@ -558,7 +614,10 @@ export async function recipeRequest(
       almostCookable: [],
     };
   });
-  const referenceRecipesSection = buildReferenceRecipesSection(referenceRecipeMatches);
+  const referenceRecipesSection = buildReferenceRecipesSection(
+    referenceRecipeMatches,
+    state.previousGeneratedRecipe,
+  );
   const previousRecipeSection = buildPreviousRecipeSection(state);
   const retryGuidance = buildRetryGuidance(state);
 
@@ -584,11 +643,11 @@ export async function recipeRequest(
       stapleNames: pantryContext.stapleNames,
     },
   });
-  const pantryPrompt = buildCandidatePrompt("pantry", basePrompt, state.mode);
+  const pantryPrompt = buildCandidatePrompt("pantry", basePrompt, state);
   const almostCookablePrompt = buildCandidatePrompt(
     "almost_cookable",
     basePrompt,
-    state.mode,
+    state,
   );
 
   const model = new ChatGoogleGenerativeAI({

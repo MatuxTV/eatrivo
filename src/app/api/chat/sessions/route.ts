@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 
 import { db } from "@/index";
 import { chatSessions } from "@/db/schema";
-import { getAuthenticatedChatContext } from "@/lib/chat-auth";
-import { listOwnedChatSessions } from "@/lib/chat-history";
+import { getAuthenticatedChatContext } from "@/lib/chat/chat-auth";
+import { listOwnedChatSessions } from "@/lib/chat/chat-history";
 
 export async function GET() {
   const authResult = await getAuthenticatedChatContext();

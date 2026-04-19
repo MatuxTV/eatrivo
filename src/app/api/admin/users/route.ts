@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
+import { requireAdminAuth, isAuthError } from "@/lib/auth/adminAuth";
 import { db } from "@/index";
 import { users, userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";

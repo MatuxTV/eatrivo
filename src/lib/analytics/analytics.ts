@@ -1,11 +1,11 @@
 import {
   getAnalyticsEventDefinition,
   type AnalyticsEventName,
-} from "@/lib/analytics-events";
-import { captureServerAnalyticsEvent } from "@/lib/analytics-server";
+} from "@/lib/analytics/analytics-events";
+import { captureServerAnalyticsEvent } from "@/lib/analytics/analytics-server";
 import type {
   TrackEventParams as BaseTrackEventParams,
-} from "@/lib/analytics-types";
+} from "@/lib/analytics/analytics-types";
 
 export type TrackEventParams = BaseTrackEventParams<AnalyticsEventName>;
 

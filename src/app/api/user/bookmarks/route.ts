@@ -17,7 +17,7 @@ import {
   normalizeRecipeLocale,
   resolveRecipeTranslation,
   type RecipeTranslationRecord,
-} from "@/lib/recipe-localization";
+} from "@/lib/recipes/recipe-localization";
 import {
   handleApiError,
   notFoundError,

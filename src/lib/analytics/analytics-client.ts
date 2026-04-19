@@ -3,7 +3,7 @@ import {
   isClientAnalyticsEvent,
   sanitizeAnalyticsMetadata,
   type AnalyticsEventName,
-} from "@/lib/analytics-events";
+} from "@/lib/analytics/analytics-events";
 
 declare global {
   interface Window {

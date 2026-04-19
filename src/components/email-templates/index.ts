@@ -1,10 +1,10 @@
-export { resend, DEFAULT_FROM_EMAIL } from "../../lib/resend";
+export { resend, DEFAULT_FROM_EMAIL } from "../../lib/email/resend";
 export {
   sendWelcomeEmail,
   sendShoppingListNotification,
   sendFeedbackNotification,
   sendRenewalReminderEmail,
-} from "../../lib/emailService";
+} from "../../lib/email/emailService";
 export type {
   WelcomeEmailProps,
   ShoppingListNotificationEmailProps,

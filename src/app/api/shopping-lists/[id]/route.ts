@@ -6,7 +6,7 @@ import { auth } from "../../../../../auth";
 import { db } from "@/index";
 import { shoppingLists, userProfiles } from "@/db/schema";
 import { apiLogger } from "@/lib/logger";
-import { CacheService } from "@/lib/redis";
+import { CacheService } from "@/lib/cache/redis";
 
 /**
  * PATCH /api/shopping-lists/[id]

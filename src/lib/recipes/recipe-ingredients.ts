@@ -1,5 +1,5 @@
 import { formatLocalizedAmountLabel } from "@/lib/pantry/format";
-import type { RecipeIngredientPantryComparison } from "@/lib/recipe-quantity-comparison";
+import type { RecipeIngredientPantryComparison } from "@/lib/recipes/recipe-quantity-comparison";
 
 export interface RecipeIngredientItem {
   name: string;

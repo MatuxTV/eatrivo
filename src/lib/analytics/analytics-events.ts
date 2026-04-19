@@ -1,7 +1,7 @@
 import type {
   AnalyticsEventDefinition,
   AnalyticsMetadata,
-} from "@/lib/analytics-types";
+} from "@/lib/analytics/analytics-types";
 
 export const MAX_ANALYTICS_METADATA_BYTES = 2048;
 

@@ -1,7 +1,7 @@
 import { auth } from "../../../../auth";
 import { redirect } from "next/navigation";
 
-import { checkUserProfileExists } from "@/lib/user-utils";
+import { checkUserProfileExists } from "@/lib/user/user-utils";
 import OnboardingClient from "@/app/onboarding/components/OnBoardingPage";
 import { isLocale, type Locale } from "@/i18n/routing";
 

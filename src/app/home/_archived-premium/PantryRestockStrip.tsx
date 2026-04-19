@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import type { PantryRestockItem } from "@/hooks/usePantry";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { PANTRY_UNIT_OPTIONS } from "@/lib/units";
+import { PANTRY_UNIT_OPTIONS } from "@/lib/ingredients/units";
 
 interface PantryRestockStripProps {
   items: PantryRestockItem[];

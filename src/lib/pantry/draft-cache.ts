@@ -1,4 +1,4 @@
-import { CacheService, RequestLock } from "@/lib/redis";
+import { CacheService, RequestLock } from "@/lib/cache/redis";
 
 const PANTRY_DRAFT_TTL_SECONDS = 60;
 

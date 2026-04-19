@@ -1,4 +1,4 @@
-import { redis } from "@/lib/redis";
+import { redis } from "@/lib/cache/redis";
 import type { CustomRecipeResult } from "@/lib/custom-recipes/contracts";
 
 const CUSTOM_RECIPE_PROGRESS_TTL_SECONDS = 15 * 60;

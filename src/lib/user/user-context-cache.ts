@@ -7,8 +7,8 @@ import {
   USER_CONTEXT_CACHE_TTL_SECONDS,
   subscriptionSnapshotCacheKey,
   userContextCacheKey,
-} from "@/lib/cache-keys";
-import { CacheService } from "@/lib/redis";
+} from "@/lib/cache/cache-keys";
+import { CacheService } from "@/lib/cache/redis";
 
 type CachedUserProfile = typeof userProfiles.$inferSelect | null;
 type CachedUserInfo = typeof userInfoTable.$inferSelect | null;

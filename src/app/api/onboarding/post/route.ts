@@ -4,9 +4,9 @@ import { auth } from "../../../../../auth";
 import { db } from "@/index";
 import { userProfiles, userInfoTable, consentLogs } from "@/db/schema";
 import { completeOnboardingSchema } from "@/lib/schemas/user";
-import { checkUserProfileExists } from "@/lib/user-utils";
+import { checkUserProfileExists } from "@/lib/user/user-utils";
 import { apiLogger } from "@/lib/logger";
-import { Analytics } from "@/lib/analytics";
+import { Analytics } from "@/lib/analytics/analytics";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { getDocumentVersion } from "@/lib/legal-versions";
 

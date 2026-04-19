@@ -5,13 +5,13 @@ import { db } from "@/index";
 import { pantryItems, shoppingLists, shoppingListItems, userInfoTable, userProfiles } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
-import { CacheService } from "@/lib/redis";
+import { CacheService } from "@/lib/cache/redis";
 import { normalizePantryItemsInBackground } from "@/lib/pantry/background-normalization";
 import {
   resolvePantryTrackingMode,
   shouldPreservePantryQuantity,
 } from "@/lib/pantry/tracking";
-import { guessFoodCategory, normalizeUnit } from "@/lib/units";
+import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
 
 // POST /api/pantry/import/[shoppingListId]
 // Reads shopping list items → inserts pantry items with source: "shopping_list"

@@ -4,7 +4,7 @@ import {
   normalizeUnit,
   subtractQuantity,
   toCanonicalQuantity,
-} from "@/lib/units";
+} from "@/lib/ingredients/units";
 
 export type RecipeIngredientPantryComparisonStatus =
   | "enough"

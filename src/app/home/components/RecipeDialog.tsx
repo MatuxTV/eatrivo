@@ -17,7 +17,7 @@ import {
   Beef,
   MessageSquareText,
 } from "lucide-react";
-import { getMealTypeColor, roundNumber } from "@/lib/functions";
+import { getMealTypeColor, roundNumber } from "@/lib/utils/functions";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 

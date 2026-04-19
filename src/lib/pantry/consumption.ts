@@ -8,8 +8,8 @@ import {
   parseStoredQuantity,
   serializeQuantity,
 } from "@/lib/pantry/restock";
-import { pantryKeySatisfiesRecipeKey } from "@/lib/ingredient-family";
-import { toCanonicalQuantity } from "@/lib/units";
+import { pantryKeySatisfiesRecipeKey } from "@/lib/ingredients/ingredient-family";
+import { toCanonicalQuantity } from "@/lib/ingredients/units";
 
 export interface PantryRecipeConsumptionIngredient {
   name: string;

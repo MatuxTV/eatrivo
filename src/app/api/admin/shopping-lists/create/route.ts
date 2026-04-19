@@ -1,6 +1,6 @@
 import type { NextRequest} from "next/server";
 import { NextResponse } from "next/server";
-import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
+import { requireAdminAuth, isAuthError } from "@/lib/auth/adminAuth";
 import { EatrivoAIService } from "@/lib/langchain";
 import { apiLogger } from "@/lib/logger";
 

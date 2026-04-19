@@ -15,7 +15,7 @@ import {
   releasePantryDraftLock,
 } from "@/lib/pantry/draft-cache";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
-import { CacheService } from "@/lib/redis";
+import { CacheService } from "@/lib/cache/redis";
 
 function parseTokens(body: unknown): string[] | undefined {
   const tokens = (body as { tokens?: unknown[] } | null)?.tokens;

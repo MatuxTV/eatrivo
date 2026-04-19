@@ -87,7 +87,7 @@ export async function finalizeResult(
               state.parsedAiOutput.pantryRecipe,
               "preferences_only",
               {
-                pantryRows: [],
+                pantryRows: state.pantryRows,
                 locale: state.locale,
               },
             ),

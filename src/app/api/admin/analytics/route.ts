@@ -12,8 +12,8 @@ import {
   users,
 } from "@/db/schema";
 import { db } from "@/index";
-import { activeAdminAnalyticsEventNames } from "@/lib/analytics-events";
-import { isAuthError, requireAdminAuth } from "@/lib/adminAuth";
+import { activeAdminAnalyticsEventNames } from "@/lib/analytics/analytics-events";
+import { isAuthError, requireAdminAuth } from "@/lib/auth/adminAuth";
 import { getAdminPostHogTelemetry } from "@/lib/posthog-admin";
 
 const DEFAULT_RANGE_DAYS = 30;

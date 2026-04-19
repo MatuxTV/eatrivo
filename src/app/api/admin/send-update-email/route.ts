@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
+import { requireAdminAuth, isAuthError } from "@/lib/auth/adminAuth";
 import { db } from "../../../../";
 import { userProfiles, users } from "@/db/schema";
 import { eq, isNotNull } from "drizzle-orm";
@@ -8,7 +8,7 @@ import { UpdateNotificationEmail } from "@/components/email-templates/UpdateNoti
 import { logger } from "@/lib/logger";
 import { getMessages } from "next-intl/server";
 import type { EmailTranslations } from "@/types/email.types";
-import { getUserLanguage } from "@/lib/user-utils";
+import { getUserLanguage } from "@/lib/user/user-utils";
 import { checkRateLimit } from "@/lib/rateLimit";
 
 interface UpdateItem {

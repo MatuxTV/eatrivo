@@ -7,7 +7,7 @@ import { eq, and, sql } from 'drizzle-orm';
 import { apiLogger } from '@/lib/logger';
 import { checkRateLimit } from '@/lib/rateLimit';
 import { createOrReusePendingPushOptIn, normalizePushOptInLocale, clearPendingPushOptIn } from '@/lib/pwa/pushDoubleOptIn';
-import { sendPushDoubleOptInEmail } from '@/lib/emailService';
+import { sendPushDoubleOptInEmail } from '@/lib/email/emailService';
 
 type SubscribeRequestBody = {
   subscription?: {

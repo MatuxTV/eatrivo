@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { userInfoTable, userProfiles } from "@/db/schema";
 import { db } from "@/lib/db/pool";
 import { apiLogger } from "@/lib/logger";
-import { normalizeRecipeLocale } from "@/lib/recipe-localization";
+import { normalizeRecipeLocale } from "@/lib/recipes/recipe-localization";
 import type { CustomRecipeState } from "../state";
 
 export async function fetchProfile(

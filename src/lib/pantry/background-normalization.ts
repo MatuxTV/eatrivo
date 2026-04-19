@@ -10,8 +10,8 @@ import {
   loadIngredientAliasIndex,
   resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
-import { CacheService } from "@/lib/redis";
-import { guessFoodCategory } from "@/lib/units";
+import { CacheService } from "@/lib/cache/redis";
+import { guessFoodCategory } from "@/lib/ingredients/units";
 import { apiLogger } from "@/lib/logger";
 
 interface PantryNormalizationErrorContext {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getAgeFromDate } from "../functions";
+import { getAgeFromDate } from "../utils/functions";
 
 // User profile onboarding schema (after Google OAuth)
 export const userProfileOnboardingSchema = z.object({

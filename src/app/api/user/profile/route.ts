@@ -9,7 +9,7 @@ import {
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/rateLimit";
-import { getUserContext, invalidateUserContextCaches } from "@/lib/user-context-cache";
+import { getUserContext, invalidateUserContextCaches } from "@/lib/user/user-context-cache";
 
 const profileUpdateSchema = z.object({
   fullName: z.string().min(2, "Meno musí mať aspoň 2 znaky"),

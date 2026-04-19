@@ -27,7 +27,7 @@ import {
   supportsPantryQuantityMutations,
 } from "@/lib/pantry/tracking";
 import { pantryIdSchema, pantryUpdateItemSchema } from "@/lib/schemas/pantry";
-import { guessFoodCategory, normalizeUnit } from "@/lib/units";
+import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
 
 async function getProfileAndItem(userId: string, itemId: string) {
   const userProfile = await db.query.userProfiles.findFirst({

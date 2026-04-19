@@ -1,7 +1,7 @@
 import { db } from "@/index"
 import { userProfiles, userInfoTable, users } from "@/db/schema"
 import { eq } from "drizzle-orm"
-import { logger } from "./logger"
+import { logger } from "../logger"
 
 export async function checkUserProfileExists(userId: string) {
   try {

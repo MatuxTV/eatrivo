@@ -1,6 +1,6 @@
 import { and, desc, eq, isNull } from "drizzle-orm";
 
-import { auth } from "../../auth";
+import { auth } from "../../../auth";
 import { db } from "@/index";
 import { chatSessions, userProfiles, users, type membershipEnum } from "@/db/schema";
 import { unauthorizedError } from "@/lib/safeError";

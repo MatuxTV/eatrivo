@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth } from "@/../auth";
-import { createPortalSession } from "@/lib/stripe";
+import { createPortalSession } from "@/lib/billing/stripe";
 import { db } from "@/index";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";

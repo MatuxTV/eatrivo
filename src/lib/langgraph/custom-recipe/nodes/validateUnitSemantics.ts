@@ -71,10 +71,19 @@ function buildCandidateLines(
     return [];
   }
 
-  return candidate.ingredients.map((ingredient) => {
-    const rule = describeIngredientUnitRule({
-      ingredientName: ingredient.name,
-    });
+  return candidate.ingredients
+    .filter((ingredient) => {
+      // Do not send missing amounts to semantic check if they are pantry availability items.
+      // This prevents the AI from forcing amounts for "soľ" or "olej".
+      if (ingredient.pantryStatus === "pantry" && !ingredient.amount) {
+        return false;
+      }
+      return true;
+    })
+    .map((ingredient) => {
+      const rule = describeIngredientUnitRule({
+        ingredientName: ingredient.name,
+      });
 
     return [
       `- Recipe kind: ${kind}`,
@@ -131,7 +140,7 @@ export async function validateUnitSemantics(
     name: "audit_custom_recipe_units",
   });
 
-  const prompt = `You are validating ingredient units for a generated recipe.\n\nRules:\n- Allowed units only: ${CUSTOM_RECIPE_ALLOWED_UNITS.join(", ")}\n- Reject kitchen units like tbsp, tsp, cup.\n- Liquids should prefer ml/l/dl.\n- Pastes, dry goods and powders should prefer g/kg unless the provided allowed units specify otherwise.\n- Countable items should use ks.\n- For produce, explicit grams or kilograms are also acceptable when the quantity is realistic. Do not flag those just because ks could also work.\n- Only return an issue when the current amount/unit is semantically wrong for the ingredient.\n- If everything is fine, return passed=true and issues=[].\n- suggestedAmount must preserve the quantity intent and only fix the unit/amount formatting.\n\nIngredients to review:\n${ingredientLines.join("\n\n")}`;
+  const prompt = `You are validating ingredient units for a generated recipe.\n\nRules:\n- Allowed units only: ${CUSTOM_RECIPE_ALLOWED_UNITS.join(", ")}\n- Reject kitchen units like tbsp, tsp, cup.\n- Liquids should prefer ml/l/dl.\n- Pastes, dry goods and powders should prefer g/kg unless the provided allowed units specify otherwise.\n- Countable items should use ks.\n- Do NOT suggest changing grams/kilograms to pieces (ks) or vice versa for vegetables/fruits (e.g., paprika, cibuľa, zemiaky, cuketa) if they already have a realistic volume or count. Either volume or piece count forms are okay. Do not flag them!\n- Only return an issue when the current amount/unit is absolutely or semantically wrong for the ingredient.\n- If everything is fine, return passed=true and issues=[].\n- suggestedAmount must preserve the quantity intent and only fix the unit/amount formatting.\n\nIngredients to review:\n${ingredientLines.join("\n\n")}`;
 
   try {
     const audit = normalizeUnitSemanticAudit(

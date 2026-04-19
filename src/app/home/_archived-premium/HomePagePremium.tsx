@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-import { getCurrentDay, getDayIndex } from "@/lib/functions";
+import { getCurrentDay, getDayIndex } from "@/lib/utils/functions";
 import { APP_CONFIG } from "@/app/config/app";
 import { logger } from "@/lib/logger";
 import { useShoppingListGeneration } from "./hooks/useShoppingListGeneration";
@@ -42,7 +42,7 @@ import { FeatureFlag } from "@/components/ui/FeatureFlag";
 import KitchenCounterPage from "@/app/kitchen-counter/KitchenCounterPage";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import type { AppHomeSection } from "@/app/home/types/navigation";
-import { normalizeRecipeInstructions } from "@/lib/recipe-instructions";
+import { normalizeRecipeInstructions } from "@/lib/recipes/recipe-instructions";
 
 // PWA utilities
 import {

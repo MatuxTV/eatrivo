@@ -9,7 +9,7 @@ import { getLocaleFromPathname } from "@/i18n/routing";
 import { useFadeInUp, useStaggerContainer } from "@/hooks/useAnimations";
 import type { SectionProps } from "@/types/landing";
 import { Button } from "@/components/ui/button";
-import { trackClientEvent } from "@/lib/analytics-client";
+import { trackClientEvent } from "@/lib/analytics/analytics-client";
 
 interface PricingTier {
   tier: "basic" | "premium";

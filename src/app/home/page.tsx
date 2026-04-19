@@ -24,21 +24,21 @@ import {
   userProfiles,
   userInfoTable,
 } from "@/db/schema";
-import { getDietFilterCondition } from "@/lib/recipe-filters";
+import { getDietFilterCondition } from "@/lib/recipes/recipe-filters";
 import {
   getRecipeAvailabilityForUserProfile,
   getRecipeMatchesForUserProfile,
-} from "@/lib/recipe-matches";
+} from "@/lib/recipes/recipe-matches";
 import {
   normalizeRecipeInstructions,
-} from "@/lib/recipe-instructions";
-import { getUserContext } from "@/lib/user-context-cache";
-import { CacheService } from "@/lib/redis";
+} from "@/lib/recipes/recipe-instructions";
+import { getUserContext } from "@/lib/user/user-context-cache";
+import { CacheService } from "@/lib/cache/redis";
 import {
   formatRecipeIngredientAmount,
   type RecipeIngredientItem,
-} from "@/lib/recipe-ingredients";
-import { guessFoodCategory } from "@/lib/units";
+} from "@/lib/recipes/recipe-ingredients";
+import { guessFoodCategory } from "@/lib/ingredients/units";
 import { buildPantryInventoryItems } from "@/lib/pantry/grocery";
 import { getPantryDrafts } from "@/lib/pantry/draft-cache";
 import { pantryCacheKey } from "@/lib/pantry/restock";
@@ -47,7 +47,7 @@ import {
   resolveRecipeTranslation,
   resolveIngredientDisplayName,
   resolveIngredientTranslation,
-} from "@/lib/recipe-localization";
+} from "@/lib/recipes/recipe-localization";
 
 function serializeNullableDate(value: Date | string | null | undefined): string | null {
   if (!value) {
