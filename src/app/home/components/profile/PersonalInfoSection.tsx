@@ -14,11 +14,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
 import { UserBadge } from "@/components/ui/UserBadge";
 
-type PersonalInfoFormData = {
-  fullName: string;
-  dateOfBirth: string;
-  isEmailSubscriptionActive: boolean;
-};
+const createPersonalInfoSchema = (t: ReturnType<typeof useTranslations>) =>
+  z.object({
+    fullName: z.string().min(2, t("personal.validation.fullNameMin")),
+    dateOfBirth: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, t("personal.validation.dateFormat")),
+    isEmailSubscriptionActive: z.boolean(),
+  });
+
+type PersonalInfoFormData = z.infer<ReturnType<typeof createPersonalInfoSchema>>;
 
 interface PersonalInfoSectionProps {
   profileData: {
@@ -48,16 +53,7 @@ export default function PersonalInfoSection({
   const t = useTranslations("profile");
   const [isSaving, setIsSaving] = useState(false);
 
-  const personalInfoSchema = useMemo(
-    () =>
-      z.object({
-        fullName: z.string().min(2, t("personal.validation.fullNameMin")),
-        dateOfBirth: z
-          .string()
-          .regex(/^\d{4}-\d{2}-\d{2}$/, t("personal.validation.dateFormat")),
-      }),
-    [t],
-  );
+  const personalInfoSchema = useMemo(() => createPersonalInfoSchema(t), [t]);
 
   const {
     register,
