@@ -1,67 +1,433 @@
 {
   "recipes": [
     {
-      "external_key": "dessert-protein-chocolate-cheesecake",
+      "external_key": "lunch-one-pan-teriyaki-chicken",
       "default_locale": "sk",
-      "category_key": "dessert",
+      "category_key": "lunch",
       "diet_tags": [
-        "vegetarian",
         "high-protein",
-        "gluten-free"
+        "dairy-free"
       ],
       "restriction_flags": [
-        "contains-dairy",
-        "contains-eggs"
+        "contains-soy"
       ],
-      "servings": 8,
+      "servings": 2,
       "prep_time_min": 10,
-      "total_time_min": 40,
+      "total_time_min": 25,
       "nutrition_per_serving": {
-        "calories": 309,
-        "protein_g": 11,
-        "carbohydrates_g": 19,
-        "fat_g": 21
+        "calories": 634,
+        "protein_g": 63,
+        "carbohydrates_g": 73,
+        "fat_g": 10
       },
       "ingredients": [
         {
-          "ingredient_key": "greek-yogurt",
-          "ingredient_specific_key": "greek-yogurt",
-          "canonical_name": "greek yogurt",
+          "ingredient_key": "chicken-breast",
+          "ingredient_specific_key": "chicken-breast",
+          "canonical_name": "chicken breast",
           "pantry_tracking_hint": "quantity",
-          "quantity": 400,
+          "quantity": 500,
           "unit": "g",
           "optional": false,
           "sort_order": 0,
           "translations": {
             "en": {
-              "display_name": "greek yogurt"
-            },
-            "cs": {
-              "display_name": "řecký jogurt"
+              "display_name": "chicken breast"
             },
             "sk": {
-              "display_name": "grécky jogurt"
+              "display_name": "kuracie prsia"
             }
           }
         },
         {
-          "ingredient_key": "dark-chocolate",
-          "ingredient_specific_key": "dark-chocolate",
-          "canonical_name": "dark chocolate",
-          "pantry_tracking_hint": "quantity",
-          "quantity": 300,
-          "unit": "g",
+          "ingredient_key": "soy-sauce",
+          "ingredient_specific_key": "soy-sauce",
+          "canonical_name": "soy sauce",
+          "pantry_tracking_hint": "availability",
+          "quantity": 60,
+          "unit": "ml",
           "optional": false,
           "sort_order": 1,
           "translations": {
             "en": {
-              "display_name": "dark chocolate"
-            },
-            "cs": {
-              "display_name": "hořká čokoláda"
+              "display_name": "soy sauce"
             },
             "sk": {
-              "display_name": "horká čokoláda"
+              "display_name": "sójová omáčka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "ingredient_specific_key": "honey",
+          "canonical_name": "honey",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "honey"
+            },
+            "sk": {
+              "display_name": "med"
+            }
+          }
+        },
+        {
+          "ingredient_key": "ginger",
+          "ingredient_specific_key": "ginger",
+          "canonical_name": "ginger",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "ginger"
+            },
+            "sk": {
+              "display_name": "zázvor"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 2,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "oil",
+          "ingredient_specific_key": "vegetable-oil",
+          "canonical_name": "vegetable oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "vegetable oil"
+            },
+            "sk": {
+              "display_name": "rastlinný olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "corn-starch",
+          "ingredient_specific_key": "corn-starch",
+          "canonical_name": "corn starch",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "corn starch"
+            },
+            "sk": {
+              "display_name": "kukuričný škrob"
+            }
+          }
+        },
+        {
+          "ingredient_key": "rice",
+          "ingredient_specific_key": "jasmine-rice",
+          "canonical_name": "jasmine rice",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 150,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "jasmine rice"
+            },
+            "sk": {
+              "display_name": "jazmínová ryža"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Juicy One-Pan Teriyaki Chicken",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Cook the rice according to the package instructions and set aside.",
+            "Cut the chicken breasts into bite-sized pieces. In a small bowl, whisk together the soy sauce, honey, minced garlic, grated ginger, and corn starch.",
+            "Heat the oil in a large frying pan over medium-high heat. Add the chicken pieces and sear until golden brown and cooked through.",
+            "Pour the teriyaki sauce mixture into the pan with the chicken. Stir constantly as the sauce bubbles and thickens into a glossy glaze, coating all the meat.",
+            "Serve the chicken hot over the prepared rice."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Šťavnaté kuracie prsia s teriyaki omáčkou z panvice",
+          "category_label": "Obed",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Ryžu uvarte podľa návodu na obale a odložte bokom.",
+            "Kuracie prsia nakrájajte na kúsky veľkosti sústa. V malej miske vymiešajte sójovú omáčku, med, prelisovaný cesnak, nastrúhaný zázvor a kukuričný škrob.",
+            "Na veľkej panvici zohrejte olej na stredne silnom ohni. Pridajte kúsky kuraťa a opekajte dozlatista, kým nie je mäso hotové.",
+            "Kura zalejte pripravenou teriyaki zmesou. Za stáleho miešania nechajte omáčku prebublať, kým nezhustne a rovnomerne neobalí všetky kúsky mäsa.",
+            "Podávajte horúce s pripravenou ryžou."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dinner-roasted-goose-breast-couscous",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": [
+        "dairy-free"
+      ],
+      "restriction_flags": [],
+      "servings": 4,
+      "prep_time_min": 10,
+      "total_time_min": 35,
+      "nutrition_per_serving": {
+        "calories": 943,
+        "protein_g": 32,
+        "carbohydrates_g": 98,
+        "fat_g": 47
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "couscous",
+          "ingredient_specific_key": "couscous",
+          "canonical_name": "couscous",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 250,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "couscous"
+            },
+            "sk": {
+              "display_name": "kuskus"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lime",
+          "ingredient_specific_key": "lime",
+          "canonical_name": "lime",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "lime"
+            },
+            "sk": {
+              "display_name": "limetka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "goose-breast",
+          "ingredient_specific_key": "goose-breast",
+          "canonical_name": "goose breast",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 600,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "goose breast"
+            },
+            "sk": {
+              "display_name": "husacie prsia"
+            }
+          }
+        },
+        {
+          "ingredient_key": "thyme",
+          "ingredient_specific_key": "thyme",
+          "canonical_name": "thyme",
+          "pantry_tracking_hint": "availability",
+          "quantity": 3,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "thyme"
+            },
+            "sk": {
+              "display_name": "tymian"
+            }
+          }
+        },
+        {
+          "ingredient_key": "dried-apricot",
+          "ingredient_specific_key": "dried-apricot",
+          "canonical_name": "dried apricot",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "dried apricot"
+            },
+            "sk": {
+              "display_name": "sušená marhuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "honey",
+          "ingredient_specific_key": "honey",
+          "canonical_name": "honey",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 4,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "honey"
+            },
+            "sk": {
+              "display_name": "med"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "ingredient_specific_key": "salt",
+          "canonical_name": "salt",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "salt"
+            },
+            "sk": {
+              "display_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "black-pepper",
+          "ingredient_specific_key": "black-pepper",
+          "canonical_name": "black pepper",
+          "pantry_tracking_hint": "availability",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "black pepper"
+            },
+            "sk": {
+              "display_name": "čierne korenie"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Roasted Goose Breast with Dried Apricots and Couscous",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Season the couscous with salt, pour double the volume of boiling salted water over it, cover, and let it sit for 20 minutes. Stir in the lime juice.",
+            "Preheat the oven to 180 °C.",
+            "Score the skin of the goose breasts in a crosshatch pattern. Heat a dry pan, place the breasts skin-side down, and slowly sear until crispy. Flip and sear the other side, placing thyme sprigs on top of the skin.",
+            "Transfer the breasts to a baking dish, season with salt and black pepper, and bake in the oven for 8-10 minutes. Remove from the oven and let rest covered for 10 minutes.",
+            "While the meat is baking, heat the honey in a pan until caramelized. Add the dried apricots and thyme leaves. Mix well, then stir in 2 tablespoons of the pan drippings from the baking dish.",
+            "Slice the meat, drizzle with the apricot sauce, and serve alongside the couscous."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Pečené husacie prsia so sušenými marhuľami a kuskusom",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Kuskus osoľte, zalejte ho dvojnásobným množstvom vriacej osolenej vody a nechajte prikrytý stáť 20 minút. Vmiešajte limetkovú šťavu.",
+            "Rúru predhrejte na 180 °C.",
+            "Kožu na husacích prsiach narežte do mriežky. Rozpáľte panvicu bez tuku, vložte prsia kožou nadol a pomaly ich opečte do chrumkava. Potom ich otočte a opečte z druhej strany, pričom na kožu priložte vetvičky tymianu.",
+            "Prsia preložte do zapekacej misy, osoľte, okoreňte a pečte v rúre 8 – 10 minút. Vyberte z rúry a nechajte prikryté postáť ďalších 10 minút.",
+            "Kým sa mäso pečie, rozohrejte v panvici med a skaramelizujte ho. Pridajte sušené marhule a lístky tymianu. Dobre premiešajte a potom vmiešajte 2 polievkové lyžice výpeku zo zapekacej misy.",
+            "Mäso nakrájajte na plátky, pokvapkajte omáčkou a podávajte s kuskusom."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": false
+    },
+    {
+      "external_key": "breakfast-banana-coconut-pancakes",
+      "default_locale": "sk",
+      "category_key": "breakfast",
+      "diet_tags": [
+        "vegetarian",
+        "gluten-free",
+        "dairy-free"
+      ],
+      "restriction_flags": [
+        "contains-eggs"
+      ],
+      "servings": 1,
+      "prep_time_min": 5,
+      "total_time_min": 10,
+      "nutrition_per_serving": {
+        "calories": 405,
+        "protein_g": 14,
+        "carbohydrates_g": 31,
+        "fat_g": 25
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "banana",
+          "ingredient_specific_key": "banana",
+          "canonical_name": "banana",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "banana"
+            },
+            "sk": {
+              "display_name": "banán"
             }
           }
         },
@@ -70,16 +436,13 @@
           "ingredient_specific_key": "egg",
           "canonical_name": "egg",
           "pantry_tracking_hint": "quantity",
-          "quantity": 6,
+          "quantity": 2,
           "unit": "pc",
           "optional": false,
-          "sort_order": 2,
+          "sort_order": 1,
           "translations": {
             "en": {
               "display_name": "egg"
-            },
-            "cs": {
-              "display_name": "vejce"
             },
             "sk": {
               "display_name": "vajce"
@@ -87,58 +450,550 @@
           }
         },
         {
-          "ingredient_key": "sweetener",
-          "ingredient_specific_key": "sweetener",
-          "canonical_name": "sweetener",
+          "ingredient_key": "desiccated-coconut",
+          "ingredient_specific_key": "desiccated-coconut",
+          "canonical_name": "desiccated coconut",
           "pantry_tracking_hint": "availability",
-          "quantity": 0.5,
+          "quantity": 2,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "desiccated coconut"
+            },
+            "sk": {
+              "display_name": "strúhaný kokos"
+            }
+          }
+        },
+        {
+          "ingredient_key": "coconut-oil",
+          "ingredient_specific_key": "coconut-oil",
+          "canonical_name": "coconut oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
           "unit": "tsp",
-          "optional": true,
+          "optional": false,
           "sort_order": 3,
           "translations": {
             "en": {
-              "display_name": "vanilla sweetener"
-            },
-            "cs": {
-              "display_name": "vanilkové sladidlo"
+              "display_name": "coconut oil"
             },
             "sk": {
-              "display_name": "vanilkové sladidlo"
+              "display_name": "kokosový olej"
             }
           }
         }
       ],
       "translations": {
         "en": {
-          "name": "High-Protein Chocolate Cheesecake",
-          "category_label": "Dessert",
+          "name": "Banana Coconut Pancakes",
+          "category_label": "Breakfast",
           "serving_unit_label": "serving",
           "instructions": [
-            "Melt the dark chocolate and mix it thoroughly with the Greek yogurt, eggs, and vanilla sweetener.",
-            "Pour the smooth mixture into a round baking pan.",
-            "Bake in an air fryer at 155 °C for 30 minutes. Let it cool completely before serving."
-          ],
-          "notes": null
-        },
-        "cs": {
-          "name": "Vysokoproteinový čokoládový cheesecake",
-          "category_label": "Dezert",
-          "serving_unit_label": "porce",
-          "instructions": [
-            "Hořkou čokoládu rozpusťte a důkladně ji smíchejte s řeckým jogurtem, vejci a vanilkovým sladidlem.",
-            "Vzniklou hladkou směs nalijte do kulaté formy vhodné pro pečení.",
-            "Pečte v horkovzdušné fritéze (air fryer) 30 minut při teplotě 155 °C. Před podáváním nechte zcela vychladnout."
+            "Mash the banana into a puree with a fork, add the eggs, and mix well together.",
+            "Stir the desiccated coconut into the liquid base.",
+            "Spoon the batter onto a hot pan with a little coconut oil, shaping it into small pancakes. Fry on both sides until golden brown.",
+            "Serve the pancakes plain or with your favorite sweet syrup and fresh fruit."
           ],
           "notes": null
         },
         "sk": {
-          "name": "Vysokoproteínový čokoládový cheesecake",
-          "category_label": "Dezert",
+          "name": "Banánové lievance s kokosom",
+          "category_label": "Raňajky",
           "serving_unit_label": "porcia",
           "instructions": [
-            "Horkú čokoládu rozpusťte a dôkladne ju zmiešajte s gréckym jogurtom, vajcami a vanilkovým sladidlom.",
-            "Vzniknutú hladkú zmes nalejte do okrúhlej formy vhodnej na pečenie.",
-            "Pečte v teplovzdušnej fritéze (air fryer) 30 minút pri teplote 155 °C. Pred podávaním nechajte úplne vychladnúť."
+            "Banán vidličkou popučte na kašu, pridajte vajcia a spolu dobre vymiešajte.",
+            "Do tekutého základu primiešajte strúhaný kokos.",
+            "Vzniknuté cesto po lyžiciach nanášajte na rozpálenú panvicu s troškou kokosového oleja a tvarujte menšie lievance. Opekajte z oboch strán dozlatohneda.",
+            "Banánovo-kokosové lievance podávajte samotné alebo s obľúbeným sladkým sirupom a čerstvým ovocím."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": false
+    },
+    {
+      "external_key": "dinner-lemon-butter-chicken-drumsticks",
+      "default_locale": "sk",
+      "category_key": "dinner",
+      "diet_tags": [
+        "high-protein",
+        "gluten-free"
+      ],
+      "restriction_flags": [
+        "contains-dairy"
+      ],
+      "servings": 4,
+      "prep_time_min": 10,
+      "total_time_min": 60,
+      "nutrition_per_serving": {
+        "calories": 711,
+        "protein_g": 40,
+        "carbohydrates_g": 4,
+        "fat_g": 59
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "chicken-drumstick",
+          "ingredient_specific_key": "chicken-drumstick",
+          "canonical_name": "chicken drumstick",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 8,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "chicken drumstick"
+            },
+            "sk": {
+              "display_name": "kuracie stehno dolné"
+            }
+          }
+        },
+        {
+          "ingredient_key": "vegetable-oil",
+          "ingredient_specific_key": "vegetable-oil",
+          "canonical_name": "vegetable oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 3,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "vegetable oil"
+            },
+            "sk": {
+              "display_name": "olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 4,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chicken-stock",
+          "ingredient_specific_key": "chicken-stock",
+          "canonical_name": "chicken stock",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 300,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "chicken stock"
+            },
+            "sk": {
+              "display_name": "kurací vývar"
+            }
+          }
+        },
+        {
+          "ingredient_key": "whipping-cream",
+          "ingredient_specific_key": "whipping-cream",
+          "canonical_name": "whipping cream",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 200,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "whipping cream"
+            },
+            "sk": {
+              "display_name": "smotana na šľahanie"
+            }
+          }
+        },
+        {
+          "ingredient_key": "butter",
+          "ingredient_specific_key": "butter",
+          "canonical_name": "butter",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 50,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "butter"
+            },
+            "sk": {
+              "display_name": "maslo"
+            }
+          }
+        },
+        {
+          "ingredient_key": "lemon",
+          "ingredient_specific_key": "lemon",
+          "canonical_name": "lemon",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "lemon"
+            },
+            "sk": {
+              "display_name": "citrón"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "ingredient_specific_key": "salt",
+          "canonical_name": "salt",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "salt"
+            },
+            "sk": {
+              "display_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "black-pepper",
+          "ingredient_specific_key": "black-pepper",
+          "canonical_name": "black pepper",
+          "pantry_tracking_hint": "availability",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "black pepper"
+            },
+            "sk": {
+              "display_name": "čierne korenie"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "One-Pan Lemon Butter Chicken Drumsticks",
+          "category_label": "Dinner",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Wash and dry the chicken drumsticks thoroughly. Season them generously on all sides with salt and black pepper.",
+            "Heat the oil in a large, deep frying pan with a lid. Add the chicken drumsticks and sear them over medium heat until golden brown on all sides (about 5-8 minutes).",
+            "Add the chopped garlic to the meat, cooking briefly so it doesn't turn bitter, and pour in the chicken stock. Cover the pan with the lid, reduce the heat, and let the drumsticks simmer for 30 to 40 minutes until the meat is completely tender and begins to separate from the bone.",
+            "Carefully remove the tender drumsticks and set them aside. Pour the whipping cream into the pan juices, adding grated lemon zest and lemon juice. Bring the sauce to a boil over low heat and let it reduce until slightly thickened.",
+            "Remove the pan from the heat and stir the cold butter into the hot sauce to soften and thicken it.",
+            "Serve the drumsticks coated in the sauce alongside fresh bread, rice, or pasta."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Jemné kuracie stehná na masle a citróne z jednej panvice",
+          "category_label": "Večera",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Kuracie stehná umyjeme, osušíme papierovou utierkou a zo všetkých strán poriadne osolíme a okoreníme.",
+            "V hlbšej, väčšej panvici (s pokrievkou) rozohrejeme olej. Stehná vložíme do panvice a na strednom plameni ich zo všetkých strán opečieme do zlatohneda (cca 5 – 8 minút), aby sa zatiahli.",
+            "K mäsu pridáme nasekaný cesnak (len krátko, aby nezhorkol) a podlejeme ho vývarom. Panvicu zakryjeme pokrievkou, plameň stiahneme a stehná dusíme približne 30 až 40 minút, kým nie sú úplne mäkké (mäso sa začne oddeľovať od kosti).",
+            "Keď je mäso mäkké, stehná opatrne vytiahneme bokom, do výpeku prilejeme smotanu, pridáme nastrúhanú citrónovú kôru a citrónovú šťavu. Omáčku necháme na miernom ohni prevrieť a zredukovať, kým trochu nezhustne.",
+            "Nakoniec panvicu odstavíme a do horúcej omáčky vmiešame studené maslo, ktoré ju zjemní a zahustí.",
+            "Stehná podávame preliate omáčkou s čerstvým pečivom, ryžou alebo aj cestovinou."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
+    },
+    {
+      "external_key": "lunch-spinach-curry-with-halloumi",
+      "default_locale": "sk",
+      "category_key": "lunch",
+      "diet_tags": [
+        "vegetarian",
+        "gluten-free"
+      ],
+      "restriction_flags": [
+        "contains-dairy"
+      ],
+      "servings": 2,
+      "prep_time_min": 10,
+      "total_time_min": 25,
+      "nutrition_per_serving": {
+        "calories": 558,
+        "protein_g": 25,
+        "carbohydrates_g": 15,
+        "fat_g": 45
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "spinach",
+          "ingredient_specific_key": "spinach",
+          "canonical_name": "spinach",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 100,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "spinach"
+            },
+            "sk": {
+              "display_name": "špenát"
+            }
+          }
+        },
+        {
+          "ingredient_key": "oil",
+          "ingredient_specific_key": "oil",
+          "canonical_name": "oil",
+          "pantry_tracking_hint": "availability",
+          "quantity": 3,
+          "unit": "tbsp",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "oil"
+            },
+            "sk": {
+              "display_name": "olej"
+            }
+          }
+        },
+        {
+          "ingredient_key": "chili-flake",
+          "ingredient_specific_key": "chili-flake",
+          "canonical_name": "chili flake",
+          "pantry_tracking_hint": "availability",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "chili flakes"
+            },
+            "sk": {
+              "display_name": "čili vločky"
+            }
+          }
+        },
+        {
+          "ingredient_key": "cumin-seed",
+          "ingredient_specific_key": "cumin-seed",
+          "canonical_name": "cumin seed",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "cumin seeds"
+            },
+            "sk": {
+              "display_name": "rímska rasca"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garlic",
+          "ingredient_specific_key": "garlic",
+          "canonical_name": "garlic",
+          "pantry_tracking_hint": "availability",
+          "quantity": 4,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 4,
+          "translations": {
+            "en": {
+              "display_name": "garlic"
+            },
+            "sk": {
+              "display_name": "cesnak"
+            }
+          }
+        },
+        {
+          "ingredient_key": "red-onion",
+          "ingredient_specific_key": "red-onion",
+          "canonical_name": "red onion",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 5,
+          "translations": {
+            "en": {
+              "display_name": "red onion"
+            },
+            "sk": {
+              "display_name": "červená cibuľa"
+            }
+          }
+        },
+        {
+          "ingredient_key": "tomato",
+          "ingredient_specific_key": "tomato",
+          "canonical_name": "tomato",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 1,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 6,
+          "translations": {
+            "en": {
+              "display_name": "tomato"
+            },
+            "sk": {
+              "display_name": "paradajka"
+            }
+          }
+        },
+        {
+          "ingredient_key": "turmeric",
+          "ingredient_specific_key": "turmeric",
+          "canonical_name": "turmeric",
+          "pantry_tracking_hint": "availability",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 7,
+          "translations": {
+            "en": {
+              "display_name": "turmeric"
+            },
+            "sk": {
+              "display_name": "kurkuma"
+            }
+          }
+        },
+        {
+          "ingredient_key": "garam-masala",
+          "ingredient_specific_key": "garam-masala",
+          "canonical_name": "garam masala",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 8,
+          "translations": {
+            "en": {
+              "display_name": "garam masala"
+            },
+            "sk": {
+              "display_name": "garam masala"
+            }
+          }
+        },
+        {
+          "ingredient_key": "halloumi-cheese",
+          "ingredient_specific_key": "halloumi-cheese",
+          "canonical_name": "halloumi cheese",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 200,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 9,
+          "translations": {
+            "en": {
+              "display_name": "halloumi cheese"
+            },
+            "sk": {
+              "display_name": "syr halloumi"
+            }
+          }
+        },
+        {
+          "ingredient_key": "salt",
+          "ingredient_specific_key": "salt",
+          "canonical_name": "salt",
+          "pantry_tracking_hint": "availability",
+          "quantity": 1,
+          "unit": "tsp",
+          "optional": false,
+          "sort_order": 10,
+          "translations": {
+            "en": {
+              "display_name": "salt"
+            },
+            "sk": {
+              "display_name": "soľ"
+            }
+          }
+        },
+        {
+          "ingredient_key": "water",
+          "ingredient_specific_key": "water",
+          "canonical_name": "water",
+          "pantry_tracking_hint": "availability",
+          "quantity": 100,
+          "unit": "ml",
+          "optional": false,
+          "sort_order": 11,
+          "translations": {
+            "en": {
+              "display_name": "water"
+            },
+            "sk": {
+              "display_name": "voda"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "Spinach Curry with Halloumi Cheese",
+          "category_label": "Lunch",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Bring salted water to a boil in a pot. Boil the spinach leaves for 30 seconds, then immediately transfer them to cold water so they retain their vibrant color.",
+            "Drain the cooled spinach leaves and blend them with about 100 ml of water into a smooth puree.",
+            "Heat the oil in a pan and toast the chili flakes and cumin seeds. Add the finely chopped garlic, sauté briefly, then stir in the finely chopped red onion. Season lightly with salt and sauté until the onion is translucent.",
+            "Stir in the diced tomato, turmeric, and garam masala. Sauté everything together over high heat for 2 minutes.",
+            "Pour the spinach puree into the pan and simmer everything together for about 3 minutes.",
+            "Meanwhile, sear the halloumi cheese in a dry pan until golden brown on all sides. Cut it into cubes and serve alongside the hot spinach puree."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Špenátový prívarok s halloumi syrom",
+          "category_label": "Obed",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "V hrnci privedieme k varu osolenú vodu, v ktorej 30 sekúnd povaríme špenátové listy. Okamžite ich presunieme do studenej vody, aby nestratili farbu.",
+            "Vychladnuté listy scedíme a rozmixujeme ich s asi 100 ml vody na hladké pyré.",
+            "V panvici zahrejeme olej a opražíme na ňom čili vločky a rascu. Pridáme nadrobno nasekaný cesnak, krátko orestujeme a prisypeme nadrobno nakrájanú červenú cibuľu, ktorú zľahka osolíme a restujeme do sklovita.",
+            "Spoločne primiešame na malé kocky nakrájanú paradajku, kurkumu, garam masalu a všetko spolu restujeme na silnom plameni 2 minúty.",
+            "Nakoniec prilejeme pripravené špenátové pyré a všetko spolu povaríme cca 3 minúty.",
+            "Medzitým si na suchej panvici dozlatista opečieme syr halloumi, pokrájame ho na kocky a podávame spolu so špenátovým pyré."
           ],
           "notes": null
         }

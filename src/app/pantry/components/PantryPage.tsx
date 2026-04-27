@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -15,6 +16,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
+import MembershipUpgradeModal from "@/components/billing/MembershipUpgradeModal";
 import { useTutorialSurface } from "@/components/tutorial/TutorialProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,8 @@ import { guessFoodCategory } from "@/lib/ingredients/units";
 import { cn } from "@/lib/utils/utils";
 import AddPantryItemModal from "./AddPantryItemModal";
 import PantryItemRow from "./PantryItemRow";
+import ReceiptScanModal from "./ReceiptScanModal";
+import ReceiptScanUpgradeHero from "./ReceiptScanUpgradeHero";
 import type { InitialPantrySectionData } from "@/app/home/types/section-data";
 
 type FilterKey = "all" | "restock" | "expiring" | "manual" | "shopping_list";
@@ -168,11 +172,13 @@ function SectionStateCard({
 }
 
 interface PantrySectionProps {
+  membership?: "basic" | "premium" | "pro" | "trainer";
   onPantryChanged?: () => void;
   initialData?: InitialPantrySectionData;
 }
 
 export default function PantrySection({
+  membership = "basic",
   onPantryChanged,
   initialData,
 }: PantrySectionProps = {}) {
@@ -197,7 +203,8 @@ export default function PantrySection({
     addItemToShoppingList,
     toggleRecurringForItem,
     confirmDrafts,
-    discardDrafts
+    discardDrafts,
+    refresh,
   } = usePantry({
     initialItems: initialData?.items,
     initialRestockItems: initialData?.restockItems,
@@ -206,6 +213,8 @@ export default function PantrySection({
 
   const [isMounted, setIsMounted] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [isScanUpgradeModalOpen, setIsScanUpgradeModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -213,6 +222,8 @@ export default function PantrySection({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [pendingRecurringId, setPendingRecurringId] = useState<string | null>(null);
   const [pendingAddPackageId, setPendingAddPackageId] = useState<string | null>(null);
+  const hasScanAccess =
+    membership === "premium" || membership === "pro" || membership === "trainer";
 
   useEffect(() => {
     setIsMounted(true);
@@ -435,6 +446,17 @@ export default function PantrySection({
     triggerHaptic("light");
   }
 
+  function handleOpenScanModal() {
+    if (!hasScanAccess) {
+      triggerHaptic("light");
+      setIsScanUpgradeModalOpen(true);
+      return;
+    }
+
+    triggerHaptic("light");
+    setIsScanModalOpen(true);
+  }
+
   return (
     <AnimatePresence mode="wait">
       <TrackPageEvent
@@ -545,22 +567,29 @@ export default function PantrySection({
                     {t("add_item")}
                   </Button>
 
-                  {/* <Button
+                  <Button
                     type="button"
-                    className="h-11 rounded-xl border border-eatrivo-purple/60 bg-eatrivo-white-primary px-3 text-sm font-semibold text-gray-800 shadow-sm"
+                    onClick={handleOpenScanModal}
+                    className={cn(
+                      "h-11 rounded-xl px-3 text-sm font-semibold shadow-sm transition-colors",
+                      hasScanAccess
+                        ? "border border-amber-300 bg-gradient-to-r from-amber-500 to-yellow-400 text-white hover:from-amber-500/90 hover:to-yellow-400/90"
+                        : "border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100",
+                    )}
                   >
                     <span className="flex w-full items-center justify-center gap-2">
                       <span>{t("scan_bill")}</span>
                       <Image
-                        src="/icons/eatrivo_plus_icon.svg"
-                        alt={t("scan_bill")}
-                        width={24}
+                        src="/icons/eatrivo_icon_plus.png"
+                        alt=""
+                        width={16}
                         height={24}
-                        className="h-5 w-5 object-contain"
+                        className="h-6 w-6 object-contain"
+                        aria-hidden="true"
                       />
                     </span>
-                  </Button> */}
-                </div>
+                  </Button>
+                </div>    
               </div>
             </div>
 
@@ -770,6 +799,16 @@ export default function PantrySection({
 
               return (await addItemsBatch(itemsToAdd)) !== null;
             }}
+          />
+          <MembershipUpgradeModal
+            isOpen={isScanUpgradeModalOpen}
+            onClose={() => setIsScanUpgradeModalOpen(false)}
+            hero={<ReceiptScanUpgradeHero />}
+          />
+          <ReceiptScanModal
+            isOpen={isScanModalOpen}
+            onClose={() => setIsScanModalOpen(false)}
+            onCompleted={refresh}
           />
         </motion.div>
       )}
