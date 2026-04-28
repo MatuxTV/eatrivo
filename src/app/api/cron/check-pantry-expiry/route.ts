@@ -5,7 +5,7 @@ import { pantryItems, userProfiles } from "@/db/schema";
 import { lt, gte, and, eq } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
 import { sendPushToUser } from "@/lib/pwa/sendPushToAll";
-import { CacheService } from "@/lib/redis";
+import { CacheService } from "@/lib/cache/redis";
 
 // GET /api/cron/check-pantry-expiry
 // Checks for pantry items expiring within 3 days and sends push notifications

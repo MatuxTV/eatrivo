@@ -13,7 +13,7 @@ import {
   CookingPot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getMembershipStatus } from "@/lib/functions";
+import { getMembershipStatus } from "@/lib/utils/functions";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { UserBadge } from "@/components/ui/UserBadge";

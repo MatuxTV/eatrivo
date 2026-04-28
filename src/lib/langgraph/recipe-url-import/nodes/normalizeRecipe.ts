@@ -5,6 +5,8 @@ import { HumanMessage } from "@langchain/core/messages";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { z } from "zod";
 
+import { validateCanonicalRecipeCollection } from "@/lib/recipes/recipe-validation";
+
 import type { RecipeUrlImportState } from "../state";
 
 const MODEL_NAME = "gemini-3-flash-preview";
@@ -100,52 +102,6 @@ const normalizedRecipeFileSchema = z
     rejected: z.array(rejectedRecipeSchema),
   })
   .strict();
-
-function hasAtLeastOneTranslation(
-  translations: Record<string, unknown>,
-): boolean {
-  return Object.values(translations).some(Boolean);
-}
-
-function validateCanonicalRecipeFile(
-  payload: z.infer<typeof normalizedRecipeFileSchema>,
-): string[] {
-  const issues: string[] = [];
-
-  payload.recipes.forEach((recipe, recipeIndex) => {
-    if (!recipe.translations[recipe.default_locale]) {
-      issues.push(
-        `recipes.${recipeIndex}.translations.${recipe.default_locale}: missing default locale translation`,
-      );
-    }
-
-    if (!hasAtLeastOneTranslation(recipe.translations)) {
-      issues.push(`recipes.${recipeIndex}.translations: at least one locale is required`);
-    }
-
-    recipe.ingredients.forEach((ingredient, ingredientIndex) => {
-      if (!hasAtLeastOneTranslation(ingredient.translations)) {
-        issues.push(
-          `recipes.${recipeIndex}.ingredients.${ingredientIndex}.translations: at least one locale is required`,
-        );
-      }
-
-      if (ingredient.quantity === null) {
-        issues.push(
-          `recipes.${recipeIndex}.ingredients.${ingredientIndex}.quantity: quantity is required for accepted recipes`,
-        );
-      }
-
-      if (ingredient.unit === null) {
-        issues.push(
-          `recipes.${recipeIndex}.ingredients.${ingredientIndex}.unit: unit is required for accepted recipes`,
-        );
-      }
-    });
-  });
-
-  return issues;
-}
 
 function stringifyRawContent(raw: unknown): string {
   if (typeof raw === "string") {
@@ -260,7 +216,7 @@ export async function normalizeRecipe(
       };
     }
 
-    const canonicalIssues = validateCanonicalRecipeFile(validation.data);
+    const canonicalIssues = validateCanonicalRecipeCollection(validation.data);
 
     if (canonicalIssues.length > 0) {
       return {

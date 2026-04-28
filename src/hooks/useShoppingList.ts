@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { logger } from "@/lib/logger";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { formatAmountLabel, localizeAmountForDisplay } from "@/lib/pantry/format";
-import { PANTRY_UNIT_OPTIONS, parseQuantity } from "@/lib/units";
+import { PANTRY_UNIT_OPTIONS, parseQuantity } from "@/lib/ingredients/units";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */

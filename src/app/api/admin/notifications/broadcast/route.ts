@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
+import { requireAdminAuth, isAuthError } from "@/lib/auth/adminAuth";
 import {
   sendPushBatch,
   type PushNotificationPayload,

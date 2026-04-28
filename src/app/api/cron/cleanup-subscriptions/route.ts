@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { cleanupExpiredSubscriptions } from "@/lib/subscription";
+import { cleanupExpiredSubscriptions } from "@/lib/billing/subscription";
 
 // Secret token to protect the cron endpoint
 const CRON_SECRET = process.env.CRON_SECRET;

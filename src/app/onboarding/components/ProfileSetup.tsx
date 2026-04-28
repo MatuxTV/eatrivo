@@ -26,7 +26,7 @@ import {
   type UserProfileOnboarding,
   type UserProfileOnboardingFormValues,
 } from "@/lib/schemas/user";
-import { trackClientEvent } from "@/lib/analytics-client";
+import { trackClientEvent } from "@/lib/analytics/analytics-client";
 import { motion } from "framer-motion";
 import { User, Calendar, ArrowRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";

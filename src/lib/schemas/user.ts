@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getAgeFromDate } from "../functions";
+import { getAgeFromDate } from "../utils/functions";
 
 // User profile onboarding schema (after Google OAuth)
 export const userProfileOnboardingSchema = z.object({
@@ -114,6 +114,7 @@ export const updateUserProfileSchema = z.object({
     .date()
     .max(new Date(), "Dátum narodenia nemôže byť v budúcnosti")
     .optional(),
+  isEmailSubscriptionActive: z.boolean().optional(),
 });
 
 export const userProfileForAIInsightsSchema = z.object({

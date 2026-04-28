@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import type { TutorialCoachmarkStep, TutorialPlacement } from "@/lib/tutorials/types";
 
 interface RectState {
@@ -211,8 +211,7 @@ export function TutorialCoachmark({
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button
             type="button"
-            variant="outline"
-            className="rounded-full border-gray-200 bg-white px-4 text-gray-700"
+            className="rounded-full border-eatrivo-black-primary/50 bg-eatrivo-white-primary px-4 text-eatrivo-black-primary"
             onClick={onSkip}
           >
             {t("common.actions.skip")}
@@ -220,7 +219,6 @@ export function TutorialCoachmark({
           {stepIndex > 0 ? (
             <Button
               type="button"
-              variant="ghost"
               className="rounded-full px-4 text-eatrivo-purple hover:bg-eatrivo-purple/8 hover:text-eatrivo-purple"
               onClick={onBack}
             >

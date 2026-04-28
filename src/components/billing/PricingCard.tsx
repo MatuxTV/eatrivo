@@ -4,10 +4,10 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, Crown, Star, Zap } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { trackClientEvent, trackInteraction } from "@/lib/analytics-client";
+import { trackClientEvent, trackInteraction } from "@/lib/analytics/analytics-client";
 
 interface PricingCardProps {
   tier: "basic" | "premium" | "pro";

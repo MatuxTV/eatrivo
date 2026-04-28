@@ -1,53 +1,36 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, eq } from "drizzle-orm";
 
 import { auth } from "../../../auth";
 import HomePage from "@/app/home/basic/HomePage";
 import type {
   BasicHomePantrySummary,
   BasicHomeRecipePreview,
+  RecipeBrowseAvailableFilters,
 } from "@/app/home/types/data";
 import type { InitialPantrySectionData } from "@/app/home/types/section-data";
-import { isLocale, type Locale } from "@/i18n/routing";
-import { db } from "@/index";
 import {
   pantryItems,
   pantryRestockItems,
-  recipeIngredients,
-  recipeIngredientTranslations,
-  recipes,
-  recipeTranslations,
   shoppingListItems,
   shoppingLists,
   userProfiles,
   userInfoTable,
 } from "@/db/schema";
-import { getDietFilterCondition } from "@/lib/recipe-filters";
-import {
-  getRecipeAvailabilityForUserProfile,
-  getRecipeMatchesForUserProfile,
-} from "@/lib/recipe-matches";
-import {
-  normalizeRecipeInstructions,
-} from "@/lib/recipe-instructions";
-import { getUserContext } from "@/lib/user-context-cache";
-import { CacheService } from "@/lib/redis";
-import {
-  formatRecipeIngredientAmount,
-  type RecipeIngredientItem,
-} from "@/lib/recipe-ingredients";
-import { guessFoodCategory } from "@/lib/units";
-import { buildPantryInventoryItems } from "@/lib/pantry/grocery";
+import { isLocale, type Locale } from "@/i18n/routing";
+import { db } from "@/index";
+import { CacheService } from "@/lib/cache/redis";
 import { getPantryDrafts } from "@/lib/pantry/draft-cache";
+import { buildPantryInventoryItems } from "@/lib/pantry/grocery";
 import { pantryCacheKey } from "@/lib/pantry/restock";
 import {
-  normalizeRecipeLocale,
-  resolveRecipeTranslation,
-  resolveIngredientDisplayName,
-  resolveIngredientTranslation,
-} from "@/lib/recipe-localization";
+  getRecipeBrowseAvailableFilters,
+  getRecipeBrowsePage,
+} from "@/lib/recipes/browse";
+import { getRecipeMatchesForUserProfile } from "@/lib/recipes/recipe-matches";
+import { getUserContext } from "@/lib/user/user-context-cache";
 
 function serializeNullableDate(value: Date | string | null | undefined): string | null {
   if (!value) {
@@ -62,6 +45,9 @@ async function getBasicHomeData(
   locale: Locale,
 ): Promise<{
   featuredRecipes: BasicHomeRecipePreview[];
+  recipeBrowseAvailableFilters: RecipeBrowseAvailableFilters;
+  initialRecipeHasMore: boolean;
+  initialRecipeTotalCount: number;
   pantrySummary: BasicHomePantrySummary;
   cookableRecipes: BasicHomeRecipePreview[];
   almostCookableRecipes: BasicHomeRecipePreview[];
@@ -77,209 +63,27 @@ async function getBasicHomeData(
       })
     : null;
 
-  const dietFilterCondition = getDietFilterCondition(userInfo?.diet_preferences);
-
-  const featuredRecipeRows = await db
-    .select({
-      id: recipes.id,
-      slug: recipes.slug,
-      categoryKey: recipes.categoryKey,
-      defaultLocale: recipes.defaultLocale,
-      servings: recipes.servings,
-      totalTimeMin: recipes.totalTimeMin,
-      calories: recipes.calories,
-      proteinG: recipes.proteinG,
-      carbsG: recipes.carbohydratesG,
-      fatG: recipes.fatG,
-      restrictionFlags: recipes.restrictionFlags,
-      dietTags: recipes.dietTags,
-      mealPrepFriendly: recipes.mealPrepFriendly,
-    })
-    .from(recipes)
-    .where(dietFilterCondition ? dietFilterCondition : undefined)
-    .orderBy(
-      desc(recipes.proteinG),
-      asc(recipes.totalTimeMin),
-      asc(recipes.slug),
-    )
-    .limit(8);
-
-  const featuredRecipeIds = featuredRecipeRows.map((row) => row.id);
-  const [featuredRecipeTranslationRows, featuredIngredientRows, featuredIngredientTranslationRows] =
-    featuredRecipeIds.length === 0
-      ? [[], [], []]
-      : await Promise.all([
-          db
-            .select({
-              recipeId: recipeTranslations.recipeId,
-              locale: recipeTranslations.locale,
-              name: recipeTranslations.name,
-              categoryLabel: recipeTranslations.categoryLabel,
-              servingUnitLabel: recipeTranslations.servingUnitLabel,
-              instructions: recipeTranslations.instructions,
-            })
-            .from(recipeTranslations)
-            .where(inArray(recipeTranslations.recipeId, featuredRecipeIds)),
-          db
-            .select({
-              recipeId: recipeIngredients.recipeId,
-              recipeIngredientId: recipeIngredients.id,
-              defaultLocale: recipes.defaultLocale,
-              canonicalName: recipeIngredients.canonicalName,
-              ingredientKey: recipeIngredients.ingredientKey,
-              ingredientSpecificKey: recipeIngredients.ingredientSpecificKey,
-              quantity: recipeIngredients.quantity,
-              unit: recipeIngredients.unit,
-              sortOrder: recipeIngredients.sortOrder,
-              optional: recipeIngredients.optional,
-            })
-            .from(recipeIngredients)
-            .innerJoin(recipes, eq(recipeIngredients.recipeId, recipes.id))
-            .where(inArray(recipeIngredients.recipeId, featuredRecipeIds)),
-          db
-            .select({
-              recipeIngredientId: recipeIngredientTranslations.recipeIngredientId,
-              locale: recipeIngredientTranslations.locale,
-              displayName: recipeIngredientTranslations.displayName,
-            })
-            .from(recipeIngredientTranslations),
-        ]);
-
-  const recipeTranslationMap = new Map<
-    string,
-    Map<
-      string,
-      {
-        locale: string;
-        name: string;
-        categoryLabel: string | null;
-        servingUnitLabel: string | null;
-        instructions: unknown;
-      }
-    >
-  >();
-
-  for (const row of featuredRecipeTranslationRows) {
-    let translationMap = recipeTranslationMap.get(row.recipeId);
-    if (!translationMap) {
-      translationMap = new Map();
-      recipeTranslationMap.set(row.recipeId, translationMap);
-    }
-
-    translationMap.set(normalizeRecipeLocale(row.locale), row);
-  }
-
-  const ingredientTranslationMap = new Map<
-    string,
-    Map<string, { locale: string; displayName: string }>
-  >();
-
-  for (const row of featuredIngredientTranslationRows) {
-    let translationMap = ingredientTranslationMap.get(row.recipeIngredientId);
-    if (!translationMap) {
-      translationMap = new Map();
-      ingredientTranslationMap.set(row.recipeIngredientId, translationMap);
-    }
-
-    translationMap.set(normalizeRecipeLocale(row.locale), row);
-  }
-
-  const ingredientItemsByRecipeId = new Map<string, RecipeIngredientItem[]>();
-
-  for (const row of [...featuredIngredientRows].sort(
-    (left, right) => left.sortOrder - right.sortOrder,
-  )) {
-    if (row.optional) {
-      continue;
-    }
-
-    const localizedIngredient = resolveIngredientTranslation(
-      ingredientTranslationMap.get(row.recipeIngredientId),
+  const [initialRecipePage, availableRecipeFilters] = await Promise.all([
+    getRecipeBrowsePage({
       locale,
-      row.defaultLocale,
-    );
+      dietPreference: userInfo?.diet_preferences,
+      userProfileId: userProfile?.id ?? null,
+      offset: 0,
+      limit: 8,
+    }),
+    getRecipeBrowseAvailableFilters({
+      dietPreference: userInfo?.diet_preferences,
+    }),
+  ]);
 
-    const existingItems = ingredientItemsByRecipeId.get(row.recipeId) ?? [];
-    const ingredientName =
-      resolveIngredientDisplayName(localizedIngredient, row.canonicalName) ??
-      row.canonicalName ??
-      row.ingredientKey ??
-      "ingredient";
-    const ingredientCategoryName =
-      row.canonicalName?.trim() ||
-      ingredientName;
-
-    existingItems.push({
-      name: ingredientName,
-      amount: formatRecipeIngredientAmount(row.quantity, row.unit, locale),
-      category: guessFoodCategory(ingredientCategoryName),
-      quantityValue:
-        row.quantity === null ? null : Number.parseFloat(row.quantity),
-      unit: row.unit,
-      ingredientKey: row.ingredientKey,
-      ingredientSpecificKey: row.ingredientSpecificKey,
-    });
-    ingredientItemsByRecipeId.set(row.recipeId, existingItems);
-  }
-
-  const buildFeaturedRecipes = (
-    availabilityByRecipeId?: Map<
-      string,
-      Awaited<ReturnType<typeof getRecipeAvailabilityForUserProfile>> extends Map<
-        string,
-        infer TValue
-      >
-        ? TValue
-        : never
-    >,
-  ): BasicHomeRecipePreview[] =>
-    featuredRecipeRows.flatMap((row) => {
-      const localizedRecipe = resolveRecipeTranslation(
-        recipeTranslationMap.get(row.id),
-        locale,
-        row.defaultLocale,
-      );
-      if (!localizedRecipe) {
-        return [];
-      }
-
-      const fullIngredients =
-        ingredientItemsByRecipeId.get(row.id)?.map((ingredient) => ingredient.name) ?? [];
-      const availability = availabilityByRecipeId?.get(row.id);
-
-      return [{
-        id: row.id,
-        slug: row.slug,
-        title: localizedRecipe.name,
-        category: localizedRecipe.categoryLabel ?? row.categoryKey,
-        categoryKey: row.categoryKey,
-        servings: row.servings,
-        totalTimeMin: row.totalTimeMin,
-        calories: row.calories,
-        proteinG: row.proteinG,
-        carbsG: row.carbsG,
-        fatG: row.fatG,
-        restrictionFlags: Array.isArray(row.restrictionFlags)
-          ? row.restrictionFlags
-          : [],
-        instructions: normalizeRecipeInstructions(localizedRecipe.instructions),
-        dietTags: Array.isArray(row.dietTags) ? row.dietTags : [],
-        ingredientItems:
-          availability?.ingredientItems ??
-          ingredientItemsByRecipeId.get(row.id) ??
-          [],
-        ingredientPreview: fullIngredients,
-        matchedIngredients: availability?.matchedIngredients,
-        mealPrepFriendly: row.mealPrepFriendly,
-        missingIngredients: availability?.missingIngredientNames,
-      }];
-    });
-
-  const featuredRecipes = buildFeaturedRecipes();
+  const featuredRecipes = initialRecipePage.recipes;
 
   if (!userProfile) {
     return {
       featuredRecipes,
+      recipeBrowseAvailableFilters: availableRecipeFilters,
+      initialRecipeHasMore: initialRecipePage.hasMore,
+      initialRecipeTotalCount: initialRecipePage.totalCount,
       pantrySummary: {
         itemCount: 0,
         cookableCount: 0,
@@ -290,7 +94,7 @@ async function getBasicHomeData(
     };
   }
 
-  const [pantryCountRow, recipeMatches, pantryNameRows, featuredAvailability] = await Promise.all([
+  const [pantryCountRow, recipeMatches, pantryNameRows] = await Promise.all([
     db
       .select({ value: count() })
       .from(pantryItems)
@@ -308,11 +112,6 @@ async function getBasicHomeData(
       })
       .from(pantryItems)
       .where(eq(pantryItems.userProfileId, userProfile.id)),
-    getRecipeAvailabilityForUserProfile(
-      userProfile.id,
-      featuredRecipeRows.map((row) => row.id),
-      { locale },
-    ),
   ]);
 
   const pantryNames = pantryNameRows.flatMap((row) => {
@@ -323,7 +122,10 @@ async function getBasicHomeData(
   });
 
   return {
-    featuredRecipes: buildFeaturedRecipes(featuredAvailability),
+    featuredRecipes,
+    recipeBrowseAvailableFilters: availableRecipeFilters,
+    initialRecipeHasMore: initialRecipePage.hasMore,
+    initialRecipeTotalCount: initialRecipePage.totalCount,
     pantrySummary: {
       itemCount: pantryCountRow[0]?.value ?? 0,
       cookableCount: recipeMatches.cookable.length,
@@ -409,6 +211,7 @@ async function getInitialProfileSectionData(userId: string, email?: string | nul
         : "",
       membership: context.membership || "basic",
       badges: context.badges,
+      isEmailSubscriptionActive: context.userProfile.isEmailSubscriptionActive,
     },
     nutrition,
   };
@@ -526,7 +329,11 @@ export default async function HomePageCanonical() {
 
   return (
     <HomePage
+      membership={session.user.membership ?? "basic"}
       featuredRecipes={basicHomeData.featuredRecipes}
+      recipeBrowseAvailableFilters={basicHomeData.recipeBrowseAvailableFilters}
+      initialRecipeHasMore={basicHomeData.initialRecipeHasMore}
+      initialRecipeTotalCount={basicHomeData.initialRecipeTotalCount}
       pantrySummary={basicHomeData.pantrySummary}
       cookableRecipes={basicHomeData.cookableRecipes}
       almostCookableRecipes={basicHomeData.almostCookableRecipes}

@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "crypto";
 
 import { apiLogger } from "@/lib/logger";
-import { redis } from "@/lib/redis";
+import { redis } from "@/lib/cache/redis";
 
 const PUSH_OPT_IN_TTL_SECONDS = 60 * 60 * 24;
 

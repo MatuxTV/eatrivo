@@ -5,14 +5,14 @@ import {
   createCheckoutSession,
   getOrCreateCustomer,
   STRIPE_PRICES,
-} from "@/lib/stripe";
+} from "@/lib/billing/stripe";
 import { db } from "@/index";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import { unauthorizedError } from "@/lib/safeError";
-import { getTrialPeriodForUser } from "@/lib/subscription";
-import { captureServerAnalyticsEvent } from "@/lib/analytics-server";
+import { getTrialPeriodForUser } from "@/lib/billing/subscription";
+import { captureServerAnalyticsEvent } from "@/lib/analytics/analytics-server";
 
 export async function POST(req: NextRequest) {
   try {

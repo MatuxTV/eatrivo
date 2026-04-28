@@ -18,7 +18,7 @@ import InlineEditPanel from "@/components/inline-edit/InlineEditPanel";
 import InlineEditToggleButton from "@/components/inline-edit/InlineEditToggleButton";
 import QuantityUnitEditor from "@/components/inline-edit/QuantityUnitEditor";
 import type { PantryItem } from "@/hooks/usePantry";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { formatLocalizedAmountLabel } from "@/lib/pantry/format";
 
 interface PantryItemRowProps {

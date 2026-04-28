@@ -29,6 +29,7 @@ import {
   Loader2,
 } from "lucide-react";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
+import { getRecipeCategoryGradient } from "@/lib/recipes/category-keys";
 import { Button } from "@/components/ui/button";
 
 const RESTRICTION_FLAG_TRANSLATION_KEYS: Record<string, string> = {
@@ -62,22 +63,6 @@ interface RecipeBrowserDialogProps {
 /* ────────────────────────────────────────────── */
 /*  Helpers                                       */
 /* ────────────────────────────────────────────── */
-
-function getCategoryGradient(categoryKey: string): string {
-  switch (categoryKey) {
-    case "breakfast":
-      return "from-amber-500 via-orange-500 to-rose-500";
-    case "lunch":
-    case "lunch-and-dinner":
-      return "from-emerald-500 via-teal-500 to-cyan-500";
-    case "dinner":
-      return "from-indigo-500 via-violet-500 to-fuchsia-500";
-    case "smoothies":
-      return "from-pink-500 via-rose-500 to-orange-400";
-    default:
-      return "from-purple-600 via-fuchsia-500 to-pink-500";
-  }
-}
 
 /* ────────────────────────────────────────────── */
 /*  Component                                     */
@@ -324,7 +309,7 @@ export default function RecipeBrowserDialog({
           >
             {/* Hero gradient header */}
             <div
-              className={`relative mx-4 rounded-[1.5rem] overflow-hidden bg-gradient-to-br ${getCategoryGradient(recipe.categoryKey)} p-6 sm:p-8 text-white`}
+              className={`relative mx-4 rounded-[1.5rem] overflow-hidden bg-gradient-to-br ${getRecipeCategoryGradient(recipe.categoryKey)} p-6 sm:p-8 text-white`}
             >
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.3),transparent_45%)]" />
               <div className="relative z-10 space-y-4">
@@ -560,6 +545,10 @@ export default function RecipeBrowserDialog({
                       category: null,
                       available: true,
                       matchType: ingredient.matchType,
+                      isStaple:
+                        ingredientByName.get(
+                          ingredient.recipeIngredientName.trim().toLowerCase(),
+                        )?.pantryComparison?.status === "available-staple",
                       tone: resolveTone(
                         ingredient.recipeIngredientName,
                         true,
@@ -580,6 +569,9 @@ export default function RecipeBrowserDialog({
                           category: null,
                           available: true,
                           matchType: "exact" as const,
+                          isStaple:
+                            ingredient.pantryComparison?.status ===
+                            "available-staple",
                           tone: resolveTone(ingredient.name, true, "exact"),
                         }))
                       : [];
@@ -594,6 +586,7 @@ export default function RecipeBrowserDialog({
                         null,
                       available: false,
                       matchType: "exact" as const,
+                      isStaple: false,
                       tone: "red" as const,
                     }),
                   );
@@ -623,7 +616,7 @@ export default function RecipeBrowserDialog({
                                 : "bg-red-50/60 ring-red-200/50"
                           }`}
                         >
-                          {item.available ? (
+                          {item.available && !item.isStaple ? (
                             <div
                               className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
                                 item.tone === "orange"
@@ -644,8 +637,7 @@ export default function RecipeBrowserDialog({
                             <button
                               type="button"
                               onClick={() => {
-                                void
-                                handleSelectMissingIngredient(
+                                void handleSelectMissingIngredient(
                                   item.name,
                                   item.amount,
                                   item.category,
@@ -655,7 +647,9 @@ export default function RecipeBrowserDialog({
                               className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-90 ${
                                 selectedMissingIngredients.has(item.name)
                                   ? "bg-gray-200"
-                                  : "bg-red-500 hover:bg-red-600 shadow-sm shadow-red-200"
+                                  : item.isStaple
+                                    ? "bg-eatrivo-green hover:bg-green-600 shadow-sm shadow-green-200"
+                                    : "bg-red-500 hover:bg-red-600 shadow-sm shadow-red-200"
                               }`}
                               title={t("basic.recipeDialog.addToShoppingList")}
                             >
@@ -692,7 +686,7 @@ export default function RecipeBrowserDialog({
                               ) : null}
                             </div>
                             {item.amount ? (
-                              <span className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500 ring-1 ring-gray-200/70">
+                              <span className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-gray-500 ring-1 ring-gray-200/70">
                                 {item.amount}
                               </span>
                             ) : null}

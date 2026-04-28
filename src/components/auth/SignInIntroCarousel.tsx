@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
@@ -46,13 +46,13 @@ type SlideDefinition = {
 const localeScreenshots: Record<Locale, string[]> = {
   sk: [
     "/images/screenshots/sk/SCREEN_HOME.jpg",
-    "/images/screenshots/sk/SCREEN_PANTRY.jpg",
     "/images/screenshots/sk/SCREEN_CHAT_W_RIVO.jpg",
+    "/images/screenshots/sk/SCREEN_PANTRY.jpg"
   ],
   en: [
     "/images/screenshots/en/SCREEN_HOME.jpg",
-    "/images/screenshots/en/SCREEN_PANTRY.jpg",
     "/images/screenshots/en/SCREEN_SHOPPING_LIST.jpg",
+    "/images/screenshots/en/SCREEN_PANTRY.jpg"
   ],
 };
 
@@ -73,17 +73,6 @@ const slideVariants = {
     scale: 0.985,
   }),
 };
-
-function shuffleArray(items: string[]) {
-  const nextItems = [...items];
-
-  for (let index = nextItems.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    [nextItems[index], nextItems[swapIndex]] = [nextItems[swapIndex], nextItems[index]];
-  }
-
-  return nextItems;
-}
 
 function FeaturePhoneMockup({ screenshotSrc, alt }: { screenshotSrc: string; alt: string }) {
   return (
@@ -198,11 +187,7 @@ export function SignInIntroCarousel({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const touchStartRef = useRef<number | null>(null);
-  const [featureScreenshots, setFeatureScreenshots] = useState<string[]>(() => localeScreenshots[locale]);
-
-  useEffect(() => {
-    setFeatureScreenshots(shuffleArray(localeScreenshots[locale]));
-  }, [locale]);
+  const featureScreenshots = localeScreenshots[locale];
 
   const slides = useMemo<SlideDefinition[]>(
     () => [

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Activity,
   AlertTriangle,
@@ -43,6 +44,13 @@ interface AnalyticsData {
     kitchenCounterAttempts30d: number;
     chatSessions30d: number;
     customRecipesAccepted30d: number;
+  };
+  newUsers: {
+    windowDays: number;
+    total: number;
+    active: number;
+    inactive: number;
+    users: NewUserActivity[];
   };
   comparisons: {
     pantryViews: DeltaMetric;
@@ -160,6 +168,31 @@ interface AnalyticsData {
   };
 }
 
+interface NewUserActivity {
+  userId: string;
+  userProfileId: string;
+  fullName: string;
+  email: string;
+  membership: string;
+  registeredAt: string;
+  lastActivityAt: string | null;
+  daysSinceRegistration: number;
+  activity: {
+    totalTrackedEvents: number;
+    pantryItems: number;
+    pantryViews: number;
+    kitchenCounterAttempts: number;
+    recipeOpens: number;
+    customRecipesAccepted: number;
+    chatSessions: number;
+    chatMessages: number;
+  };
+  recentActivities: {
+    label: string;
+    occurredAt: string;
+  }[];
+}
+
 interface DeltaMetric {
   current: number;
   previous: number;
@@ -194,6 +227,10 @@ const eventNameTranslations: Record<string, string> = {
 
 function formatPercent(value: number) {
   return `${value.toFixed(1)}%`;
+}
+
+function formatMembershipLabel(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function formatEventName(eventName: string) {
@@ -464,24 +501,30 @@ function MiniBarChart({
 }
 
 export default function AnalyticsTab() {
+  const t = useTranslations("emails.admin.dashboard.analyticsTab");
+  const locale = useLocale();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [rangeDays, setRangeDays] = useState("30");
+  const [newUsersWindowDays, setNewUsersWindowDays] = useState("30");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewingSession, setViewingSession] = useState<string | null>(null);
   const [sessionMessages, setSessionMessages] = useState<ChatMessage[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
-  const fetchAnalytics = useCallback(async (selectedRangeDays: string) => {
+  const fetchAnalytics = useCallback(async (
+    selectedRangeDays: string,
+    selectedNewUsersWindowDays: string,
+  ) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch(
-        `/api/admin/analytics?rangeDays=${selectedRangeDays}`,
+        `/api/admin/analytics?rangeDays=${selectedRangeDays}&newUsersWindowDays=${selectedNewUsersWindowDays}`,
       );
       if (!response.ok) {
-        throw new Error("Failed to fetch analytics");
+        throw new Error(t("errors.fetchAnalytics"));
       }
 
       const result = (await response.json()) as AnalyticsData;
@@ -491,7 +534,7 @@ export default function AnalyticsTab() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const fetchSessionMessages = async (sessionId: string) => {
     setViewingSession(sessionId);
@@ -500,7 +543,7 @@ export default function AnalyticsTab() {
     try {
       const response = await fetch(`/api/admin/chat-analytics?sessionId=${sessionId}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch messages");
+        throw new Error(t("errors.fetchMessages"));
       }
 
       const result = await response.json();
@@ -514,8 +557,8 @@ export default function AnalyticsTab() {
   };
 
   useEffect(() => {
-    void fetchAnalytics(rangeDays);
-  }, [fetchAnalytics, rangeDays]);
+    void fetchAnalytics(rangeDays, newUsersWindowDays);
+  }, [fetchAnalytics, newUsersWindowDays, rangeDays]);
 
   if (isLoading) {
     return (
@@ -529,8 +572,8 @@ export default function AnalyticsTab() {
     return (
       <div className="rounded-lg bg-red-50 p-6 text-center">
         <p className="text-red-600">{error}</p>
-        <Button onClick={() => void fetchAnalytics(rangeDays)} variant="outline" className="mt-4">
-          Skúsiť znova
+        <Button onClick={() => void fetchAnalytics(rangeDays, newUsersWindowDays)} variant="outline" className="mt-4">
+          {t("actions.retry")}
         </Button>
       </div>
     );
@@ -548,29 +591,33 @@ export default function AnalyticsTab() {
       <div className="flex flex-col gap-3 rounded-2xl border bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.08),_transparent_42%),linear-gradient(180deg,_#ffffff,_#f8fafc)] p-4 shadow-sm sm:p-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
-            Admin Analytics
+            {t("hero.title")}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Aktivne surfaces only: pantry, kitchen counter, chat with Rivo, recipe opens a custom recipe creation za posledných {data.rangeDays} dní.
+            {t("hero.description", { days: data.rangeDays })}
           </p>
           <p className="mt-2 text-xs text-muted-foreground">
-            Posledné obnovenie: {new Date(data.generatedAt).toLocaleString("sk-SK")}
+            {t("hero.lastUpdated", {
+              date: new Date(data.generatedAt).toLocaleString(
+                locale === "sk" ? "sk-SK" : "en-GB",
+              ),
+            })}
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Select value={rangeDays} onValueChange={setRangeDays}>
             <SelectTrigger className="min-w-36 bg-white">
-              <SelectValue placeholder="Rozsah" />
+              <SelectValue placeholder={t("filters.rangePlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7">Posledných 7 dní</SelectItem>
-              <SelectItem value="30">Posledných 30 dní</SelectItem>
-              <SelectItem value="90">Posledných 90 dní</SelectItem>
+              <SelectItem value="7">{t("filters.last7Days")}</SelectItem>
+              <SelectItem value="30">{t("filters.last30Days")}</SelectItem>
+              <SelectItem value="90">{t("filters.last90Days")}</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={() => void fetchAnalytics(rangeDays)} variant="outline" disabled={isLoading}>
+          <Button onClick={() => void fetchAnalytics(rangeDays, newUsersWindowDays)} variant="outline" disabled={isLoading}>
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            Obnoviť
+            {t("actions.refresh")}
           </Button>
         </div>
       </div>
@@ -1097,6 +1144,147 @@ export default function AnalyticsTab() {
           valueKey="messageCount"
           color="bg-gradient-to-t from-violet-600 to-fuchsia-400"
         />
+      </div>
+
+      <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h3 className="font-semibold text-slate-900">New Users Cohort</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Používatelia registrovaní za posledných {data.newUsers.windowDays} dní, zoradení podľa registrácie.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:items-end">
+            <Select value={newUsersWindowDays} onValueChange={setNewUsersWindowDays}>
+              <SelectTrigger className="min-w-36 bg-white">
+                <SelectValue placeholder="Noví používatelia" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7">Noví za 7 dní</SelectItem>
+                <SelectItem value="14">Noví za 14 dní</SelectItem>
+                <SelectItem value="30">Noví za 30 dní</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-xl bg-sky-50 px-3 py-2">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-sky-700">New</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">{data.newUsers.total}</p>
+              </div>
+              <div className="rounded-xl bg-emerald-50 px-3 py-2">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-emerald-700">Active</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">{data.newUsers.active}</p>
+              </div>
+              <div className="rounded-xl bg-slate-100 px-3 py-2">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-slate-600">Silent</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">{data.newUsers.inactive}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {data.newUsers.users.length === 0 ? (
+          <p className="pt-4 text-sm text-muted-foreground">Za posledných {data.newUsers.windowDays} dní nepribudol žiadny nový používateľ.</p>
+        ) : (
+          <div className="mt-4 space-y-4">
+            {data.newUsers.users.map((user) => (
+              <div key={user.userId} className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-900">{user.fullName}</p>
+                      <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                        {formatMembershipLabel(user.membership)}
+                      </span>
+                      <span className="rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
+                        deň {user.daysSinceRegistration + 1}
+                      </span>
+                    </div>
+                    <p className="mt-1 break-all text-xs text-muted-foreground">{user.email}</p>
+                    <div className="mt-2 flex flex-wrap gap-3 text-[11px] text-slate-500">
+                      <span>
+                        Registrovaný: {new Date(user.registeredAt).toLocaleString("sk-SK")}
+                      </span>
+                      <span>
+                        Posledná aktivita: {user.lastActivityAt ? new Date(user.lastActivityAt).toLocaleString("sk-SK") : "zatiaľ žiadna"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:w-[28rem]">
+                    <div className="rounded-xl bg-white px-3 py-2">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500">Tracked events</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900">{user.activity.totalTrackedEvents}</p>
+                    </div>
+                    <div className="rounded-xl bg-white px-3 py-2">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500">Chat</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900">{user.activity.chatSessions}</p>
+                      <p className="text-[10px] text-slate-500">{user.activity.chatMessages} správ</p>
+                    </div>
+                    <div className="rounded-xl bg-white px-3 py-2">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500">Pantry</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900">{user.activity.pantryViews}</p>
+                      <p className="text-[10px] text-slate-500">{user.activity.pantryItems} items</p>
+                    </div>
+                    <div className="rounded-xl bg-white px-3 py-2">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500">Recipes</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900">{user.activity.recipeOpens}</p>
+                      <p className="text-[10px] text-slate-500">{user.activity.customRecipesAccepted} custom</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 xl:grid-cols-[0.95fr,1.05fr]">
+                  <div className="rounded-xl border bg-white p-3">
+                    <p className="text-sm font-medium text-slate-900">Surface activity</p>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <MetricItem
+                        label="Kitchen counter attempts"
+                        value={user.activity.kitchenCounterAttempts}
+                        note="Dokončenia kitchen counter flow pre nového používateľa."
+                      />
+                      <MetricItem
+                        label="Recipe opens"
+                        value={user.activity.recipeOpens}
+                        note="Koľkokrát otvoril detail receptu."
+                      />
+                      <MetricItem
+                        label="Pantry views"
+                        value={user.activity.pantryViews}
+                        note="Koľkokrát vstúpil do pantry surface."
+                      />
+                      <MetricItem
+                        label="Chat sessions"
+                        value={user.activity.chatSessions}
+                        note="Samostatné Rivo sessions od registrácie."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border bg-white p-3">
+                    <p className="text-sm font-medium text-slate-900">Recent activity feed</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                      Posledné trackované eventy pre rýchle pochopenie, čo nový používateľ skúšal po registrácii.
+                    </p>
+                    <div className="mt-3 space-y-2">
+                      {user.recentActivities.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">Zatiaľ bez trackovaných eventov.</p>
+                      ) : (
+                        user.recentActivities.map((activity, index) => (
+                          <div key={`${user.userId}-${activity.occurredAt}-${index}`} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2">
+                            <span className="text-sm text-slate-700">{activity.label}</span>
+                            <span className="text-[11px] text-slate-500">
+                              {new Date(activity.occurredAt).toLocaleString("sk-SK")}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr,0.9fr]">

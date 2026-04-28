@@ -46,7 +46,7 @@ export function buildPantryPromptContext(
       "Tracked pantry items with quantities:",
       quantitySection,
       "",
-      "Always-available staples already in stock:",
+      "Untracked availability items already in stock:",
       stapleSection,
     ].join("\n"),
     quantityTrackedCount: quantityTrackedItems.length,

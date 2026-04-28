@@ -24,8 +24,8 @@ export default function UsersTab({
   isLoadingUsers,
   onSelectUser,
 }: UsersTabProps) {
-  const t = useTranslations("admin.dashboard.usersTab");
-  const tCommon = useTranslations("admin.dashboard.common");
+  const t = useTranslations("emails.admin.dashboard.usersTab");
+  const tCommon = useTranslations("emails.admin.dashboard.common");
 
   return (
     <Card className="border-none shadow-lg bg-eatrivo-light">

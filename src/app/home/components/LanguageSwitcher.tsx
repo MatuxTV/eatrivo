@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useTransition } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { isLocale, type Locale } from "@/i18n/routing";
 import { SK, GB } from "country-flag-icons/react/3x2";
 import { updateLocale } from "@/app/actions/update-locale";

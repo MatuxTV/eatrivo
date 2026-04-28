@@ -28,6 +28,7 @@ import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import LanguageSwitcher from "../LanguageSwitcher";
+import FeedbackButton from "@/components/FeedbackButton";
 
 interface ProfilePageClientProps {
   onBack?: () => void;
@@ -406,6 +407,10 @@ export default function ProfilePageClient({
         <AnimatePresence mode="wait" custom={navDirection}>
           {renderActiveView()}
         </AnimatePresence>
+      </div>
+
+      <div className="hidden md:block">
+        <FeedbackButton />
       </div>
     </AppShellViewport>
   );

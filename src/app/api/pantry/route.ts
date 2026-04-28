@@ -14,7 +14,7 @@ import { eq, asc, and } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
 import { normalizePantryItemsInBackground } from "@/lib/pantry/background-normalization";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
-import { CacheService } from "@/lib/redis";
+import { CacheService } from "@/lib/cache/redis";
 import {
   handleApiError,
   safeErrorResponse,
@@ -35,7 +35,7 @@ import {
   pantryCreateItemSchema,
   pantryListQuerySchema,
 } from "@/lib/schemas/pantry";
-import { guessFoodCategory, normalizeUnit } from "@/lib/units";
+import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
 
 const CACHE_TTL = 300; // 5 minutes
 

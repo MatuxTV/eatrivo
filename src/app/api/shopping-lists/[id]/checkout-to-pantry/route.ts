@@ -18,12 +18,12 @@ import {
   shoppingListCheckoutSchema,
   shoppingListIdSchema,
 } from "@/lib/schemas/shopping-list";
-import { CacheService, RequestLock } from "@/lib/redis";
+import { CacheService, RequestLock } from "@/lib/cache/redis";
 import {
   resolvePantryTrackingMode,
   shouldPreservePantryQuantity,
 } from "@/lib/pantry/tracking";
-import { guessFoodCategory, normalizeUnit } from "@/lib/units";
+import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
 
 function errorResponse(error: string, code: string, status: number) {
   return NextResponse.json({ error, code }, { status });

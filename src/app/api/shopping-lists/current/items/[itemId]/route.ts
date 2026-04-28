@@ -9,9 +9,9 @@ import { apiLogger } from "@/lib/logger";
 import { formatAmountLabel } from "@/lib/pantry/format";
 import { parseShoppingListAmountLabel } from "@/lib/pantry/shopping-list-amount";
 import { checkRateLimit } from "@/lib/rateLimit";
-import { CacheService } from "@/lib/redis";
+import { CacheService } from "@/lib/cache/redis";
 import { pantryAmountLabelSchema } from "@/lib/schemas/pantry";
-import { guessFoodCategory } from "@/lib/units";
+import { guessFoodCategory } from "@/lib/ingredients/units";
 
 type ShoppingListItemResponse = {
   id: string;

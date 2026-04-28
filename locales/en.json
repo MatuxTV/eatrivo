@@ -685,7 +685,7 @@
         "addToShoppingList": "Add to shopping list",
         "cookThisRecipe": "I want to cook this recipe",
         "haveAmountInline": "have {amount}",
-        "stapleAvailable": "staple",
+        "stapleAvailable": "have at home",
         "fallbackUsing": "We have: {ingredient}",
         "saveRecipe": "Save recipe",
         "removeBookmark": "Remove bookmark",
@@ -708,6 +708,8 @@
         "itemsCount": "items",
         "doneButton": "Done",
         "completing": "Finishing...",
+        "completeSuccess": "Shopping list completed successfully.",
+        "completeError": "Failed to complete the shopping list.",
         "emptyTitle": "Your shopping list is empty",
         "emptyDescription": "Open an almost-cookable recipe and tap a missing ingredient to add it here.",
         "historyTitle": "History",
@@ -744,7 +746,7 @@
         "readyAmount": "ready",
         "missingAmount": "missing",
         "haveAmountInline": "have {amount}",
-        "stapleAvailable": "staple",
+        "stapleAvailable": "have at home",
         "previousStep": "Previous",
         "nextStep": "Next step",
         "stepProgress": "Step {current} of {total}",
@@ -776,11 +778,30 @@
         "save": "Save",
         "clearAll": "Clear all",
         "noSelection": "No filter selected",
+        "selectedCount": "{count} filters selected",
         "selectedValue": "Selected: {value}",
+        "loading": "Loading recipes...",
+        "loadMore": "Load 8 more recipes",
+        "loadingMore": "Loading more recipes...",
+        "loadError": "Couldn't load recipes right now",
+        "retry": "Try again",
         "sections": {
           "popular": "Start here",
+          "categories": "Meal type",
           "preferences": "Prefer",
           "special": "Avoid / special"
+        },
+        "categories": {
+          "breakfast": "Breakfast",
+          "lunch": "Lunch",
+          "dinner": "Dinner",
+          "snack": "Snack",
+          "smoothies": "Smoothies",
+          "dessert": "Dessert",
+          "treats": "Treats",
+          "pre-workout-fuel": "Pre-workout fuel",
+          "post-workout-fuel": "Post-workout fuel",
+          "lunch-and-dinner": "Lunch and dinner"
         }
       },
       "toasts": {
@@ -1193,6 +1214,15 @@
         },
         "email": {
           "helper": "Email can't be changed because it's linked to your account"
+        },
+        "emailSubscription": {
+          "label": "Email subscription",
+          "toggleTitle": "Product update emails",
+          "helper": "Turn this off if you no longer want feature updates and release emails from Eatrivo.",
+          "status": {
+            "enabled": "Subscribed",
+            "disabled": "Unsubscribed"
+          }
         }
       },
       "membership": {
@@ -1444,6 +1474,43 @@
           "emails": "Emails",
           "notifications": "Notifications"
         },
+        "metadata": {
+          "title": "Admin dashboard",
+          "description": "Admin panel for Eatrivo operations, notifications, analytics, and email updates"
+        },
+        "header": {
+          "title": "Admin Dashboard",
+          "description": "Manage the Eatrivo application",
+          "backHome": "Back to Home",
+          "beta": "Beta",
+          "version": "Version"
+        },
+        "page": {
+          "toasts": {
+            "loadUsersError": "Couldn't load users",
+            "loadUsersNetworkError": "Network error while loading users",
+            "emailMissingTestFields": "Fill in version, update title, and test email",
+            "testEmailSubscriptionRequired": "Test email must belong to a user with an active email subscription",
+            "testEmailSent": "Test email sent successfully",
+            "testEmailSendError": "Couldn't send test email",
+            "emailMissingRequiredFields": "Fill in all required fields",
+            "emailMissingChanges": "Add at least one change with title and description",
+            "noSubscribedUsers": "There are no users with an active email subscription",
+            "emailsSent": "Emails sent to {count} users",
+            "emailsSendError": "Couldn't send emails"
+          },
+          "errors": {
+            "failedToSendEmail": "Failed to send email",
+            "failedToSendEmails": "Failed to send emails",
+            "sendError": "Sending failed"
+          },
+          "results": {
+            "testEmailSent": "Test email sent!"
+          },
+          "confirm": {
+            "sendToAll": "Do you really want to send an update email to all {count} users?"
+          }
+        },
         "userInfoCard": {
           "loading": "Loading user data...",
           "empty": "This user has not filled out nutrition details",
@@ -1544,7 +1611,8 @@
             "changeDescriptionPlaceholder": "Brief description of the change...",
             "testEmail": {
               "label": "Test address",
-              "placeholder": "you@email.com"
+              "placeholder": "you@email.com",
+              "helper": "Only addresses belonging to users with an active email subscription can receive admin update emails."
             }
           },
           "types": {
@@ -1569,13 +1637,202 @@
           "stats": {
             "title": "Email stats",
             "totalUsers": "Total users",
-            "withEmail": "With email"
+            "withEmail": "With email",
+            "activeSubscribers": "Active subscribers"
           },
           "tips": {
             "title": "Email tips",
             "first": "Send a test to your own address first",
             "second": "Use a clear list of changes",
             "third": "Group changes by type (feature/improvement/fix)"
+          }
+        },
+        "notificationsTab": {
+          "sections": {
+            "test": {
+              "title": "Test Push Notifications",
+              "description": "Send a test push notification to a selected user"
+            },
+            "broadcast": {
+              "title": "Broadcast to Everyone",
+              "description": "Send a push notification to all signed-in users as a cron job simulation"
+            },
+            "debug": {
+              "title": "Debug / System Status",
+              "description": "Check VAPID keys, database subscriptions, and send a test notification to yourself"
+            }
+          },
+          "fields": {
+            "user": "User",
+            "userPlaceholder": "Select a user...",
+            "notificationType": "Notification type",
+            "language": "Language",
+            "message": "Message",
+            "broadcastType": "Broadcast type"
+          },
+          "types": {
+            "motivational": {
+              "label": "Motivational notification",
+              "description": "Rotating motivational messages, same schedule as the cron job every 2 days"
+            },
+            "mealPlanReminder": {
+              "label": "Meal plan reminder",
+              "description": "Reminder to create this week's meal plan"
+            }
+          },
+          "languages": {
+            "sk": "Slovak",
+            "en": "English"
+          },
+          "preview": {
+            "title": "Notification preview"
+          },
+          "payloads": {
+            "motivational": {
+              "sk": {
+                "items": {
+                  "1": {
+                    "title": "🍽️ Ako vyzerá tvoj dnešný jedálniček?",
+                    "body": "Pozri sa na svoje jedlá a naplánuj si deň plný energie!"
+                  },
+                  "2": {
+                    "title": "💪 Nezabudni na svoje ciele!",
+                    "body": "Sleduj svoj pokrok a drž sa plánu. Rivo ti pomôže!"
+                  },
+                  "3": {
+                    "title": "🥗 Čas na zdravý návyk!",
+                    "body": "Otvor Eatrivo a pozri si svoje jedlá na dnes."
+                  },
+                  "4": {
+                    "title": "📊 Kontrola výživy",
+                    "body": "Ako sa ti darí s kalorickým príjmom? Skontroluj si to!"
+                  },
+                  "5": {
+                    "title": "🔥 Pokračuj v skvelej práci!",
+                    "body": "Každý deň sa počíta. Otvor si Eatrivo a naplánuj si jedlá."
+                  },
+                  "6": {
+                    "title": "🍎 Tvoje telo ti poďakuje!",
+                    "body": "Sledovanie stravy je kľúč k úspechu. Pokračuj!"
+                  }
+                }
+              },
+              "en": {
+                "items": {
+                  "1": {
+                    "title": "🍽️ What does your menu look like today?",
+                    "body": "Check your meals and plan a day full of energy!"
+                  },
+                  "2": {
+                    "title": "💪 Don't forget your goals!",
+                    "body": "Track your progress and stick to the plan. Rivo will help!"
+                  },
+                  "3": {
+                    "title": "🥗 Time for a healthy habit!",
+                    "body": "Open Eatrivo and check your meals for today."
+                  },
+                  "4": {
+                    "title": "📊 Nutrition check",
+                    "body": "How's your calorie intake going? Check it out!"
+                  },
+                  "5": {
+                    "title": "🔥 Keep up the great work!",
+                    "body": "Every day counts. Open Eatrivo and plan your meals."
+                  },
+                  "6": {
+                    "title": "🍎 Your body will thank you!",
+                    "body": "Tracking your diet is the key to success. Keep going!"
+                  }
+                }
+              }
+            },
+            "mealPlanReminder": {
+              "sk": {
+                "title": "📋 Nový týždeň, nový jedálniček!",
+                "body": "Ešte nemáš jedálny plán na tento týždeň. Nechaj Riva uvariť! 🍳"
+              },
+              "en": {
+                "title": "📋 New week, new meal plan!",
+                "body": "You don't have a meal plan for this week yet. Let Rivo cook! 🍳"
+              }
+            }
+          },
+          "broadcastTypes": {
+            "motivational": "Motivational — send to everyone",
+            "mealReminder": "Meal plan reminder — only for users without a plan this week"
+          },
+          "actions": {
+            "sending": "Sending...",
+            "sendTest": "Send test notification",
+            "broadcasting": "Sending broadcast...",
+            "runBroadcast": "Run broadcast",
+            "refresh": "Refresh",
+            "sendTestToSelf": "Send a test notification to myself"
+          },
+          "results": {
+            "notificationSent": "Notification sent. ({count} devices)",
+            "sendFailed": "Sending failed",
+            "sendError": "Sending error",
+            "broadcastMotivational": "Sent to {successful}/{total} devices",
+            "broadcastMealReminder": "Notified: {notified}, skipped: {skipped}",
+            "broadcastFailed": "Broadcast failed",
+            "networkError": "Network error"
+          },
+          "debug": {
+            "serverStatus": "Server status",
+            "vapidPublicKey": "VAPID public key",
+            "vapidPrivateKey": "VAPID private key",
+            "adminEmail": "ADMIN_EMAIL",
+            "dbSubscriptions": "Subscriptions in DB",
+            "uniqueUsers": "Unique users",
+            "loading": "Loading...",
+            "userSubscriptions": "Subscriptions for a specific user",
+            "deviceCount": "Device count",
+            "device": "Device {index}",
+            "endpoint": "Endpoint",
+            "keys": "Keys",
+            "userAgent": "User-agent",
+            "addedAt": "Added: {date}",
+            "sendToSelfHint": "Sends a notification to your account. You must be signed in and have notifications enabled.",
+            "ok": "OK",
+            "missing": "MISSING",
+            "emptyValue": "-"
+          },
+          "toasts": {
+            "loadDebugStatsError": "Couldn't load debug stats",
+            "loadDebugStatsNetworkError": "Network error while loading debug stats",
+            "loadUserSubsError": "Couldn't load user subscriptions",
+            "loadUserSubsNetworkError": "Network error while loading user subscriptions",
+            "testFailed": "Test failed",
+            "networkError": "Network error",
+            "selectUser": "Select a user",
+            "notificationSent": "Notification sent successfully",
+            "notificationSendError": "Couldn't send notification",
+            "notificationSendNetworkError": "Network error while sending notification",
+            "broadcastSent": "Broadcast sent",
+            "broadcastError": "Broadcast failed",
+            "broadcastNetworkError": "Network error while sending broadcast"
+          }
+        },
+        "analyticsTab": {
+          "hero": {
+            "title": "Admin Analytics",
+            "description": "Active surfaces only: pantry, kitchen counter, chat with Rivo, recipe opens, and custom recipe creation for the last {days} days.",
+            "lastUpdated": "Last refresh: {date}"
+          },
+          "filters": {
+            "rangePlaceholder": "Range",
+            "last7Days": "Last 7 days",
+            "last30Days": "Last 30 days",
+            "last90Days": "Last 90 days"
+          },
+          "actions": {
+            "refresh": "Refresh",
+            "retry": "Try again"
+          },
+          "errors": {
+            "fetchAnalytics": "Failed to fetch analytics",
+            "fetchMessages": "Failed to fetch messages"
           }
         },
         "profilesTab": {
@@ -1902,8 +2159,14 @@
     "feature3": "Advanced shopping lists",
     "upgradeButton": "Upgrade to Plus",
     "maybeLater": "Maybe later",
-    "socialProof": "Join 2,400+ members eating smarter",
-    "trialDays": "{days} Days Free"
+    "socialProof": "Join members that are eating smarter",
+    "trialDays": "{days} Days Free",
+    "monthlyLabel": "Monthly",
+    "yearlyLabel": "Yearly",
+    "perMonthShort": "/ month",
+    "perYearShort": "/ year",
+    "mostPopular": "Most popular",
+    "cancelAnytime": "Cancel anytime"
   },
   "cookieConsent": {
     "title": "We use cookies",
@@ -1956,7 +2219,38 @@
     "summary_inventory": "In pantry",
     "summary_restock": "Need restock",
     "summary_expiring": "Expiring",
-    "scan_bill":"Scan",
+    "scan_bill":"Scan receipt",
+    "scan_premium_badge": "Plus",
+    "scan_partial_badge": "Needs review",
+    "scan_cta_hint": "Plus feature: scan a receipt and edit detected items before saving.",
+    "scan_locked_hint": "Available on Plus. Unlock AI receipt scan and faster pantry top-ups.",
+    "scan_locked_description": "Receipt scan is available for Plus members only.",
+    "scan_upgrade_eyebrow": "Smart pantry top-up",
+    "scan_upgrade_title": "Turn a receipt into pantry items in one guided pass",
+    "scan_upgrade_description": "Upload a grocery receipt, let AI detect the items, then review and correct everything before it lands in your pantry drafts.",
+    "scan_upgrade_reason_title": "Why it is worth paying for",
+    "scan_upgrade_reason_description": "It removes the slow manual rewrite after every shopping trip and gives you a much faster pantry refill workflow.",
+    "scan_upgrade_security_title": "Built for a premium-grade flow",
+    "scan_upgrade_security_description": "The scan runs through guarded upload validation, AI extraction, and a final review step so you stay in control before saving.",
+    "scan_modal_title": "Receipt scan to pantry",
+    "scan_modal_description": "Upload a receipt photo. We will validate it first, then let you review the detected items.",
+    "scan_secure_title": "Secure AI scan",
+    "scan_secure_description": "Only image uploads are allowed, the file type is validated, and the raw receipt photo is not persisted in this MVP.",
+    "scan_upload_title": "Choose or capture a receipt",
+    "scan_upload_description": "Supported formats: JPG, PNG, WEBP up to 8 MB. On mobile you can open the camera directly.",
+    "scan_loading_title": "Analyzing receipt and looking for pantry items",
+    "scan_loading_description": "The graph checks whether the extraction is complete enough. If not, it retries before showing the review step.",
+    "scan_review_description": "Review the detected items, add missing ones manually, and then send them into pantry normalization.",
+    "scan_detected_count": "Detected: {count}",
+    "scan_detected_source": "AI detected",
+    "scan_manual_source": "Added manually",
+    "scan_confidence": "Confidence {value}%",
+    "scan_add_manual": "Add item manually",
+    "scan_finalize": "Prepare pantry drafts",
+    "scan_error": "Receipt scan could not be completed.",
+    "scan_finalize_error": "Could not prepare pantry drafts from the receipt review.",
+    "scan_finalize_success": "Receipt scan drafts are now waiting for confirmation in your pantry.",
+    "scan_review_empty": "Add at least one item before continuing.",
     "inventory_title": "Your items",
     "inventory_description": "Compact rows made for quick quantity updates on the go.",
     "empty_state_title": "Pantry is empty",

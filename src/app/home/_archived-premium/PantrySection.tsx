@@ -33,8 +33,8 @@ import {
   type PantryRestockItem,
 } from "@/hooks/usePantry";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { guessFoodCategory } from "@/lib/units";
-import { cn } from "@/lib/utils";
+import { guessFoodCategory } from "@/lib/ingredients/units";
+import { cn } from "@/lib/utils/utils";
 import AddPantryItemModal from "./AddPantryItemModal";
 import PantryItemRow from "./PantryItemRow";
 

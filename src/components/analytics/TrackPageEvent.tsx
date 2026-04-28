@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import {
   trackClientEvent,
   type TrackClientEventParams,
-} from "@/lib/analytics-client";
+} from "@/lib/analytics/analytics-client";
 
 export function TrackPageEvent({
   eventName,

@@ -9,11 +9,12 @@ import {
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/rateLimit";
-import { getUserContext, invalidateUserContextCaches } from "@/lib/user-context-cache";
+import { getUserContext, invalidateUserContextCaches } from "@/lib/user/user-context-cache";
 
 const profileUpdateSchema = z.object({
   fullName: z.string().min(2, "Meno musí mať aspoň 2 znaky"),
   dateOfBirth: z.string(),
+  isEmailSubscriptionActive: z.boolean(),
 });
 
 // GET /api/user/profile - Fetch current user's profile and nutrition data
@@ -64,6 +65,8 @@ export async function GET() {
           : "",
         membership: context.membership || "basic",
         badges: context.badges,
+        isEmailSubscriptionActive:
+          context.userProfile.isEmailSubscriptionActive,
       },
       nutrition: formattedNutrition,
     });
@@ -95,13 +98,14 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const { fullName, dateOfBirth } = validation.data;
+    const { fullName, dateOfBirth, isEmailSubscriptionActive } = validation.data;
 
     // Update user profile (fullName only, dateOfBirth lives in userInfoTable)
     const updated = await db
       .update(userProfiles)
       .set({
         fullName,
+        isEmailSubscriptionActive,
         updated_at: new Date(),
       })
       .where(eq(userProfiles.userId, session.user.id))
@@ -130,6 +134,8 @@ export async function PUT(request: NextRequest) {
         email: session.user.email,
         dateOfBirth: dateOfBirth || "",
         membership: context.membership || "basic",
+        badges: context.badges,
+        isEmailSubscriptionActive: updated[0].isEmailSubscriptionActive,
       },
     });
   } catch (error) {

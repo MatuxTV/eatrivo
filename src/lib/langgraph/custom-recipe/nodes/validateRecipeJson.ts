@@ -172,13 +172,30 @@ function validateIngredientAmountFormats(output: CustomRecipeAiOutput): string |
         category: candidate.category,
       });
 
-      if (issues.length > 0) {
-        return `[${kind}] ${issues[0]?.message ?? "Invalid ingredient unit"}`;
+      const relevantIssues = issues.filter((issue) => {
+        if (ingredient.pantryStatus === "pantry" && issue.errorType === "unit_format_error") {
+          return false;
+        }
+        return true;
+      });
+
+      if (relevantIssues.length > 0) {
+        return `[${kind}] ${relevantIssues[0]?.message ?? "Invalid ingredient unit"}`;
       }
     }
   }
 
   return null;
+}
+
+function shouldRetryUnavailablePreferencesOnly(
+  output: CustomRecipeAiOutput,
+  state: typeof CustomRecipeState.State,
+): boolean {
+  return (
+    state.mode === "preferences_only" &&
+    output.pantryRecipe.status === "unavailable"
+  );
 }
 
 export async function validateRecipeJson(
@@ -217,6 +234,32 @@ export async function validateRecipeJson(
     const validated = customRecipeAiOutputSchema.parse(parsed);
     const pantryReferenceError = validatePantryReferences(validated, state);
     const ingredientUnitError = validateIngredientAmountFormats(validated);
+
+    if (shouldRetryUnavailablePreferencesOnly(validated, state)) {
+      apiLogger.warn(
+        "[customRecipe.validateRecipeJson] preferences-only candidate unavailable",
+        {
+          metadata: {
+            userId: state.userId,
+            userProfileId: state.userProfileId,
+            retryCount: state.retryCount + 1,
+            pantryRecipeReason:
+              validated.pantryRecipe.status === "unavailable"
+                ? validated.pantryRecipe.reason
+                : null,
+          },
+        },
+      );
+
+      return {
+        parsedAiOutput: null,
+        rawAiOutput: null,
+        requestError:
+          "Preferences-only request returned unavailable candidate",
+        retryCount: state.retryCount + 1,
+        validationErrorType: "preferences_only_unavailable",
+      };
+    }
 
     if (pantryReferenceError) {
       apiLogger.warn(

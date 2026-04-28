@@ -685,7 +685,7 @@
         "addToShoppingList": "Pridať do nákupného zoznamu",
         "cookThisRecipe": "Chcem variť tento recept",
         "haveAmountInline": "máme {amount}",
-        "stapleAvailable": "základ",
+        "stapleAvailable": "máš doma",
         "fallbackUsing": "Máme: {ingredient}",
         "saveRecipe": "Uložiť recept",
         "removeBookmark": "Odstrániť záložku",
@@ -708,6 +708,8 @@
         "itemsCount": "položiek",
         "doneButton": "Hotovo",
         "completing": "Dokončujem...",
+        "completeSuccess": "Nákupný zoznam bol úspešne dokončený.",
+        "completeError": "Nákupný zoznam sa nepodarilo dokončiť.",
         "emptyTitle": "Tvoj nákupný zoznam je prázdny",
         "emptyDescription": "Otvor recept, ktorý je skoro pripravený na varenie, a ťukni na chýbajúcu surovinu, aby sa pridala sem.",
         "historyTitle": "História",
@@ -744,7 +746,7 @@
         "readyAmount": "pripravené",
         "missingAmount": "dopĺň",
         "haveAmountInline": "máme {amount}",
-        "stapleAvailable": "základ",
+        "stapleAvailable": "máš doma",
         "previousStep": "Späť",
         "nextStep": "Ďalší krok",
         "stepProgress": "Krok {current} z {total}",
@@ -776,11 +778,30 @@
         "save": "Uložiť",
         "clearAll": "Vymazať",
         "noSelection": "Bez vybraného filtra",
+        "selectedCount": "Vybrané filtre: {count}",
         "selectedValue": "Vybrané: {value}",
+        "loading": "Načítavam recepty...",
+        "loadMore": "Načítať ďalších 8 receptov",
+        "loadingMore": "Načítavam ďalšie recepty...",
+        "loadError": "Nepodarilo sa načítať recepty",
+        "retry": "Skúsiť znova",
         "sections": {
           "popular": "Začni tu",
+          "categories": "Typ jedla",
           "preferences": "Preferuj",
           "special": "Vyhni sa / špeciálne"
+        },
+        "categories": {
+          "breakfast": "Raňajky",
+          "lunch": "Obed",
+          "dinner": "Večera",
+          "snack": "Snack",
+          "smoothies": "Smoothies",
+          "dessert": "Dezerty",
+          "treats": "Maškrty",
+          "pre-workout-fuel": "Pred tréningom",
+          "post-workout-fuel": "Po tréningu",
+          "lunch-and-dinner": "Obed aj večera"
         }
       },
       "toasts": {
@@ -1205,6 +1226,15 @@
         },
         "email": {
           "helper": "Email sa nedá zmeniť, je prepojený s vašim účtom"
+        },
+        "emailSubscription": {
+          "label": "Emailové odbery",
+          "toggleTitle": "Produktové update emaily",
+          "helper": "Vypnite toto nastavenie, ak už nechcete dostávať novinky o funkciách a release emaily z Eatrivo.",
+          "status": {
+            "enabled": "Odber aktívny",
+            "disabled": "Odber vypnutý"
+          }
         }
       },
       "membership": {
@@ -1456,6 +1486,43 @@
           "emails": "Emaily",
           "notifications": "Notifikácie"
         },
+        "metadata": {
+          "title": "Admin dashboard",
+          "description": "Admin panel pre Eatrivo operácie, notifikácie, analytiku a emailové updaty"
+        },
+        "header": {
+          "title": "Admin Dashboard",
+          "description": "Správa aplikácie Eatrivo",
+          "backHome": "Späť na Domov",
+          "beta": "Beta",
+          "version": "Verzia"
+        },
+        "page": {
+          "toasts": {
+            "loadUsersError": "Nepodarilo sa načítať používateľov",
+            "loadUsersNetworkError": "Chyba siete pri načítavaní používateľov",
+            "emailMissingTestFields": "Vyplňte verziu, názov aktualizácie a testovací email",
+            "testEmailSubscriptionRequired": "Testovací email musí patriť používateľovi s aktívnym emailovým odberom",
+            "testEmailSent": "Test email bol úspešne odoslaný",
+            "testEmailSendError": "Nepodarilo sa odoslať test email",
+            "emailMissingRequiredFields": "Vyplňte všetky povinné polia",
+            "emailMissingChanges": "Pridajte aspoň jednu aktualizáciu s názvom a popisom",
+            "noSubscribedUsers": "Nie sú dostupní žiadni používatelia s aktívnym emailovým odberom",
+            "emailsSent": "Emaily odoslané {count} používateľom",
+            "emailsSendError": "Nepodarilo sa odoslať emaily"
+          },
+          "errors": {
+            "failedToSendEmail": "Nepodarilo sa odoslať email",
+            "failedToSendEmails": "Nepodarilo sa odoslať emaily",
+            "sendError": "Chyba pri odosielaní"
+          },
+          "results": {
+            "testEmailSent": "Test email odoslaný!"
+          },
+          "confirm": {
+            "sendToAll": "Naozaj chcete odoslať update email všetkým {count} používateľom?"
+          }
+        },
         "userInfoCard": {
           "loading": "Načítavam údaje používateľa...",
           "empty": "Používateľ nemá vyplnené nutričné údaje",
@@ -1556,7 +1623,8 @@
             "changeDescriptionPlaceholder": "Stručný popis zmeny...",
             "testEmail": {
               "label": "Testovacia adresa",
-              "placeholder": "vas@email.com"
+              "placeholder": "vas@email.com",
+              "helper": "Admin update email je možné odoslať len na adresy používateľov, ktorí majú aktívny emailový odber."
             }
           },
           "types": {
@@ -1581,13 +1649,202 @@
           "stats": {
             "title": "Email štatistiky",
             "totalUsers": "Celkový počet používateľov",
-            "withEmail": "S emailom"
+            "withEmail": "S emailom",
+            "activeSubscribers": "Aktívni odberatelia"
           },
           "tips": {
             "title": "Tipy pre emaily",
             "first": "Najprv odošlite test na svoju adresu",
             "second": "Používajte prehľadný zoznam zmien",
             "third": "Rozdeľte zmeny podľa typu (novinka/vylepšenie/oprava)"
+          }
+        },
+        "notificationsTab": {
+          "sections": {
+            "test": {
+              "title": "Test Push Notifikácie",
+              "description": "Odošli testovaciu push notifikáciu vybranému používateľovi"
+            },
+            "broadcast": {
+              "title": "Broadcast na všetkých",
+              "description": "Odošli push notifikáciu všetkým prihláseným používateľom ako simuláciu cron jobu"
+            },
+            "debug": {
+              "title": "Debug / Stav systému",
+              "description": "Skontroluj VAPID kľúče, databázové subscriptions a odošli test notifikáciu sebe"
+            }
+          },
+          "fields": {
+            "user": "Používateľ",
+            "userPlaceholder": "Vyber používateľa...",
+            "notificationType": "Typ notifikácie",
+            "language": "Jazyk",
+            "message": "Správa",
+            "broadcastType": "Typ broadcastu"
+          },
+          "types": {
+            "motivational": {
+              "label": "Motivačná notifikácia",
+              "description": "Rotujúce motivačné správy, rovnaké ako cron job každé 2 dni"
+            },
+            "mealPlanReminder": {
+              "label": "Pripomienka jedálneho plánu",
+              "description": "Pripomienka na vytvorenie jedálneho plánu na tento týždeň"
+            }
+          },
+          "languages": {
+            "sk": "Slovenčina",
+            "en": "English"
+          },
+          "preview": {
+            "title": "Náhľad notifikácie"
+          },
+          "payloads": {
+            "motivational": {
+              "sk": {
+                "items": {
+                  "1": {
+                    "title": "🍽️ Ako vyzerá tvoj dnešný jedálniček?",
+                    "body": "Pozri sa na svoje jedlá a naplánuj si deň plný energie!"
+                  },
+                  "2": {
+                    "title": "💪 Nezabudni na svoje ciele!",
+                    "body": "Sleduj svoj pokrok a drž sa plánu. Rivo ti pomôže!"
+                  },
+                  "3": {
+                    "title": "🥗 Čas na zdravý návyk!",
+                    "body": "Otvor Eatrivo a pozri si svoje jedlá na dnes."
+                  },
+                  "4": {
+                    "title": "📊 Kontrola výživy",
+                    "body": "Ako sa ti darí s kalorickým príjmom? Skontroluj si to!"
+                  },
+                  "5": {
+                    "title": "🔥 Pokračuj v skvelej práci!",
+                    "body": "Každý deň sa počíta. Otvor si Eatrivo a naplánuj si jedlá."
+                  },
+                  "6": {
+                    "title": "🍎 Tvoje telo ti poďakuje!",
+                    "body": "Sledovanie stravy je kľúč k úspechu. Pokračuj!"
+                  }
+                }
+              },
+              "en": {
+                "items": {
+                  "1": {
+                    "title": "🍽️ What does your menu look like today?",
+                    "body": "Check your meals and plan a day full of energy!"
+                  },
+                  "2": {
+                    "title": "💪 Don't forget your goals!",
+                    "body": "Track your progress and stick to the plan. Rivo will help!"
+                  },
+                  "3": {
+                    "title": "🥗 Time for a healthy habit!",
+                    "body": "Open Eatrivo and check your meals for today."
+                  },
+                  "4": {
+                    "title": "📊 Nutrition check",
+                    "body": "How's your calorie intake going? Check it out!"
+                  },
+                  "5": {
+                    "title": "🔥 Keep up the great work!",
+                    "body": "Every day counts. Open Eatrivo and plan your meals."
+                  },
+                  "6": {
+                    "title": "🍎 Your body will thank you!",
+                    "body": "Tracking your diet is the key to success. Keep going!"
+                  }
+                }
+              }
+            },
+            "mealPlanReminder": {
+              "sk": {
+                "title": "📋 Nový týždeň, nový jedálniček!",
+                "body": "Ešte nemáš jedálny plán na tento týždeň. Nechaj Riva uvariť! 🍳"
+              },
+              "en": {
+                "title": "📋 New week, new meal plan!",
+                "body": "You don't have a meal plan for this week yet. Let Rivo cook! 🍳"
+              }
+            }
+          },
+          "broadcastTypes": {
+            "motivational": "Motivačná — odošle všetkým",
+            "mealReminder": "Pripomienka plánu — len tým bez plánu tento týždeň"
+          },
+          "actions": {
+            "sending": "Odosiela sa...",
+            "sendTest": "Odoslať testovaciu notifikáciu",
+            "broadcasting": "Odosiela sa broadcast...",
+            "runBroadcast": "Spustiť broadcast",
+            "refresh": "Obnoviť",
+            "sendTestToSelf": "Odoslať test notifikáciu sebe samému"
+          },
+          "results": {
+            "notificationSent": "Notifikácia odoslaná. ({count} zariadení)",
+            "sendFailed": "Odoslanie zlyhalo",
+            "sendError": "Chyba pri odosielaní",
+            "broadcastMotivational": "Odoslané {successful}/{total} zariadení",
+            "broadcastMealReminder": "Notifikované: {notified}, preskočené: {skipped}",
+            "broadcastFailed": "Broadcast zlyhal",
+            "networkError": "Chyba siete"
+          },
+          "debug": {
+            "serverStatus": "Stav servera",
+            "vapidPublicKey": "VAPID public key",
+            "vapidPrivateKey": "VAPID private key",
+            "adminEmail": "ADMIN_EMAIL",
+            "dbSubscriptions": "Subscriptions v DB",
+            "uniqueUsers": "Unikátnych používateľov",
+            "loading": "Načítava sa...",
+            "userSubscriptions": "Subscriptions konkrétneho používateľa",
+            "deviceCount": "Počet zariadení",
+            "device": "Zariadenie {index}",
+            "endpoint": "Endpoint",
+            "keys": "Kľúče",
+            "userAgent": "User-agent",
+            "addedAt": "Pridané: {date}",
+            "sendToSelfHint": "Odošle notifikáciu na tvoj účet. Musíš byť prihlásený a mať povolené notifikácie.",
+            "ok": "OK",
+            "missing": "MISSING",
+            "emptyValue": "-"
+          },
+          "toasts": {
+            "loadDebugStatsError": "Nepodarilo sa načítať debug štatistiky",
+            "loadDebugStatsNetworkError": "Chyba siete pri načítavaní debug štatistík",
+            "loadUserSubsError": "Nepodarilo sa načítať subscriptions používateľa",
+            "loadUserSubsNetworkError": "Chyba siete pri načítavaní subscriptions používateľa",
+            "testFailed": "Test zlyhal",
+            "networkError": "Chyba siete",
+            "selectUser": "Vyber používateľa",
+            "notificationSent": "Notifikácia bola úspešne odoslaná",
+            "notificationSendError": "Nepodarilo sa odoslať notifikáciu",
+            "notificationSendNetworkError": "Chyba siete pri odosielaní notifikácie",
+            "broadcastSent": "Broadcast odoslaný",
+            "broadcastError": "Broadcast zlyhal",
+            "broadcastNetworkError": "Chyba siete pri odosielaní broadcastu"
+          }
+        },
+        "analyticsTab": {
+          "hero": {
+            "title": "Admin Analytics",
+            "description": "Len aktívne surfaces: pantry, kitchen counter, chat with Rivo, otvorenia receptov a tvorba custom recipe za posledných {days} dní.",
+            "lastUpdated": "Posledné obnovenie: {date}"
+          },
+          "filters": {
+            "rangePlaceholder": "Rozsah",
+            "last7Days": "Posledných 7 dní",
+            "last30Days": "Posledných 30 dní",
+            "last90Days": "Posledných 90 dní"
+          },
+          "actions": {
+            "refresh": "Obnoviť",
+            "retry": "Skúsiť znova"
+          },
+          "errors": {
+            "fetchAnalytics": "Nepodarilo sa načítať analytiku",
+            "fetchMessages": "Nepodarilo sa načítať správy"
           }
         },
         "profilesTab": {
@@ -1910,8 +2167,14 @@
     "feature3": "Pokročilé nákupné zoznamy",
     "upgradeButton": "Upgrade na Plus",
     "maybeLater": "Možno neskôr",
-    "socialProof": "Pridaj sa k 2 400+ členom, ktorí jedia múdrejšie",
-    "trialDays": "{days} Dní Zadarmo"
+    "socialProof": "Pridaj sa k členom, ktorí jedia múdrejšie",
+    "trialDays": "{days} Dní Zadarmo",
+    "monthlyLabel": "Mesačne",
+    "yearlyLabel": "Ročne",
+    "perMonthShort": "/ mesiac",
+    "perYearShort": "/ rok",
+    "mostPopular": "Najobľúbenejšie",
+    "cancelAnytime": "Zrušíš kedykoľvek"
   },
   "cookieConsent": {
     "title": "Používame cookies",
@@ -1964,7 +2227,38 @@
     "summary_inventory": "V špajzi",
     "summary_restock": "Na doplnenie",
     "summary_expiring": "Expiruje",
-    "scan_bill":"Skenovat",
+    "scan_bill":"Sken bloku",
+    "scan_premium_badge": "Plus",
+    "scan_partial_badge": "Skontrolovať",
+    "scan_cta_hint": "Plus funkcia: naskenuj blok a uprav nájdené položky pred uložením.",
+    "scan_locked_hint": "Dostupné pre Plus. Odomkneš AI sken bloku a rýchle doplnenie špajze.",
+    "scan_locked_description": "Sken bloku je dostupný len pre Plus používateľov.",
+    "scan_upgrade_eyebrow": "Smart doplnenie špajze",
+    "scan_upgrade_title": "Premeň blok na položky v špajzi v jednom vedenom kroku",
+    "scan_upgrade_description": "Nahráš blok z nákupu, AI rozpozná položky a ešte pred uložením si ich všetky skontroluješ a upravíš.",
+    "scan_upgrade_reason_title": "Prečo sa to oplatí zaplatiť",
+    "scan_upgrade_reason_description": "Odstráni to zdĺhavé ručné prepisovanie po nákupe a spraví z dopĺňania špajze výrazne rýchlejší workflow.",
+    "scan_upgrade_security_title": "Prémiový flow so strážením kvality",
+    "scan_upgrade_security_description": "Sken ide cez validáciu uploadu, AI extrakciu a finálnu kontrolu, takže máš posledné slovo ešte pred uložením.",
+    "scan_modal_title": "Sken bloku do špajze",
+    "scan_modal_description": "Nahraj fotku bločku. Najprv ju bezpečne skontrolujeme, potom si upravíš nájdené položky.",
+    "scan_secure_title": "Bezpečný AI sken",
+    "scan_secure_description": "Povoľujeme len obrázky, kontrolujeme typ súboru a v MVP neukladáme raw fotku bloku.",
+    "scan_upload_title": "Vyber alebo odfoť blok",
+    "scan_upload_description": "Podporujeme JPG, PNG a WEBP do 8 MB. Na mobile môžeš použiť fotoaparát.",
+    "scan_loading_title": "Analyzujem blok a hľadám položky",
+    "scan_loading_description": "Graf kontroluje, či sú položky dostatočne kompletné. Ak nie, zopakuje extrakciu ešte predtým, než ti ich ukáže.",
+    "scan_review_description": "Skontroluj nájdené položky, doplň chýbajúce a až potom ich pošli do pantry normalizácie.",
+    "scan_detected_count": "Nájdené: {count}",
+    "scan_detected_source": "AI našla",
+    "scan_manual_source": "Pridané ručne",
+    "scan_confidence": "Istota {value}%",
+    "scan_add_manual": "Pridať položku ručne",
+    "scan_finalize": "Pripraviť návrhy do špajze",
+    "scan_error": "Sken bloku sa nepodaril dokončiť.",
+    "scan_finalize_error": "Nepodarilo sa pripraviť návrhy do špajze.",
+    "scan_finalize_success": "Návrhy zo skenu čakajú na potvrdenie v špajzi.",
+    "scan_review_empty": "Pridaj aspoň jednu položku pred pokračovaním.",
     "inventory_title": "Tvoje položky",
     "inventory_description": "Kompaktný zoznam pre rýchle úpravy množstva aj počas nákupu.",
     "empty_state_title": "Špajza je prázdna",

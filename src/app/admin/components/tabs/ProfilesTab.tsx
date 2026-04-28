@@ -51,8 +51,8 @@ export default function ProfilesTab({
   userInfo,
   isLoadingUserInfo,
 }: ProfilesTabProps) {
-  const t = useTranslations("admin.dashboard.profilesTab");
-  const tCommon = useTranslations("admin.dashboard.common");
+  const t = useTranslations("emails.admin.dashboard.profilesTab");
+  const tCommon = useTranslations("emails.admin.dashboard.common");
 
   const getMembershipLabel = (membership?: string | null) => {
     const normalizedMembership = membership?.toLowerCase();

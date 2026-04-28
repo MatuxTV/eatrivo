@@ -4,10 +4,10 @@ import { auth } from "../../../../auth";
 import {
   sendWelcomeEmail,
   sendShoppingListNotification,
-} from "@/lib/emailService";
+} from "@/lib/email/emailService";
 import { db } from "@/index";
 import { userProfiles } from "@/db/schema";
-import { getUserLanguage } from "@/lib/user-utils";
+import { getUserLanguage } from "@/lib/user/user-utils";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import { eq } from "drizzle-orm";
 

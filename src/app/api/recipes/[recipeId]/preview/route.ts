@@ -20,11 +20,11 @@ import {
   resolveIngredientTranslation,
   resolveRecipeTranslation,
   type RecipeTranslationRecord,
-} from "@/lib/recipe-localization";
-import { normalizeRecipeInstructions } from "@/lib/recipe-instructions";
-import { formatRecipeIngredientAmount } from "@/lib/recipe-ingredients";
-import { guessFoodCategory } from "@/lib/units";
-import { getRecipeAvailabilityForUserProfile } from "@/lib/recipe-matches";
+} from "@/lib/recipes/recipe-localization";
+import { normalizeRecipeInstructions } from "@/lib/recipes/recipe-instructions";
+import { formatRecipeIngredientAmount } from "@/lib/recipes/recipe-ingredients";
+import { guessFoodCategory } from "@/lib/ingredients/units";
+import { getRecipeAvailabilityForUserProfile } from "@/lib/recipes/recipe-matches";
 import {
   handleApiError,
   notFoundError,

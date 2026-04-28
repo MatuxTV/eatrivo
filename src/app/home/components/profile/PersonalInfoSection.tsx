@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, Save, User, Mail, Calendar } from "lucide-react";
+import { Loader2, Save, User, Mail, Calendar, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,10 +14,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
 import { UserBadge } from "@/components/ui/UserBadge";
 
-type PersonalInfoFormData = {
-  fullName: string;
-  dateOfBirth: string;
-};
+const createPersonalInfoSchema = (t: ReturnType<typeof useTranslations>) =>
+  z.object({
+    fullName: z.string().min(2, t("personal.validation.fullNameMin")),
+    dateOfBirth: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, t("personal.validation.dateFormat")),
+    isEmailSubscriptionActive: z.boolean(),
+  });
+
+type PersonalInfoFormData = z.infer<ReturnType<typeof createPersonalInfoSchema>>;
 
 interface PersonalInfoSectionProps {
   profileData: {
@@ -26,6 +32,7 @@ interface PersonalInfoSectionProps {
     dateOfBirth: string;
     membership: string;
     badges?: string[];
+    isEmailSubscriptionActive: boolean;
   } | null;
   isLoading: boolean;
   onUpdate: (data: {
@@ -33,6 +40,8 @@ interface PersonalInfoSectionProps {
     dateOfBirth: string;
     email: string;
     membership: string;
+    badges?: string[];
+    isEmailSubscriptionActive: boolean;
   }) => void;
 }
 
@@ -44,35 +53,31 @@ export default function PersonalInfoSection({
   const t = useTranslations("profile");
   const [isSaving, setIsSaving] = useState(false);
 
-  const personalInfoSchema = useMemo(
-    () =>
-      z.object({
-        fullName: z.string().min(2, t("personal.validation.fullNameMin")),
-        dateOfBirth: z
-          .string()
-          .regex(/^\d{4}-\d{2}-\d{2}$/, t("personal.validation.dateFormat")),
-      }),
-    [t],
-  );
+  const personalInfoSchema = useMemo(() => createPersonalInfoSchema(t), [t]);
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isDirty },
   } = useForm<PersonalInfoFormData>({
     resolver: zodResolver(personalInfoSchema),
     defaultValues: {
       fullName: "",
       dateOfBirth: "",
+      isEmailSubscriptionActive: true,
     },
   });
+
+  const isEmailSubscriptionActive = watch("isEmailSubscriptionActive");
 
   useEffect(() => {
     if (profileData) {
       reset({
         fullName: profileData.fullName,
         dateOfBirth: profileData.dateOfBirth,
+        isEmailSubscriptionActive: profileData.isEmailSubscriptionActive,
       });
     }
   }, [profileData, reset]);
@@ -246,6 +251,44 @@ export default function PersonalInfoSection({
                     {t("personal.fields.email.helper")}
                   </p>
                 </div>
+              </div>
+
+              <div className="rounded-[1.5rem] bg-[linear-gradient(180deg,#fff8ff_0%,#f6f0ff_100%)] p-4 ring-1 ring-[#eadcff] sm:p-5">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#7d49cf] ring-1 ring-[#eadcff]">
+                    <MailCheck className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#9b84b6]">
+                      {t("personal.fields.emailSubscription.label")}
+                    </p>
+                    <p className="text-sm font-semibold text-[#35204f]">
+                      {isEmailSubscriptionActive
+                        ? t("personal.fields.emailSubscription.status.enabled")
+                        : t("personal.fields.emailSubscription.status.disabled")}
+                    </p>
+                  </div>
+                </div>
+
+                <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[1.25rem] border border-[#eadcff] bg-white/90 p-4 transition-colors hover:bg-white">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-[#584a6a]">
+                      {t("personal.fields.emailSubscription.toggleTitle")}
+                    </p>
+                    <p className="text-xs leading-5 text-[#8a78a2]">
+                      {t("personal.fields.emailSubscription.helper")}
+                    </p>
+                  </div>
+                  <span className="relative inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      className="peer sr-only"
+                      {...register("isEmailSubscriptionActive")}
+                    />
+                    <span className="h-7 w-12 rounded-full bg-[#e8d9fb] transition-colors peer-checked:bg-[#7d49cf]" />
+                    <span className="pointer-events-none absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5" />
+                  </span>
+                </label>
               </div>
             </div>
 

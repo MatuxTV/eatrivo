@@ -7,9 +7,9 @@ import { db } from "@/index";
 import {
   TUTORIAL_STATE_CACHE_TTL_SECONDS,
   tutorialStateCacheKey,
-} from "@/lib/cache-keys";
+} from "@/lib/cache/cache-keys";
 import { checkRateLimit } from "@/lib/rateLimit";
-import { CacheService } from "@/lib/redis";
+import { CacheService } from "@/lib/cache/redis";
 import type { TutorialSurfaceKey, TutorialStatus } from "@/lib/tutorials/types";
 
 function isTutorialStatus(value: unknown): value is TutorialStatus {

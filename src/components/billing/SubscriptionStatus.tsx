@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, CreditCard, Gift, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { formatDate } from "@/lib/formatters";
+import { formatDate } from "@/lib/utils/formatters";
 
 interface SubscriptionStatusProps {
   membership: "basic" | "premium" | "pro" | "trainer";

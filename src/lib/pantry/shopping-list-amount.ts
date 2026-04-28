@@ -1,5 +1,5 @@
 import { formatAmountLabel } from "@/lib/pantry/format";
-import { normalizeUnit } from "@/lib/units";
+import { normalizeUnit } from "@/lib/ingredients/units";
 
 const AMOUNT_LABEL_WITH_REQUIRED_UNIT_REGEX =
   /^(\d+(?:[.,]\d+)?(?:\/\d+)?)\s*([a-zA-Záčďéíľňóšťúýžäôü]+)$/;

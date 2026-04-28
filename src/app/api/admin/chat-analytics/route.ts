@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/index";
 import { chatMessages, userProfiles } from "@/db/schema";
 import { sql, gte, count, eq, desc } from "drizzle-orm";
-import { isAuthError, requireAdminAuth } from "@/lib/adminAuth";
+import { isAuthError, requireAdminAuth } from "@/lib/auth/adminAuth";
 
 export async function GET(req: NextRequest) {
   try {

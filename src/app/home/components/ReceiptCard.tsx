@@ -3,13 +3,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Clock, Star } from "lucide-react";
-import { getMealTypeColor, roundNumber } from "@/lib/functions";
+import { getMealTypeColor, roundNumber } from "@/lib/utils/functions";
 import RecipeDialog from "./RecipeDialog";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import type { Ingredient } from "@/types/meal-plan";
 import { useTranslations } from "next-intl";
-import { trackClientEvent } from "@/lib/analytics-client";
+import { trackClientEvent } from "@/lib/analytics/analytics-client";
 
 interface ReceiptCardProps {
   icon?: React.ReactNode;

@@ -20,14 +20,17 @@ import {
   Droplets,
   AlertCircle,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import type {
   CustomRecipeHeroSnapshot,
   RivoCustomRecipeExperienceHandle,
 } from "./RivoCustomRecipeExperience";
-import type { BasicHomeRecipePreview } from "@/app/home/types/data";
+import type {
+  BasicHomeRecipePreview,
+  RecipeBrowseAvailableFilters,
+} from "@/app/home/types/data";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 const RivoCustomRecipeExperience = dynamic(
@@ -36,6 +39,61 @@ const RivoCustomRecipeExperience = dynamic(
     ssr: false,
   },
 );
+
+const HeroCardSkeleton = () => (
+  <div className="relative mb-6 overflow-hidden rounded-[1.75rem] border border-gray-100 bg-white shadow-sm sm:mb-8 xl:min-h-[380px]">
+    <div className="relative flex h-full min-h-[300px] w-full flex-col bg-white text-gray-900 sm:min-h-[360px] animate-pulse p-6 sm:p-8">
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="h-4 sm:h-5 w-24 rounded-full bg-emerald-50" />
+          <div className="h-8 sm:h-12 w-3/4 rounded-xl bg-gray-100" />
+        </div>
+        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-[1.1rem] sm:rounded-[1.4rem] bg-gray-100 shrink-0" />
+      </div>
+      <div className="flex gap-4 mb-6 mt-2">
+        <div className="h-4 w-16 rounded bg-gray-100" />
+        <div className="h-4 w-16 rounded bg-gray-100" />
+        <div className="h-4 w-20 rounded bg-gray-100" />
+      </div>
+      <div className="h-px w-full bg-gray-50 mb-6" />
+      <div className="flex flex-1 flex-col justify-between gap-6">
+        <div className="flex justify-center">
+          <div className="h-28 w-28 sm:h-36 sm:w-36 lg:h-44 lg:w-44 rounded-full bg-gray-100 border-[8px] border-gray-50" />
+        </div>
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="h-20 sm:h-24 rounded-[1.1rem] sm:rounded-[1.35rem] bg-gray-50" />
+          <div className="h-20 sm:h-24 rounded-[1.1rem] sm:rounded-[1.35rem] bg-gray-50" />
+          <div className="h-20 sm:h-24 rounded-[1.1rem] sm:rounded-[1.35rem] bg-gray-50" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+function RecipeGridCardSkeleton({ priority = false }: { priority?: boolean }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`w-full aspect-[4/5] rounded-[1.5rem] overflow-hidden bg-white p-5 ring-1 ring-gray-100 shadow-lg shadow-eatrivo-purple/5 ${priority ? "animate-pulse" : "animate-pulse [animation-delay:120ms]"}`}
+    >
+      <div className="flex h-full flex-col justify-between">
+        <div className="flex items-start justify-between gap-2">
+          <div className="h-7 w-20 rounded-md bg-eatrivo-purple/10" />
+          <div className="h-7 w-16 rounded-md bg-gray-100" />
+        </div>
+        <div className="mt-auto space-y-3">
+          <div className="h-5 w-11/12 rounded-lg bg-gray-100" />
+          <div className="h-5 w-8/12 rounded-lg bg-gray-100" />
+          <div className="flex items-end gap-1.5 pt-1">
+            <div className="h-8 w-16 rounded-lg bg-gray-100" />
+            <div className="h-3 w-12 rounded bg-gray-100" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const RecipeBrowserDialog = dynamic(() => import("./RecipeBrowserDialog"), {
   ssr: false,
 });
@@ -57,20 +115,88 @@ const RECIPE_TAG_TRANSLATION_KEYS: Record<string, string> = {
   quick: "basic.recipeTags.quick",
 } as const;
 
+const CATEGORY_FILTER_TRANSLATION_KEYS: Record<string, string> = {
+  breakfast: "basic.filters.categories.breakfast",
+  lunch: "basic.filters.categories.lunch",
+  dinner: "basic.filters.categories.dinner",
+  snack: "basic.filters.categories.snack",
+  smoothies: "basic.filters.categories.smoothies",
+  dessert: "basic.filters.categories.dessert",
+  treats: "basic.filters.categories.treats",
+  "pre-workout-fuel": "basic.filters.categories.pre-workout-fuel",
+  "post-workout-fuel": "basic.filters.categories.post-workout-fuel",
+  "lunch-and-dinner": "basic.filters.categories.lunch-and-dinner",
+} as const;
+
+const CATEGORY_FILTER_ORDER = [
+  "breakfast",
+  "lunch",
+  "dinner",
+  "snack",
+  "smoothies",
+  "dessert",
+  "treats",
+  "pre-workout-fuel",
+  "post-workout-fuel",
+  "lunch-and-dinner",
+] as const;
+
+const CATEGORY_FILTER_PREFIX = "category:";
+const RECIPE_PAGE_SIZE = 8;
+
+const DIET_FILTER_ORDER = [
+  "high-protein",
+  "vegetarian",
+  "vegan",
+  "pescatarian",
+  "ketogenic",
+  "paleo",
+  "gluten-free",
+  "dairy-free",
+] as const;
+
+function normalizeCategoryKey(categoryKey: string | null | undefined): string {
+  return categoryKey?.trim().toLowerCase() ?? "";
+}
+
+function isValidCategoryKey(categoryKey: string | null | undefined): categoryKey is string {
+  const normalized = normalizeCategoryKey(categoryKey);
+  return normalized.length > 0 && normalized !== "string";
+}
+
+function getCategoryFilterValue(categoryKey: string): string {
+  return `${CATEGORY_FILTER_PREFIX}${normalizeCategoryKey(categoryKey)}`;
+}
+
+function parseCategoryFilterValue(filter: string): string | null {
+  return filter.startsWith(CATEGORY_FILTER_PREFIX)
+    ? normalizeCategoryKey(filter.slice(CATEGORY_FILTER_PREFIX.length))
+    : null;
+}
+
+function formatFilterLabel(value: string): string {
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+}
+
 /* ------------------------------------------------------------------ */
 /*  Props                                                              */
 /* ------------------------------------------------------------------ */
 
 interface RecipesSectionProps {
   featuredRecipes: BasicHomeRecipePreview[];
+  recipeBrowseAvailableFilters: RecipeBrowseAvailableFilters;
+  initialRecipeHasMore: boolean;
+  initialRecipeTotalCount: number;
   livePantryNames: string[];
   livePantrySummary: { itemCount: number; cookableCount: number };
   liveCookableRecipes: BasicHomeRecipePreview[];
   liveAlmostCookableRecipes: BasicHomeRecipePreview[];
   customRecipeState: CustomRecipeHeroSnapshot;
   onCustomRecipeStateChange: (next: CustomRecipeHeroSnapshot) => void;
-  selectedFilter: string;
-  onFilterChange: (filter: string) => void;
   onOpenPantrySection: () => void;
   onAddToShoppingList: (name: string, qty: string | null, cat: string | null) => Promise<void>;
   onCookRecipe: (recipe: BasicHomeRecipePreview) => void;
@@ -84,14 +210,15 @@ interface RecipesSectionProps {
 
 export default function RecipesSection({
   featuredRecipes,
+  recipeBrowseAvailableFilters,
+  initialRecipeHasMore,
+  initialRecipeTotalCount,
   livePantryNames,
   livePantrySummary,
   liveCookableRecipes,
   liveAlmostCookableRecipes,
   customRecipeState,
   onCustomRecipeStateChange,
-  selectedFilter,
-  onFilterChange,
   onOpenPantrySection,
   onAddToShoppingList,
   onCookRecipe,
@@ -99,12 +226,15 @@ export default function RecipesSection({
   onPendingExternalRecipeHandled,
 }: RecipesSectionProps) {
   const t = useTranslations("home");
+  const locale = useLocale();
   const triggerHaptic = useHapticFeedback();
   const rivoCustomRecipeRef = useRef<RivoCustomRecipeExperienceHandle | null>(null);
   const cookableTouchStartXRef = useRef<number | null>(null);
   const almostCookableTouchStartXRef = useRef<number | null>(null);
   const suppressCookableTapRef = useRef(false);
   const suppressAlmostCookableTapRef = useRef(false);
+  const skipInitialBrowseFetchRef = useRef(true);
+  const browseRequestSequenceRef = useRef(0);
 
   /* ---- internal browser state ---- */
 
@@ -114,7 +244,14 @@ export default function RecipesSection({
   const [externalBrowserRecipe, setExternalBrowserRecipe] =
     useState<BasicHomeRecipePreview | null>(null);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
-  const [draftSelectedFilter, setDraftSelectedFilter] = useState(selectedFilter);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [draftSelectedFilters, setDraftSelectedFilters] = useState<string[]>([]);
+  const [browseRecipes, setBrowseRecipes] = useState<BasicHomeRecipePreview[]>(featuredRecipes);
+  const [browseHasMore, setBrowseHasMore] = useState(initialRecipeHasMore);
+  const [browseTotalCount, setBrowseTotalCount] = useState(initialRecipeTotalCount);
+  const [isRefreshingRecipes, setIsRefreshingRecipes] = useState(false);
+  const [isLoadingMoreRecipes, setIsLoadingMoreRecipes] = useState(false);
+  const [browseError, setBrowseError] = useState<string | null>(null);
   const [cookableSpotlightIndex, setCookableSpotlightIndex] = useState(0);
   const [almostCookableSpotlightIndex, setAlmostCookableSpotlightIndex] = useState(0);
 
@@ -155,60 +292,161 @@ export default function RecipesSection({
     [pantryNameSet],
   );
 
-  const enrichedFeaturedRecipes = useMemo(() => enrichRecipes(featuredRecipes), [enrichRecipes, featuredRecipes]);
+  const enrichedBrowseRecipes = useMemo(() => enrichRecipes(browseRecipes), [browseRecipes, enrichRecipes]);
   const enrichedCookableRecipes = useMemo(() => liveCookableRecipes, [liveCookableRecipes]);
   const enrichedAlmostCookableRecipes = useMemo(() => liveAlmostCookableRecipes, [liveAlmostCookableRecipes]);
 
-  const filteredRecipes = useMemo(() => {
-    if (selectedFilter === "all") return enrichedFeaturedRecipes;
-    if (selectedFilter === "quick") return enrichedFeaturedRecipes.filter((r) => r.totalTimeMin <= 20);
-    return enrichedFeaturedRecipes.filter((r) => r.dietTags.includes(selectedFilter));
-  }, [enrichedFeaturedRecipes, selectedFilter]);
+  const availableCategoryFilters = useMemo(() => {
+    return [...new Set(recipeBrowseAvailableFilters.categoryKeys.map(normalizeCategoryKey).filter(isValidCategoryKey))]
+      .sort((left, right) => {
+        const leftIndex = CATEGORY_FILTER_ORDER.indexOf(left as (typeof CATEGORY_FILTER_ORDER)[number]);
+        const rightIndex = CATEGORY_FILTER_ORDER.indexOf(right as (typeof CATEGORY_FILTER_ORDER)[number]);
+
+        if (leftIndex === -1 && rightIndex === -1) {
+          return left.localeCompare(right);
+        }
+
+        if (leftIndex === -1) {
+          return 1;
+        }
+
+        if (rightIndex === -1) {
+          return -1;
+        }
+
+        return leftIndex - rightIndex;
+      })
+      .map(getCategoryFilterValue);
+  }, [recipeBrowseAvailableFilters.categoryKeys]);
+
+  const availableDietFilters = useMemo(() => {
+    return [...new Set(recipeBrowseAvailableFilters.dietTags.map((tag) => tag.trim().toLowerCase()).filter(Boolean))].sort(
+      (left, right) => {
+        const leftIndex = DIET_FILTER_ORDER.indexOf(left as (typeof DIET_FILTER_ORDER)[number]);
+        const rightIndex = DIET_FILTER_ORDER.indexOf(right as (typeof DIET_FILTER_ORDER)[number]);
+
+        if (leftIndex === -1 && rightIndex === -1) {
+          return left.localeCompare(right);
+        }
+
+        if (leftIndex === -1) {
+          return 1;
+        }
+
+        if (rightIndex === -1) {
+          return -1;
+        }
+
+        return leftIndex - rightIndex;
+      },
+    );
+  }, [recipeBrowseAvailableFilters.dietTags]);
+
+  const activeCategoryFilters = useMemo(
+    () =>
+      selectedFilters
+        .map(parseCategoryFilterValue)
+        .filter((value): value is string => Boolean(value)),
+    [selectedFilters],
+  );
+
+  const activeDietTagFilters = useMemo(
+    () =>
+      selectedFilters.filter(
+        (filter) => filter !== "quick" && parseCategoryFilterValue(filter) === null,
+      ),
+    [selectedFilters],
+  );
+
+  const quickFilterEnabled = useMemo(
+    () => selectedFilters.includes("quick"),
+    [selectedFilters],
+  );
 
   const availableFilters = useMemo(() => {
     const tagSet = new Set<string>(["all"]);
-    for (const recipe of enrichedFeaturedRecipes) {
-      if (recipe.totalTimeMin <= 20) tagSet.add("quick");
-      for (const tag of recipe.dietTags) tagSet.add(tag);
+    tagSet.add("quick");
+    for (const tag of availableDietFilters) tagSet.add(tag);
+    for (const categoryFilter of availableCategoryFilters) {
+      tagSet.add(categoryFilter);
     }
-    return [...tagSet].slice(0, 6);
-  }, [enrichedFeaturedRecipes]);
+    return [...tagSet];
+  }, [availableCategoryFilters, availableDietFilters]);
 
   const filterSections = useMemo(
-    () => [
-      {
-        key: "popular",
-        title: t("basic.filters.sections.popular"),
-        filters: ["all", "quick", "high-protein"],
-      },
-      {
-        key: "preferences",
-        title: t("basic.filters.sections.preferences"),
-        filters: ["vegetarian", "vegan", "pescatarian"],
-      },
-      {
-        key: "special",
-        title: t("basic.filters.sections.special"),
-        filters: ["ketogenic", "paleo", "gluten-free", "dairy-free"],
-      },
-    ]
-      .map((section) => ({
-        ...section,
-        filters: section.filters.filter((filter) => availableFilters.includes(filter)),
-      }))
-      .filter((section) => section.filters.length > 0),
-    [availableFilters, t],
+    () => {
+      const popularFilters = ["all", "quick", "high-protein"].filter((filter) =>
+        availableFilters.includes(filter),
+      );
+      const preferenceFilters = ["vegetarian", "vegan", "pescatarian"].filter((filter) =>
+        availableFilters.includes(filter),
+      );
+      const specialFilters = ["ketogenic", "paleo", "gluten-free", "dairy-free"].filter(
+        (filter) => availableFilters.includes(filter),
+      );
+      const handledDietFilters = new Set([
+        "high-protein",
+        "vegetarian",
+        "vegan",
+        "pescatarian",
+        "ketogenic",
+        "paleo",
+        "gluten-free",
+        "dairy-free",
+      ]);
+      const additionalDietFilters = availableDietFilters.filter(
+        (filter) => !handledDietFilters.has(filter),
+      );
+
+      return [
+        {
+          key: "popular",
+          title: t("basic.filters.sections.popular"),
+          filters: popularFilters,
+        },
+        {
+          key: "categories",
+          title: t("basic.filters.sections.categories"),
+          filters: availableCategoryFilters,
+        },
+        {
+          key: "preferences",
+          title: t("basic.filters.sections.preferences"),
+          filters: preferenceFilters,
+        },
+        {
+          key: "special",
+          title: t("basic.filters.sections.special"),
+          filters: [...specialFilters, ...additionalDietFilters],
+        },
+      ].filter((section) => section.filters.length > 0);
+    },
+    [availableCategoryFilters, availableDietFilters, availableFilters, t],
   );
 
-  const getRecipeTagLabel = useCallback(
-    (tag: string): string => {
-      const key = RECIPE_TAG_TRANSLATION_KEYS[tag as keyof typeof RECIPE_TAG_TRANSLATION_KEYS];
-      return key ? t(key) : tag.replace(/-/g, " ");
+  const getFilterLabel = useCallback(
+    (filter: string): string => {
+      const categoryKey = parseCategoryFilterValue(filter);
+
+      if (categoryKey) {
+        const key = CATEGORY_FILTER_TRANSLATION_KEYS[categoryKey as keyof typeof CATEGORY_FILTER_TRANSLATION_KEYS];
+        return key ? t(key) : formatFilterLabel(categoryKey);
+      }
+
+      const key = RECIPE_TAG_TRANSLATION_KEYS[filter as keyof typeof RECIPE_TAG_TRANSLATION_KEYS];
+      return key ? t(key) : formatFilterLabel(filter);
     },
     [t],
   );
 
   const getRecipeTagIcon = useCallback((filter: string) => {
+    const categoryKey = parseCategoryFilterValue(filter);
+
+    if (categoryKey === "smoothies") return Droplets;
+    if (categoryKey === "dessert" || categoryKey === "treats") return Sparkles;
+    if (categoryKey === "pre-workout-fuel" || categoryKey === "post-workout-fuel") return Flame;
+    if (categoryKey) return ChefHat;
+
     if (filter === "quick") return Clock;
     if (filter === "high-protein") return Beef;
     if (filter === "vegetarian" || filter === "vegan") return Leaf;
@@ -216,16 +454,136 @@ export default function RecipesSection({
     return Flame;
   }, []);
 
-  const selectedFilterLabel = useMemo(
-    () => getRecipeTagLabel(selectedFilter),
-    [getRecipeTagLabel, selectedFilter],
+  const selectedFilterCount = selectedFilters.length;
+
+  const selectedFilterLabel = useMemo(() => {
+    if (selectedFilters.length === 0) {
+      return t("basic.filters.noSelection");
+    }
+
+    if (selectedFilters.length === 1) {
+      return getFilterLabel(selectedFilters[0]);
+    }
+
+    if (selectedFilters.length === 2) {
+      return selectedFilters.map((filter) => getFilterLabel(filter)).join(", ");
+    }
+
+    return t("basic.filters.selectedCount", { count: selectedFilters.length });
+  }, [getFilterLabel, selectedFilters, t]);
+
+  const buildBrowseSearchParams = useCallback(
+    (offset: number) => {
+      const params = new URLSearchParams({
+        locale,
+        offset: String(offset),
+        limit: String(RECIPE_PAGE_SIZE),
+      });
+
+      if (quickFilterEnabled) {
+        params.set("quick", "true");
+      }
+
+      for (const categoryKey of activeCategoryFilters) {
+        params.append("category", categoryKey);
+      }
+
+      for (const dietTag of activeDietTagFilters) {
+        params.append("tag", dietTag);
+      }
+
+      return params;
+    },
+    [activeCategoryFilters, activeDietTagFilters, locale, quickFilterEnabled],
+  );
+
+  const fetchRecipeBrowsePage = useCallback(
+    async (mode: "replace" | "append", offsetOverride?: number) => {
+      const nextOffset = offsetOverride ?? (mode === "append" ? 0 : 0);
+      const requestSequence = ++browseRequestSequenceRef.current;
+
+      if (mode === "append") {
+        setIsLoadingMoreRecipes(true);
+      } else {
+        setIsRefreshingRecipes(true);
+      }
+
+      try {
+        const response = await fetch(
+          `/api/recipes/browse?${buildBrowseSearchParams(nextOffset).toString()}`,
+          {
+            method: "GET",
+            credentials: "same-origin",
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("recipe-browse-request-failed");
+        }
+
+        const data = (await response.json()) as {
+          page?: {
+            recipes?: BasicHomeRecipePreview[];
+            hasMore?: boolean;
+            totalCount?: number;
+          };
+        };
+
+        if (requestSequence !== browseRequestSequenceRef.current) {
+          return;
+        }
+
+        const nextRecipes = data.page?.recipes ?? [];
+        setBrowseError(null);
+        setBrowseHasMore(Boolean(data.page?.hasMore));
+        setBrowseTotalCount(data.page?.totalCount ?? nextRecipes.length);
+        setBrowseRecipes((currentRecipes) => {
+          if (mode === "replace") {
+            return nextRecipes;
+          }
+
+          const recipeMap = new Map(currentRecipes.map((recipe) => [recipe.id, recipe]));
+          for (const recipe of nextRecipes) {
+            recipeMap.set(recipe.id, recipe);
+          }
+
+          return [...recipeMap.values()];
+        });
+      } catch {
+        if (requestSequence === browseRequestSequenceRef.current) {
+          setBrowseError(t("basic.filters.loadError"));
+        }
+      } finally {
+        if (requestSequence === browseRequestSequenceRef.current) {
+          setIsLoadingMoreRecipes(false);
+          setIsRefreshingRecipes(false);
+        }
+      }
+    },
+    [buildBrowseSearchParams, t],
   );
 
   useEffect(() => {
+    setBrowseRecipes(featuredRecipes);
+    setBrowseHasMore(initialRecipeHasMore);
+    setBrowseTotalCount(initialRecipeTotalCount);
+    setBrowseError(null);
+  }, [featuredRecipes, initialRecipeHasMore, initialRecipeTotalCount]);
+
+  useEffect(() => {
     if (filterDialogOpen) {
-      setDraftSelectedFilter(selectedFilter);
+      setDraftSelectedFilters(selectedFilters);
     }
-  }, [filterDialogOpen, selectedFilter]);
+  }, [filterDialogOpen, selectedFilters]);
+
+  useEffect(() => {
+    if (skipInitialBrowseFetchRef.current) {
+      skipInitialBrowseFetchRef.current = false;
+      return;
+    }
+
+    void fetchRecipeBrowsePage("replace");
+  }, [fetchRecipeBrowsePage, selectedFilters]);
 
   useEffect(() => {
     setCookableSpotlightIndex((current) => {
@@ -247,20 +605,55 @@ export default function RecipesSection({
 
   const handleOpenFilterDialog = useCallback(() => {
     triggerHaptic("light");
-    setDraftSelectedFilter(selectedFilter);
+    setDraftSelectedFilters(selectedFilters);
     setFilterDialogOpen(true);
-  }, [selectedFilter, triggerHaptic]);
+  }, [selectedFilters, triggerHaptic]);
 
   const handleApplyFilter = useCallback(() => {
     triggerHaptic("medium");
-    onFilterChange(draftSelectedFilter);
+    setSelectedFilters(draftSelectedFilters);
     setFilterDialogOpen(false);
-  }, [draftSelectedFilter, onFilterChange, triggerHaptic]);
+  }, [draftSelectedFilters, triggerHaptic]);
 
   const handleClearFilter = useCallback(() => {
     triggerHaptic("light");
-    setDraftSelectedFilter("all");
+    setDraftSelectedFilters([]);
   }, [triggerHaptic]);
+
+  const handleToggleDraftFilter = useCallback((filter: string) => {
+    triggerHaptic("light");
+    setDraftSelectedFilters((currentFilters) => {
+      if (filter === "all") {
+        return [];
+      }
+
+      return currentFilters.includes(filter)
+        ? currentFilters.filter((currentFilter) => currentFilter !== filter)
+        : [...currentFilters, filter];
+    });
+  }, [triggerHaptic]);
+
+  const handleLoadMoreRecipes = useCallback(() => {
+    if (
+      !browseHasMore
+      || browseRecipes.length >= browseTotalCount
+      || isLoadingMoreRecipes
+      || isRefreshingRecipes
+    ) {
+      return;
+    }
+
+    triggerHaptic("light");
+    void fetchRecipeBrowsePage("append", browseRecipes.length);
+  }, [
+    browseHasMore,
+    browseRecipes.length,
+    browseTotalCount,
+    fetchRecipeBrowsePage,
+    isLoadingMoreRecipes,
+    isRefreshingRecipes,
+    triggerHaptic,
+  ]);
 
   const stepSpotlightIndex = useCallback(
     (
@@ -321,14 +714,14 @@ export default function RecipesSection({
 
   const browserRecipes = useMemo(() => {
     switch (browserSource) {
-      case "featured": return enrichedFeaturedRecipes;
+      case "featured": return enrichedBrowseRecipes;
       case "cookable": return enrichedCookableRecipes;
       case "almost": return enrichedAlmostCookableRecipes;
-      case "filtered": return filteredRecipes;
+      case "filtered": return enrichedBrowseRecipes;
       case "external": return externalBrowserRecipe ? [externalBrowserRecipe] : [];
       default: return [];
     }
-  }, [browserSource, enrichedFeaturedRecipes, enrichedCookableRecipes, enrichedAlmostCookableRecipes, externalBrowserRecipe, filteredRecipes]);
+  }, [browserSource, enrichedBrowseRecipes, enrichedCookableRecipes, enrichedAlmostCookableRecipes, externalBrowserRecipe]);
 
   useEffect(() => {
     if (!pendingExternalRecipe) {
@@ -359,14 +752,14 @@ export default function RecipesSection({
 
   /* ---- active recipe ---- */
 
-  const activeRecipe = filteredRecipes[0] ?? enrichedFeaturedRecipes[0] ?? null;
-  const activeRecipeBrowserSource: "filtered" | "featured" = filteredRecipes.length > 0 ? "filtered" : "featured";
+  const activeRecipe = enrichedBrowseRecipes[0] ?? null;
+  const activeRecipeBrowserSource: "filtered" | "featured" = "filtered";
 
   const activeRecipeBrowserIndex = useMemo(() => {
     if (!activeRecipe) return -1;
-    const sourceRecipes = activeRecipeBrowserSource === "filtered" ? filteredRecipes : enrichedFeaturedRecipes;
+    const sourceRecipes = activeRecipeBrowserSource === "filtered" ? enrichedBrowseRecipes : enrichedBrowseRecipes;
     return sourceRecipes.findIndex((r) => r.id === activeRecipe.id);
-  }, [activeRecipe, activeRecipeBrowserSource, enrichedFeaturedRecipes, filteredRecipes]);
+  }, [activeRecipe, activeRecipeBrowserSource, enrichedBrowseRecipes]);
 
   const activeCookableRecipe = enrichedCookableRecipes[cookableSpotlightIndex] ?? null;
   const activeAlmostCookableRecipe = enrichedAlmostCookableRecipes[almostCookableSpotlightIndex] ?? null;
@@ -458,6 +851,30 @@ export default function RecipesSection({
   }, [onOpenPantrySection]);
 
   /* ---- render ---- */
+
+  const shouldShowRefreshSkeleton = isRefreshingRecipes;
+  const refreshSkeletonCount = Math.min(Math.max(enrichedBrowseRecipes.length, 4), RECIPE_PAGE_SIZE);
+  const loadMoreSkeletonCount = RECIPE_PAGE_SIZE;
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <motion.div
+        data-tutorial-anchor="home-recipes-section"
+        key="home-recipes"
+        initial={{ opacity: 0, y: 16, scale: 0.992 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -12, scale: 0.992 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <HeroCardSkeleton />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -941,7 +1358,7 @@ export default function RecipesSection({
               {t("basic.filters.title")}
             </p>
             <p className="mt-1 truncate text-sm font-bold text-gray-900">
-              {selectedFilter === "all"
+              {selectedFilterCount === 0
                 ? t("basic.filters.noSelection")
                 : t("basic.filters.selectedValue", { value: selectedFilterLabel })}
             </p>
@@ -954,9 +1371,9 @@ export default function RecipesSection({
           >
             <SlidersHorizontal className="h-4 w-4" />
             {t("basic.filters.openButton")}
-            {selectedFilter !== "all" ? (
+            {selectedFilterCount > 0 ? (
               <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-black text-[#111014]">
-                1
+                {selectedFilterCount}
               </span>
             ) : null}
           </button>
@@ -966,12 +1383,12 @@ export default function RecipesSection({
       {/* ---- Filtered Recipes Grid ---- */}
       <div className="pb-8">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {filteredRecipes.map((recipe) => (
+          {!shouldShowRefreshSkeleton && enrichedBrowseRecipes.map((recipe) => (
             <div
               key={recipe.id}
               className="flex flex-col gap-2 cursor-pointer"
               onClick={() => {
-                const idx = filteredRecipes.findIndex((r) => r.id === recipe.id);
+                const idx = enrichedBrowseRecipes.findIndex((r) => r.id === recipe.id);
                 openRecipeBrowser("filtered", idx !== -1 ? idx : 0);
               }}
             >
@@ -990,10 +1407,41 @@ export default function RecipesSection({
               </div>
             </div>
           ))}
-          {filteredRecipes.length === 0 && (
+          {shouldShowRefreshSkeleton && Array.from({ length: refreshSkeletonCount }).map((_, index) => (
+            <RecipeGridCardSkeleton key={`refresh-skeleton-${index}`} priority={index % 2 === 0} />
+          ))}
+          {isLoadingMoreRecipes && Array.from({ length: loadMoreSkeletonCount }).map((_, index) => (
+            <RecipeGridCardSkeleton key={`append-skeleton-${index}`} priority={index % 2 === 0} />
+          ))}
+          {!shouldShowRefreshSkeleton && enrichedBrowseRecipes.length === 0 && (
             <div className="col-span-full py-8 text-center text-gray-400 text-sm">{t("basic.filters.empty")}</div>
           )}
         </div>
+        {browseError ? (
+          <div className="mt-4 flex flex-col items-center gap-3 rounded-[1.35rem] border border-red-100 bg-red-50 px-4 py-4 text-center">
+            <p className="text-sm font-semibold text-red-600">{browseError}</p>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => void fetchRecipeBrowsePage("replace")}
+              className="rounded-full border border-red-200 bg-white px-4 text-sm font-bold text-red-600 hover:bg-red-50"
+            >
+              {t("basic.filters.retry")}
+            </Button>
+          </div>
+        ) : null}
+        {browseHasMore ? (
+          <div className="mt-5 flex justify-center">
+            <Button
+              type="button"
+              onClick={handleLoadMoreRecipes}
+              disabled={isLoadingMoreRecipes || isRefreshingRecipes}
+              className="h-11 rounded-full bg-eatrivo-purple px-6 text-sm font-bold text-white shadow-sm transition-all hover:bg-eatrivo-purple/90"
+            >
+              {t("basic.filters.loadMore")}
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       {/* ---- Recipe Browser Dialog ---- */}
@@ -1014,15 +1462,15 @@ export default function RecipesSection({
       <Dialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
         <DialogContent
           showCloseButton={false}
-          className="w-[calc(100vw-1.5rem)] max-w-sm gap-0 overflow-hidden rounded-[2rem] border border-white/10 bg-eatrivo-white-primary p-0 shadow-[0_28px_70px_rgba(0,0,0,0.55)] duration-300 data-[state=closed]:translate-y-3 data-[state=closed]:scale-[0.98] data-[state=closed]:opacity-0 data-[state=open]:translate-y-0 data-[state=open]:scale-100 data-[state=open]:opacity-100"
+          className="flex w-[min(calc(100vw-1.5rem),24rem)] max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden rounded-[2rem] border border-black/5 bg-eatrivo-white-primary p-0 shadow-[0_28px_70px_rgba(0,0,0,0.22)] duration-300 data-[state=closed]:scale-[0.98] data-[state=closed]:opacity-0 data-[state=open]:scale-100 data-[state=open]:opacity-100 sm:max-h-[min(80vh,42rem)]"
         >
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="px-5 pb-5 pt-4 text-white"
+            className="flex min-h-0 flex-1 flex-col px-5 pb-5 pt-4 text-white"
           >
-            <div className="mb-6 flex items-center justify-between gap-3">
+            <div className="mb-5 flex shrink-0 items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -1038,49 +1486,54 @@ export default function RecipesSection({
               </div>
             </div>
 
-            <div className="space-y-5">
-              {filterSections.map((section) => (
-                <motion.div
-                  key={section.key}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.22, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
-                  className="border-b border-white/8 pb-5 last:border-b-0 last:pb-0"
-                >
-                  <p className="mb-3 text-[11px] font-black uppercase tracking-[0.18em] text-eatrivo-black-secondary">
-                    {section.title}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {section.filters.map((filter) => {
-                      const isSelected = draftSelectedFilter === filter;
-                      const Icon = getRecipeTagIcon(filter);
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1 scrollbar-hide">
+              <div className="space-y-5 pb-2">
+                {filterSections.map((section) => (
+                  <motion.div
+                    key={section.key}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.22, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
+                    className="border-b border-white/8 pb-5 last:border-b-0 last:pb-0"
+                  >
+                    <p className="mb-3 text-[11px] font-black uppercase tracking-[0.18em] text-eatrivo-black-secondary">
+                      {section.title}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {section.filters.map((filter) => {
+                        const isSelected =
+                          filter === "all"
+                            ? draftSelectedFilters.length === 0
+                            : draftSelectedFilters.includes(filter);
+                        const Icon = getRecipeTagIcon(filter);
 
-                      return (
-                        <button
-                          key={filter}
-                          type="button"
-                          onClick={() => setDraftSelectedFilter(filter)}
-                          className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-[13px] font-bold transition-all duration-200 active:scale-95 ${
-                            isSelected
-                              ? "border-eatrivo-white-primary/20 bg-eatrivo-purple/70 text-eatrivo-white-primary"
-                              : "border-eatrivo-black-primary/8 text-eatrivo-black-primary hover:translate-y-[-1px] hover:bg-white/10"
-                          }`}
-                        >
-                          <Icon className={`h-3.5 w-3.5 ${isSelected ? "text-eatrivo-white-primary" : "text-eatrivo-black-primary/55"}`} />
-                          <span>{getRecipeTagLabel(filter)}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              ))}
+                        return (
+                          <button
+                            key={filter}
+                            type="button"
+                            onClick={() => handleToggleDraftFilter(filter)}
+                            className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-[13px] font-bold transition-all duration-200 active:scale-95 ${
+                              isSelected
+                                ? "border-eatrivo-white-primary/20 bg-eatrivo-purple/70 text-eatrivo-white-primary"
+                                : "border-eatrivo-black-primary/8 text-eatrivo-black-primary hover:translate-y-[-1px] hover:bg-white/10"
+                            }`}
+                          >
+                            <Icon className={`h-3.5 w-3.5 ${isSelected ? "text-eatrivo-white-primary" : "text-eatrivo-black-primary/55"}`} />
+                            <span>{getFilterLabel(filter)}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
 
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.22, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-6 flex items-center gap-2"
+              className="mt-5 shrink-0 flex items-center gap-2 border-t border-black/5 pt-4"
             >
               <Button
                 type="button"
@@ -1088,9 +1541,9 @@ export default function RecipesSection({
                 className="h-11 flex-1 rounded-full bg-eatrivo-purple text-sm font-black text-eatrivo-white-primary hover:bg-eatrivo-white-primary/90"
               >
                 {t("basic.filters.save")}
-                {draftSelectedFilter !== "all" ? (
+                {draftSelectedFilters.length > 0 ? (
                   <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-eatrivo-black-primary px-1.5 text-[11px] font-black text-eatrivo-white-primary">
-                    1
+                    {draftSelectedFilters.length}
                   </span>
                 ) : null}
               </Button>

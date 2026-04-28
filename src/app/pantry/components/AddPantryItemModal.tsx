@@ -2,21 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { NewPantryItem } from "@/hooks/usePantry";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { PANTRY_UNIT_OPTIONS } from "@/lib/units";
+import PantryEditableItemCard, {
+  type EditablePantryFormItem,
+} from "./PantryEditableItemCard";
 
 interface AddPantryItemModalProps {
   isOpen: boolean;
@@ -24,14 +18,7 @@ interface AddPantryItemModalProps {
   onAddItems: (items: NewPantryItem[]) => Promise<boolean>;
 }
 
-interface BatchDraftItem {
-  id: string;
-  name: string;
-  quantity: string;
-  unit: string;
-  category: string;
-  expiryDate: string;
-}
+type BatchDraftItem = EditablePantryFormItem;
 
 function createBatchDraftItem(): BatchDraftItem {
   return {
@@ -56,6 +43,7 @@ export default function AddPantryItemModal({
     createBatchDraftItem(),
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const categories = useMemo(
     () => [
       { value: "dairy", label: t("categories.dairy") },
@@ -72,27 +60,27 @@ export default function AddPantryItemModal({
     [t],
   );
 
-  const reset = () => {
+  function reset() {
     setBatchItems([createBatchDraftItem()]);
-  };
+  }
 
-  const updateBatchItem = (
+  function updateBatchItem(
     id: string,
     field: keyof Omit<BatchDraftItem, "id">,
     value: string,
-  ) => {
+  ) {
     setBatchItems((currentItems) =>
       currentItems.map((item) =>
         item.id === id ? { ...item, [field]: value } : item,
       ),
     );
-  };
+  }
 
-  const addBatchRow = () => {
+  function addBatchRow() {
     setBatchItems((currentItems) => [...currentItems, createBatchDraftItem()]);
-  };
+  }
 
-  const removeBatchRow = (id: string) => {
+  function removeBatchRow(id: string) {
     setBatchItems((currentItems) => {
       if (currentItems.length === 1) {
         return currentItems;
@@ -100,10 +88,10 @@ export default function AddPantryItemModal({
 
       return currentItems.filter((item) => item.id !== id);
     });
-  };
+  }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
     const itemsToAdd = batchItems
       .filter((item) => item.name.trim().length > 0)
@@ -132,20 +120,18 @@ export default function AddPantryItemModal({
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
   const filledItemCount = batchItems.filter(
     (item) => item.name.trim().length > 0,
   ).length;
-
   const submitLabel =
     filledItemCount > 2 ? t("submit_batch") : t("submit_single");
 
   return (
     <AnimatePresence mode="wait">
-      {isOpen && (
+      {isOpen ? (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={shouldReduceMotion ? undefined : { opacity: 0 }}
             animate={shouldReduceMotion ? undefined : { opacity: 1 }}
@@ -153,7 +139,6 @@ export default function AddPantryItemModal({
             className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm"
             onClick={onClose}
           />
-          {/* Modal */}
           <motion.div
             initial={
               shouldReduceMotion
@@ -201,131 +186,30 @@ export default function AddPantryItemModal({
 
             <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
               <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4 sm:px-6">
-                
-
                 <div className="mt-4 space-y-3 pr-1">
-                {batchItems.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4"
-                  >
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-eatrivo-purple text-xs text-white">
-                          {index + 1}
-                        </div>
-                        {t("batch_item_label", { index: index + 1 })}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeBatchRow(item.id)}
-                        disabled={batchItems.length === 1}
-                        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <Label className="mb-1.5 block text-sm font-medium text-gray-700">
-                          {t("field_name")} *
-                        </Label>
-                        <Input
-                          value={item.name}
-                          onChange={(e) =>
-                            updateBatchItem(item.id, "name", e.target.value)
-                          }
-                          placeholder={t("field_name_placeholder")}
-                          autoFocus={index === 0}
-                          className="w-full bg-white"
-                        />
-                      </div>
-
-                      <div className="flex gap-3">
-                        <div className="flex-1">
-                          <Label className="mb-1.5 block text-sm font-medium text-gray-700">
-                            {t("field_quantity")}
-                          </Label>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.001"
-                            value={item.quantity}
-                            onChange={(e) =>
-                              updateBatchItem(item.id, "quantity", e.target.value)
-                            }
-                            placeholder={t("field_quantity_placeholder")}
-                            className="w-full bg-white"
-                          />
-                        </div>
-                        <div className="w-28">
-                          <Label className="mb-1.5 block text-sm font-medium text-gray-700">
-                            {t("field_unit")}
-                          </Label>
-                          <Select
-                            value={item.unit}
-                            onValueChange={(value) =>
-                              updateBatchItem(item.id, "unit", value)
-                            }
-                          >
-                            <SelectTrigger className="bg-white">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {PANTRY_UNIT_OPTIONS.map((u) => (
-                                <SelectItem key={u} value={u}>
-                                  {u}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label className="mb-1.5 block text-sm font-medium text-gray-700">
-                          {t("field_category")}
-                        </Label>
-                        <Select
-                          value={item.category}
-                          onValueChange={(value) =>
-                            updateBatchItem(item.id, "category", value)
-                          }
-                        >
-                          <SelectTrigger className="w-full bg-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.map((cat) => (
-                              <SelectItem key={cat.value} value={cat.value}>
-                                {cat.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label className="mb-1.5 block text-sm font-medium text-gray-700">
-                          {t("field_expiry")}{" "}
-                          <span className="text-gray-400 font-normal">
-                            ({t("field_optional")})
-                          </span>
-                        </Label>
-                        <Input
-                          type="date"
-                          value={item.expiryDate}
-                          onChange={(e) =>
-                            updateBatchItem(item.id, "expiryDate", e.target.value)
-                          }
-                          min={new Date().toISOString().split("T")[0]}
-                          className="w-full bg-white"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  {batchItems.map((item, index) => (
+                    <PantryEditableItemCard
+                      key={item.id}
+                      item={item}
+                      index={index}
+                      autoFocus={index === 0}
+                      canRemove={batchItems.length > 1}
+                      categories={categories}
+                      labels={{
+                        itemLabel: t("batch_item_label", { index: index + 1 }),
+                        fieldName: t("field_name"),
+                        fieldNamePlaceholder: t("field_name_placeholder"),
+                        fieldQuantity: t("field_quantity"),
+                        fieldQuantityPlaceholder: t("field_quantity_placeholder"),
+                        fieldUnit: t("field_unit"),
+                        fieldCategory: t("field_category"),
+                        fieldExpiry: t("field_expiry"),
+                        fieldOptional: t("field_optional"),
+                      }}
+                      onChange={updateBatchItem}
+                      onRemove={removeBatchRow}
+                    />
+                  ))}
                 </div>
 
                 <button
@@ -340,33 +224,33 @@ export default function AddPantryItemModal({
 
               <div className="border-t border-gray-100 bg-white px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6">
                 <div className="flex gap-2">
-                <Button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 bg-eatrivo-white-primary text-eatrivo-black-primary border-2 border-eatrivo-black-primary/10"
-                >
-                  {t("quick_add_cancel")}
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || filledItemCount === 0}
-                  className="flex-1 bg-eatrivo-purple text-white hover:bg-eatrivo-purple/90"
-                >
-                  {isSubmitting ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Plus className="w-4 h-4 mr-1" />
-                      {submitLabel}
-                    </>
-                  )}
-                </Button>
+                  <Button
+                    type="button"
+                    onClick={onClose}
+                    className="flex-1 border-2 border-eatrivo-black-primary/10 bg-eatrivo-white-primary text-eatrivo-black-primary"
+                  >
+                    {t("quick_add_cancel")}
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || filledItemCount === 0}
+                    className="flex-1 bg-eatrivo-purple text-white hover:bg-eatrivo-purple/90"
+                  >
+                    {isSubmitting ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    ) : (
+                      <>
+                        <Plus className="mr-1 h-4 w-4" />
+                        {submitLabel}
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             </form>
           </motion.div>
         </>
-      )}
+      ) : null}
     </AnimatePresence>
   );
 }

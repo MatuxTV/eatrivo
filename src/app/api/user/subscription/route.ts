@@ -6,10 +6,10 @@ import { eq, desc } from "drizzle-orm";
 import {
   validateAndUpdateSubscription,
   getTrialPeriodForUser,
-} from "@/lib/subscription";
+} from "@/lib/billing/subscription";
 import { checkRateLimit } from "@/lib/rateLimit";
-import { SUBSCRIPTION_SNAPSHOT_CACHE_TTL_SECONDS, subscriptionSnapshotCacheKey } from "@/lib/cache-keys";
-import { CacheService } from "@/lib/redis";
+import { SUBSCRIPTION_SNAPSHOT_CACHE_TTL_SECONDS, subscriptionSnapshotCacheKey } from "@/lib/cache/cache-keys";
+import { CacheService } from "@/lib/cache/redis";
 
 export async function GET() {
   try {

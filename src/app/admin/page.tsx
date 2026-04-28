@@ -1,24 +1,78 @@
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
 import { redirect } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/../auth";
 import { db } from "@/index";
-import { userProfiles } from "@/db/schema";
+import { userInfoTable, userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 import AdminDashboard from "@/app/admin/components/AdminDashboard";
-import { isLocale } from "@/i18n/routing";
+import { isLocale, type Locale } from "@/i18n/routing";
 
-export const metadata: Metadata = {
-  title: "Admin Dashboard - Eatrivo",
-  description: "Admin panel for managing meal plans and users",
-};
+const adminMessagesLoaders = {
+  sk: () => import("../../../locales/sk.json").then((m) => m.default),
+  en: () => import("../../../locales/en.json").then((m) => m.default),
+} as const;
+
+async function resolveAdminLocale(
+  userId?: string | null,
+  preferredLocale?: string | null,
+): Promise<Locale> {
+  if (!userId) {
+    return "sk";
+  }
+
+  if (isLocale(preferredLocale)) {
+    return preferredLocale;
+  }
+
+  const userProfile = await db.query.userProfiles.findFirst({
+    where: eq(userProfiles.userId, userId),
+    columns: { id: true },
+  });
+
+  if (!userProfile) {
+    return "sk";
+  }
+
+  const userInfo = await db.query.userInfoTable.findFirst({
+    where: eq(userInfoTable.userProfileId, userProfile.id),
+    columns: { language: true },
+  });
+
+  return isLocale(userInfo?.language) ? userInfo.language : "sk";
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const session = await auth();
+  const safeLocale = await resolveAdminLocale(
+    session?.user?.id,
+    session?.user?.locale,
+  );
+
+  const t = await getTranslations({
+    locale: safeLocale,
+    namespace: "emails.admin.dashboard.metadata",
+  });
+  const common = await getTranslations({
+    locale: safeLocale,
+    namespace: "common",
+  });
+
+  return {
+    title: `${t("title")} - ${common("appName")}`,
+    description: t("description"),
+  };
+}
 
 export default async function AdminPage() {
-  const locale = await getLocale();
-  const safeLocale = isLocale(locale) ? locale : "sk";
-
   const session = await auth();
+  const safeLocale = await resolveAdminLocale(
+    session?.user?.id,
+    session?.user?.locale,
+  );
+
   if (!session?.user?.id) {
     redirect(`/${safeLocale}`);
   }
@@ -31,5 +85,11 @@ export default async function AdminPage() {
     redirect(`/${safeLocale}/not-authorized`);
   }
 
-  return <AdminDashboard />;
+  const messages = await adminMessagesLoaders[safeLocale]();
+
+  return (
+    <NextIntlClientProvider locale={safeLocale} messages={messages}>
+      <AdminDashboard />
+    </NextIntlClientProvider>
+  );
 }

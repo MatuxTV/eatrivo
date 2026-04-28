@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 
 interface InlineEditPanelProps {
   isOpen: boolean;

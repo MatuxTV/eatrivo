@@ -5,7 +5,7 @@ import { db } from "@/index";
 import { users, subscriptions, userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { checkRateLimit } from "@/lib/rateLimit";
-import { invalidateUserContextCaches } from "@/lib/user-context-cache";
+import { invalidateUserContextCaches } from "@/lib/user/user-context-cache";
 
 export async function POST(req: NextRequest) {
   try {

@@ -12,12 +12,14 @@ import {
   users,
 } from "@/db/schema";
 import { db } from "@/index";
-import { activeAdminAnalyticsEventNames } from "@/lib/analytics-events";
-import { isAuthError, requireAdminAuth } from "@/lib/adminAuth";
+import { activeAdminAnalyticsEventNames } from "@/lib/analytics/analytics-events";
+import { isAuthError, requireAdminAuth } from "@/lib/auth/adminAuth";
 import { getAdminPostHogTelemetry } from "@/lib/posthog-admin";
 
 const DEFAULT_RANGE_DAYS = 30;
 const ALLOWED_RANGE_DAYS = [7, 30, 90] as const;
+const DEFAULT_NEW_USER_WINDOW_DAYS = 30;
+const ALLOWED_NEW_USER_WINDOW_DAYS = [7, 14, 30] as const;
 
 type DeltaDirection = "up" | "down" | "flat";
 type AttentionSeverity = "info" | "warning" | "critical";
@@ -67,6 +69,10 @@ function formatDeltaLabel(metric: ReturnType<typeof buildDelta>) {
   return `${prefix}${metric.percentChange}% vs previous`;
 }
 
+function normalizeEventName(eventName: string) {
+  return eventName.replace(/_/g, " ");
+}
+
 export async function GET(req: NextRequest) {
   try {
     const authResult = await requireAdminAuth(["admin"]);
@@ -82,6 +88,15 @@ export async function GET(req: NextRequest) {
     )
       ? requestedRange
       : DEFAULT_RANGE_DAYS;
+    const requestedNewUserWindow = Number(
+      req.nextUrl.searchParams.get("newUsersWindowDays") ??
+        DEFAULT_NEW_USER_WINDOW_DAYS,
+    );
+    const newUsersWindowDays = ALLOWED_NEW_USER_WINDOW_DAYS.includes(
+      requestedNewUserWindow as (typeof ALLOWED_NEW_USER_WINDOW_DAYS)[number],
+    )
+      ? requestedNewUserWindow
+      : DEFAULT_NEW_USER_WINDOW_DAYS;
 
     const now = new Date();
     const rangeStart = new Date(now);
@@ -96,6 +111,8 @@ export async function GET(req: NextRequest) {
     const previousWeekEnd = new Date(currentWeekStart);
     const previousWeekStart = new Date(currentWeekStart);
     previousWeekStart.setDate(previousWeekStart.getDate() - 7);
+    const newUserStart = new Date(now);
+    newUserStart.setDate(newUserStart.getDate() - newUsersWindowDays);
 
     const [
       totalUsersResult,
@@ -137,6 +154,7 @@ export async function GET(req: NextRequest) {
       recentEvents,
       recentChatSessions,
       posthogTelemetry,
+      newUsersRaw,
     ] = await Promise.all([
       db.select({ count: count() }).from(users),
 
@@ -274,7 +292,7 @@ export async function GET(req: NextRequest) {
 
       db
         .select({ count: count() })
-        .from(analyticsEvents)
+        .from(recipes)
         .where(
           and(eq(recipes.source, "ai_custom"), gte(recipes.createdAt, rangeStart)),
         ),
@@ -312,7 +330,7 @@ export async function GET(req: NextRequest) {
 
       db
         .select({ count: count() })
-        .from(analyticsEvents)
+          .from(chatMessages)
         .where(
           gte(chatMessages.createdAt, rangeStart),
         ),
@@ -554,7 +572,249 @@ export async function GET(req: NextRequest) {
         .limit(10),
 
       getAdminPostHogTelemetry(rangeDays),
+
+      db
+        .select({
+          userId: userProfiles.userId,
+          userProfileId: userProfiles.id,
+          fullName: userProfiles.fullName,
+          email: users.email,
+          membership: users.membership,
+          registeredAt: userProfiles.created_at,
+        })
+        .from(userProfiles)
+        .innerJoin(users, eq(userProfiles.userId, users.id))
+        .where(gte(userProfiles.created_at, newUserStart))
+        .orderBy(desc(userProfiles.created_at)),
     ]);
+
+    const newUserIds = newUsersRaw.map((user) => user.userId);
+    const newUserProfileIds = newUsersRaw.map((user) => user.userProfileId);
+
+    const [
+      newUserEventRows,
+      newUserChatRows,
+      newUserPantryRows,
+      newUserRecipeRows,
+      newUserRecentEventRows,
+    ] = newUserIds.length
+      ? await Promise.all([
+          db
+            .select({
+              userId: analyticsEvents.userId,
+              eventName: analyticsEvents.eventName,
+              eventCount: count().as("eventCount"),
+              lastOccurredAt:
+                sql<string>`MAX(${analyticsEvents.createdAt})`.as("lastOccurredAt"),
+            })
+            .from(analyticsEvents)
+            .where(
+              and(
+                inArray(analyticsEvents.userId, newUserIds),
+                gte(analyticsEvents.createdAt, newUserStart),
+              ),
+            )
+            .groupBy(analyticsEvents.userId, analyticsEvents.eventName),
+
+          db
+            .select({
+              userProfileId: chatMessages.userProfileId,
+              messageCount: count().as("messageCount"),
+              sessionCount:
+                sql<number>`COUNT(DISTINCT ${chatMessages.sessionId})::int`.as(
+                  "sessionCount",
+                ),
+              lastMessageAt:
+                sql<string>`MAX(${chatMessages.createdAt})`.as("lastMessageAt"),
+            })
+            .from(chatMessages)
+            .where(
+              and(
+                inArray(chatMessages.userProfileId, newUserProfileIds),
+                gte(chatMessages.createdAt, newUserStart),
+              ),
+            )
+            .groupBy(chatMessages.userProfileId),
+
+          db
+            .select({
+              userProfileId: pantryItems.userProfileId,
+              itemCount: count().as("itemCount"),
+              lastPantryActivityAt:
+                sql<string>`MAX(${pantryItems.updatedAt})`.as("lastPantryActivityAt"),
+            })
+            .from(pantryItems)
+            .where(inArray(pantryItems.userProfileId, newUserProfileIds))
+            .groupBy(pantryItems.userProfileId),
+
+          db
+            .select({
+              userId: recipes.createdByUserId,
+              customRecipesCount: count().as("customRecipesCount"),
+              lastRecipeAt:
+                sql<string>`MAX(${recipes.createdAt})`.as("lastRecipeAt"),
+            })
+            .from(recipes)
+            .where(
+              and(
+                eq(recipes.source, "ai_custom"),
+                inArray(recipes.createdByUserId, newUserIds),
+                gte(recipes.createdAt, newUserStart),
+              ),
+            )
+            .groupBy(recipes.createdByUserId),
+
+          db
+            .select({
+              userId: analyticsEvents.userId,
+              eventName: analyticsEvents.eventName,
+              createdAt: analyticsEvents.createdAt,
+            })
+            .from(analyticsEvents)
+            .where(
+              and(
+                inArray(analyticsEvents.userId, newUserIds),
+                gte(analyticsEvents.createdAt, newUserStart),
+              ),
+            )
+            .orderBy(desc(analyticsEvents.createdAt))
+            .limit(200),
+        ])
+      : [[], [], [], [], []];
+
+    const newUserEventMap = new Map<
+      string,
+      {
+        totalTrackedEvents: number;
+        lastActivityAt: string | null;
+        recentActivities: { label: string; occurredAt: string }[];
+        eventCounts: Record<string, number>;
+      }
+    >();
+
+    for (const row of newUserEventRows) {
+      if (!row.userId) {
+        continue;
+      }
+
+      const current = newUserEventMap.get(row.userId) ?? {
+        totalTrackedEvents: 0,
+        lastActivityAt: null,
+        recentActivities: [],
+        eventCounts: {},
+      };
+
+      const eventCount = toInt(row.eventCount);
+
+      current.totalTrackedEvents += eventCount;
+      current.eventCounts[row.eventName] = eventCount;
+      if (!current.lastActivityAt || new Date(row.lastOccurredAt) > new Date(current.lastActivityAt)) {
+        current.lastActivityAt = row.lastOccurredAt;
+      }
+
+      newUserEventMap.set(row.userId, current);
+    }
+
+    for (const row of newUserRecentEventRows) {
+      if (!row.userId) {
+        continue;
+      }
+
+      const current = newUserEventMap.get(row.userId) ?? {
+        totalTrackedEvents: 0,
+        lastActivityAt: null,
+        recentActivities: [],
+        eventCounts: {},
+      };
+
+      if (current.recentActivities.length < 5) {
+        current.recentActivities.push({
+          label: normalizeEventName(row.eventName),
+          occurredAt: row.createdAt.toISOString(),
+        });
+      }
+
+      newUserEventMap.set(row.userId, current);
+    }
+
+    const newUserChatMap = new Map(
+      newUserChatRows.map((row) => [row.userProfileId, row]),
+    );
+    const newUserPantryMap = new Map(
+      newUserPantryRows.map((row) => [row.userProfileId, row]),
+    );
+    const newUserRecipeMap = new Map(
+      newUserRecipeRows
+        .filter(
+          (
+            row,
+          ): row is typeof row & {
+            userId: string;
+          } => Boolean(row.userId),
+        )
+        .map((row) => [row.userId, row]),
+    );
+
+    const newUsers = newUsersRaw.map((user) => {
+      const eventMetrics = newUserEventMap.get(user.userId);
+      const chatMetrics = newUserChatMap.get(user.userProfileId);
+      const pantryMetrics = newUserPantryMap.get(user.userProfileId);
+      const recipeMetrics = newUserRecipeMap.get(user.userId);
+
+      const lastActivityCandidates = [
+        eventMetrics?.lastActivityAt ?? null,
+        chatMetrics?.lastMessageAt ? new Date(chatMetrics.lastMessageAt).toISOString() : null,
+        pantryMetrics?.lastPantryActivityAt
+          ? new Date(pantryMetrics.lastPantryActivityAt).toISOString()
+          : null,
+        recipeMetrics?.lastRecipeAt ? new Date(recipeMetrics.lastRecipeAt).toISOString() : null,
+      ].filter((value): value is string => Boolean(value));
+
+      const lastActivityAt =
+        lastActivityCandidates.sort((left, right) =>
+          new Date(right).getTime() - new Date(left).getTime(),
+        )[0] ?? null;
+
+      return {
+        userId: user.userId,
+        userProfileId: user.userProfileId,
+        fullName: user.fullName,
+        email: user.email,
+        membership: user.membership,
+        registeredAt: user.registeredAt.toISOString(),
+        lastActivityAt,
+        daysSinceRegistration: Math.max(
+          0,
+          Math.floor(
+            (now.getTime() - user.registeredAt.getTime()) / (1000 * 60 * 60 * 24),
+          ),
+        ),
+        activity: {
+          totalTrackedEvents: eventMetrics?.totalTrackedEvents ?? 0,
+          pantryItems: toInt(pantryMetrics?.itemCount),
+          pantryViews: toInt(eventMetrics?.eventCounts.pantry_viewed),
+          kitchenCounterAttempts:
+            toInt(eventMetrics?.eventCounts.kitchen_counter_completed) +
+            toInt(
+              eventMetrics?.eventCounts
+                .kitchen_counter_completed_with_missing_ingredients,
+            ),
+          recipeOpens: toInt(eventMetrics?.eventCounts.recipe_opened),
+          customRecipesAccepted: toInt(recipeMetrics?.customRecipesCount),
+          chatSessions: toInt(chatMetrics?.sessionCount),
+          chatMessages: toInt(chatMetrics?.messageCount),
+        },
+        recentActivities: eventMetrics?.recentActivities ?? [],
+      };
+    });
+
+    const newUsersWithActivity = newUsers.filter(
+      (user) =>
+        user.activity.totalTrackedEvents > 0 ||
+        user.activity.chatMessages > 0 ||
+        user.activity.pantryItems > 0 ||
+        user.activity.customRecipesAccepted > 0,
+    );
 
     const totalUsers = toInt(totalUsersResult[0]?.count);
     const pantryUsers = toInt(pantryUsersResult[0]?.count);
@@ -768,6 +1028,13 @@ export async function GET(req: NextRequest) {
         kitchenCounterAttempts30d: kitchenCounterAttempts,
         chatSessions30d: totalSessions,
         customRecipesAccepted30d: customRecipesAccepted,
+      },
+      newUsers: {
+        windowDays: newUsersWindowDays,
+        total: newUsers.length,
+        active: newUsersWithActivity.length,
+        inactive: newUsers.length - newUsersWithActivity.length,
+        users: newUsers,
       },
       comparisons,
       attention: attentionItems,

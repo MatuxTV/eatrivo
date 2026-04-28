@@ -30,7 +30,7 @@ const tabs: Tab[] = [
 ];
 
 export default function AdminTabs({ activeTab, onTabChange }: AdminTabsProps) {
-  const t = useTranslations("admin.dashboard.tabs");
+  const t = useTranslations("emails.admin.dashboard.tabs");
 
   return (
     <div className="mb-5 sm:mb-8">

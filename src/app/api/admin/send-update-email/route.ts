@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { requireAdminAuth, isAuthError } from "@/lib/adminAuth";
+import { requireAdminAuth, isAuthError } from "@/lib/auth/adminAuth";
 import { db } from "../../../../";
 import { userProfiles, users } from "@/db/schema";
-import { eq, isNotNull } from "drizzle-orm";
+import { and, eq, ilike, isNotNull } from "drizzle-orm";
 import { resend, DEFAULT_FROM_EMAIL } from "@/components/email-templates";
 import { UpdateNotificationEmail } from "@/components/email-templates/UpdateNotificationEmail";
 import { logger } from "@/lib/logger";
 import { getMessages } from "next-intl/server";
 import type { EmailTranslations } from "@/types/email.types";
-import { getUserLanguage } from "@/lib/user-utils";
+import { getUserLanguage } from "@/lib/user/user-utils";
 import { checkRateLimit } from "@/lib/rateLimit";
 
 interface UpdateItem {
@@ -63,17 +63,44 @@ export async function POST(request: Request) {
 
     // If testEmail is provided, send only to that email
     if (testEmail) {
+      const normalizedTestEmail = testEmail.trim();
+
+      const [testRecipient] = await db
+        .select({
+          email: users.email,
+          fullName: userProfiles.fullName,
+        })
+        .from(users)
+        .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .where(
+          and(
+            ilike(users.email, normalizedTestEmail),
+            eq(userProfiles.isEmailSubscriptionActive, true),
+          ),
+        )
+        .limit(1);
+
+      if (!testRecipient) {
+        return NextResponse.json(
+          {
+            error:
+              "Test email recipient must belong to a user with an active email subscription",
+          },
+          { status: 400 },
+        );
+      }
+
       // Get test user's language preference
-      const testUserLocale = await getUserLanguage(testEmail);
+      const testUserLocale = await getUserLanguage(testRecipient.email);
       const messages = await getMessages({ locale: testUserLocale });
       const translations = messages.emails as unknown as EmailTranslations;
 
       const { error } = await resend.emails.send({
         from: DEFAULT_FROM_EMAIL,
-        to: testEmail,
+        to: testRecipient.email,
         subject: `🎉 Eatrivo ${version} - ${updateTitle}`,
         react: UpdateNotificationEmail({
-          recipientName: "Test User",
+          recipientName: testRecipient.fullName || "Test User",
           version,
           updateTitle,
           updateDescription,
@@ -107,7 +134,19 @@ export async function POST(request: Request) {
         })
         .from(users)
         .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
-        .where(isNotNull(users.email));
+        .where(
+          and(
+            isNotNull(users.email),
+            eq(userProfiles.isEmailSubscriptionActive, true),
+          ),
+        );
+
+      if (usersWithProfiles.length === 0) {
+        return NextResponse.json(
+          { error: "No users with an active email subscription were found" },
+          { status: 400 },
+        );
+      }
 
       const results = {
         sent: 0,

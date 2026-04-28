@@ -31,8 +31,13 @@ import {
   customRecipeLatestResultResponseSchema,
   customRecipeStreamEventSchema,
 } from "@/lib/custom-recipes/contracts";
-import type { RecipeIngredientItem } from "@/lib/recipe-ingredients";
-import type { RecipeInstruction } from "@/lib/recipe-instructions";
+import {
+  getRecipeCategoryGradient,
+  normalizeRecipeCategoryKey,
+  type CanonicalRecipeCategoryKey,
+} from "@/lib/recipes/category-keys";
+import type { RecipeIngredientItem } from "@/lib/recipes/recipe-ingredients";
+import type { RecipeInstruction } from "@/lib/recipes/recipe-instructions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -230,7 +235,7 @@ const CUSTOM_RECIPE_ACCEPT_ENDPOINT = "/api/recipes/custom/accept";
 const CUSTOM_RECIPE_LATEST_ENDPOINT = "/api/recipes/custom/latest";
 const CUSTOM_RECIPE_MOCK_STORAGE_KEY = "eatrivo:customRecipeMock";
 const CUSTOM_RECIPE_STATE_STORAGE_KEY = "eatrivo:customRecipeState";
-const DEFAULT_CATEGORY_KEY = "lunch-and-dinner";
+const DEFAULT_CATEGORY_KEY: CanonicalRecipeCategoryKey = "dinner";
 const DEFAULT_REQUEST_PREFERENCES: CustomRecipeRequestPreferences = {
   servings: 2,
   mealType: "dinner",
@@ -247,22 +252,6 @@ interface PersistedCustomRecipeState {
   status: Exclude<CustomRecipeGenerationStatus, "generating">;
   rawResultPayload: CustomRecipeApiResultPayload | null;
   error: string | null;
-}
-
-function getCategoryGradient(categoryKey: string): string {
-  switch (categoryKey) {
-    case "breakfast":
-      return "from-amber-500 via-orange-500 to-rose-500";
-    case "lunch":
-    case "lunch-and-dinner":
-      return "from-emerald-500 via-teal-500 to-cyan-500";
-    case "dinner":
-      return "from-indigo-500 via-violet-500 to-fuchsia-500";
-    case "smoothies":
-      return "from-pink-500 via-rose-500 to-orange-400";
-    default:
-      return "from-purple-600 via-fuchsia-500 to-pink-500";
-  }
 }
 
 function delay(ms: number): Promise<void> {
@@ -514,7 +503,7 @@ function adaptGeneratedRecipe(
     slug: toSlug(recipe.name) || fallbackId,
     title: recipe.name,
     category: recipe.category,
-    categoryKey: DEFAULT_CATEGORY_KEY,
+    categoryKey: normalizeRecipeCategoryKey(recipe.category, DEFAULT_CATEGORY_KEY),
     servings: recipe.servings,
     totalTimeMin: recipe.totalTimeMin,
     calories: recipe.calories,
@@ -573,7 +562,10 @@ function adaptSuggestionRecipe(
     slug: recipe.slug,
     title: recipe.name,
     category: recipe.category,
-    categoryKey: recipe.categoryKey || DEFAULT_CATEGORY_KEY,
+    categoryKey: normalizeRecipeCategoryKey(
+      recipe.categoryKey || recipe.category,
+      DEFAULT_CATEGORY_KEY,
+    ),
     servings: recipe.servings,
     totalTimeMin: recipe.totalTimeMin,
     calories: recipe.calories,
@@ -1577,21 +1569,15 @@ const RivoCustomRecipeExperience = forwardRef<
 
       setIsBookmarked(!previousBookmarked);
       toast.success(
-        locale === "sk"
-          ? previousBookmarked
-            ? "Recept bol odstranený zo záložiek."
-            : "Recept bol uložený do záložiek."
-          : previousBookmarked
-            ? "Recipe removed from bookmarks."
-            : "Recipe saved to bookmarks.",
+        t(
+          previousBookmarked
+            ? "basic.recipeDialog.bookmarkRemoved"
+            : "basic.recipeDialog.bookmarkSaved",
+        ),
       );
     } catch (bookmarkError) {
       setIsBookmarked(previousBookmarked);
-      toast.error(
-        locale === "sk"
-          ? "Záložku sa nepodarilo uložiť."
-          : "Could not update bookmark.",
-      );
+      toast.error(t("basic.recipeDialog.bookmarkError"));
       console.error("[CustomRecipe] bookmark toggle failed", bookmarkError);
     } finally {
       setIsBookmarkPending(false);
@@ -1601,9 +1587,9 @@ const RivoCustomRecipeExperience = forwardRef<
     bookmarkedRecipeId,
     isBookmarked,
     isBookmarkPending,
-    locale,
     persistGeneratedRecipeForBookmark,
     replaceRecipeReference,
+    t,
     triggerHaptic,
   ]);
 
@@ -2233,7 +2219,7 @@ const RivoCustomRecipeExperience = forwardRef<
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 >
                   <div
-                    className={`relative mx-4 overflow-hidden rounded-[1.5rem] bg-gradient-to-br ${getCategoryGradient(activeDialogRecipe.categoryKey)} p-6 text-white sm:p-8`}
+                    className={`relative mx-4 overflow-hidden rounded-[1.5rem] bg-gradient-to-br ${getRecipeCategoryGradient(activeDialogRecipe.categoryKey)} p-6 text-white sm:p-8`}
                   >
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.3),transparent_45%)]" />
                     <div className="relative z-10 space-y-4">
@@ -2459,6 +2445,10 @@ const RivoCustomRecipeExperience = forwardRef<
                             category: null,
                             available: true,
                             matchType: ingredient.matchType,
+                            isStaple:
+                              ingredientByName.get(
+                                ingredient.recipeIngredientName.trim().toLowerCase(),
+                              )?.pantryComparison?.status === "available-staple",
                             tone: resolveTone(
                               ingredient.recipeIngredientName,
                               true,
@@ -2479,6 +2469,8 @@ const RivoCustomRecipeExperience = forwardRef<
                                 category: null,
                                 available: true,
                                 matchType: "exact" as const,
+                                isStaple:
+                                  ingredient.pantryComparison?.status === "available-staple",
                                 tone: resolveTone(ingredient.name, true, "exact"),
                               }))
                             : [];
@@ -2494,6 +2486,7 @@ const RivoCustomRecipeExperience = forwardRef<
                               )?.category ?? null,
                             available: false,
                             matchType: "exact" as const,
+                            isStaple: false,
                             tone: "red" as const,
                           }),
                         );
@@ -2527,7 +2520,7 @@ const RivoCustomRecipeExperience = forwardRef<
                                       : "bg-red-50/60 ring-red-200/50"
                                 }`}
                               >
-                                {ingredient.available ? (
+                                {ingredient.available && !ingredient.isStaple ? (
                                   <div
                                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full shadow-sm ${
                                       ingredient.tone === "orange"
@@ -2555,7 +2548,9 @@ const RivoCustomRecipeExperience = forwardRef<
                                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-all active:scale-90 ${
                                       selectedMissingIngredients.has(ingredient.name)
                                         ? "bg-gray-200"
-                                        : "bg-red-500 shadow-sm shadow-red-200 hover:bg-red-600"
+                                        : ingredient.isStaple
+                                          ? "bg-eatrivo-green shadow-sm shadow-green-200 hover:bg-green-600"
+                                          : "bg-red-500 shadow-sm shadow-red-200 hover:bg-red-600"
                                     }`}
                                     title={t("basic.recipeDialog.addToShoppingList")}
                                   >
@@ -2587,7 +2582,7 @@ const RivoCustomRecipeExperience = forwardRef<
                                     ) : null}
                                   </div>
                                   {ingredient.amount ? (
-                                    <span className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500 ring-1 ring-gray-200/70">
+                                    <span className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-gray-500 ring-1 ring-gray-200/70">
                                       {ingredient.amount}
                                     </span>
                                   ) : null}

@@ -1,6 +1,6 @@
 import { db } from "@/index";
 import { chatMessages, chatSessions } from "@/db/schema";
-import { buildChatSessionTitle } from "@/lib/chat-history";
+import { buildChatSessionTitle } from "@/lib/chat/chat-history";
 import { eq } from "drizzle-orm";
 import type { ChatState } from "../state";
 

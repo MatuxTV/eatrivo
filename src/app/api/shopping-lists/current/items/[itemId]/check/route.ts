@@ -11,7 +11,7 @@ import {
   shoppingListIdSchema,
   shoppingListItemCheckSchema,
 } from "@/lib/schemas/shopping-list";
-import { CacheService } from "@/lib/redis";
+import { CacheService } from "@/lib/cache/redis";
 
 function errorResponse(error: string, code: string, status: number) {
   return NextResponse.json({ error, code }, { status });

@@ -10,8 +10,8 @@ interface StatsCardProps {
 }
 
 export default function StatsCard({ users }: StatsCardProps) {
-  const t = useTranslations("admin.dashboard.statsCard");
-  const tCommon = useTranslations("admin.dashboard.common");
+  const t = useTranslations("emails.admin.dashboard.statsCard");
+  const tCommon = useTranslations("emails.admin.dashboard.common");
   const totalUsers = users.length;
   const premiumUsers = users.filter(u => u.membership?.toLowerCase() === "premium").length;
   const basicUsers = users.filter(u => u.membership?.toLowerCase() === "basic").length;

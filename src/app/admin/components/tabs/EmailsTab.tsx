@@ -70,8 +70,11 @@ export default function EmailsTab({
   isSendingEmail,
   emailSendResult,
 }: EmailsTabProps) {
-  const t = useTranslations("admin.dashboard.emailsTab");
-  const tCommon = useTranslations("admin.dashboard.common");
+  const t = useTranslations("emails.admin.dashboard.emailsTab");
+  const tCommon = useTranslations("emails.admin.dashboard.common");
+  const subscribedUsersCount = users.filter(
+    (user) => user.email && user.isEmailSubscriptionActive !== false,
+  ).length;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -290,6 +293,9 @@ export default function EmailsTab({
                     autoComplete="email"
                     className="h-10 sm:h-11"
                   />
+                  <p className="mt-2 text-xs text-gray-500">
+                    {t("fields.testEmail.helper")}
+                  </p>
                 </div>
               </div>
 
@@ -356,7 +362,7 @@ export default function EmailsTab({
                   <Button
                     type="button"
                     onClick={onSendToAll}
-                    disabled={isSendingEmail}
+                    disabled={isSendingEmail || subscribedUsersCount === 0}
                     className="flex-1 bg-eatrivo-purple hover:bg-eatrivo-purple/90"
                   >
                     <Mail className="w-4 h-4 mr-2" />
@@ -393,9 +399,9 @@ export default function EmailsTab({
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-semibold text-white">
-                    {users.filter((u) => u.email).length}
+                    {subscribedUsersCount}
                   </p>
-                  <p className="text-xs text-white/80">{t("stats.withEmail")}</p>
+                  <p className="text-xs text-white/80">{t("stats.activeSubscribers")}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 pt-3 border-t border-white/20">

@@ -3,11 +3,11 @@ import { auth } from "../../../../auth";
 import { db } from "../../../../src/index";
 import { feedback, userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { sendFeedbackNotification } from "@/lib/emailService";
+import { sendFeedbackNotification } from "@/lib/email/emailService";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import { unauthorizedError } from "@/lib/safeError";
 import { NextResponse } from "next/server";
-import { getUserLanguage } from "@/lib/user-utils";
+import { getUserLanguage } from "@/lib/user/user-utils";
 
 export async function POST(request: NextRequest) {
   try {

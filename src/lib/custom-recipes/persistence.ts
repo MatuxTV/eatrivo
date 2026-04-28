@@ -9,8 +9,11 @@ import {
   recipes,
   recipeTranslations,
 } from "@/db/schema";
-import type { CustomRecipeGeneratedRecipe } from "@/lib/custom-recipes/contracts";
+import {
+  type CustomRecipeGeneratedRecipe,
+} from "@/lib/custom-recipes/contracts";
 import { apiLogger } from "@/lib/logger";
+import { normalizeRecipeCategoryKey } from "@/lib/recipes/category-keys";
 
 type PersistableCanonicalRecipe = NonNullable<
   CustomRecipeGeneratedRecipe["canonicalRecipe"]
@@ -32,7 +35,7 @@ function buildLegacyCanonicalRecipe(
 ): PersistableCanonicalRecipe {
   return {
     default_locale: locale,
-    category_key: slugify(recipe.category) || "custom-recipe",
+    category_key: normalizeRecipeCategoryKey(recipe.category),
     diet_tags: recipe.tags.map(slugify).filter(Boolean),
     restriction_flags: [],
     servings: recipe.servings,

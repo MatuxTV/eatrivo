@@ -8,8 +8,8 @@ import {
   loadIngredientAliasIndex,
   resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
-import { CacheService } from "@/lib/redis";
-import { guessFoodCategory, normalizeUnit } from "@/lib/units";
+import { CacheService } from "@/lib/cache/redis";
+import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
 import type { PantryBatchState } from "../state";
 import type { PantryBatchProcessedItem } from "../types";
 

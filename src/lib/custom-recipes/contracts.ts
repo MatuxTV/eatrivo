@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import type { MatchedRecipe } from "@/lib/recipe-matches";
-import { parseRecipeIngredient } from "@/lib/ingredients";
-import { buildRecipeIngredientPantryComparison } from "@/lib/recipe-quantity-comparison";
-import { guessFoodCategory } from "@/lib/units";
+import type { MatchedRecipe } from "@/lib/recipes/recipe-matches";
+import { parseRecipeIngredient } from "@/lib/ingredients/ingredients";
+import { buildRecipeIngredientPantryComparison } from "@/lib/recipes/recipe-quantity-comparison";
+import { guessFoodCategory } from "@/lib/ingredients/units";
 import { validateCustomRecipeIngredientAmountFormat } from "./unit-validation";
 
 const localeSchema = z.enum(["en", "sk"]);
@@ -47,6 +47,14 @@ const localeNeutralKeySchema = z
   .max(80)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 
+export const customRecipeAllowedCategoryKeySchema = z.enum([
+  "breakfast",
+  "lunch",
+  "dinner",
+  "snack",
+  "dessert",
+]);
+
 const customRecipeIngredientTranslationSchema = z.object({
   display_name: z.string().trim().min(1).max(120),
 });
@@ -83,7 +91,7 @@ const customRecipeCanonicalIngredientSchema = z.object({
 
 export const customRecipeCanonicalRecipeSchema = z.object({
   default_locale: localeSchema,
-  category_key: localeNeutralKeySchema,
+  category_key: customRecipeAllowedCategoryKeySchema,
   diet_tags: z.array(localeNeutralKeySchema).max(8),
   restriction_flags: z.array(localeNeutralKeySchema).max(12),
   servings: z.number().int().min(1).max(12),
@@ -179,6 +187,13 @@ export const customRecipeAiIngredientSchema = z
       ingredientName: ingredient.name,
       amount: ingredient.amount,
     })) {
+      // Allow flexible amounts or missing amounts if the ingredient is already in the pantry.
+      // This prevents the AI from catastrophically failing generation if it describes
+      // user's availability items with vague quantities like "podľa chuti" or "1 balenie".
+      if (ingredient.pantryStatus === "pantry" && issue.errorType === "unit_format_error") {
+        continue;
+      }
+
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: issue.message,
@@ -197,7 +212,7 @@ const customRecipeAvailableAiCandidateSchema = z
   .object({
     status: z.literal("available"),
     name: z.string().min(1).max(120),
-    category: z.string().min(1).max(80),
+    category: customRecipeAllowedCategoryKeySchema,
     description: z.string().min(1).max(280),
     dietTags: z.array(localeNeutralKeySchema).max(8),
     restrictionFlags: z.array(localeNeutralKeySchema).max(12),
@@ -583,10 +598,22 @@ function normalizeCustomRecipeIngredientItem(
     .filter(Boolean)
     .join(" ");
   const parsedIngredient = parseRecipeIngredient(combinedValue || ingredient.name);
-  const pantryMatch = findPantryMatch(
+  let pantryMatch = findPantryMatch(
     options?.pantryRows ?? [],
     ingredient.pantryStatus === "pantry" ? ingredient.pantryMatchName : null,
   );
+
+  // If the AI flagged it as a pantry item but we didn't find it in the user's specific rows,
+  // and the amount is null/omitted (which identifies it as a basic seasoning/oil staple according to our prompt),
+  // we synthetically inject an availability match so the UI knows the user inherently has it.
+  if (!pantryMatch && ingredient.pantryStatus === "pantry" && !ingredient.amount) {
+    pantryMatch = {
+      pantryName: ingredient.pantryMatchName || ingredient.name,
+      trackingMode: "availability",
+      inStock: true,
+    } as unknown as CustomRecipePantryContextItem;
+  }
+
   const pantryComparison = options?.locale
     ? buildRecipeIngredientPantryComparison(
         parsedIngredient.quantity,
@@ -659,14 +686,9 @@ function buildCanonicalRecipe(
   >,
   ingredientItems: CustomRecipeGeneratedRecipe["ingredientItems"],
 ): NonNullable<CustomRecipeGeneratedRecipe["canonicalRecipe"]> {
-  const categoryKey =
-    normalizeLocaleNeutralKey(
-      candidate.translations.en.category_label ?? candidate.category,
-    ) || "custom-recipe";
-
   return customRecipeCanonicalRecipeSchema.parse({
     default_locale: "en",
-    category_key: categoryKey,
+    category_key: candidate.category,
     diet_tags: [...new Set(candidate.dietTags.map(normalizeLocaleNeutralKey).filter(Boolean))],
     restriction_flags: [
       ...new Set(candidate.restrictionFlags.map(normalizeLocaleNeutralKey).filter(Boolean)),

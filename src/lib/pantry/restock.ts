@@ -3,9 +3,9 @@ import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/index";
 import { pantryRestockItems, userProfiles } from "@/db/schema";
 import type { pantryItems } from "@/db/schema";
-import { pantrySnapshotCacheKey } from "@/lib/cache-keys";
-import { CacheService } from "@/lib/redis";
-import { normalizeUnit } from "@/lib/units";
+import { pantrySnapshotCacheKey } from "@/lib/cache/cache-keys";
+import { CacheService } from "@/lib/cache/redis";
+import { normalizeUnit } from "@/lib/ingredients/units";
 
 export interface RestockSeedInput {
   name: string;

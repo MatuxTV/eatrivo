@@ -1,12 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { Shield } from "lucide-react";
 import { User } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 export default function HomeHeader() {
   const { data: session } = useSession();
   const user = session?.user;
+  const isAdmin = user?.role === "admin";
 
   return (
     <div className="fixed left-0 right-0 top-0 z-40 border-b border-eatrivo-black-secondary/10 bg-eatrivo-white-primary  px-4 py-1 backdrop-blur-md md:hidden">
@@ -21,6 +24,16 @@ export default function HomeHeader() {
             className="h-auto py-1 w-[7.5rem]"
           />  
         </div>
+        <div className="flex items-center gap-2">
+          {isAdmin ? (
+            <Link
+              href="/admin"
+              aria-label="Open admin"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-eatrivo-purple/15 bg-eatrivo-purple/5 text-eatrivo-purple shadow-sm transition-all duration-200 active:scale-95"
+            >
+              <Shield className="h-4 w-4" />
+            </Link>
+          ) : null}
           {user?.image ? (
             <Image
               src={user.image}
@@ -34,6 +47,7 @@ export default function HomeHeader() {
               <User className="h-5 w-5 text-eatrivo-purple" />
             </div>
           )}
+        </div>
       </div>
     </div>
   );

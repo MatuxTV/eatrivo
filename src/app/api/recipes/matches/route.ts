@@ -7,9 +7,9 @@ import { eq } from "drizzle-orm";
 import { db } from "@/index";
 import { userInfoTable, userProfiles } from "@/db/schema";
 import { apiLogger } from "@/lib/logger";
-import { normalizeRecipeLocale } from "@/lib/recipe-localization";
+import { normalizeRecipeLocale } from "@/lib/recipes/recipe-localization";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
-import { getRecipeMatchesForUserProfile } from "@/lib/recipe-matches";
+import { getRecipeMatchesForUserProfile } from "@/lib/recipes/recipe-matches";
 
 function parsePositiveInteger(
   rawValue: string | null,

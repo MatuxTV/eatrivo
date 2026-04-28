@@ -14,12 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { localizeUnitLabel } from "@/lib/unit-localization";
-import { cn } from "@/lib/utils";
+import { localizeUnitLabel } from "@/lib/ingredients/unit-localization";
+import { cn } from "@/lib/utils/utils";
 import {
   getQuantityQuickAdjustmentRows,
   PANTRY_UNIT_OPTIONS,
-} from "@/lib/units";
+} from "@/lib/ingredients/units";
 
 interface QuantityUnitEditorProps {
   quantityLabel: string;

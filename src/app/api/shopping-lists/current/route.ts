@@ -32,10 +32,10 @@ import {
   serializeQuantity,
 } from "@/lib/pantry/restock";
 import { checkRateLimit } from "@/lib/rateLimit";
-import { CacheService } from "@/lib/redis";
+import { CacheService } from "@/lib/cache/redis";
 import { handleApiError, safeErrorResponse, unauthorizedError, validationError } from "@/lib/safeError";
 import { shoppingListCurrentMutationSchema } from "@/lib/schemas/pantry";
-import { guessFoodCategory } from "@/lib/units";
+import { guessFoodCategory } from "@/lib/ingredients/units";
 
 type ShoppingListItemResponse = {
   id: string;

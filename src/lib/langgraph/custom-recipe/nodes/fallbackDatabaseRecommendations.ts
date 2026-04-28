@@ -6,7 +6,7 @@ import { apiLogger } from "@/lib/logger";
 import {
   getPreferenceRecipeSuggestionsForUserProfile,
   getRecipeMatchesForUserProfile,
-} from "@/lib/recipe-matches";
+} from "@/lib/recipes/recipe-matches";
 import type { CustomRecipeState } from "../state";
 
 export async function fallbackDatabaseRecommendations(

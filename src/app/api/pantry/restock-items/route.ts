@@ -6,7 +6,7 @@ import { auth } from "../../../../../auth";
 import { db } from "@/index";
 import { pantryItems, pantryRestockItems } from "@/db/schema";
 import { apiLogger } from "@/lib/logger";
-import { CacheService } from "@/lib/redis";
+import { CacheService } from "@/lib/cache/redis";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import {
   getUserProfileByUserId,

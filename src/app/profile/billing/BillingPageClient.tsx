@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { SubscriptionStatus } from "@/components/billing/SubscriptionStatus";
 import { PricingCard } from "@/components/billing/PricingCard";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { trackClientEvent } from "@/lib/analytics-client";
+import { trackClientEvent } from "@/lib/analytics/analytics-client";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";

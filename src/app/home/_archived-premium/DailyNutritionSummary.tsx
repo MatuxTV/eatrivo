@@ -1,6 +1,6 @@
 "use client";
 
-import { roundNumber } from "@/lib/functions";
+import { roundNumber } from "@/lib/utils/functions";
 import { Flame, Beef, Wheat, Droplet } from "lucide-react";
 import { useTranslations } from "next-intl";
 
