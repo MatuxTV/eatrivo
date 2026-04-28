@@ -119,6 +119,7 @@ function readStoredKitchenCounterRecipe(): BasicHomeRecipePreview | null {
 /* ------------------------------------------------------------------ */
 
 interface HomePageProps {
+  membership?: "basic" | "premium" | "pro" | "trainer";
   featuredRecipes?: BasicHomeRecipePreview[];
   recipeBrowseAvailableFilters?: RecipeBrowseAvailableFilters;
   initialRecipeHasMore?: boolean;
@@ -137,6 +138,7 @@ interface HomePageProps {
 /* ------------------------------------------------------------------ */
 
 export default function HomePage({
+  membership = "basic",
   featuredRecipes = [],
   recipeBrowseAvailableFilters = { categoryKeys: [], dietTags: [] },
   initialRecipeHasMore = false,
@@ -442,6 +444,7 @@ export default function HomePage({
               className="max-w-7xl mx-auto"
             >
               <PantrySection
+                membership={membership}
                 onPantryChanged={pantrySync.refreshPantrySummary}
                 initialData={initialPantryData}
               />

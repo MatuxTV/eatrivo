@@ -2159,8 +2159,12 @@
     "feature3": "Advanced shopping lists",
     "upgradeButton": "Upgrade to Plus",
     "maybeLater": "Maybe later",
-    "socialProof": "Join 2,400+ members eating smarter",
+    "socialProof": "Join members that are eating smarter",
     "trialDays": "{days} Days Free",
+    "monthlyLabel": "Monthly",
+    "yearlyLabel": "Yearly",
+    "perMonthShort": "/ month",
+    "perYearShort": "/ year",
     "mostPopular": "Most popular",
     "cancelAnytime": "Cancel anytime"
   },

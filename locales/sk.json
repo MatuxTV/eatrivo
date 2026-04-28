@@ -2167,8 +2167,12 @@
     "feature3": "Pokročilé nákupné zoznamy",
     "upgradeButton": "Upgrade na Plus",
     "maybeLater": "Možno neskôr",
-    "socialProof": "Pridaj sa k 2 400+ členom, ktorí jedia múdrejšie",
+    "socialProof": "Pridaj sa k členom, ktorí jedia múdrejšie",
     "trialDays": "{days} Dní Zadarmo",
+    "monthlyLabel": "Mesačne",
+    "yearlyLabel": "Ročne",
+    "perMonthShort": "/ mesiac",
+    "perYearShort": "/ rok",
     "mostPopular": "Najobľúbenejšie",
     "cancelAnytime": "Zrušíš kedykoľvek"
   },
