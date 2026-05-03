@@ -353,8 +353,61 @@
     "of": "of",
     "steps": {
       "profile": "Profile",
+      "name": "Name",
+      "gender": "Gender",
+      "metrics": "Height and weight",
+      "lifestyle": "Activity and goal",
+      "diet": "Diet",
+      "finish": "Details and agreements",
       "food": "",
       "preferences": "Food preferences"
+    },
+    "wizard": {
+      "back": "Back",
+      "next": "Next",
+      "finishing": "Finishing…",
+      "finishCta": "Finish onboarding",
+      "nameDob": {
+        "title": "What should Rivo call you?",
+        "description": "We will start simple. Your name and date of birth are enough to make the profile more accurate."
+      },
+      "gender": {
+        "title": "Which gender fits you best?",
+        "description": "We use this for energy and macro calculations."
+      },
+      "metrics": {
+        "title": "Height and weight",
+        "description": "These numbers are used only to personalize your recommendations."
+      },
+      "lifestyle": {
+        "title": "How active are you and what do you want to achieve?",
+        "description": "Choose your activity level and primary goal so we can set the right calorie frame."
+      },
+      "diet": {
+        "title": "What type of eating suits you?",
+        "description": "For now, a simple direction is enough. You can adjust this later anytime.",
+        "helper": "We are keeping this intentionally simple. Pick the main diet type first and you can fine-tune the details later in your profile."
+      },
+      "finish": {
+        "title": "Final step",
+        "description": "Add your tastes, restrictions, and legal agreements so we can finish personalization.",
+        "allergyQuestion": "Do you have any food restrictions or allergies?",
+        "allergyOptions": {
+          "eggs": "Eggs",
+          "fish": "Fish",
+          "gluten": "Gluten",
+          "dairy": "Dairy",
+          "nuts": "Nuts",
+          "shellfish": "Shellfish",
+          "soy": "Soy",
+          "seeds": "Seeds",
+          "seafood": "Seafood",
+          "citrusFruits": "Citrus fruits",
+          "animalProducts": "Animal products",
+          "redMeat": "Red meat",
+          "allMeat": "All meat"
+        }
+      }
     },
     "errors": {
       "saveFailed": "We couldn't save your settings. Please try again."
@@ -1382,23 +1435,23 @@
       }
     },
     "welcome": {
-      "preview": "Welcome to Eatrivo! We are glad you joined us.",
+      "preview": "Welcome to Eatrivo! Create custom recipes and cook with ingredients already in your pantry.",
       "heading": "Welcome to Eatrivo! 🎉",
-      "subtitle": "We are glad you joined us on the journey to a healthier lifestyle",
+      "subtitle": "Start with pantry-based recipes, custom recipes, and smarter meal planning",
       "greeting": "Hi {firstName}! 👋",
-      "paragraph": "Thank you for choosing to start your journey with Eatrivo. We are here to help you achieve your health and nutrition goals with personalized meal plans and smart planning.",
+      "paragraph": "Thanks for joining Eatrivo. You can now generate custom recipes tailored to your needs, discover recipes based on the ingredients already in your pantry, and turn your meal choices into a practical shopping list and cooking plan.",
       "features": {
         "dailyPlan": {
-          "title": "Daily Plan",
-          "description": "Customized meals containing foods from your generated shopping list"
+          "title": "Recipes from your pantry",
+          "description": "Discover meals that make sense based on the ingredients you already have at home."
         },
         "shoppingLists": {
-          "title": "Shopping Lists",
-          "description": "Personalized and designed for all your needs for easier shopping"
+          "title": "Custom recipes",
+          "description": "Generate made-to-fit recipes based on your goal, taste preferences, or available ingredients."
         },
         "aiAssistant": {
-          "title": "AI Assistant",
-          "description": "Smart recommendations and meal plan customization"
+          "title": "Planning and shopping",
+          "description": "Turn selected meals into a practical shopping list and plan your cooking with less friction."
         }
       },
       "cta": "Start using Eatrivo",
@@ -1471,6 +1524,7 @@
         },
         "tabs": {
           "analytics": "Analytics",
+          "recipes": "Recipes",
           "emails": "Emails",
           "notifications": "Notifications"
         },
@@ -2238,6 +2292,23 @@
     "scan_secure_description": "Only image uploads are allowed, the file type is validated, and the raw receipt photo is not persisted in this MVP.",
     "scan_upload_title": "Choose or capture a receipt",
     "scan_upload_description": "Supported formats: JPG, PNG, WEBP up to 8 MB. On mobile you can open the camera directly.",
+    "scan_mode_receipt": "Receipt",
+    "scan_mode_barcode": "Barcode",
+    "scan_choose_file": "Choose file",
+    "scan_open_camera": "Open camera",
+    "barcode_scanner_title": "Scan a barcode with the camera",
+    "barcode_scanner_description": "Point your phone at the product EAN or UPC code. Once detected, we look it up immediately and send it into review.",
+    "barcode_scanner_starting": "Starting the rear camera and preparing the scanner.",
+    "barcode_scanner_ready": "Aim the camera at the barcode",
+    "barcode_scanner_ready_hint": "Keep the code inside the frame for a moment. We continue automatically after detection.",
+    "barcode_scanner_unsupported": "This device or browser does not support live barcode scanning.",
+    "barcode_scanner_permission_error": "The camera could not be opened. Check the camera permissions and try again.",
+    "barcode_scanner_detect_error": "Barcode detection failed. Try restarting the camera.",
+    "barcode_scanner_retry": "Restart camera",
+    "barcode_detected_label": "Detected code {value}",
+    "barcode_loading_title": "Looking up the product by barcode",
+    "barcode_loading_description": "We are checking the code in Open Food Facts and preparing the item for review before saving.",
+    "barcode_lookup_error": "The barcode lookup could not be completed.",
     "scan_loading_title": "Analyzing receipt and looking for pantry items",
     "scan_loading_description": "The graph checks whether the extraction is complete enough. If not, it retries before showing the review step.",
     "scan_review_description": "Review the detected items, add missing ones manually, and then send them into pantry normalization.",

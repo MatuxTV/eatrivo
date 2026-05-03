@@ -8,6 +8,7 @@ import {
   getPantryDraftTtlSeconds,
   releasePantryDraftLock,
 } from "@/lib/pantry/draft-cache";
+import { upsertPantryBarcodeCatalogEntry } from "@/lib/pantry/barcode/catalog";
 import { getAuthenticatedPaidPantryContext } from "@/lib/pantry/scan-auth";
 import { receiptScanReviewPayloadSchema } from "@/lib/pantry/receipt-scan-contracts";
 import {
@@ -47,6 +48,23 @@ export async function POST(req: NextRequest) {
     );
     if (items.length === 0) {
       return validationError("At least one valid pantry item is required");
+    }
+
+    const barcodeCatalogInputs = payload.data.items
+      .filter((item) => item.barcode && item.name.trim().length > 0)
+      .map((item) => ({
+        barcode: item.barcode!.trim(),
+        name: item.name.trim(),
+        quantity: item.quantity,
+        unit: item.quantity ? item.unit ?? null : null,
+        category: item.category ?? null,
+        brand: payload.data.vendor ?? null,
+        source: "user" as const,
+        userId: context.userId,
+      }));
+
+    for (const barcodeInput of barcodeCatalogInputs) {
+      await upsertPantryBarcodeCatalogEntry(barcodeInput);
     }
 
     const prepared = await preparePantryDrafts({

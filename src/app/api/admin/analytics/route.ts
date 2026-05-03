@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { and, count, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 
 import {
   analyticsEvents,
@@ -71,6 +71,74 @@ function formatDeltaLabel(metric: ReturnType<typeof buildDelta>) {
 
 function normalizeEventName(eventName: string) {
   return eventName.replace(/_/g, " ");
+}
+
+function buildFlowStepLabel(source: string, eventName?: string | null) {
+  if (source === "registration") {
+    return "account created";
+  }
+
+  if (source === "chat") {
+    return "chat messages sent";
+  }
+
+  if (source === "pantry") {
+    return "pantry items updated";
+  }
+
+  if (source === "recipe") {
+    return "custom recipe accepted";
+  }
+
+  return eventName ? normalizeEventName(eventName) : "activity";
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function resolveCustomRecipeMode(metadata: unknown) {
+  const record = asRecord(metadata);
+  const rawMode = record?.mode;
+
+  if (rawMode === "pantry" || rawMode === "preferences_only") {
+    return rawMode;
+  }
+
+  return "unknown" as const;
+}
+
+function buildModeSplit(
+  rows: Array<{
+    mode: string;
+    count: number;
+  }>,
+) {
+  const summary = {
+    pantry: 0,
+    preferencesOnly: 0,
+    unknown: 0,
+  };
+
+  for (const row of rows) {
+    if (row.mode === "pantry") {
+      summary.pantry = toInt(row.count);
+      continue;
+    }
+
+    if (row.mode === "preferences_only") {
+      summary.preferencesOnly = toInt(row.count);
+      continue;
+    }
+
+    summary.unknown += toInt(row.count);
+  }
+
+  return summary;
 }
 
 export async function GET(req: NextRequest) {
@@ -155,6 +223,10 @@ export async function GET(req: NextRequest) {
       recentChatSessions,
       posthogTelemetry,
       newUsersRaw,
+      customRecipeStartedByModeRows,
+      customRecipeGeneratedByModeRows,
+      customRecipeFailedByModeRows,
+      customRecipeFailureLogRows,
     ] = await Promise.all([
       db.select({ count: count() }).from(users),
 
@@ -586,6 +658,78 @@ export async function GET(req: NextRequest) {
         .innerJoin(users, eq(userProfiles.userId, users.id))
         .where(gte(userProfiles.created_at, newUserStart))
         .orderBy(desc(userProfiles.created_at)),
+
+      db
+        .select({
+          mode:
+            sql<string>`COALESCE(${analyticsEvents.metadata}->>'mode', 'unknown')`.as(
+              "mode",
+            ),
+          count: count().as("count"),
+        })
+        .from(analyticsEvents)
+        .where(
+          and(
+            eq(analyticsEvents.eventName, "custom_recipe_generation_started"),
+            gte(analyticsEvents.createdAt, rangeStart),
+          ),
+        )
+        .groupBy(sql`COALESCE(${analyticsEvents.metadata}->>'mode', 'unknown')`),
+
+      db
+        .select({
+          mode:
+            sql<string>`COALESCE(${analyticsEvents.metadata}->>'mode', 'unknown')`.as(
+              "mode",
+            ),
+          count: count().as("count"),
+        })
+        .from(analyticsEvents)
+        .where(
+          and(
+            eq(analyticsEvents.eventName, "custom_recipe_generated"),
+            gte(analyticsEvents.createdAt, rangeStart),
+          ),
+        )
+        .groupBy(sql`COALESCE(${analyticsEvents.metadata}->>'mode', 'unknown')`),
+
+      db
+        .select({
+          mode:
+            sql<string>`COALESCE(${analyticsEvents.metadata}->>'mode', 'unknown')`.as(
+              "mode",
+            ),
+          count: count().as("count"),
+        })
+        .from(analyticsEvents)
+        .where(
+          and(
+            eq(analyticsEvents.eventName, "custom_recipe_generation_failed"),
+            gte(analyticsEvents.createdAt, rangeStart),
+          ),
+        )
+        .groupBy(sql`COALESCE(${analyticsEvents.metadata}->>'mode', 'unknown')`),
+
+      db
+        .select({
+          id: analyticsEvents.id,
+          createdAt: analyticsEvents.createdAt,
+          userId: analyticsEvents.userId,
+          userFullName: userProfiles.fullName,
+          userEmail: users.email,
+          metadata: analyticsEvents.metadata,
+        })
+        .from(analyticsEvents)
+        .leftJoin(userProfiles, eq(analyticsEvents.userId, userProfiles.userId))
+        .leftJoin(users, eq(analyticsEvents.userId, users.id))
+        .where(
+          and(
+            eq(analyticsEvents.eventName, "custom_recipe_generation_failed"),
+            gte(analyticsEvents.createdAt, rangeStart),
+          ),
+        )
+        .orderBy(desc(analyticsEvents.createdAt))
+        .limit(10),
     ]);
 
     const newUserIds = newUsersRaw.map((user) => user.userId);
@@ -624,6 +768,8 @@ export async function GET(req: NextRequest) {
                 sql<number>`COUNT(DISTINCT ${chatMessages.sessionId})::int`.as(
                   "sessionCount",
                 ),
+              firstMessageAt:
+                sql<string>`MIN(${chatMessages.createdAt})`.as("firstMessageAt"),
               lastMessageAt:
                 sql<string>`MAX(${chatMessages.createdAt})`.as("lastMessageAt"),
             })
@@ -640,6 +786,8 @@ export async function GET(req: NextRequest) {
             .select({
               userProfileId: pantryItems.userProfileId,
               itemCount: count().as("itemCount"),
+              firstPantryActivityAt:
+                sql<string>`MIN(${pantryItems.updatedAt})`.as("firstPantryActivityAt"),
               lastPantryActivityAt:
                 sql<string>`MAX(${pantryItems.updatedAt})`.as("lastPantryActivityAt"),
             })
@@ -651,6 +799,8 @@ export async function GET(req: NextRequest) {
             .select({
               userId: recipes.createdByUserId,
               customRecipesCount: count().as("customRecipesCount"),
+              firstRecipeAt:
+                sql<string>`MIN(${recipes.createdAt})`.as("firstRecipeAt"),
               lastRecipeAt:
                 sql<string>`MAX(${recipes.createdAt})`.as("lastRecipeAt"),
             })
@@ -677,8 +827,7 @@ export async function GET(req: NextRequest) {
                 gte(analyticsEvents.createdAt, newUserStart),
               ),
             )
-            .orderBy(desc(analyticsEvents.createdAt))
-            .limit(200),
+            .orderBy(asc(analyticsEvents.createdAt)),
         ])
       : [[], [], [], [], []];
 
@@ -688,6 +837,13 @@ export async function GET(req: NextRequest) {
         totalTrackedEvents: number;
         lastActivityAt: string | null;
         recentActivities: { label: string; occurredAt: string }[];
+        flowSteps: {
+          id: string;
+          label: string;
+          occurredAt: string;
+          eventName: string | null;
+          source: "registration" | "analytics" | "chat" | "pantry" | "recipe";
+        }[];
         eventCounts: Record<string, number>;
       }
     >();
@@ -701,6 +857,7 @@ export async function GET(req: NextRequest) {
         totalTrackedEvents: 0,
         lastActivityAt: null,
         recentActivities: [],
+        flowSteps: [],
         eventCounts: {},
       };
 
@@ -724,15 +881,17 @@ export async function GET(req: NextRequest) {
         totalTrackedEvents: 0,
         lastActivityAt: null,
         recentActivities: [],
+        flowSteps: [],
         eventCounts: {},
       };
 
-      if (current.recentActivities.length < 5) {
-        current.recentActivities.push({
-          label: normalizeEventName(row.eventName),
-          occurredAt: row.createdAt.toISOString(),
-        });
-      }
+      current.flowSteps.push({
+        id: `${row.userId}-${row.createdAt.toISOString()}-${row.eventName}`,
+        label: buildFlowStepLabel("analytics", row.eventName),
+        occurredAt: row.createdAt.toISOString(),
+        eventName: row.eventName,
+        source: "analytics",
+      });
 
       newUserEventMap.set(row.userId, current);
     }
@@ -760,6 +919,61 @@ export async function GET(req: NextRequest) {
       const chatMetrics = newUserChatMap.get(user.userProfileId);
       const pantryMetrics = newUserPantryMap.get(user.userProfileId);
       const recipeMetrics = newUserRecipeMap.get(user.userId);
+
+      const flowSteps = [
+        {
+          id: `${user.userId}-registered-${user.registeredAt.toISOString()}`,
+          label: buildFlowStepLabel("registration"),
+          occurredAt: user.registeredAt.toISOString(),
+          eventName: null,
+          source: "registration" as const,
+        },
+        ...(eventMetrics?.flowSteps ?? []),
+        ...(chatMetrics?.firstMessageAt
+          ? [
+              {
+                id: `${user.userId}-chat-${new Date(chatMetrics.firstMessageAt).toISOString()}`,
+                label: buildFlowStepLabel("chat"),
+                occurredAt: new Date(chatMetrics.firstMessageAt).toISOString(),
+                eventName: null,
+                source: "chat" as const,
+              },
+            ]
+          : []),
+        ...(pantryMetrics?.firstPantryActivityAt
+          ? [
+              {
+                id: `${user.userId}-pantry-${new Date(pantryMetrics.firstPantryActivityAt).toISOString()}`,
+                label: buildFlowStepLabel("pantry"),
+                occurredAt: new Date(pantryMetrics.firstPantryActivityAt).toISOString(),
+                eventName: null,
+                source: "pantry" as const,
+              },
+            ]
+          : []),
+        ...(recipeMetrics?.firstRecipeAt
+          ? [
+              {
+                id: `${user.userId}-recipe-${new Date(recipeMetrics.firstRecipeAt).toISOString()}`,
+                label: buildFlowStepLabel("recipe"),
+                occurredAt: new Date(recipeMetrics.firstRecipeAt).toISOString(),
+                eventName: null,
+                source: "recipe" as const,
+              },
+            ]
+          : []),
+      ].sort(
+        (left, right) =>
+          new Date(left.occurredAt).getTime() - new Date(right.occurredAt).getTime(),
+      );
+
+      const recentActivities = flowSteps
+        .slice(-5)
+        .reverse()
+        .map((step) => ({
+          label: step.label,
+          occurredAt: step.occurredAt,
+        }));
 
       const lastActivityCandidates = [
         eventMetrics?.lastActivityAt ?? null,
@@ -804,7 +1018,8 @@ export async function GET(req: NextRequest) {
           chatSessions: toInt(chatMetrics?.sessionCount),
           chatMessages: toInt(chatMetrics?.messageCount),
         },
-        recentActivities: eventMetrics?.recentActivities ?? [],
+        recentActivities,
+        flowSteps,
       };
     });
 
@@ -879,6 +1094,49 @@ export async function GET(req: NextRequest) {
         customRecipesAcceptedPrevious,
       ),
     };
+
+    const customRecipeModeSplit = {
+      started: buildModeSplit(
+        customRecipeStartedByModeRows.map((row) => ({
+          mode: row.mode,
+          count: toInt(row.count),
+        })),
+      ),
+      generated: buildModeSplit(
+        customRecipeGeneratedByModeRows.map((row) => ({
+          mode: row.mode,
+          count: toInt(row.count),
+        })),
+      ),
+      failed: buildModeSplit(
+        customRecipeFailedByModeRows.map((row) => ({
+          mode: row.mode,
+          count: toInt(row.count),
+        })),
+      ),
+    };
+
+    const customRecipeFailureLogs = customRecipeFailureLogRows.map((row) => {
+      const metadata = asRecord(row.metadata);
+
+      return {
+        id: row.id,
+        createdAt: row.createdAt.toISOString(),
+        userId: row.userId,
+        userFullName: row.userFullName,
+        userEmail: row.userEmail,
+        mode: resolveCustomRecipeMode(metadata),
+        usesPantry: metadata?.usesPantry === true,
+        code:
+          typeof metadata?.code === "string" ? metadata.code : "GENERATION_FAILED",
+        node: typeof metadata?.node === "string" ? metadata.node : null,
+        reason:
+          typeof metadata?.reason === "string"
+            ? metadata.reason
+            : "Custom recipe generation failed",
+        log: metadata?.errorLog ?? metadata,
+      };
+    });
 
     const quality = {
       kitchenCounterMissingRate: percentage(
@@ -1084,6 +1342,8 @@ export async function GET(req: NextRequest) {
           accepted30d: customRecipesAccepted,
           resultOpens30d: customRecipeResultOpened,
           fallbackOpens30d: customRecipeFallbackOpened,
+          modeSplit: customRecipeModeSplit,
+          failureLogs: customRecipeFailureLogs,
         },
         chat: {
           totalMessages30d: totalMessages,

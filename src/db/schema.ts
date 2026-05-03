@@ -100,6 +100,11 @@ export const pantryTrackingModeEnum = pgEnum("pantry_tracking_mode", [
   "availability",
 ]);
 
+export const pantryBarcodeSourceEnum = pgEnum("pantry_barcode_source", [
+  "user",
+  "open_food_facts",
+]);
+
 export const recipeSourceEnum = pgEnum("recipe_source", [
   "catalog",
   "ai_custom",
@@ -465,6 +470,36 @@ export const pantryRestockItems = pgTable("pantry_restock_items", {
     .defaultNow()
     .notNull(),
 });
+
+export const pantryBarcodeCatalog = pgTable(
+  "pantry_barcode_catalog",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    barcode: text("barcode").notNull(),
+    name: text("name").notNull(),
+    quantity: numeric("quantity", { precision: 8, scale: 3 }),
+    unit: text("unit"),
+    category: text("category"),
+    brand: text("brand"),
+    source: pantryBarcodeSourceEnum("source").default("user").notNull(),
+    createdByUserId: uuid("created_by_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    updatedByUserId: uuid("updated_by_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    barcodeUnique: unique("pantry_barcode_catalog_barcode_unique").on(table.barcode),
+    sourceIdx: index("pantry_barcode_catalog_source_idx").on(table.source),
+  }),
+);
 
 // NextAuth required tables
 export const accounts = pgTable(

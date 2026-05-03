@@ -4,6 +4,7 @@ import {
   Mail,
   BarChart3,
   Bell,
+  ScrollText,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -11,7 +12,8 @@ import { useTranslations } from "next-intl";
 type TabId =
   | "emails"
   | "notifications"
-  | "analytics";
+  | "analytics"
+  | "recipes";
 
 interface Tab {
   id: TabId;
@@ -25,6 +27,7 @@ interface AdminTabsProps {
 
 const tabs: Tab[] = [
   { id: "analytics", icon: BarChart3 },
+  { id: "recipes", icon: ScrollText },
   { id: "emails", icon: Mail },
   { id: "notifications", icon: Bell },
 ];
@@ -34,7 +37,7 @@ export default function AdminTabs({ activeTab, onTabChange }: AdminTabsProps) {
 
   return (
     <div className="mb-5 sm:mb-8">
-      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
+      <div className="grid grid-cols-2 gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm sm:grid-cols-4">
         {tabs.map((tab) => (
           <button
             key={tab.id}
