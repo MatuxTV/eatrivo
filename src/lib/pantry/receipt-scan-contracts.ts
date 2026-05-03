@@ -3,6 +3,7 @@ import { z } from "zod";
 export const receiptScanReviewItemSchema = z.object({
   id: z.string().min(1),
   name: z.string().trim().min(1).max(160),
+  barcode: z.string().trim().min(8).max(32).nullable().optional(),
   quantity: z.number().finite().positive().nullable(),
   unit: z.string().trim().max(40).nullable(),
   category: z.string().trim().max(80).nullable(),

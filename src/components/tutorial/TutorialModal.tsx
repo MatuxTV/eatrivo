@@ -141,7 +141,7 @@ export function TutorialModal({
                   <Button
                     type="button"
                     
-                    className="rounded-full px-4 text-eatrivo-purple hover:bg-eatrivo-purple/8 hover:text-eatrivo-purple"
+                    className="rounded-full px-4 bg-eatrivo-white-primary text-eatrivo-black-primary border-2 border-eatrivo-black-primary/20 hover:bg-eatrivo-purple/8 hover:text-eatrivo-purple"
                     onClick={onBack}
                   >
                     {t("common.actions.back")}

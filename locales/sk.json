@@ -353,8 +353,61 @@
     "of": "z",
     "steps": {
       "profile": "Profil",
+      "name": "Meno",
+      "gender": "Pohlavie",
+      "metrics": "Výška a váha",
+      "lifestyle": "Aktivita a cieľ",
+      "diet": "Typ stravy",
+      "finish": "Detaily a súhlasy",
       "food": "",
       "preferences": "Preferencie"
+    },
+    "wizard": {
+      "back": "Späť",
+      "next": "Ďalej",
+      "finishing": "Dokončuje sa…",
+      "finishCta": "Dokončiť onboarding",
+      "nameDob": {
+        "title": "Ako vás má Rivo volať?",
+        "description": "Začneme jednoducho. Stačí meno a dátum narodenia, aby sme nastavili profil presnejšie."
+      },
+      "gender": {
+        "title": "Ktoré pohlavie vám sedí?",
+        "description": "Použijeme ho pri výpočtoch energie a makier."
+      },
+      "metrics": {
+        "title": "Výška a váha",
+        "description": "Tieto čísla slúžia len na personalizáciu odporúčaní."
+      },
+      "lifestyle": {
+        "title": "Ako sa hýbete a čo chcete dosiahnuť?",
+        "description": "Vyberte aktivitu a hlavný cieľ, podľa ktorých nastavíme kalorický rámec."
+      },
+      "diet": {
+        "title": "Aký typ stravy vám vyhovuje?",
+        "description": "Zatiaľ stačí hlavné smerovanie. Neskôr to môžete kedykoľvek upraviť.",
+        "helper": "Nechávame to vedome jednoduché. Najprv vyberte základný typ stravy, detailné preferencie doladíme neskôr v profile."
+      },
+      "finish": {
+        "title": "Posledný krok",
+        "description": "Doplňte chute, obmedzenia a potvrďte súhlasy, aby sme mohli dokončiť personalizáciu.",
+        "allergyQuestion": "Máte nejaké potravinové obmedzenia alebo alergie?",
+        "allergyOptions": {
+          "eggs": "Vajcia",
+          "fish": "Ryby",
+          "gluten": "Glutén",
+          "dairy": "Mliečne výrobky",
+          "nuts": "Orechy",
+          "shellfish": "Mäkkýše",
+          "soy": "Sója",
+          "seeds": "Semená",
+          "seafood": "Morské plody",
+          "citrusFruits": "Citrusové plody",
+          "animalProducts": "Živočíšne produkty",
+          "redMeat": "Červené mäso",
+          "allMeat": "Všetko mäso"
+        }
+      }
     },
     "errors": {
       "saveFailed": "Nepodarilo sa uložiť nastavenia. Skúste to prosím znova."
@@ -1394,23 +1447,23 @@
       }
     },
     "welcome": {
-      "preview": "Vitajte v Eatrivo! Sme radi, že ste sa k nám pridali.",
+      "preview": "Vitajte v Eatrivo! Vytvárajte custom recepty a varte z ingrediencií, ktoré už máte doma.",
       "heading": "Vitajte v Eatrivo! 🎉",
-      "subtitle": "Sme radi, že ste sa k nám pridali na ceste za zdravším životným štýlom",
+      "subtitle": "Začnite s receptami z pantry, custom receptami a inteligentným plánovaním jedla",
       "greeting": "Ahoj {firstName}! 👋",
-      "paragraph": "Ďakujeme, že ste sa rozhodli začať svoju cestu s Eatrivo. Sme tu, aby sme vám pomohli dosiahnuť vaše zdravotné a výživové ciele s personalizovanými jedálničkami a inteligentným plánovaním.",
+      "paragraph": "Ďakujeme, že ste sa pridali k Eatrivo. Od tejto chvíle si môžete nechať vytvárať custom recepty na mieru, objavovať recepty podľa ingrediencií z vašej pantry a jednoducho si skladať nákupný zoznam aj ďalšie jedlá podľa toho, čo už doma máte.",
       "features": {
         "dailyPlan": {
-          "title": "Denný plán",
-          "description": "Prispôsobené jedlá obsahujúce potraviny z vytvoreného nákupného zoznamu"
+          "title": "Recepty z pantry",
+          "description": "Objavte jedlá, ktoré dávajú zmysel podľa ingrediencií, ktoré už máte doma v pantry."
         },
         "shoppingLists": {
-          "title": "Nákupné zoznamy",
-          "description": "Personalizovane a určené všetkým vaším potrebám pre jednoduchšie nakupovanie"
+          "title": "Custom recepty",
+          "description": "Nechajte si vytvoriť recept na mieru podľa cieľa, chutí alebo dostupných surovín."
         },
         "aiAssistant": {
-          "title": "AI asistent",
-          "description": "Inteligentné odporúčania a prispôsobenie jedálničkov"
+          "title": "Plánovanie a nákup",
+          "description": "Premeňte vybrané jedlá na praktický shopping list a plánujte varenie bez chaosu."
         }
       },
       "cta": "Začať používať Eatrivo",
@@ -1483,6 +1536,7 @@
         },
         "tabs": {
           "analytics": "Analytics",
+          "recipes": "Recipes",
           "emails": "Emaily",
           "notifications": "Notifikácie"
         },
@@ -2246,6 +2300,23 @@
     "scan_secure_description": "Povoľujeme len obrázky, kontrolujeme typ súboru a v MVP neukladáme raw fotku bloku.",
     "scan_upload_title": "Vyber alebo odfoť blok",
     "scan_upload_description": "Podporujeme JPG, PNG a WEBP do 8 MB. Na mobile môžeš použiť fotoaparát.",
+    "scan_mode_receipt": "Blok",
+    "scan_mode_barcode": "Čiarový kód",
+    "scan_choose_file": "Vybrať súbor",
+    "scan_open_camera": "Otvoriť fotoaparát",
+    "barcode_scanner_title": "Naskenuj čiarový kód kamerou",
+    "barcode_scanner_description": "Mobil namier na EAN alebo UPC kód produktu. Po nájdení ho hneď dohľadáme v katalógu a pošleme do kontroly.",
+    "barcode_scanner_starting": "Spúšťam zadnú kameru a pripravujem skener.",
+    "barcode_scanner_ready": "Namier kameru na čiarový kód",
+    "barcode_scanner_ready_hint": "Drž kód v rámiku a chvíľu počkaj. Po detekcii pokračujeme automaticky.",
+    "barcode_scanner_unsupported": "Toto zariadenie alebo prehliadač nepodporuje live scan čiarového kódu.",
+    "barcode_scanner_permission_error": "Nepodarilo sa otvoriť kameru. Skontroluj povolenia pre fotoaparát.",
+    "barcode_scanner_detect_error": "Detekcia čiarového kódu zlyhala. Skús kameru spustiť znova.",
+    "barcode_scanner_retry": "Spustiť kameru znova",
+    "barcode_detected_label": "Detegovaný kód {value}",
+    "barcode_loading_title": "Hľadám produkt podľa čiarového kódu",
+    "barcode_loading_description": "Overujem kód v Open Food Facts a pripravujem položku na kontrolu pred uložením.",
+    "barcode_lookup_error": "Vyhľadanie produktu podľa čiarového kódu sa nepodarilo dokončiť.",
     "scan_loading_title": "Analyzujem blok a hľadám položky",
     "scan_loading_description": "Graf kontroluje, či sú položky dostatočne kompletné. Ak nie, zopakuje extrakciu ešte predtým, než ti ich ukáže.",
     "scan_review_description": "Skontroluj nájdené položky, doplň chýbajúce a až potom ich pošli do pantry normalizácie.",

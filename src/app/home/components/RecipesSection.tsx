@@ -32,6 +32,7 @@ import type {
   RecipeBrowseAvailableFilters,
 } from "@/app/home/types/data";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { shuffleRecipesByTime } from "@/app/home/utils/shuffleRecipes";
 
 const RivoCustomRecipeExperience = dynamic(
   () => import("./RivoCustomRecipeExperience"),
@@ -188,6 +189,7 @@ function formatFilterLabel(value: string): string {
 
 interface RecipesSectionProps {
   featuredRecipes: BasicHomeRecipePreview[];
+  recipeShuffleTime: number;
   recipeBrowseAvailableFilters: RecipeBrowseAvailableFilters;
   initialRecipeHasMore: boolean;
   initialRecipeTotalCount: number;
@@ -210,6 +212,7 @@ interface RecipesSectionProps {
 
 export default function RecipesSection({
   featuredRecipes,
+  recipeShuffleTime,
   recipeBrowseAvailableFilters,
   initialRecipeHasMore,
   initialRecipeTotalCount,
@@ -533,7 +536,10 @@ export default function RecipesSection({
           return;
         }
 
-        const nextRecipes = data.page?.recipes ?? [];
+        const nextRecipes = shuffleRecipesByTime(
+          data.page?.recipes ?? [],
+          recipeShuffleTime,
+        );
         setBrowseError(null);
         setBrowseHasMore(Boolean(data.page?.hasMore));
         setBrowseTotalCount(data.page?.totalCount ?? nextRecipes.length);
@@ -560,7 +566,7 @@ export default function RecipesSection({
         }
       }
     },
-    [buildBrowseSearchParams, t],
+    [buildBrowseSearchParams, recipeShuffleTime, t],
   );
 
   useEffect(() => {

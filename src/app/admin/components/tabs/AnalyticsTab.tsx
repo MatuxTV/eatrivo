@@ -97,6 +97,36 @@ interface AnalyticsData {
       accepted30d: number;
       resultOpens30d: number;
       fallbackOpens30d: number;
+      modeSplit: {
+        started: {
+          pantry: number;
+          preferencesOnly: number;
+          unknown: number;
+        };
+        generated: {
+          pantry: number;
+          preferencesOnly: number;
+          unknown: number;
+        };
+        failed: {
+          pantry: number;
+          preferencesOnly: number;
+          unknown: number;
+        };
+      };
+      failureLogs: {
+        id: string;
+        createdAt: string;
+        userId: string | null;
+        userFullName?: string | null;
+        userEmail?: string | null;
+        mode: "pantry" | "preferences_only" | "unknown";
+        usesPantry: boolean;
+        code: string;
+        node: string | null;
+        reason: string;
+        log: unknown;
+      }[];
     };
     chat: {
       totalMessages30d: number;
@@ -191,6 +221,13 @@ interface NewUserActivity {
     label: string;
     occurredAt: string;
   }[];
+  flowSteps: {
+    id: string;
+    label: string;
+    occurredAt: string;
+    eventName: string | null;
+    source: "registration" | "analytics" | "chat" | "pantry" | "recipe";
+  }[];
 }
 
 interface DeltaMetric {
@@ -262,6 +299,34 @@ function formatDelta(metric: DeltaMetric) {
   return `${prefix}${metric.percentChange}% vs previous`;
 }
 
+function formatCustomRecipeMode(mode: "pantry" | "preferences_only" | "unknown") {
+  if (mode === "pantry") {
+    return "S pantry";
+  }
+
+  if (mode === "preferences_only") {
+    return "Bez pantry";
+  }
+
+  return "Neznáme";
+}
+
+function formatCustomRecipeLog(log: unknown) {
+  if (typeof log === "string") {
+    return log;
+  }
+
+  if (log === null || log === undefined) {
+    return "Bez detailného logu.";
+  }
+
+  try {
+    return JSON.stringify(log, null, 2);
+  } catch {
+    return String(log);
+  }
+}
+
 function getChatSessionBadge(messageCount: number) {
   if (messageCount >= 8) {
     return {
@@ -326,6 +391,159 @@ function getChatSessionNote(messageCount: number) {
   }
 
   return "Krátka konverzácia, často ide o rýchlu otázku alebo okamžitý check-in.";
+}
+
+function formatFlowStepTitle(step: NewUserActivity["flowSteps"][number]) {
+  if (step.eventName) {
+    return formatEventName(step.eventName);
+  }
+
+  if (step.source === "registration") {
+    return "Registrácia";
+  }
+
+  if (step.source === "chat") {
+    return "Prvé chat správy";
+  }
+
+  if (step.source === "pantry") {
+    return "Prvá práca s pantry";
+  }
+
+  if (step.source === "recipe") {
+    return "Prijatý custom recept";
+  }
+
+  return step.label;
+}
+
+function formatFlowStepNote(step: NewUserActivity["flowSteps"][number]) {
+  if (step.eventName) {
+    return getEventMeaningNote(step.eventName);
+  }
+
+  if (step.source === "registration") {
+    return "Začiatok cesty nového používateľa v produkte.";
+  }
+
+  if (step.source === "chat") {
+    return "Prvá reálna aktivita v Rivo chate podľa chat message dát.";
+  }
+
+  if (step.source === "pantry") {
+    return "Prvá zmena pantry položiek, aj keď neexistuje explicitný page-view event.";
+  }
+
+  if (step.source === "recipe") {
+    return "Používateľovi vznikol vlastný AI recept podľa receptovej tabuľky.";
+  }
+
+  return "Zachytený krok v onboarding alebo usage flow.";
+}
+
+function formatFlowStepOffset(registeredAt: string, occurredAt: string) {
+  const diffMs = new Date(occurredAt).getTime() - new Date(registeredAt).getTime();
+  const diffMinutes = Math.max(0, Math.round(diffMs / (1000 * 60)));
+
+  if (diffMinutes < 60) {
+    return `+${diffMinutes} min`;
+  }
+
+  const diffHours = Math.round((diffMinutes / 60) * 10) / 10;
+  if (diffHours < 24) {
+    return `+${diffHours} h`;
+  }
+
+  const diffDays = Math.round((diffHours / 24) * 10) / 10;
+  return `+${diffDays} d`;
+}
+
+function getFlowStepPresentation(step: NewUserActivity["flowSteps"][number]) {
+  if (step.source === "registration") {
+    return {
+      icon: Users,
+      chipTone: "bg-slate-900 text-white",
+      badgeTone: "bg-slate-100 text-slate-700",
+      railTone: "from-slate-900/20 to-slate-300/20",
+      sourceLabel: "Entry",
+    };
+  }
+
+  if (step.source === "chat") {
+    return {
+      icon: MessageCircle,
+      chipTone: "bg-sky-50 text-sky-700",
+      badgeTone: "bg-sky-100 text-sky-700",
+      railTone: "from-sky-400/30 to-sky-200/20",
+      sourceLabel: "Chat",
+    };
+  }
+
+  if (step.source === "pantry") {
+    return {
+      icon: Utensils,
+      chipTone: "bg-emerald-50 text-emerald-700",
+      badgeTone: "bg-emerald-100 text-emerald-700",
+      railTone: "from-emerald-400/30 to-emerald-200/20",
+      sourceLabel: "Pantry",
+    };
+  }
+
+  if (step.source === "recipe") {
+    return {
+      icon: ChefHat,
+      chipTone: "bg-amber-50 text-amber-700",
+      badgeTone: "bg-amber-100 text-amber-700",
+      railTone: "from-amber-400/30 to-amber-200/20",
+      sourceLabel: "Recipe",
+    };
+  }
+
+  if (
+    step.eventName === "custom_recipe_generation_failed" ||
+    step.eventName === "chat_limit_reached"
+  ) {
+    return {
+      icon: AlertTriangle,
+      chipTone: "bg-rose-50 text-rose-700",
+      badgeTone: "bg-rose-100 text-rose-700",
+      railTone: "from-rose-400/30 to-rose-200/20",
+      sourceLabel: "Risk",
+    };
+  }
+
+  if (
+    step.eventName === "kitchen_counter_completed" ||
+    step.eventName === "kitchen_counter_completed_with_missing_ingredients" ||
+    step.eventName === "custom_recipe_generated" ||
+    step.eventName === "custom_recipe_result_opened"
+  ) {
+    return {
+      icon: Flame,
+      chipTone: "bg-orange-50 text-orange-700",
+      badgeTone: "bg-orange-100 text-orange-700",
+      railTone: "from-orange-400/30 to-orange-200/20",
+      sourceLabel: "Outcome",
+    };
+  }
+
+  if (step.eventName === "recipe_opened") {
+    return {
+      icon: ChefHat,
+      chipTone: "bg-violet-50 text-violet-700",
+      badgeTone: "bg-violet-100 text-violet-700",
+      railTone: "from-violet-400/30 to-violet-200/20",
+      sourceLabel: "Recipe",
+    };
+  }
+
+  return {
+    icon: Eye,
+    chipTone: "bg-sky-50 text-sky-700",
+    badgeTone: "bg-slate-100 text-slate-700",
+    railTone: "from-sky-400/30 to-slate-200/20",
+    sourceLabel: "Explore",
+  };
 }
 
 function StatCard({
@@ -506,6 +724,12 @@ export default function AnalyticsTab() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [rangeDays, setRangeDays] = useState("30");
   const [newUsersWindowDays, setNewUsersWindowDays] = useState("30");
+  const [analyticsSection, setAnalyticsSection] = useState<
+    "overview" | "product" | "trends" | "new-users" | "ops"
+  >("overview");
+  const [newUsersSection, setNewUsersSection] = useState<"surface" | "flow">(
+    "surface",
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewingSession, setViewingSession] = useState<string | null>(null);
@@ -585,6 +809,9 @@ export default function AnalyticsTab() {
 
   const posthogReady = data.product.posthog.status === "ready";
   const posthogCounts = data.product.posthog.counts;
+  const isSectionVisible = (
+    section: "overview" | "product" | "trends" | "new-users" | "ops",
+  ) => (analyticsSection === section ? "block" : "hidden md:block");
 
   return (
     <div className="space-y-6">
@@ -622,157 +849,186 @@ export default function AnalyticsTab() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-700">
-          Ako čítať tento dashboard
-        </h3>
-        <div className="mt-3 grid gap-3 lg:grid-cols-3">
-          <div className="rounded-xl bg-white p-4">
-            <p className="text-sm font-medium text-slate-900">Overview</p>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
-              Horné karty ukazujú rýchly stav adoption a používania za zvolený časový rozsah.
-            </p>
-          </div>
-          <div className="rounded-xl bg-white p-4">
-            <p className="text-sm font-medium text-slate-900">Product blocks</p>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
-              Každá sekcia rozpisuje, čo konkrétny surface znamená a ktoré čísla sú skôr usage než business KPI.
-            </p>
-          </div>
-          <div className="rounded-xl bg-white p-4">
-            <p className="text-sm font-medium text-slate-900">Recent activity</p>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
-              Spodné zoznamy pomáhajú vysvetliť konkrétne správanie používateľov, nie len agregované trendy.
-            </p>
-          </div>
-        </div>
+      <div className="md:hidden">
+        <Select
+          value={analyticsSection}
+          onValueChange={(value) =>
+            setAnalyticsSection(
+              value as "overview" | "product" | "trends" | "new-users" | "ops",
+            )
+          }
+        >
+          <SelectTrigger className="w-full bg-white">
+            <SelectValue placeholder="Sekcia analytics" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="overview">Overview</SelectItem>
+            <SelectItem value="product">Product health</SelectItem>
+            <SelectItem value="trends">Trends</SelectItem>
+            <SelectItem value="new-users">New users</SelectItem>
+            <SelectItem value="ops">Ops stream</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          title="Celkom používateľov"
-          value={data.summary.totalUsers}
-          subtitle={`${data.summary.pantryUsers} používateľov má pantry items`}
-          note="Veľkosť základne, voči ktorej vieš porovnať adoption jednotlivých funkcií."
-          icon={Users}
-          tone="bg-sky-100 text-sky-700"
-        />
-        <StatCard
-          title="Kitchen counter attempts"
-          value={data.summary.kitchenCounterAttempts30d}
-          subtitle={`${data.product.kitchenCounter.completed30d} clean completes, ${data.product.kitchenCounter.completedWithMissingIngredients30d} s missing ingredients`}
-          note="Koľkokrát ľudia reálne prešli cez cooking flow, nie len otvorili recept."
-          delta={data.comparisons.kitchenCounterAttempts}
-          icon={ChefHat}
-          tone="bg-amber-100 text-amber-700"
-        />
-        <StatCard
-          title="Chat sessions"
-          value={data.summary.chatSessions30d}
-          subtitle={`${data.product.chat.totalMessages30d} správ, ${data.product.chat.uniqueUsers30d} unikátnych používateľov`}
-          note="Ukazuje, či je Rivo pravidelne používaný a koľko ľudí sa k nemu vracia."
-          delta={data.comparisons.chatSessions}
-          icon={MessageCircle}
-          tone="bg-emerald-100 text-emerald-700"
-        />
-        <StatCard
-          title="Custom recipes accepted"
-          value={data.summary.customRecipesAccepted30d}
-          subtitle={`${data.product.customRecipes.generated30d} generated, ${data.product.customRecipes.failed30d} failed`}
-          note="Prijaté AI custom recepty sú dobrý signál, že generovaný obsah má pre ľudí hodnotu."
-          delta={data.comparisons.customRecipesAccepted}
-          icon={Activity}
-          tone="bg-violet-100 text-violet-700"
-        />
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[1.15fr,0.85fr]">
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h3 className="font-semibold text-slate-900">What needs attention</h3>
-              <p className="text-sm text-muted-foreground">
-                Krátky zoznam signálov, ktoré si pýtajú kontrolu alebo aspoň monitoring.
+      <div className={isSectionVisible("overview")}>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-700">
+            Ako čítať tento dashboard
+          </h3>
+          <div className="mt-3 grid gap-3 lg:grid-cols-3">
+            <div className="rounded-xl bg-white p-4">
+              <p className="text-sm font-medium text-slate-900">Overview</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Horné karty ukazujú rýchly stav adoption a používania za zvolený časový rozsah.
               </p>
             </div>
-            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
-          </div>
-          <div className="grid gap-3 lg:grid-cols-2">
-            {data.attention.map((item) => (
-              <AttentionCard
-                key={`${item.severity}-${item.title}`}
-                severity={item.severity}
-                title={item.title}
-                description={item.description}
-              />
-            ))}
+            <div className="rounded-xl bg-white p-4">
+              <p className="text-sm font-medium text-slate-900">Product blocks</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Každá sekcia rozpisuje, čo konkrétny surface znamená a ktoré čísla sú skôr usage než business KPI.
+              </p>
+            </div>
+            <div className="rounded-xl bg-white p-4">
+              <p className="text-sm font-medium text-slate-900">Recent activity</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Spodné zoznamy pomáhajú vysvetliť konkrétne správanie používateľov, nie len agregované trendy.
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h3 className="font-semibold text-slate-900">Weekly snapshot</h3>
-              <p className="text-sm text-muted-foreground">
-                Porovnanie tohto týždňa s predchádzajúcim týždňom pre hlavné active surfaces.
-              </p>
-            </div>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-              7d vs previous 7d
-            </span>
-          </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            title="Celkom používateľov"
+            value={data.summary.totalUsers}
+            subtitle={`${data.summary.pantryUsers} používateľov má pantry items`}
+            note="Veľkosť základne, voči ktorej vieš porovnať adoption jednotlivých funkcií."
+            icon={Users}
+            tone="bg-sky-100 text-sky-700"
+          />
+          <StatCard
+            title="Kitchen counter attempts"
+            value={data.summary.kitchenCounterAttempts30d}
+            subtitle={`${data.product.kitchenCounter.completed30d} clean completes, ${data.product.kitchenCounter.completedWithMissingIngredients30d} s missing ingredients`}
+            note="Koľkokrát ľudia reálne prešli cez cooking flow, nie len otvorili recept."
+            delta={data.comparisons.kitchenCounterAttempts}
+            icon={ChefHat}
+            tone="bg-amber-100 text-amber-700"
+          />
+          <StatCard
+            title="Chat sessions"
+            value={data.summary.chatSessions30d}
+            subtitle={`${data.product.chat.totalMessages30d} správ, ${data.product.chat.uniqueUsers30d} unikátnych používateľov`}
+            note="Ukazuje, či je Rivo pravidelne používaný a koľko ľudí sa k nemu vracia."
+            delta={data.comparisons.chatSessions}
+            icon={MessageCircle}
+            tone="bg-emerald-100 text-emerald-700"
+          />
+          <StatCard
+            title="Custom recipes accepted"
+            value={data.summary.customRecipesAccepted30d}
+            subtitle={`${data.product.customRecipes.generated30d} generated, ${data.product.customRecipes.failed30d} failed`}
+            note="Prijaté AI custom recepty sú dobrý signál, že generovaný obsah má pre ľudí hodnotu."
+            delta={data.comparisons.customRecipesAccepted}
+            icon={Activity}
+            tone="bg-violet-100 text-violet-700"
+          />
+        </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            {Object.entries(data.weeklySnapshot.currentWeek).map(([key, value]) => {
-              const previousValue =
-                data.weeklySnapshot.previousWeek[
-                  key as keyof WeeklySnapshotMetricSet
-                ];
-              const metric: DeltaMetric = {
-                current: value,
-                previous: previousValue,
-                change: value - previousValue,
-                percentChange:
-                  previousValue === 0
-                    ? value === 0
-                      ? 0
-                      : null
-                    : Number((((value - previousValue) / previousValue) * 100).toFixed(1)),
-                direction:
-                  value === previousValue ? "flat" : value > previousValue ? "up" : "down",
-              };
-
-              return (
-                <div key={key} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-medium text-slate-900">{formatMetricKey(key)}</p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Predchádzajúci týždeň: {previousValue}</p>
-                  <p className="mt-2 text-xs font-medium text-slate-600">{formatDelta(metric)}</p>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-4 space-y-3">
-            {data.weeklySnapshot.highlights.map((highlight) => (
-              <div key={highlight.label} className="rounded-lg bg-slate-50 px-3 py-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">{highlight.label}</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">{highlight.note}</p>
-                  </div>
-                  <span className="max-w-[13rem] rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700">
-                    {highlight.label === "Most used surface this week"
-                      ? formatMetricKey(highlight.value)
-                      : highlight.value}
-                  </span>
-                </div>
+        <div className="grid gap-4 xl:grid-cols-[1.15fr,0.85fr]">
+          <div className="rounded-2xl border bg-white p-5 shadow-sm">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="font-semibold text-slate-900">What needs attention</h3>
+                <p className="text-sm text-muted-foreground">
+                  Krátky zoznam signálov, ktoré si pýtajú kontrolu alebo aspoň monitoring.
+                </p>
               </div>
-            ))}
+              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
+            </div>
+            <div className="grid gap-3 lg:grid-cols-2">
+              {data.attention.map((item) => (
+                <AttentionCard
+                  key={`${item.severity}-${item.title}`}
+                  severity={item.severity}
+                  title={item.title}
+                  description={item.description}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border bg-white p-5 shadow-sm">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="font-semibold text-slate-900">Weekly snapshot</h3>
+                <p className="text-sm text-muted-foreground">
+                  Porovnanie tohto týždňa s predchádzajúcim týždňom pre hlavné active surfaces.
+                </p>
+              </div>
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                7d vs previous 7d
+              </span>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {Object.entries(data.weeklySnapshot.currentWeek).map(([key, value]) => {
+                const previousValue =
+                  data.weeklySnapshot.previousWeek[
+                    key as keyof WeeklySnapshotMetricSet
+                  ];
+                const metric: DeltaMetric = {
+                  current: value,
+                  previous: previousValue,
+                  change: value - previousValue,
+                  percentChange:
+                    previousValue === 0
+                      ? value === 0
+                        ? 0
+                        : null
+                      : Number((((value - previousValue) / previousValue) * 100).toFixed(1)),
+                  direction:
+                    value === previousValue
+                      ? "flat"
+                      : value > previousValue
+                        ? "up"
+                        : "down",
+                };
+
+                return (
+                  <div key={key} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm font-medium text-slate-900">{formatMetricKey(key)}</p>
+                    <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Predchádzajúci týždeň: {previousValue}</p>
+                    <p className="mt-2 text-xs font-medium text-slate-600">{formatDelta(metric)}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {data.weeklySnapshot.highlights.map((highlight) => (
+                <div key={highlight.label} className="rounded-lg bg-slate-50 px-3 py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">{highlight.label}</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">{highlight.note}</p>
+                    </div>
+                    <span className="max-w-[13rem] rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700">
+                      {highlight.label === "Most used surface this week"
+                        ? formatMetricKey(highlight.value)
+                        : highlight.value}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
+      <div className={isSectionVisible("product")}>
       <div className="grid gap-6 xl:grid-cols-[1.2fr,0.8fr]">
         <div className="rounded-2xl border bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
@@ -1033,6 +1289,16 @@ export default function AnalyticsTab() {
                 note="Porovnaj štarty, úspešné výsledky a chyby v jednom riadku."
               />
               <MetricItem
+                label="Starts with pantry / without pantry"
+                value={`${data.product.customRecipes.modeSplit.started.pantry} / ${data.product.customRecipes.modeSplit.started.preferencesOnly}`}
+                note="Prvé číslo sú generácie spustené so zásobami, druhé len z preferencií bez pantry."
+              />
+              <MetricItem
+                label="Failures with pantry / without pantry"
+                value={`${data.product.customRecipes.modeSplit.failed.pantry} / ${data.product.customRecipes.modeSplit.failed.preferencesOnly}`}
+                note="Pomáha odhaliť, či sa chyby viažu skôr na pantry-aware flow alebo na preferences-only režim."
+              />
+              <MetricItem
                 label="Result opens"
                 value={data.product.customRecipes.resultOpens30d}
                 note="Koľkokrát si ľudia otvorili úspešne vygenerovaný recept."
@@ -1127,8 +1393,72 @@ export default function AnalyticsTab() {
             ))}
           </div>
         </div>
+
+        <div className="mt-4 rounded-xl border bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h4 className="font-medium text-slate-900">Custom recipe failure logs</h4>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Posledné zlyhania generovania vrátane plného uloženého logu z analytics event metadata.
+              </p>
+            </div>
+            <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700">
+              {data.product.customRecipes.failureLogs.length} záznamov
+            </span>
+          </div>
+
+          {data.product.customRecipes.failureLogs.length === 0 ? (
+            <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+              V zvolenom rozsahu nie je žiadne custom recipe zlyhanie.
+            </div>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {data.product.customRecipes.failureLogs.map((failure) => (
+                <div key={failure.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {failure.userFullName || failure.userEmail || failure.userId || "Unknown user"}
+                        </p>
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-600">
+                          {formatCustomRecipeMode(failure.mode)}
+                        </span>
+                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-rose-700">
+                          {failure.code}
+                        </span>
+                        {failure.node ? (
+                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-700">
+                            {failure.node}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {new Date(failure.createdAt).toLocaleString(locale === "sk" ? "sk-SK" : "en-GB")}
+                        {failure.userEmail ? ` • ${failure.userEmail}` : ""}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-white px-3 py-2 text-xs font-medium text-slate-600">
+                      {failure.usesPantry ? "Generované s pantry" : "Generované bez pantry"}
+                    </div>
+                  </div>
+
+                  <p className="mt-3 text-sm text-slate-700">{failure.reason}</p>
+
+                  <div className="mt-3 overflow-x-auto rounded-lg bg-slate-950 p-3">
+                    <pre className="min-w-0 whitespace-pre-wrap break-words text-[11px] leading-5 text-slate-100">
+                      {formatCustomRecipeLog(failure.log)}
+                    </pre>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
       </div>
 
+      <div className={isSectionVisible("trends")}>
       <div className="grid gap-6 xl:grid-cols-2">
         <MiniBarChart
           title="Denní aktívni používatelia"
@@ -1145,7 +1475,9 @@ export default function AnalyticsTab() {
           color="bg-gradient-to-t from-violet-600 to-fuchsia-400"
         />
       </div>
+      </div>
 
+      <div className={isSectionVisible("new-users")}>
       <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -1163,6 +1495,21 @@ export default function AnalyticsTab() {
                 <SelectItem value="7">Noví za 7 dní</SelectItem>
                 <SelectItem value="14">Noví za 14 dní</SelectItem>
                 <SelectItem value="30">Noví za 30 dní</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={newUsersSection}
+              onValueChange={(value) =>
+                setNewUsersSection(value as "surface" | "flow")
+              }
+            >
+              <SelectTrigger className="min-w-36 bg-white md:hidden">
+                <SelectValue placeholder="Sekcia" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="surface">Surface activity</SelectItem>
+                <SelectItem value="flow">Precise user flow</SelectItem>
               </SelectContent>
             </Select>
 
@@ -1234,7 +1581,11 @@ export default function AnalyticsTab() {
                 </div>
 
                 <div className="mt-4 grid gap-3 xl:grid-cols-[0.95fr,1.05fr]">
-                  <div className="rounded-xl border bg-white p-3">
+                  <div
+                    className={`rounded-xl border bg-white p-3 ${
+                      newUsersSection === "surface" ? "block" : "hidden md:block"
+                    }`}
+                  >
                     <p className="text-sm font-medium text-slate-900">Surface activity</p>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
                       <MetricItem
@@ -1260,24 +1611,102 @@ export default function AnalyticsTab() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border bg-white p-3">
-                    <p className="text-sm font-medium text-slate-900">Recent activity feed</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                      Posledné trackované eventy pre rýchle pochopenie, čo nový používateľ skúšal po registrácii.
-                    </p>
-                    <div className="mt-3 space-y-2">
-                      {user.recentActivities.length === 0 ? (
-                        <p className="text-xs text-muted-foreground">Zatiaľ bez trackovaných eventov.</p>
-                      ) : (
-                        user.recentActivities.map((activity, index) => (
-                          <div key={`${user.userId}-${activity.occurredAt}-${index}`} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2">
-                            <span className="text-sm text-slate-700">{activity.label}</span>
-                            <span className="text-[11px] text-slate-500">
-                              {new Date(activity.occurredAt).toLocaleString("sk-SK")}
-                            </span>
+                  <div
+                    className={`w-full min-w-0 max-w-full rounded-xl border bg-white p-3 ${
+                      newUsersSection === "flow" ? "block" : "hidden md:block"
+                    }`}
+                  >
+                    <div className="flex w-full min-w-0 flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-slate-900">Precise user flow</p>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                          Chronologická cesta od registrácie po najnovší krok, vrátane syntetických míľnikov z chatu, pantry a custom recipe dát.
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                        {user.flowSteps.length} krokov
+                      </span>
+                    </div>
+
+                    <div className="mt-4 w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/70">
+                      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-3 py-2 text-[11px] text-slate-500">
+                        <span>Potiahni doprava pre ďalšie kroky</span>
+                        <span className="shrink-0">Swipe timeline</span>
+                      </div>
+                      <div className="w-full max-w-full overflow-x-auto overscroll-x-contain px-3 py-3 [scrollbar-width:thin]">
+                        <div className="flex w-max items-stretch gap-2 pr-3">
+                        {user.flowSteps.map((step, index) => {
+                          const presentation = getFlowStepPresentation(step);
+                          const Icon = presentation.icon;
+
+                          return (
+                            <div key={step.id} className="flex shrink-0 items-center gap-2">
+                              <div className={`w-40 shrink-0 rounded-2xl border border-slate-200 bg-gradient-to-br ${presentation.railTone} p-3`}>
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className={`rounded-xl p-2 ${presentation.chipTone}`}>
+                                    <Icon className="h-4 w-4" />
+                                  </div>
+                                  <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${presentation.badgeTone}`}>
+                                    {presentation.sourceLabel}
+                                  </span>
+                                </div>
+                                <p className="mt-3 text-sm font-semibold text-slate-900">
+                                  {formatFlowStepTitle(step)}
+                                </p>
+                                <p className="mt-1 text-[11px] text-slate-500">
+                                  {formatFlowStepOffset(user.registeredAt, step.occurredAt)}
+                                </p>
+                              </div>
+                              {index < user.flowSteps.length - 1 ? (
+                                <ArrowRight className="h-4 w-4 shrink-0 text-slate-300" />
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1">
+                      {user.flowSteps.map((step, index) => {
+                        const presentation = getFlowStepPresentation(step);
+                        const Icon = presentation.icon;
+
+                        return (
+                          <div
+                            key={`${step.id}-detail`}
+                            className="grid gap-3 rounded-xl bg-slate-50 px-3 py-3 md:grid-cols-[auto,1fr,auto] md:items-center"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[11px] font-semibold text-slate-700">
+                                {index + 1}
+                              </span>
+                              <div className={`rounded-lg p-2 ${presentation.chipTone}`}>
+                                <Icon className="h-4 w-4" />
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-sm font-medium text-slate-900">{formatFlowStepTitle(step)}</p>
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${presentation.badgeTone}`}>
+                                  {presentation.sourceLabel}
+                                </span>
+                              </div>
+                              <p className="mt-1 text-xs leading-5 text-slate-500">
+                                {formatFlowStepNote(step)}
+                              </p>
+                            </div>
+                            <div className="text-left md:text-right">
+                              <p className="text-[11px] font-medium text-slate-700">
+                                {formatFlowStepOffset(user.registeredAt, step.occurredAt)}
+                              </p>
+                              <p className="mt-1 text-[11px] text-slate-500">
+                                {new Date(step.occurredAt).toLocaleString("sk-SK")}
+                              </p>
+                            </div>
                           </div>
-                        ))
-                      )}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -1286,7 +1715,9 @@ export default function AnalyticsTab() {
           </div>
         )}
       </div>
+      </div>
 
+      <div className={isSectionVisible("ops")}>
       <div className="grid gap-6 xl:grid-cols-[1.1fr,0.9fr]">
         <div className="min-w-0 rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -1481,6 +1912,7 @@ export default function AnalyticsTab() {
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
