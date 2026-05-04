@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { apiLogger } from "@/lib/logger";
+import { reportIngredientResolutionFeedback } from "@/lib/feedback/ingredient-resolution-feedback";
 import {
   acquirePantryDraftLock,
   appendPantryDrafts,
@@ -9,6 +10,7 @@ import {
   releasePantryDraftLock,
 } from "@/lib/pantry/draft-cache";
 import { upsertPantryBarcodeCatalogEntry } from "@/lib/pantry/barcode/catalog";
+import { PantryIngredientResolutionError } from "@/lib/pantry/ingredient-resolution";
 import { getAuthenticatedPaidPantryContext } from "@/lib/pantry/scan-auth";
 import { receiptScanReviewPayloadSchema } from "@/lib/pantry/receipt-scan-contracts";
 import {
@@ -94,6 +96,25 @@ export async function POST(req: NextRequest) {
       await releasePantryDraftLock(prepared.userProfileId);
     }
   } catch (error) {
+    if (error instanceof PantryIngredientResolutionError) {
+      const feedbackRecorded = await reportIngredientResolutionFeedback({
+        source: "pantry-receipt-finalize",
+        rawName: error.rawName,
+        locale: "sk",
+        userId: context.userId,
+        userProfileId: context.userProfileId,
+      });
+
+      return NextResponse.json(
+        {
+          error: "We could not recognize one of the items as a food ingredient.",
+          code: "INGREDIENT_RESOLUTION_FAILED",
+          feedbackRecorded,
+        },
+        { status: 422 },
+      );
+    }
+
     apiLogger.error("POST /api/pantry/scan-receipt/finalize error", error, {
       metadata: { userId: context.userId },
     });

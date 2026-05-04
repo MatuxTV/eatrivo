@@ -41,15 +41,12 @@ export async function GET() {
     const formattedNutrition =
       nutrition.length > 0
         ? {
-            ...nutrition[0],
+            sex: nutrition[0].sex,
+            height: nutrition[0].height,
             weight: nutrition[0].weight ? String(nutrition[0].weight) : "",
             activity_level: nutrition[0].activity_level?.trim() || null,
             goal: nutrition[0].goal?.trim() || null,
-            cooking_time_pref: nutrition[0].cooking_time_pref?.trim() || null,
-            meal_prep: nutrition[0].meal_prep ?? false,
-            meal_prep_days: nutrition[0].meal_prep_days ?? null,
             diet_preferences: nutrition[0].diet_preferences?.trim() || null,
-            budget_preference: nutrition[0].budget_preference?.trim() || null,
             likes: nutrition[0].likes || "",
             dislikes: nutrition[0].dislikes || "",
             allergies: nutrition[0].allergies || "",

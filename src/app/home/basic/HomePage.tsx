@@ -121,7 +121,7 @@ function readStoredKitchenCounterRecipe(): BasicHomeRecipePreview | null {
 interface HomePageProps {
   membership?: "basic" | "premium" | "pro" | "trainer";
   featuredRecipes?: BasicHomeRecipePreview[];
-  recipeShuffleTime: number;
+  recipeShuffleTime?: number;
   recipeBrowseAvailableFilters?: RecipeBrowseAvailableFilters;
   initialRecipeHasMore?: boolean;
   initialRecipeTotalCount?: number;
@@ -141,7 +141,7 @@ interface HomePageProps {
 export default function HomePage({
   membership = "basic",
   featuredRecipes = [],
-  recipeShuffleTime,
+  recipeShuffleTime = 0,
   recipeBrowseAvailableFilters = { categoryKeys: [], dietTags: [] },
   initialRecipeHasMore = false,
   initialRecipeTotalCount = featuredRecipes.length,
@@ -501,8 +501,6 @@ export default function HomePage({
         activeSection={activeSection}
         onSectionChange={setActiveSection}
       />
-      <PWAInstallPrompt />
-      <NotificationBanner />
     </div>
   );
 }

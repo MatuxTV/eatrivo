@@ -31,7 +31,6 @@ import {
 } from "@/lib/recipes/browse";
 import { getRecipeMatchesForUserProfile } from "@/lib/recipes/recipe-matches";
 import { getUserContext } from "@/lib/user/user-context-cache";
-import { shuffleRecipesByTime } from "@/app/home/utils/shuffleRecipes";
 
 function serializeNullableDate(value: Date | string | null | undefined): string | null {
   if (!value) {
@@ -44,7 +43,6 @@ function serializeNullableDate(value: Date | string | null | undefined): string 
 async function getBasicHomeData(
   userId: string,
   locale: Locale,
-  recipeShuffleTime: number,
 ): Promise<{
   featuredRecipes: BasicHomeRecipePreview[];
   recipeBrowseAvailableFilters: RecipeBrowseAvailableFilters;
@@ -78,10 +76,7 @@ async function getBasicHomeData(
     }),
   ]);
 
-  const featuredRecipes = shuffleRecipesByTime(
-    initialRecipePage.recipes,
-    recipeShuffleTime,
-  );
+  const featuredRecipes = initialRecipePage.recipes;
 
   if (!userProfile) {
     return {
@@ -326,10 +321,8 @@ export default async function HomePageCanonical() {
     redirect(`/${safeLocale}`);
   }
 
-  const recipeShuffleTime = Date.now();
-
   const [basicHomeData, initialProfileSectionData, initialPantrySectionData] = await Promise.all([
-    getBasicHomeData(session.user.id, safeLocale, recipeShuffleTime),
+    getBasicHomeData(session.user.id, safeLocale),
     getInitialProfileSectionData(session.user.id, session.user.email),
     getInitialPantrySectionData(session.user.id),
   ]);
@@ -338,7 +331,6 @@ export default async function HomePageCanonical() {
     <HomePage
       membership={session.user.membership ?? "basic"}
       featuredRecipes={basicHomeData.featuredRecipes}
-      recipeShuffleTime={recipeShuffleTime}
       recipeBrowseAvailableFilters={basicHomeData.recipeBrowseAvailableFilters}
       initialRecipeHasMore={basicHomeData.initialRecipeHasMore}
       initialRecipeTotalCount={basicHomeData.initialRecipeTotalCount}

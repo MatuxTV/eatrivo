@@ -2,13 +2,41 @@ import { NextResponse } from "next/server";
 
 import { isAuthError, requireAdminAuth } from "@/lib/auth/adminAuth";
 import {
-  importRecipesFromText,
-  prepareRecipeImportFromText,
+  persistPreparedRecipeImport,
+  prepareRecipeImportFromObject,
 } from "@/lib/recipes/recipe-importer";
 
 interface RecipeImportRequest {
   jsonText: string;
   dryRun?: boolean;
+  uploadedImageKey?: string | null;
+}
+
+function applyUploadedImageKey(input: unknown, uploadedImageKey?: string | null) {
+  if (!uploadedImageKey) {
+    return input;
+  }
+
+  if (!input || typeof input !== "object" || !("recipes" in input)) {
+    throw new Error("Recipe import payload must be an object with a recipes array.");
+  }
+
+  const payload = input as { recipes?: Array<Record<string, unknown>> };
+  if (!Array.isArray(payload.recipes)) {
+    throw new Error("Recipe import payload has invalid recipes array.");
+  }
+
+  if (payload.recipes.length !== 1) {
+    throw new Error("Photo upload is currently supported only when importing a single recipe.");
+  }
+
+  return {
+    ...payload,
+    recipes: payload.recipes.map((recipe) => ({
+      ...recipe,
+      image_key: uploadedImageKey,
+    })),
+  };
 }
 
 export async function POST(request: Request) {
@@ -28,8 +56,21 @@ export async function POST(request: Request) {
       );
     }
 
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(jsonText) as unknown;
+    } catch {
+      return NextResponse.json(
+        { error: "Recipe import payload is not valid JSON." },
+        { status: 400 },
+      );
+    }
+
+    const prepared = prepareRecipeImportFromObject(
+      applyUploadedImageKey(parsed, body.uploadedImageKey?.trim() || null),
+    );
+
     if (body.dryRun) {
-      const prepared = prepareRecipeImportFromText(jsonText);
       return NextResponse.json({
         success: true,
         dryRun: true,
@@ -39,7 +80,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const result = await importRecipesFromText(jsonText);
+    const result = await persistPreparedRecipeImport(prepared.rows);
 
     return NextResponse.json({
       success: true,

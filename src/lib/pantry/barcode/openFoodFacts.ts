@@ -47,6 +47,7 @@ export interface BarcodeLookupResult {
   warnings: string[];
   partial: boolean;
   source: PantryBarcodeCatalogSource | "fallback";
+  lookupOutcome: "matched" | "unknown_barcode" | "catalog_unavailable";
 }
 
 export function resolvePantryBarcodeLocale(
@@ -101,6 +102,7 @@ function buildFallbackItem(
   barcode: string,
   locale: PantryBarcodeLocale,
   warning: string,
+  lookupOutcome: BarcodeLookupResult["lookupOutcome"],
 ): BarcodeLookupResult {
   return {
     barcode,
@@ -120,6 +122,7 @@ function buildFallbackItem(
     warnings: [warning],
     partial: true,
     source: "fallback",
+    lookupOutcome,
   };
 }
 
@@ -175,6 +178,7 @@ export async function lookupOpenFoodFactsBarcode(
         barcode,
         locale,
         getMessage(locale, "providerUnavailable", barcode),
+        "catalog_unavailable",
       );
     }
 
@@ -184,6 +188,7 @@ export async function lookupOpenFoodFactsBarcode(
         barcode,
         locale,
         getMessage(locale, "notFound", barcode),
+        "unknown_barcode",
       );
     }
 
@@ -193,6 +198,7 @@ export async function lookupOpenFoodFactsBarcode(
         barcode,
         locale,
         getMessage(locale, "missingName", barcode),
+        "catalog_unavailable",
       );
     }
 
@@ -238,12 +244,14 @@ export async function lookupOpenFoodFactsBarcode(
       warnings,
       partial: warnings.length > 0,
       source: "open_food_facts",
+      lookupOutcome: "matched",
     };
   } catch {
     return buildFallbackItem(
       barcode,
       locale,
       getMessage(locale, "providerUnavailable", barcode),
+      "catalog_unavailable",
     );
   }
 }

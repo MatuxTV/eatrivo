@@ -4,7 +4,7 @@ import { auth } from "../../../../../auth";
 import { db } from "@/index";
 import { userProfiles, userInfoTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { userFoodPreferencesSchema } from "@/lib/schemas/user";
+import { userProfileNutritionSchema } from "@/lib/schemas/user";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { invalidateUserContextCaches } from "@/lib/user/user-context-cache";
 
@@ -24,7 +24,7 @@ export async function PUT(request: NextRequest) {
     if (!rl.success) return rl.response!;
 
     const body = await request.json();
-    const validation = userFoodPreferencesSchema.safeParse(body);
+    const validation = userProfileNutritionSchema.safeParse(body);
 
     if (!validation.success) {
       return NextResponse.json(
@@ -58,12 +58,7 @@ export async function PUT(request: NextRequest) {
         weight: String(validation.data.weight),
         activity_level: validation.data.activity_level,
         goal: validation.data.goal ?? "maintain_weight",
-        meal_per_day: validation.data.meal_per_day ?? null,
-        cooking_time_pref: validation.data.cooking_time_pref ?? null,
-        meal_prep: validation.data.meal_prep ?? false,
-        meal_prep_days: validation.data.meal_prep_days ?? null,
         diet_preferences: validation.data.diet_preferences ?? "none",
-        budget_preference: validation.data.budget_preference ?? "medium",
         likes: validation.data.likes?.trim() || null,
         dislikes: validation.data.dislikes?.trim() || null,
         allergies: validation.data.allergies?.trim() || null,

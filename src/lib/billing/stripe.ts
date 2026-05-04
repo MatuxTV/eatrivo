@@ -11,10 +11,15 @@ function requireEnv(name: string) {
 
 export const stripe = new Stripe(requireEnv("STRIPE_SECRET_KEY"));
 
+function readOptionalEnv(name: string) {
+  const value = process.env[name]?.trim();
+  return value ? value : null;
+}
+
 // Price IDs from environment
 export const STRIPE_PRICES = {
-  premium: requireEnv("STRIPE_PRICE_PREMIUM"),
-  pro: requireEnv("STRIPE_PRICE_PRO"),
+  premium: requireEnv("STRIPE_PRICE_PLUS_MONTHLY"),
+  premiumYearly: readOptionalEnv("STRIPE_PRICE_PLUS_YEARLY"),
 } as const;
 
 export type MembershipTier = "basic" | "premium" | "pro" | "trainer";
@@ -22,7 +27,7 @@ export type MembershipTier = "basic" | "premium" | "pro" | "trainer";
 // Map Stripe price IDs to membership tiers
 export function getMembershipFromPriceId(priceId: string): MembershipTier {
   if (priceId === STRIPE_PRICES.premium) return "premium";
-  if (priceId === STRIPE_PRICES.pro) return "pro";
+  if (priceId === STRIPE_PRICES.premiumYearly) return "premium";
   return "basic";
 }
 
@@ -31,8 +36,6 @@ export function getPriceIdFromMembership(tier: MembershipTier): string | null {
   switch (tier) {
     case "premium":
       return STRIPE_PRICES.premium;
-    case "pro":
-      return STRIPE_PRICES.pro;
     default:
       return null; // basic is free, trainer is not purchasable
   }

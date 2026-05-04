@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight, Crown, ShieldCheck, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -16,6 +15,10 @@ interface MembershipUpgradeModalProps {
 
 type BillingOption = "monthly" | "yearly";
 
+function formatEuroAmount(amount: number) {
+  return `€${amount.toFixed(2).replace(".", ",")}`;
+}
+
 export default function MembershipUpgradeModal({
   isOpen,
   onClose,
@@ -23,38 +26,80 @@ export default function MembershipUpgradeModal({
 }: MembershipUpgradeModalProps) {
   const t = useTranslations("upgrade");
   const locale = useLocale();
-  const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
   const [billingOption, setBillingOption] = useState<BillingOption>("yearly");
+  const [isRedirectingToCheckout, setIsRedirectingToCheckout] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const billingPlans: Array<{
     id: BillingOption;
     label: string;
-    price: string;
+    totalPrice: number;
     suffix: string;
+    billingMonths: number;
     isPopular?: boolean;
   }> = [
     {
       id: "monthly",
       label: t("monthlyLabel"),
-      price: "€3,99",
+      totalPrice: 3.99,
       suffix: t("perMonthShort"),
+      billingMonths: 1,
     },
     {
       id: "yearly",
       label: t("yearlyLabel"),
-      price: "€29,99",
+      totalPrice: 29.99,
       suffix: t("perYearShort"),
+      billingMonths: 12,
       isPopular: true,
     },
   ];
   const selectedPlan =
     billingPlans.find((plan) => plan.id === billingOption) ?? billingPlans[1];
+  const monthlyPlan =
+    billingPlans.find((plan) => plan.id === "monthly") ?? billingPlans[0];
 
-  function handleUpgrade() {
-    onClose();
-    router.push(`/${locale}/pricing`);
+  async function handleUpgrade() {
+    setCheckoutError(null);
+    setIsRedirectingToCheckout(true);
+
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tier: "premium",
+          billingCycle: billingOption,
+          locale,
+          sourcePage: "membership-upgrade-modal",
+          surface: `membership_upgrade_modal_${billingOption}`,
+        }),
+      });
+
+      const data = (await response.json()) as { error?: string; url?: string };
+
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+
+      setCheckoutError(data.error || "Checkout failed");
+      setIsRedirectingToCheckout(false);
+    } catch (error) {
+      console.error("Checkout error:", error);
+      setCheckoutError("Checkout failed");
+      setIsRedirectingToCheckout(false);
+    }
   }
+
+  const selectedPriceLabel =
+    selectedPlan.billingMonths === 12
+      ? `${formatEuroAmount(
+          Math.floor((selectedPlan.totalPrice / selectedPlan.billingMonths) * 100) /
+            100,
+        )}${t("perMonthShort")}`
+      : `${formatEuroAmount(selectedPlan.totalPrice)}${t("perMonthShort")}`;
 
   return (
     <AnimatePresence mode="wait">
@@ -75,9 +120,7 @@ export default function MembershipUpgradeModal({
                 : { opacity: 0, scale: 0.96, y: 24 }
             }
             animate={
-              shouldReduceMotion
-                ? undefined
-                : { opacity: 1, scale: 1, y: 0 }
+              shouldReduceMotion ? undefined : { opacity: 1, scale: 1, y: 0 }
             }
             exit={
               shouldReduceMotion
@@ -106,11 +149,11 @@ export default function MembershipUpgradeModal({
                 {hero}
 
                 <div className="mt-5 space-y-4">
-                  <div className="relative overflow-hidden rounded-[1.45rem] border-2 border-emerald-500 bg-[linear-gradient(180deg,#effcf5,#ddf4eb)] p-4 shadow-[0_12px_32px_rgba(16,185,129,0.14)]">
+                  <div className="relative overflow-hidden rounded-[1.45rem] border-2 border-eatrivo-purple bg-eatrivo-purple/5 p-4 shadow-[0_12px_32px_rgba(16,185,129,0.14)]">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <div className="flex items-center gap-2 text-slate-900">
-                          <div className="rounded-full bg-emerald-500/12 p-2 text-emerald-700">
+                          <div className="rounded-full bg-eatrivo-purple/12 p-2 text-eatrivo-purple">
                             <Crown className="h-4 w-4" />
                           </div>
                           <p className="text-xl font-black tracking-tight">
@@ -130,8 +173,8 @@ export default function MembershipUpgradeModal({
                           <div
                             className={
                               billingOption === "monthly"
-                                ? "absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-[0.95rem] bg-emerald-500 shadow-[0_10px_24px_rgba(16,185,129,0.24)] transition-all duration-300"
-                                : "absolute inset-y-1 left-[calc(50%+0.25rem)] w-[calc(50%-0.5rem)] rounded-[0.95rem] bg-emerald-500 shadow-[0_10px_24px_rgba(16,185,129,0.24)] transition-all duration-300"
+                                ? "absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-[0.95rem] bg-eatrivo-purple shadow-[0_10px_24px_rgba(16,185,129,0.24)] transition-all duration-300"
+                                : "absolute inset-y-1 left-[calc(50%+0.25rem)] w-[calc(50%-0.5rem)] rounded-[0.95rem] bg-eatrivo-purple shadow-[0_10px_24px_rgba(16,185,129,0.24)] transition-all duration-300"
                             }
                           />
 
@@ -150,7 +193,20 @@ export default function MembershipUpgradeModal({
                                       : "rounded-[0.95rem] px-3 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900"
                                   }
                                 >
-                                  {plan.label}
+                                  <span className="flex flex-col items-center gap-1 leading-tight">
+                                    <span>{plan.label}</span>
+                                    {plan.isPopular ? (
+                                      <span
+                                        className={
+                                          isSelected
+                                            ? "rounded-full bg-white/18 px-2 py-0.5 text-[0.52rem] font-bold uppercase tracking-[0.12em] text-white"
+                                            : "rounded-full bg-eatrivo-purple/12 px-2 py-0.5 text-[0.52rem] font-bold uppercase tracking-[0.12em] text-eatrivo-purple"
+                                        }
+                                      >
+                                        {t("mostPopular")}
+                                      </span>
+                                    ) : null}
+                                  </span>
                                 </button>
                               );
                             })}
@@ -163,19 +219,26 @@ export default function MembershipUpgradeModal({
                               <p className="text-sm font-semibold text-slate-900">
                                 {selectedPlan.label}
                               </p>
-                              <p className="mt-1 text-xs font-medium text-slate-500">
-                                {selectedPlan.suffix}
-                              </p>
+                              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
+                                {selectedPlan.id === "yearly" ? (
+                                  <div>
+                                    <span className="text-slate-400 line-through mr-1">
+                                      {formatEuroAmount(
+                                        monthlyPlan.totalPrice * selectedPlan.billingMonths,
+                                      )}
+                                      {t("perYearShort")}
+                                    </span>
+                                    <span className=" text-eatrivo-black-primary">
+                                      {formatEuroAmount(selectedPlan.totalPrice)}
+                                    </span>
+                                  </div>
+                                ) : null}
+                              </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-xl font-black tracking-tight text-slate-950">
-                                {selectedPlan.price}
+                              <p className="text-xl font-black tracking-tight text-eatrivo-black-primary">
+                                {selectedPriceLabel}
                               </p>
-                              {selectedPlan.isPopular ? (
-                                <p className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-emerald-600">
-                                  {t("mostPopular")}
-                                </p>
-                              ) : null}
                             </div>
                           </div>
                         </div>
@@ -183,12 +246,16 @@ export default function MembershipUpgradeModal({
                     </div>
                   </div>
 
-                  
-
                   <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
                     <ShieldCheck className="h-4 w-4 text-emerald-600" />
                     <span>{t("cancelAnytime")}</span>
                   </div>
+
+                  {checkoutError ? (
+                    <p className="text-center text-sm font-medium text-red-600">
+                      {checkoutError}
+                    </p>
+                  ) : null}
                 </div>
               </div>
 
@@ -196,10 +263,13 @@ export default function MembershipUpgradeModal({
                 <Button
                   type="button"
                   onClick={handleUpgrade}
-                  className="h-14 w-full rounded-[1.15rem] bg-slate-900 text-base font-semibold text-white shadow-[0_8px_0_rgba(15,23,42,0.18)] hover:bg-slate-800"
+                  disabled={isRedirectingToCheckout}
+                  className="h-14 w-full rounded-[1.15rem] bg-eatrivo-purple text-base font-semibold text-white border-2 border-eatrivo-white-primary/20 hover:bg-eatrivo-purple/90"
                 >
-                  {t("upgradeButton")}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  {isRedirectingToCheckout ? "Redirecting..." : t("upgradeButton")}
+                  {!isRedirectingToCheckout ? (
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  ) : null}
                 </Button>
 
                 <button

@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type {
+  BarcodeLookupOutcome,
   ReceiptScanReviewItem,
   ReceiptScanStartResponse,
 } from "@/lib/pantry/receipt-scan-contracts";
@@ -58,6 +59,126 @@ interface ReviewFormItem extends EditablePantryFormItem {
 }
 
 const BARCODE_DETECTOR_FORMATS = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"];
+
+async function detectBarcodeFromImageWithNativeDetector(file: File): Promise<string | null> {
+  const BarcodeDetectorConstructor = getBarcodeDetectorConstructor();
+  if (!BarcodeDetectorConstructor || typeof createImageBitmap !== "function") {
+    return null;
+  }
+
+  let imageBitmap: ImageBitmap | null = null;
+
+  try {
+    const supportedFormats =
+      typeof BarcodeDetectorConstructor.getSupportedFormats === "function"
+        ? await BarcodeDetectorConstructor.getSupportedFormats()
+        : BARCODE_DETECTOR_FORMATS;
+    const formats = BARCODE_DETECTOR_FORMATS.filter((format) => supportedFormats.includes(format));
+
+    if (formats.length === 0) {
+      return null;
+    }
+
+    imageBitmap = await createImageBitmap(file);
+    const detector = new BarcodeDetectorConstructor({ formats });
+    const detections = await detector.detect(imageBitmap);
+
+    return (
+      detections
+        .find(
+          (candidate) =>
+            typeof candidate.rawValue === "string" && candidate.rawValue.trim().length > 0,
+        )
+        ?.rawValue?.trim() ?? null
+    );
+  } finally {
+    imageBitmap?.close();
+  }
+}
+
+async function loadImageElement(src: string): Promise<HTMLImageElement> {
+  const image = new Image();
+  image.decoding = "async";
+  image.src = src;
+
+  if (typeof image.decode === "function") {
+    try {
+      await image.decode();
+      return image;
+    } catch {
+      // Fall back to load events for browsers that reject decode on blob URLs.
+    }
+  }
+
+  return await new Promise((resolve, reject) => {
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Failed to load barcode image."));
+  });
+}
+
+async function detectBarcodeFromImageWithZxing(file: File): Promise<string | null> {
+  const { BrowserMultiFormatReader, BarcodeFormat, DecodeHintType, NotFoundException } =
+    await import("@zxing/library");
+
+  const hints = new Map();
+  hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+    BarcodeFormat.EAN_13,
+    BarcodeFormat.EAN_8,
+    BarcodeFormat.UPC_A,
+    BarcodeFormat.UPC_E,
+    BarcodeFormat.CODE_128,
+  ]);
+  hints.set(DecodeHintType.TRY_HARDER, true);
+
+  const reader = new BrowserMultiFormatReader(hints);
+  const imageUrl = URL.createObjectURL(file);
+
+  try {
+    const image = await loadImageElement(imageUrl);
+    const result = await reader.decodeFromImageElement(image);
+    return result.getText().trim() || null;
+  } catch (error) {
+    if (error instanceof NotFoundException) {
+      return null;
+    }
+
+    throw error;
+  } finally {
+    reader.reset();
+    URL.revokeObjectURL(imageUrl);
+  }
+}
+
+async function detectBarcodeFromImageFile(file: File): Promise<string | null> {
+  try {
+    const barcode = await detectBarcodeFromImageWithNativeDetector(file);
+    if (barcode) {
+      return barcode;
+    }
+  } catch {
+    // Fall through to the JS decoder when native detection is unavailable or fails.
+  }
+
+  return await detectBarcodeFromImageWithZxing(file);
+}
+
+function getBarcodeCameraErrorKey(error: unknown) {
+  if (error instanceof DOMException) {
+    if (error.name === "NotAllowedError") {
+      return "barcode_scanner_permission_denied";
+    }
+
+    if (error.name === "NotFoundError") {
+      return "barcode_scanner_not_found";
+    }
+
+    if (error.name === "NotReadableError") {
+      return "barcode_scanner_busy";
+    }
+  }
+
+  return "barcode_scanner_permission_error";
+}
 
 function getBarcodeDetectorConstructor(): BarcodeDetectorConstructorLike | null {
   return (
@@ -105,15 +226,18 @@ export default function ReceiptScanModal({
 }: ReceiptScanModalProps) {
   const t = useTranslations("pantry");
   const shouldReduceMotion = useReducedMotion();
+  const isBarcodeFlow = initialEntryMode === "barcode";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const barcodeFileInputRef = useRef<HTMLInputElement | null>(null);
+  const barcodeCameraInputRef = useRef<HTMLInputElement | null>(null);
   const barcodeVideoRef = useRef<HTMLVideoElement | null>(null);
   const barcodeStreamRef = useRef<MediaStream | null>(null);
   const barcodeDetectorRef = useRef<BarcodeDetectorLike | null>(null);
   const barcodeScanTimeoutRef = useRef<number | null>(null);
   const barcodeLookupInFlightRef = useRef(false);
   const [phase, setPhase] = useState<ScanPhase>("idle");
-  const [entryMode, setEntryMode] = useState<ScanEntryMode>("receipt");
+  const [entryMode, setEntryMode] = useState<ScanEntryMode>(initialEntryMode);
   const [items, setItems] = useState<ReviewFormItem[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [vendor, setVendor] = useState<string | null>(null);
@@ -122,7 +246,10 @@ export default function ReceiptScanModal({
   const [barcodeScannerState, setBarcodeScannerState] = useState<BarcodeScannerState>("idle");
   const [barcodeScannerMessage, setBarcodeScannerMessage] = useState<string | null>(null);
   const [barcodeScanAttempt, setBarcodeScanAttempt] = useState(0);
+  const [barcodeScannerRequested, setBarcodeScannerRequested] = useState(false);
   const [lastDetectedBarcode, setLastDetectedBarcode] = useState<string | null>(null);
+  const [barcodeLookupOutcome, setBarcodeLookupOutcome] =
+    useState<BarcodeLookupOutcome | null>(null);
 
   const categories = useMemo(
     () => [
@@ -139,6 +266,17 @@ export default function ReceiptScanModal({
     ],
     [t],
   );
+
+  const canSaveBarcodeToCatalog =
+    isBarcodeFlow &&
+    items.some((item) => item.barcode && item.source === "manual");
+
+  const activeBarcodeValue =
+    items.find((item) => item.barcode)?.barcode ?? lastDetectedBarcode;
+  const isUnknownBarcodeResult =
+    isBarcodeFlow && barcodeLookupOutcome === "unknown_barcode" && canSaveBarcodeToCatalog;
+  const isCatalogUnavailableResult =
+    isBarcodeFlow && barcodeLookupOutcome === "catalog_unavailable" && canSaveBarcodeToCatalog;
 
   const stopBarcodeScanner = useCallback(() => {
     if (barcodeScanTimeoutRef.current !== null) {
@@ -161,7 +299,7 @@ export default function ReceiptScanModal({
   function resetState() {
     stopBarcodeScanner();
     setPhase("idle");
-    setEntryMode("receipt");
+    setEntryMode(initialEntryMode);
     setItems([]);
     setWarnings([]);
     setVendor(null);
@@ -170,13 +308,21 @@ export default function ReceiptScanModal({
     setBarcodeScannerState("idle");
     setBarcodeScannerMessage(null);
     setBarcodeScanAttempt(0);
+    setBarcodeScannerRequested(false);
     setLastDetectedBarcode(null);
+    setBarcodeLookupOutcome(null);
     barcodeLookupInFlightRef.current = false;
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
     if (cameraInputRef.current) {
       cameraInputRef.current.value = "";
+    }
+    if (barcodeFileInputRef.current) {
+      barcodeFileInputRef.current.value = "";
+    }
+    if (barcodeCameraInputRef.current) {
+      barcodeCameraInputRef.current.value = "";
     }
   }
 
@@ -223,6 +369,7 @@ export default function ReceiptScanModal({
       setVendor(null);
       setCurrency(null);
       setPartial(false);
+      setBarcodeLookupOutcome(null);
 
       try {
         const response = await fetch("/api/pantry/scan-barcode", {
@@ -237,7 +384,6 @@ export default function ReceiptScanModal({
         if (!response.ok) {
           toast.error(data.error || t("barcode_lookup_error"));
           setPhase("idle");
-          setEntryMode("barcode");
           setBarcodeScannerState("error");
           setBarcodeScannerMessage(t("barcode_lookup_error"));
           return;
@@ -248,12 +394,12 @@ export default function ReceiptScanModal({
         setVendor(data.vendor ?? null);
         setCurrency(data.currency ?? null);
         setPartial(data.partial);
+        setBarcodeLookupOutcome(data.lookupOutcome ?? null);
         setPhase("review");
       } catch (error) {
         console.error("[ReceiptScanModal] barcode lookup failed", error);
         toast.error(t("barcode_lookup_error"));
         setPhase("idle");
-        setEntryMode("barcode");
         setBarcodeScannerState("error");
         setBarcodeScannerMessage(t("barcode_lookup_error"));
       } finally {
@@ -263,8 +409,39 @@ export default function ReceiptScanModal({
     [stopBarcodeScanner, t],
   );
 
+  const handleBarcodeImageUpload = useCallback(
+    async (file: File) => {
+      stopBarcodeScanner();
+      setPhase("scanning");
+      setBarcodeScannerState("starting");
+      setBarcodeScannerMessage(t("barcode_photo_detecting"));
+      setLastDetectedBarcode(null);
+
+      try {
+        const barcode = await detectBarcodeFromImageFile(file);
+
+        if (!barcode) {
+          setPhase("idle");
+          setBarcodeScannerState("error");
+          setBarcodeScannerMessage(t("barcode_photo_not_found"));
+          toast.error(t("barcode_photo_not_found"));
+          return;
+        }
+
+        await handleBarcodeLookup(barcode);
+      } catch (error) {
+        console.error("[ReceiptScanModal] barcode image detection failed", error);
+        setPhase("idle");
+        setBarcodeScannerState("error");
+        setBarcodeScannerMessage(t("barcode_photo_not_found"));
+        toast.error(t("barcode_photo_not_found"));
+      }
+    },
+    [handleBarcodeLookup, stopBarcodeScanner, t],
+  );
+
   useEffect(() => {
-    if (!isOpen || phase !== "idle" || entryMode !== "barcode") {
+    if (!isOpen || phase !== "idle" || entryMode !== "barcode" || !barcodeScannerRequested) {
       stopBarcodeScanner();
       return;
     }
@@ -277,6 +454,16 @@ export default function ReceiptScanModal({
         setBarcodeScannerState("unsupported");
         setBarcodeScannerMessage(t("barcode_scanner_unsupported"));
         return;
+      }
+
+      if (navigator.permissions?.query) {
+        try {
+          await navigator.permissions.query({
+            name: "camera" as PermissionName,
+          });
+        } catch {
+          // Ignore optional camera permission query failures.
+        }
       }
 
       setBarcodeScannerState("starting");
@@ -366,9 +553,10 @@ export default function ReceiptScanModal({
 
         void scanNextFrame();
       } catch (error) {
+        const errorKey = getBarcodeCameraErrorKey(error);
         console.error("[ReceiptScanModal] barcode camera failed", error);
         setBarcodeScannerState("error");
-        setBarcodeScannerMessage(t("barcode_scanner_permission_error"));
+        setBarcodeScannerMessage(t(errorKey));
       }
     }
 
@@ -378,19 +566,20 @@ export default function ReceiptScanModal({
       cancelled = true;
       stopBarcodeScanner();
     };
-  }, [barcodeScanAttempt, entryMode, handleBarcodeLookup, isOpen, phase, stopBarcodeScanner, t]);
+  }, [
+    barcodeScanAttempt,
+    barcodeScannerRequested,
+    entryMode,
+    handleBarcodeLookup,
+    isOpen,
+    phase,
+    stopBarcodeScanner,
+    t,
+  ]);
 
-  const activateReceiptMode = useCallback(() => {
+  const requestBarcodeScannerStart = useCallback(() => {
     stopBarcodeScanner();
-    setEntryMode("receipt");
-    setBarcodeScannerState("idle");
-    setBarcodeScannerMessage(null);
-    setLastDetectedBarcode(null);
-  }, [stopBarcodeScanner]);
-
-  const activateBarcodeMode = useCallback(() => {
-    stopBarcodeScanner();
-    setEntryMode("barcode");
+    setBarcodeScannerRequested(true);
     setBarcodeScannerState("idle");
     setBarcodeScannerMessage(null);
     setLastDetectedBarcode(null);
@@ -402,13 +591,14 @@ export default function ReceiptScanModal({
       return;
     }
 
-    if (initialEntryMode === "barcode") {
-      activateBarcodeMode();
-      return;
-    }
-
-    activateReceiptMode();
-  }, [activateBarcodeMode, activateReceiptMode, initialEntryMode, isOpen, phase]);
+    stopBarcodeScanner();
+    setEntryMode(initialEntryMode);
+    setBarcodeScannerState("idle");
+    setBarcodeScannerMessage(null);
+    setBarcodeScannerRequested(false);
+    setLastDetectedBarcode(null);
+    setBarcodeLookupOutcome(null);
+  }, [initialEntryMode, isOpen, phase, stopBarcodeScanner]);
 
   async function handleUpload(file: File) {
     setEntryMode("receipt");
@@ -455,6 +645,15 @@ export default function ReceiptScanModal({
     await handleUpload(file);
   }
 
+  async function handleBarcodeFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    await handleBarcodeImageUpload(file);
+  }
+
   async function handleFinalize() {
     const validItems = items
       .filter((item) => item.name.trim().length > 0)
@@ -488,10 +687,20 @@ export default function ReceiptScanModal({
           partial,
         }),
       });
-      const data = (await response.json()) as { error?: string };
+      const data = (await response.json()) as {
+        error?: string;
+        code?: string;
+        feedbackRecorded?: boolean;
+      };
 
       if (!response.ok) {
-        toast.error(data.error || t("scan_finalize_error"));
+        toast.error(
+          data.code === "INGREDIENT_RESOLUTION_FAILED"
+            ? data.feedbackRecorded
+              ? t("ingredient_resolution_feedback_sent")
+              : t("ingredient_resolution_failed")
+            : data.error || t("scan_finalize_error"),
+        );
         setPhase("review");
         return;
       }
@@ -542,9 +751,19 @@ export default function ReceiptScanModal({
                     </Badge>
                   ) : null}
                 </div>
-                <h2 className="mt-2 text-lg font-bold text-gray-900">{t("scan_modal_title")}</h2>
+                <h2 className="mt-2 text-lg font-bold text-gray-900">
+                  {isBarcodeFlow ? t("barcode_scanner_title") : t("scan_modal_title")}
+                </h2>
                 <p className="mt-1 text-sm text-gray-600">
-                  {phase === "review" ? t("scan_review_description") : t("scan_modal_description")}
+                  {phase === "review"
+                    ? isUnknownBarcodeResult
+                      ? t("barcode_unknown_review_description")
+                      : isCatalogUnavailableResult
+                        ? t("barcode_catalog_unavailable_review_description")
+                        : t("scan_review_description")
+                    : isBarcodeFlow
+                      ? t("barcode_scanner_description")
+                      : t("scan_modal_description")}
                 </p>
               </div>
               <button
@@ -569,34 +788,7 @@ export default function ReceiptScanModal({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 rounded-2xl border border-amber-200 bg-white/70 p-1">
-                    <Button
-                      type="button"
-                      onClick={activateReceiptMode}
-                      className={
-                        entryMode === "receipt"
-                          ? "bg-amber-500 text-white hover:bg-amber-500/90"
-                          : "border border-transparent bg-transparent text-gray-700 shadow-none hover:bg-amber-100"
-                      }
-                    >
-                      <Upload className="mr-2 h-4 w-4" />
-                      {t("scan_mode_receipt")}
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={activateBarcodeMode}
-                      className={
-                        entryMode === "barcode"
-                          ? "bg-amber-500 text-white hover:bg-amber-500/90"
-                          : "border border-transparent bg-transparent text-gray-700 shadow-none hover:bg-amber-100"
-                      }
-                    >
-                      <ScanBarcode className="mr-2 h-4 w-4" />
-                      {t("scan_mode_barcode")}
-                    </Button>
-                  </div>
-
-                  {entryMode === "receipt" ? (
+                  {!isBarcodeFlow ? (
                     <div className="rounded-2xl border border-dashed border-amber-300 bg-white/80 p-4">
                       <p className="text-sm font-medium text-gray-900">{t("scan_upload_title")}</p>
                       <p className="mt-1 text-sm text-gray-600">{t("scan_upload_description")}</p>
@@ -639,6 +831,21 @@ export default function ReceiptScanModal({
                     <div className="rounded-2xl border border-dashed border-amber-300 bg-white/80 p-4">
                       <p className="text-sm font-medium text-gray-900">{t("barcode_scanner_title")}</p>
                       <p className="mt-1 text-sm text-gray-600">{t("barcode_scanner_description")}</p>
+                      <Input
+                        ref={barcodeFileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={(event) => void handleBarcodeFileChange(event)}
+                      />
+                      <Input
+                        ref={barcodeCameraInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(event) => void handleBarcodeFileChange(event)}
+                      />
 
                       <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-amber-200 bg-gray-950 shadow-sm">
                         <div className="relative aspect-[4/3]">
@@ -672,30 +879,49 @@ export default function ReceiptScanModal({
                               <p className="max-w-xs text-sm font-medium">
                                 {barcodeScannerState === "starting"
                                   ? t("barcode_scanner_starting")
-                                  : barcodeScannerMessage ?? t("barcode_scanner_ready_hint")}
+                                  : barcodeScannerMessage ?? t("barcode_scanner_idle_hint")}
                               </p>
                             </div>
                           )}
                         </div>
                       </div>
 
-                      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                      <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/60 p-3">
+                        <p className="text-sm font-medium text-gray-900">
+                          {t("barcode_photo_title")}
+                        </p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          {t("barcode_photo_description")}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 grid gap-2 sm:grid-cols-2">
                         <Button
                           type="button"
                           className="justify-center"
-                          onClick={activateBarcodeMode}
+                          onClick={requestBarcodeScannerStart}
                           disabled={barcodeScannerState === "starting"}
                         >
                           <Camera className="mr-2 h-4 w-4" />
-                          {t("barcode_scanner_retry")}
+                          {barcodeScanAttempt > 0
+                            ? t("barcode_scanner_retry")
+                            : t("barcode_scanner_start")}
                         </Button>
                         <Button
                           type="button"
                           className="justify-center border-2 border-eatrivo-black-primary/10 bg-eatrivo-white-primary text-eatrivo-black-primary hover:bg-eatrivo-white-primary/90"
-                          onClick={activateReceiptMode}
+                          onClick={() => barcodeCameraInputRef.current?.click()}
+                        >
+                          <Camera className="mr-2 h-4 w-4" />
+                          {t("barcode_photo_camera")}
+                        </Button>
+                        <Button
+                          type="button"
+                          className="justify-center border-2 border-eatrivo-black-primary/10 bg-eatrivo-white-primary text-eatrivo-black-primary hover:bg-eatrivo-white-primary/90"
+                          onClick={() => barcodeFileInputRef.current?.click()}
                         >
                           <Upload className="mr-2 h-4 w-4" />
-                          {t("scan_mode_receipt")}
+                          {t("barcode_photo_upload")}
                         </Button>
                       </div>
                     </div>
@@ -709,10 +935,10 @@ export default function ReceiptScanModal({
                     <Loader2 className="h-7 w-7 animate-spin" />
                   </div>
                   <h3 className="mt-4 text-lg font-semibold text-gray-900">
-                    {entryMode === "barcode" ? t("barcode_loading_title") : t("scan_loading_title")}
+                    {isBarcodeFlow ? t("barcode_loading_title") : t("scan_loading_title")}
                   </h3>
                   <p className="mt-2 max-w-md text-sm text-gray-600">
-                    {entryMode === "barcode"
+                    {isBarcodeFlow
                       ? t("barcode_loading_description")
                       : t("scan_loading_description")}
                   </p>
@@ -721,6 +947,34 @@ export default function ReceiptScanModal({
 
               {phase === "review" || phase === "submitting" ? (
                 <div className="space-y-4">
+                  {!isBarcodeFlow ? (
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-900">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                        <p>{t("scan_quantity_review_note")}</p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {canSaveBarcodeToCatalog ? (
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-900">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                        <p>
+                          {isUnknownBarcodeResult
+                            ? t("barcode_unknown_create_note", {
+                                value: activeBarcodeValue ?? "",
+                              })
+                            : isCatalogUnavailableResult
+                              ? t("barcode_catalog_unavailable_note", {
+                                  value: activeBarcodeValue ?? "",
+                                })
+                              : t("barcode_catalog_save_note")}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+
                   {(vendor || currency || warnings.length > 0) ? (
                     <div className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4">
                       <div className="flex flex-wrap items-center gap-2">
@@ -761,6 +1015,7 @@ export default function ReceiptScanModal({
                             fieldExpiry: t("field_expiry"),
                             fieldOptional: t("field_optional"),
                           }}
+                          autoFocus={Boolean(isUnknownBarcodeResult && index === 0)}
                           canRemove={items.length > 1}
                           onChange={updateItem}
                           onRemove={removeItem}
@@ -771,6 +1026,9 @@ export default function ReceiptScanModal({
                           </Badge>
                           {item.confidence !== null ? (
                             <span>{t("scan_confidence", { value: Math.round(item.confidence * 100) })}</span>
+                          ) : null}
+                          {item.barcode ? (
+                            <span>{t("barcode_value_label", { value: item.barcode })}</span>
                           ) : null}
                         </div>
                       </div>

@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
-import { UserBadge } from "@/components/ui/UserBadge";
 
 const createPersonalInfoSchema = (t: ReturnType<typeof useTranslations>) =>
   z.object({
@@ -129,9 +128,6 @@ export default function PersonalInfoSection({
                 <h2 className="text-xl font-black tracking-[-0.04em] text-[#35204f] sm:text-2xl">
                   {t("personal.title")}
                 </h2>
-                {profileData?.badges?.map((badgeStr) => (
-                  <UserBadge key={badgeStr} type={badgeStr} />
-                ))}
               </div>
               <p className="text-sm font-medium text-[#87739f]">{t("personal.description")}</p>
             </div>

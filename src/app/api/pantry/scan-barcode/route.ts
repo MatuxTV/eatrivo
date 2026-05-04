@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
       partial: lookup.partial,
       retryCount: 0,
       warnings: lookup.warnings,
+      lookupOutcome: lookup.lookupOutcome,
     });
 
     return NextResponse.json(responsePayload);

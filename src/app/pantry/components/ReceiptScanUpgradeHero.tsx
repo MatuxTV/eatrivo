@@ -3,8 +3,20 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 
-export default function ReceiptScanUpgradeHero() {
+interface ReceiptScanUpgradeHeroProps {
+  mode?: "receipt" | "barcode";
+}
+
+export default function ReceiptScanUpgradeHero({
+  mode = "receipt",
+}: ReceiptScanUpgradeHeroProps) {
   const t = useTranslations("pantry");
+  const titleKey =
+    mode === "barcode" ? "barcode_upgrade_title" : "scan_upgrade_title";
+  const descriptionKey =
+    mode === "barcode"
+      ? "barcode_upgrade_description"
+      : "scan_upgrade_description";
 
   return (
     <div className="relative overflow-hidden rounded-[1.8rem] px-3 pb-1 pt-2 text-center">
@@ -22,10 +34,10 @@ export default function ReceiptScanUpgradeHero() {
       </div>
 
       <h2 className="mx-auto mt-2 max-w-[18rem] text-[1.95rem] font-black leading-[1.02] tracking-[-0.04em] text-slate-950">
-        {t("scan_upgrade_title")}
+        {t(titleKey)}
       </h2>
       <p className="mx-auto mt-3 max-w-[19rem] text-sm leading-6 text-slate-600">
-        {t("scan_upgrade_description")}
+        {t(descriptionKey)}
       </p>
     </div>
   );

@@ -125,6 +125,7 @@ export const recipes = pgTable("recipes", {
   id: uuid("id").primaryKey().defaultRandom(),
   slug: text("slug").notNull().unique(),
   externalKey: text("external_key").notNull().unique(),
+  imageKey: text("image_key"),
   source: recipeSourceEnum("source").default("catalog").notNull(),
   userGenerated: boolean("user_generated").default(false).notNull(),
   createdByUserId: uuid("created_by_user_id").references(() => users.id, {

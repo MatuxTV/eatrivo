@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+export const barcodeLookupOutcomeSchema = z.enum([
+  "matched",
+  "unknown_barcode",
+  "catalog_unavailable",
+]);
+
 export const receiptScanReviewItemSchema = z.object({
   id: z.string().min(1),
   name: z.string().trim().min(1).max(160),
@@ -27,8 +33,10 @@ export const receiptScanStartResponseSchema = z.object({
   partial: z.boolean(),
   retryCount: z.number().int().min(0),
   warnings: z.array(z.string().min(1)).default([]),
+  lookupOutcome: barcodeLookupOutcomeSchema.nullable().optional(),
 });
 
 export type ReceiptScanReviewItem = z.infer<typeof receiptScanReviewItemSchema>;
 export type ReceiptScanReviewPayload = z.infer<typeof receiptScanReviewPayloadSchema>;
 export type ReceiptScanStartResponse = z.infer<typeof receiptScanStartResponseSchema>;
+export type BarcodeLookupOutcome = z.infer<typeof barcodeLookupOutcomeSchema>;

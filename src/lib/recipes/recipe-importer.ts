@@ -37,6 +37,7 @@ interface MultilingualRecipeIngredient {
 
 interface RecipeJson {
   external_key?: string;
+  image_key?: string | null;
   default_locale: string;
   category_key?: string;
   diet_tags?: string[];
@@ -98,6 +99,7 @@ interface PreparedRecipeImportRow {
   recipe: {
     slug: string;
     externalKey: string;
+    imageKey: string | null;
     categoryKey: string;
     defaultLocale: string;
     servings: number;
@@ -519,6 +521,7 @@ export function prepareRecipeImportFromObject(input: unknown): PreparedRecipeImp
       recipe: {
         slug,
         externalKey,
+        imageKey: recipe.image_key?.trim() || null,
         categoryKey,
         defaultLocale,
         servings: recipe.servings,
@@ -569,6 +572,7 @@ export async function persistPreparedRecipeImport(
         target: recipes.externalKey,
         set: {
           slug: row.recipe.slug,
+          imageKey: row.recipe.imageKey,
           categoryKey: row.recipe.categoryKey,
           defaultLocale: row.recipe.defaultLocale,
           servings: row.recipe.servings,

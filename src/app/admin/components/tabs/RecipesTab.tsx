@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { CheckCircle2, FileCode2, Loader2, Upload, WandSparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { CheckCircle2, FileCode2, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 const recipePayloadExample = `{
@@ -91,7 +93,73 @@ export default function RecipesTab() {
   const [jsonText, setJsonText] = useState(recipePayloadExample);
   const [isDryRunning, setIsDryRunning] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [uploadedImageKey, setUploadedImageKey] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<RecipeImportResponse | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (photoPreviewUrl) {
+        URL.revokeObjectURL(photoPreviewUrl);
+      }
+    };
+  }, [photoPreviewUrl]);
+
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const nextPreviewUrl = URL.createObjectURL(file);
+    if (photoPreviewUrl) {
+      URL.revokeObjectURL(photoPreviewUrl);
+    }
+
+    setSelectedPhotoFile(file);
+    setPhotoPreviewUrl(nextPreviewUrl);
+    setUploadedImageKey(null);
+    event.target.value = "";
+  };
+
+  const uploadSelectedPhoto = async () => {
+    if (!selectedPhotoFile) {
+      return null;
+    }
+
+    setIsUploadingPhoto(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedPhotoFile);
+
+      const response = await fetch("/api/admin/recipes/upload-photo", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = (await response.json()) as {
+        success?: boolean;
+        imageKey?: string;
+        error?: string;
+      };
+
+      if (!response.ok || !result.imageKey) {
+        throw new Error(result.error || "Recipe image upload failed.");
+      }
+
+      return result.imageKey;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Recipe image upload failed.";
+      toast.error(message);
+      throw error;
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
 
   const handleSubmit = async (dryRun: boolean) => {
     if (!jsonText.trim()) {
@@ -106,12 +174,23 @@ export default function RecipesTab() {
     }
 
     try {
+      let imageKeyForImport: string | null = null;
+
+      if (!dryRun && selectedPhotoFile) {
+        imageKeyForImport = await uploadSelectedPhoto();
+        setUploadedImageKey(imageKeyForImport);
+      }
+
       const response = await fetch("/api/admin/recipes/import", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ jsonText, dryRun }),
+        body: JSON.stringify({
+          jsonText,
+          dryRun,
+          uploadedImageKey: dryRun ? null : imageKeyForImport,
+        }),
       });
 
       const result = (await response.json()) as RecipeImportResponse;
@@ -121,6 +200,10 @@ export default function RecipesTab() {
       }
 
       setLastResult(result);
+      if (!dryRun && imageKeyForImport) {
+        setSelectedPhotoFile(null);
+        toast.success("Fotka receptu bola nahratá.");
+      }
       toast.success(
         dryRun
           ? `Dry run pripravil ${result.importedCount ?? 0} receptov.`
@@ -171,6 +254,56 @@ export default function RecipesTab() {
                 )}
                 Import to DB
               </Button>
+            </div>
+          </div>
+
+          <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-900">Recipe photo</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Voliteľné. Aktuálne sa aplikuje pri importe jedného receptu.
+                </p>
+              </div>
+              <div className="w-full sm:w-auto">
+                <Input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(event) => void handlePhotoChange(event)}
+                  disabled={isUploadingPhoto || isDryRunning || isImporting}
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+              {photoPreviewUrl ? (
+                <Image
+                  src={photoPreviewUrl}
+                  alt="Recipe preview"
+                  width={96}
+                  height={96}
+                  unoptimized
+                  className="h-24 w-24 rounded-xl object-cover ring-1 ring-slate-200"
+                />
+              ) : null}
+
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Upload status
+                </p>
+                <p className="text-sm text-slate-700">
+                  {isUploadingPhoto
+                    ? "Nahrávam fotku do cloud storage..."
+                    : selectedPhotoFile
+                      ? "Fotka je vybraná. Nahrá sa až pri Import to DB."
+                    : uploadedImageKey
+                      ? "Fotka je pripravená pre import receptu."
+                      : "Bez nahratej fotky."}
+                </p>
+                {uploadedImageKey ? (
+                  <p className="font-mono text-xs text-slate-500">{uploadedImageKey}</p>
+                ) : null}
+              </div>
             </div>
           </div>
 

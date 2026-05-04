@@ -24,6 +24,7 @@ export interface PantryBarcodeCatalogEntry {
   source: PantryBarcodeCatalogSource;
   warnings: string[];
   partial: boolean;
+  lookupOutcome: "matched";
 }
 
 function parseNumericValue(value: string | number | null): number | null {
@@ -66,6 +67,7 @@ export async function findPantryBarcodeCatalogEntry(
     source: record.source,
     warnings: [],
     partial: false,
+    lookupOutcome: "matched",
   };
 }
 

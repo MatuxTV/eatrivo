@@ -189,7 +189,7 @@ function formatFilterLabel(value: string): string {
 
 interface RecipesSectionProps {
   featuredRecipes: BasicHomeRecipePreview[];
-  recipeShuffleTime: number;
+  recipeShuffleTime?: number;
   recipeBrowseAvailableFilters: RecipeBrowseAvailableFilters;
   initialRecipeHasMore: boolean;
   initialRecipeTotalCount: number;
@@ -212,7 +212,7 @@ interface RecipesSectionProps {
 
 export default function RecipesSection({
   featuredRecipes,
-  recipeShuffleTime,
+  recipeShuffleTime = 0,
   recipeBrowseAvailableFilters,
   initialRecipeHasMore,
   initialRecipeTotalCount,
@@ -279,18 +279,25 @@ export default function RecipesSection({
 
   const enrichRecipes = useCallback(
     (recipes: BasicHomeRecipePreview[]): BasicHomeRecipePreview[] =>
-      recipes.map((recipe) => {
-        if (recipe.matchedIngredients !== undefined || recipe.missingIngredients !== undefined) {
-          return recipe;
+      recipes.flatMap((recipe) => {
+        if (!recipe) {
+          return [];
         }
-        const allIngredients = [...recipe.ingredientPreview, ...(recipe.missingIngredients ?? [])];
+
+        if (recipe.matchedIngredients !== undefined || recipe.missingIngredients !== undefined) {
+          return [recipe];
+        }
+
+        const ingredientPreview = recipe.ingredientPreview ?? [];
+        const allIngredients = [...ingredientPreview, ...(recipe.missingIngredients ?? [])];
         const matched: string[] = [];
         const missing: string[] = [];
         for (const ing of allIngredients) {
           if (pantryNameSet.has(ing.toLowerCase().trim())) matched.push(ing);
           else missing.push(ing);
         }
-        return { ...recipe, ingredientPreview: matched, missingIngredients: missing };
+
+        return [{ ...recipe, ingredientPreview: matched, missingIngredients: missing }];
       }),
     [pantryNameSet],
   );

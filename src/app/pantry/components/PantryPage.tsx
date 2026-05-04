@@ -450,6 +450,7 @@ export default function PantrySection({
   function handleOpenScanModal(entryMode: "receipt" | "barcode" = "receipt") {
     if (!hasScanAccess) {
       triggerHaptic("light");
+      setScanModalEntryMode(entryMode);
       setIsScanUpgradeModalOpen(true);
       return;
     }
@@ -813,7 +814,7 @@ export default function PantrySection({
           <MembershipUpgradeModal
             isOpen={isScanUpgradeModalOpen}
             onClose={() => setIsScanUpgradeModalOpen(false)}
-            hero={<ReceiptScanUpgradeHero />}
+            hero={<ReceiptScanUpgradeHero mode={scanModalEntryMode} />}
           />
           <ReceiptScanModal
             isOpen={isScanModalOpen}

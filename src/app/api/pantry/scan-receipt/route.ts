@@ -111,6 +111,7 @@ export async function POST(req: NextRequest) {
       partial: result.partial,
       retryCount: result.retryCount,
       warnings: result.completenessWarnings,
+      lookupOutcome: null,
     });
 
     return NextResponse.json(responsePayload);

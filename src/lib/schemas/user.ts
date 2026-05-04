@@ -93,6 +93,20 @@ export const userFoodPreferencesSchema = z.object({
   allergies: z.string().max(500, "Popis alergií je príliš dlhý").optional(),
 });
 
+export const userProfileNutritionSchema = userFoodPreferencesSchema.pick({
+  sex: true,
+  height: true,
+  weight: true,
+  activity_level: true,
+  goal: true,
+  diet_preferences: true,
+  likes: true,
+  dislikes: true,
+  allergies: true,
+});
+
+export type UserProfileNutrition = z.infer<typeof userProfileNutritionSchema>;
+
 // Complete onboarding schema (combines both steps)
 export const completeOnboardingSchema = z.object({
   profile: userProfileOnboardingSchema,
