@@ -312,6 +312,23 @@ function buildBasePrompt(
   previousRecipeSection: string,
   retryGuidance: string,
 ): string {
+  const profileSection = state.respectUserProfile
+    ? `
+Client food preferences:
+- Diet: ${diet}
+- Allergies: ${allergies}
+- Dislikes: ${dislikes}`
+    : `
+Client food preferences:
+- Ignore saved diet, allergy, and dislike preferences unless the user writes them explicitly in the brief.`;
+  const briefSection = state.userRecipeBrief?.trim()
+    ? `
+
+User brief:
+- ${state.userRecipeBrief.trim()}
+- Treat this brief as a hard preference unless it conflicts with safety or explicit constraints.`
+    : "";
+
   const pantryRules =
     state.mode === "preferences_only"
       ? `- Ignore pantry inventory completely in this mode.
@@ -380,13 +397,10 @@ Request preferences:
 - Meal type: ${formatMealType(state.requestedMealType)}
 - Meal prep friendly: ${state.requestedMealPrep ? "yes" : "no"}
 
-Client food preferences:
-- Diet: ${diet}
-- Allergies: ${allergies}
-- Dislikes: ${dislikes}
+${profileSection}
 
 Pantry items:
-${pantryContextSection}${pantrySummarySection}${referenceRecipesSection}${previousRecipeSection}${retryGuidance}
+${pantryContextSection}${pantrySummarySection}${briefSection}${referenceRecipesSection}${previousRecipeSection}${retryGuidance}
 `.trim();
 }
 

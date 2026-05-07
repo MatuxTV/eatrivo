@@ -27,8 +27,6 @@ import HomeSidebar from "../components/HomeSidebar";
 import HomeHeader from "../components/HomeHeader";
 import MobileNavigation from "../components/MobileNavigation";
 import AppShellViewport from "../components/AppShellViewport";
-import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
-import { NotificationBanner } from "@/components/pwa/NotificationBanner";
 
 /* ---- Extracted modules ---- */
 import { usePantrySync } from "@/hooks/usePantrySync";
@@ -478,7 +476,7 @@ export default function HomePage({
               transition={{ duration: 0.3 }}
               className="h-full"
             >
-              <ChatWithRivoPage />
+              <ChatWithRivoPage onCookRecipe={handleCookRecipe} />
             </motion.div>
           ) : primaryActiveSection === "kitchenCounter" ? (
             <motion.div

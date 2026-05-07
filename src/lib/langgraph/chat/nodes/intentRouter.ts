@@ -5,6 +5,35 @@ import { NUTRITION_KEYWORDS, INTENT_CLASSIFY_PROMPT } from "../constants";
 import type { Intent } from "../types";
 import { logger } from "@/lib/logger";
 
+const RECIPE_CREATION_PATTERNS = [
+  "vytvor recept",
+  "vymysli recept",
+  "navrhni recept",
+  "sprav recept",
+  "daj mi recept",
+  "das mi recept",
+  "daj recept",
+  "recept na",
+  "chcem recept na",
+  "prosím recept na",
+  "prosim recept na",
+  "create recipe",
+  "invent recipe",
+  "new recipe",
+  "vlastny recept",
+  "recept na mieru",
+];
+
+const RECIPE_TEXT_REPLY_PATTERNS = [
+  "postup",
+  "ako urobiť",
+  "ako urobit",
+  "ako pripraviť",
+  "ako pripravit",
+  "instructions",
+  "recipe steps",
+];
+
 const intentModel = new ChatGoogleGenerativeAI({
   model: "gemini-3-flash-preview",
   temperature: 0,
@@ -26,6 +55,14 @@ export async function intentRouter(
     return { intent: "general" };
   }
 
+  if (
+    RECIPE_CREATION_PATTERNS.some((pattern) => text.includes(pattern)) &&
+    !RECIPE_TEXT_REPLY_PATTERNS.some((pattern) => text.includes(pattern))
+  ) {
+    logger.info(`[intentRouter] Matched recipe creation rule.`);
+    return { intent: "recipe_creation" };
+  }
+
   // ② LLM klasifikácia (iba ak obsahuje kľúčové slovo)
   try {
     const prompt = INTENT_CLASSIFY_PROMPT.replace("{{message}}", text);
@@ -39,6 +76,7 @@ export async function intentRouter(
       "macros",
       "pantry",
       "recipe",
+      "recipe_creation",
       "general",
     ];
     const intent: Intent = validIntents.includes(raw as Intent)

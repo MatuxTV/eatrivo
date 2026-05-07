@@ -17,6 +17,7 @@ export interface ChatHistoryMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  metadata: unknown;
   createdAt: string;
 }
 
@@ -83,6 +84,7 @@ export async function getOwnedChatMessages(
       id: chatMessages.id,
       role: chatMessages.role,
       content: chatMessages.content,
+      metadata: chatMessages.metadata,
       createdAt: chatMessages.createdAt,
     })
     .from(chatMessages)
@@ -100,6 +102,7 @@ export async function getOwnedChatMessages(
     id: row.id,
     role: row.role,
     content: row.content,
+    metadata: row.metadata ?? null,
     createdAt: row.createdAt.toISOString(),
   }));
 }
@@ -114,6 +117,7 @@ export async function getRecentOwnedChatMessages(
       id: chatMessages.id,
       role: chatMessages.role,
       content: chatMessages.content,
+      metadata: chatMessages.metadata,
       createdAt: chatMessages.createdAt,
     })
     .from(chatMessages)
@@ -134,6 +138,7 @@ export async function getRecentOwnedChatMessages(
       id: row.id,
       role: row.role,
       content: row.content,
+      metadata: row.metadata ?? null,
       createdAt: row.createdAt.toISOString(),
     }));
 }

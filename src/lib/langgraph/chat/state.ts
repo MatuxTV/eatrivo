@@ -9,6 +9,7 @@ import type {
   MealPlanData,
   PantryItem,
 } from "./types";
+import type { ChatAssistantMessageMetadata } from "@/lib/chat/message-metadata";
 
 export const ChatState = Annotation.Root({
   // Konverzačná história — append reducer
@@ -57,6 +58,11 @@ export const ChatState = Annotation.Root({
 
   // Error handling
   error: Annotation<string | null>({
+    value: (x, y) => (y !== undefined ? y : x),
+    default: () => null,
+  }),
+
+  assistantMessageMetadata: Annotation<ChatAssistantMessageMetadata | null>({
     value: (x, y) => (y !== undefined ? y : x),
     default: () => null,
   }),

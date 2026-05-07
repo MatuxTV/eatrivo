@@ -25,11 +25,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import RecipeCreationFormCard from "./components/RecipeCreationFormCard";
+import RecipeCreationResultCard from "./components/RecipeCreationResultCard";
+import {
+  isChatAssistantMessageMetadata,
+} from "@/lib/chat/message-metadata";
+import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 
 interface Message {
   id?: string;
   role: "user" | "assistant";
   content: string;
+  metadata?: unknown;
 }
 
 interface ChatSessionSummary {
@@ -54,6 +61,7 @@ interface ChatSessionDetailResponse {
     id: string;
     role: "user" | "assistant";
     content: string;
+    metadata: unknown;
     createdAt: string;
   }>;
 }
@@ -180,7 +188,13 @@ function ChatSessionList({
   );
 }
 
-export default function ChatWithRivoPage() {
+interface ChatWithRivoPageProps {
+  onCookRecipe?: (recipe: BasicHomeRecipePreview) => void;
+}
+
+export default function ChatWithRivoPage({
+  onCookRecipe,
+}: ChatWithRivoPageProps = {}) {
   const t = useTranslations("home.comingSoon.chatWithRivo");
   const locale = useLocale();
   useTutorialSurface("chatWithRivo");
@@ -249,6 +263,7 @@ export default function ChatWithRivoPage() {
           id: message.id,
           role: message.role,
           content: message.content,
+          metadata: message.metadata,
         })),
       );
       setActiveSessionId(data.session.id);
@@ -498,6 +513,7 @@ export default function ChatWithRivoPage() {
       id: crypto.randomUUID(),
       role: "user",
       content: textToSend,
+        metadata: null,
     };
     const assistantMessageId = crypto.randomUUID();
 
@@ -564,7 +580,7 @@ export default function ChatWithRivoPage() {
 
       setMessages((prev) => [
         ...prev,
-        { id: assistantMessageId, role: "assistant", content: "" },
+        { id: assistantMessageId, role: "assistant", content: "", metadata: null },
       ]);
 
       while (true) {
@@ -578,9 +594,14 @@ export default function ChatWithRivoPage() {
             id: assistantMessageId,
             role: "assistant",
             content: accumulated,
+            metadata: null,
           };
           return updated;
         });
+      }
+
+      if (nextSessionId) {
+        await loadChatSession(nextSessionId);
       }
     } catch {
       setMessages((prev) => {
@@ -591,6 +612,7 @@ export default function ChatWithRivoPage() {
             id: assistantMessageId,
             role: "assistant",
             content: "Ups, Rivo práve odpočíva... Skús to znova 😴",
+            metadata: null,
           };
           return updated;
         }
@@ -600,6 +622,7 @@ export default function ChatWithRivoPage() {
             id: assistantMessageId,
             role: "assistant",
             content: "Ups, Rivo práve odpočíva... Skús to znova 😴",
+            metadata: null,
           },
         ];
       });
@@ -619,6 +642,7 @@ export default function ChatWithRivoPage() {
     fetchChatSessions,
     input,
     isStreaming,
+    loadChatSession,
     t,
   ]);
 
@@ -839,10 +863,13 @@ export default function ChatWithRivoPage() {
                   initial={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(4px)" }}
                   animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
                   transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  className={msg.role === "assistant"
+                    ? "grid w-full grid-cols-[2rem_minmax(0,1fr)] items-end gap-3"
+                    : "grid w-full grid-cols-[minmax(0,1fr)]"
+                  }
                 >
                   {msg.role === "assistant" && (
-                    <div className="mr-3 mb-1 flex h-8 w-8 shrink-0 self-end items-center justify-center rounded-xl border border-eatrivo-purple/20 bg-white shadow-[0_2px_8px_-2px_rgba(123,63,242,0.2)]">
+                    <div className="mb-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-eatrivo-purple/20 bg-white shadow-[0_2px_8px_-2px_rgba(123,63,242,0.2)]">
                       <Image
                         src="/rivo/RIVO2-remove.png"
                         alt="Rivo Avatar"
@@ -852,34 +879,107 @@ export default function ChatWithRivoPage() {
                       />
                     </div>
                   )}
-                  <div className="flex max-w-[88%] flex-col gap-1.5 md:max-w-[80%]">
-                    <div
-                      className={`whitespace-pre-wrap px-5 py-3.5 text-[15px] leading-relaxed ${
-                        msg.role === "user"
-                          ? "rounded-[24px] rounded-br-[8px] bg-gradient-to-tr from-eatrivo-purple to-eatrivo-pink text-white shadow-md shadow-eatrivo-purple/30"
-                          : "rounded-[24px] rounded-bl-[8px] border border-eatrivo-purple/10 bg-white text-eatrivo-black-primary shadow-sm shadow-eatrivo-purple/5"
-                      }`}
-                    >
-                      {msg.content ||
-                        (isStreaming && i === messages.length - 1 ? (
-                          <span className="inline-flex items-center gap-1">
-                            <span
-                              className="h-1.5 w-1.5 animate-bounce rounded-full bg-foreground/40"
-                              style={{ animationDelay: "0ms" }}
-                            ></span>
-                            <span
-                              className="h-1.5 w-1.5 animate-bounce rounded-full bg-foreground/40"
-                              style={{ animationDelay: "150ms" }}
-                            ></span>
-                            <span
-                              className="h-1.5 w-1.5 animate-bounce rounded-full bg-foreground/40"
-                              style={{ animationDelay: "300ms" }}
-                            ></span>
-                          </span>
-                        ) : (
-                          ""
-                        ))}
-                    </div>
+                  <div
+                    className={msg.role === "assistant"
+                      ? "flex min-w-0 w-full max-w-[20.5rem] flex-col gap-1.5 sm:max-w-[22rem] md:max-w-[32rem]"
+                      : "ml-auto flex min-w-0 w-full max-w-[18.5rem] flex-col gap-1.5 sm:max-w-[22rem] md:max-w-[32rem]"
+                    }
+                  >
+                    {(() => {
+                      const payload =
+                        msg.role === "assistant" &&
+                        msg.metadata &&
+                        typeof msg.metadata === "object" &&
+                        msg.metadata !== null &&
+                        "payload" in msg.metadata
+                          ? (msg.metadata as { payload?: unknown }).payload
+                          : msg.metadata;
+                      const hasRichAssistantCard =
+                        msg.role === "assistant" &&
+                        isChatAssistantMessageMetadata(payload) &&
+                        (payload.type === "recipe_creation_form" ||
+                          payload.type === "recipe_creation_result");
+
+                      return !hasRichAssistantCard ? (
+                        <div
+                          className={`min-w-0 w-full max-w-full overflow-hidden whitespace-pre-wrap break-words px-5 py-3.5 text-[15px] leading-relaxed ${
+                            msg.role === "user"
+                              ? "rounded-[24px] rounded-br-[8px] bg-gradient-to-tr from-eatrivo-purple to-eatrivo-pink text-white shadow-md shadow-eatrivo-purple/30"
+                              : "rounded-[24px] rounded-bl-[8px] border border-eatrivo-purple/10 bg-white text-eatrivo-black-primary shadow-sm shadow-eatrivo-purple/5"
+                          }`}
+                        >
+                          {msg.content ||
+                            (isStreaming && i === messages.length - 1 ? (
+                              <span className="inline-flex items-center gap-1">
+                                <span
+                                  className="h-1.5 w-1.5 animate-bounce rounded-full bg-foreground/40"
+                                  style={{ animationDelay: "0ms" }}
+                                ></span>
+                                <span
+                                  className="h-1.5 w-1.5 animate-bounce rounded-full bg-foreground/40"
+                                  style={{ animationDelay: "150ms" }}
+                                ></span>
+                                <span
+                                  className="h-1.5 w-1.5 animate-bounce rounded-full bg-foreground/40"
+                                  style={{ animationDelay: "300ms" }}
+                                ></span>
+                              </span>
+                            ) : (
+                              ""
+                            ))}
+                        </div>
+                      ) : null;
+                    })()}
+                    {msg.role === "assistant" && activeSessionId && (() => {
+                      const payload =
+                        msg.metadata &&
+                        typeof msg.metadata === "object" &&
+                        msg.metadata !== null &&
+                        "payload" in msg.metadata
+                          ? (msg.metadata as { payload?: unknown }).payload
+                          : msg.metadata;
+
+                      if (!isChatAssistantMessageMetadata(payload)) {
+                        return null;
+                      }
+
+                      if (payload.type === "recipe_creation_form") {
+                        return (
+                          <RecipeCreationFormCard
+                            messageId={msg.id ?? ""}
+                            metadata={payload}
+                            sessionId={activeSessionId}
+                            disabled={isStreaming}
+                            onCreated={(message) => {
+                              setMessages((prev) =>
+                                prev.map((entry) =>
+                                  entry.id === message.id
+                                    ? {
+                                        id: message.id,
+                                        role: message.role,
+                                        content: message.content,
+                                        metadata: message.metadata,
+                                      }
+                                    : entry,
+                                ),
+                              );
+                            }}
+                          />
+                        );
+                      }
+
+                      if (payload.type === "recipe_creation_result") {
+                        return (
+                          <RecipeCreationResultCard
+                            metadata={payload}
+                            message={msg.content}
+                            onCookRecipe={onCookRecipe}
+                          />
+                        );
+                      }
+
+                      return null;
+                    })()}
                     {msg.role === "assistant" &&
                       msg.content &&
                       i === messages.length - 1 &&

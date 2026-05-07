@@ -16,6 +16,7 @@ import { buildPrompt } from "./nodes/buildPrompt";
 import { rivoLlm } from "./nodes/rivoLlm";
 import { saveAssistantMessage } from "./nodes/saveAssistantMessage";
 import { errorHandler } from "./nodes/errorHandler";
+import { recipeCreationEntry } from "./nodes/recipeCreationEntry";
 
 import type { Intent } from "./types";
 
@@ -30,7 +31,8 @@ function routeByIntent(state: typeof ChatState.State): string {
   switch (state.intent as Intent) {
     case "meal_swap":
     case "recipe":
-      return "fetch_plan";
+    case "recipe_creation":
+      return "recipe_creation_entry";
     case "macros":
       return "fetch_macros";
     case "pantry":
@@ -55,6 +57,7 @@ export function buildChatGraph() {
     .addNode("fetch_plan", fetchPlan as any)
     .addNode("fetch_macros", fetchMacros as any)
     .addNode("fetch_pantry", fetchPantry as any)
+    .addNode("recipe_creation_entry", recipeCreationEntry as any)
     .addNode("build_prompt", buildPrompt as any)
     .addNode("rivo_llm", rivoLlm as any)
     .addNode("save_assistant_message", saveAssistantMessage as any)
@@ -74,6 +77,7 @@ export function buildChatGraph() {
       fetch_plan: "fetch_plan",
       fetch_macros: "fetch_macros",
       fetch_pantry: "fetch_pantry",
+      recipe_creation_entry: "recipe_creation_entry",
       build_prompt: "build_prompt",
       error_handler: "error_handler",
     })
@@ -81,6 +85,7 @@ export function buildChatGraph() {
     .addEdge("fetch_plan", "build_prompt")
     .addEdge("fetch_macros", "build_prompt")
     .addEdge("fetch_pantry", "build_prompt")
+    .addEdge("recipe_creation_entry", "save_assistant_message")
     .addEdge("build_prompt", "rivo_llm")
 
     .addConditionalEdges("rivo_llm", routeAfterLlm, {

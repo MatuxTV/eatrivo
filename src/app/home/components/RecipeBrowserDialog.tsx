@@ -52,6 +52,8 @@ interface RecipeBrowserDialogProps {
   onOpenChange: (open: boolean) => void;
   recipes: BasicHomeRecipePreview[];
   initialIndex?: number;
+  bookmarkRecipeId?: string | null;
+  onEnsureBookmarkRecipeId?: () => Promise<string>;
   onAddToShoppingList?: (
     ingredientName: string,
     quantity: string | null,
@@ -73,6 +75,8 @@ export default function RecipeBrowserDialog({
   onOpenChange,
   recipes,
   initialIndex = 0,
+  bookmarkRecipeId,
+  onEnsureBookmarkRecipeId,
   onAddToShoppingList,
   onCookRecipe,
 }: RecipeBrowserDialogProps) {
@@ -99,18 +103,24 @@ export default function RecipeBrowserDialog({
   }, [open]);
 
   const recipe = recipes[currentIndex] ?? null;
+  const effectiveBookmarkRecipeId =
+    bookmarkRecipeId !== undefined
+      ? bookmarkRecipeId
+      : recipe?.id ?? null;
   const hasNext = currentIndex < recipes.length - 1;
   const hasPrev = currentIndex > 0;
 
   useEffect(() => {
-    if (!open || !recipe?.id) {
+    if (!open || !effectiveBookmarkRecipeId) {
+      setIsBookmarked(false);
+      setIsBookmarkPending(false);
       return;
     }
 
     let isCancelled = false;
     setIsBookmarkPending(true);
 
-    void fetch(`/api/recipes/${recipe.id}/bookmark`, {
+    void fetch(`/api/recipes/${effectiveBookmarkRecipeId}/bookmark`, {
       method: "GET",
       cache: "no-store",
     })
@@ -146,7 +156,7 @@ export default function RecipeBrowserDialog({
     return () => {
       isCancelled = true;
     };
-  }, [open, recipe?.id]);
+  }, [effectiveBookmarkRecipeId, open]);
 
   const goNext = useCallback(() => {
     if (!hasNext) return;
@@ -202,7 +212,7 @@ export default function RecipeBrowserDialog({
   }, [onCookRecipe, recipe]);
 
   const handleToggleBookmark = useCallback(async () => {
-    if (!recipe?.id || isBookmarkPending) {
+    if (isBookmarkPending) {
       return;
     }
 
@@ -210,7 +220,17 @@ export default function RecipeBrowserDialog({
     setIsBookmarkPending(true);
 
     try {
-      const response = await fetch(`/api/recipes/${recipe.id}/bookmark`, {
+      const resolvedRecipeId =
+        effectiveBookmarkRecipeId ??
+        (onEnsureBookmarkRecipeId
+          ? await onEnsureBookmarkRecipeId()
+          : null);
+
+      if (!resolvedRecipeId) {
+        throw new Error("Bookmark recipe id missing.");
+      }
+
+      const response = await fetch(`/api/recipes/${resolvedRecipeId}/bookmark`, {
         method: previousBookmarked ? "DELETE" : "POST",
       });
 
@@ -237,7 +257,7 @@ export default function RecipeBrowserDialog({
     } finally {
       setIsBookmarkPending(false);
     }
-  }, [isBookmarked, isBookmarkPending, recipe?.id, t]);
+  }, [effectiveBookmarkRecipeId, isBookmarked, isBookmarkPending, onEnsureBookmarkRecipeId, t]);
 
   if (!recipe) return null;
 

@@ -46,6 +46,14 @@ interface BarcodeDetectorLike {
   detect(source: ImageBitmapSource): Promise<DetectedBarcodeLike[]>;
 }
 
+interface ContinuousBarcodeReaderLike {
+  decodeFromVideoElementContinuously(
+    source: HTMLVideoElement,
+    callback: (result: { getText(): string } | null, error?: unknown) => void,
+  ): Promise<void> | void;
+  reset(): void;
+}
+
 interface BarcodeDetectorConstructorLike {
   new (options?: { formats?: string[] }): BarcodeDetectorLike;
   getSupportedFormats?: () => Promise<string[]>;
@@ -234,6 +242,7 @@ export default function ReceiptScanModal({
   const barcodeVideoRef = useRef<HTMLVideoElement | null>(null);
   const barcodeStreamRef = useRef<MediaStream | null>(null);
   const barcodeDetectorRef = useRef<BarcodeDetectorLike | null>(null);
+  const barcodeReaderRef = useRef<ContinuousBarcodeReaderLike | null>(null);
   const barcodeScanTimeoutRef = useRef<number | null>(null);
   const barcodeLookupInFlightRef = useRef(false);
   const [phase, setPhase] = useState<ScanPhase>("idle");
@@ -294,6 +303,8 @@ export default function ReceiptScanModal({
     }
 
     barcodeDetectorRef.current = null;
+    barcodeReaderRef.current?.reset();
+    barcodeReaderRef.current = null;
   }, []);
 
   function resetState() {
@@ -450,7 +461,7 @@ export default function ReceiptScanModal({
 
     async function startBarcodeScanner() {
       const BarcodeDetectorConstructor = getBarcodeDetectorConstructor();
-      if (!BarcodeDetectorConstructor || !navigator.mediaDevices?.getUserMedia) {
+      if (!navigator.mediaDevices?.getUserMedia) {
         setBarcodeScannerState("unsupported");
         setBarcodeScannerMessage(t("barcode_scanner_unsupported"));
         return;
@@ -471,20 +482,6 @@ export default function ReceiptScanModal({
       setLastDetectedBarcode(null);
 
       try {
-        const supportedFormats =
-          typeof BarcodeDetectorConstructor.getSupportedFormats === "function"
-            ? await BarcodeDetectorConstructor.getSupportedFormats()
-            : BARCODE_DETECTOR_FORMATS;
-        const formats = BARCODE_DETECTOR_FORMATS.filter((format) =>
-          supportedFormats.includes(format),
-        );
-
-        if (formats.length === 0) {
-          setBarcodeScannerState("unsupported");
-          setBarcodeScannerMessage(t("barcode_scanner_unsupported"));
-          return;
-        }
-
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: "environment" } },
           audio: false,
@@ -510,48 +507,108 @@ export default function ReceiptScanModal({
         video.setAttribute("playsinline", "true");
         await video.play().catch(() => undefined);
 
-        barcodeDetectorRef.current = new BarcodeDetectorConstructor({ formats });
+        const supportedFormats = BarcodeDetectorConstructor
+          ? typeof BarcodeDetectorConstructor.getSupportedFormats === "function"
+            ? await BarcodeDetectorConstructor.getSupportedFormats()
+            : BARCODE_DETECTOR_FORMATS
+          : [];
+        const formats = BARCODE_DETECTOR_FORMATS.filter((format) =>
+          supportedFormats.includes(format),
+        );
+
+        if (BarcodeDetectorConstructor && formats.length > 0) {
+          barcodeDetectorRef.current = new BarcodeDetectorConstructor({ formats });
+          setBarcodeScannerState("ready");
+
+          const scanNextFrame = async () => {
+            if (cancelled || barcodeLookupInFlightRef.current) {
+              return;
+            }
+
+            const activeVideo = barcodeVideoRef.current;
+            const detector = barcodeDetectorRef.current;
+            if (!activeVideo || !detector) {
+              return;
+            }
+
+            try {
+              if (activeVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+                const detections = await detector.detect(activeVideo);
+                const barcode = detections
+                  .find(
+                    (candidate) =>
+                      typeof candidate.rawValue === "string" && candidate.rawValue.trim().length > 0,
+                  )
+                  ?.rawValue?.trim();
+
+                if (barcode) {
+                  void handleBarcodeLookup(barcode);
+                  return;
+                }
+              }
+            } catch (error) {
+              console.error("[ReceiptScanModal] barcode detection failed", error);
+              setBarcodeScannerState("error");
+              setBarcodeScannerMessage(t("barcode_scanner_detect_error"));
+              return;
+            }
+
+            barcodeScanTimeoutRef.current = window.setTimeout(() => {
+              void scanNextFrame();
+            }, 350);
+          };
+
+          void scanNextFrame();
+          return;
+        }
+
+        const {
+          BrowserMultiFormatReader,
+          BarcodeFormat,
+          DecodeHintType,
+        } = await import("@zxing/library");
+
+        const hints = new Map();
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+          BarcodeFormat.EAN_13,
+          BarcodeFormat.EAN_8,
+          BarcodeFormat.UPC_A,
+          BarcodeFormat.UPC_E,
+          BarcodeFormat.CODE_128,
+        ]);
+        hints.set(DecodeHintType.TRY_HARDER, true);
+
+        const reader = new BrowserMultiFormatReader(hints) as ContinuousBarcodeReaderLike;
+        barcodeReaderRef.current = reader;
         setBarcodeScannerState("ready");
 
-        const scanNextFrame = async () => {
+        reader.decodeFromVideoElementContinuously(video, (result, error) => {
           if (cancelled || barcodeLookupInFlightRef.current) {
             return;
           }
 
-          const activeVideo = barcodeVideoRef.current;
-          const detector = barcodeDetectorRef.current;
-          if (!activeVideo || !detector) {
+          const barcode = result?.getText()?.trim();
+          if (barcode) {
+            void handleBarcodeLookup(barcode);
             return;
           }
 
-          try {
-            if (activeVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-              const detections = await detector.detect(activeVideo);
-              const barcode = detections
-                .find(
-                  (candidate) =>
-                    typeof candidate.rawValue === "string" && candidate.rawValue.trim().length > 0,
-                )
-                ?.rawValue?.trim();
+          const errorName =
+            error instanceof Error || error instanceof DOMException
+              ? error.name
+              : null;
 
-              if (barcode) {
-                void handleBarcodeLookup(barcode);
-                return;
-              }
-            }
-          } catch (error) {
-            console.error("[ReceiptScanModal] barcode detection failed", error);
+          if (
+            error &&
+            errorName !== "NotFoundException" &&
+            errorName !== "ChecksumException" &&
+            errorName !== "FormatException"
+          ) {
+            console.error("[ReceiptScanModal] zxing live detection failed", error);
             setBarcodeScannerState("error");
             setBarcodeScannerMessage(t("barcode_scanner_detect_error"));
-            return;
           }
-
-          barcodeScanTimeoutRef.current = window.setTimeout(() => {
-            void scanNextFrame();
-          }, 350);
-        };
-
-        void scanNextFrame();
+        });
       } catch (error) {
         const errorKey = getBarcodeCameraErrorKey(error);
         console.error("[ReceiptScanModal] barcode camera failed", error);
