@@ -586,7 +586,7 @@ export default function PantrySection({
                     <Receipt className="h-5 w-5" />
                   </Button>
 
-                  <Button
+                  {/* <Button
                     type="button"
                     onClick={() => handleOpenScanModal("barcode")}
                     aria-label={t("scan_mode_barcode")}
@@ -599,7 +599,7 @@ export default function PantrySection({
                     )}
                   >
                     <ScanBarcode className="h-5 w-5" />
-                  </Button>
+                  </Button> */}
                 </div>    
               </div>
             </div>

@@ -66,7 +66,530 @@ interface ReviewFormItem extends EditablePantryFormItem {
   needsReview: boolean;
 }
 
+interface BarcodeCropRegion {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface BarcodeImageCandidate {
+  label: string;
+  source: string;
+}
+
 const BARCODE_DETECTOR_FORMATS = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"];
+const BARCODE_IMAGE_MAX_DIMENSION = 1600;
+const BARCODE_LOCALIZATION_MAX_DIMENSION = 420;
+
+function logBarcodeDebug(event: string, metadata?: Record<string, unknown>) {
+  console.warn("[ReceiptScanModal][barcode]", event, metadata ?? {});
+}
+
+function clampBarcodeCanvasSize(width: number, height: number) {
+  const longestSide = Math.max(width, height);
+  if (longestSide <= BARCODE_IMAGE_MAX_DIMENSION) {
+    return { width, height };
+  }
+
+  const scale = BARCODE_IMAGE_MAX_DIMENSION / longestSide;
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  };
+}
+
+function clampCropRegion(
+  image: HTMLImageElement,
+  region: BarcodeCropRegion,
+): BarcodeCropRegion {
+  const x = Math.max(0, Math.min(image.naturalWidth - 1, region.x));
+  const y = Math.max(0, Math.min(image.naturalHeight - 1, region.y));
+  const maxWidth = image.naturalWidth - x;
+  const maxHeight = image.naturalHeight - y;
+
+  return {
+    x,
+    y,
+    width: Math.max(1, Math.min(maxWidth, region.width)),
+    height: Math.max(1, Math.min(maxHeight, region.height)),
+  };
+}
+
+function localizeBarcodeRegion(image: HTMLImageElement): BarcodeCropRegion | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const analysisSize = clampBarcodeCanvasSize(
+    Math.min(image.naturalWidth, BARCODE_LOCALIZATION_MAX_DIMENSION),
+    Math.min(image.naturalHeight, BARCODE_LOCALIZATION_MAX_DIMENSION),
+  );
+  const canvas = document.createElement("canvas");
+  canvas.width = analysisSize.width;
+  canvas.height = analysisSize.height;
+
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) {
+    return null;
+  }
+
+  context.drawImage(image, 0, 0, analysisSize.width, analysisSize.height);
+  const imageData = context.getImageData(0, 0, analysisSize.width, analysisSize.height);
+  const pixels = imageData.data;
+  const grayscale = new Float32Array(analysisSize.width * analysisSize.height);
+
+  for (let y = 0; y < analysisSize.height; y += 1) {
+    for (let x = 0; x < analysisSize.width; x += 1) {
+      const offset = (y * analysisSize.width + x) * 4;
+      grayscale[y * analysisSize.width + x] =
+        pixels[offset] * 0.299 +
+        pixels[offset + 1] * 0.587 +
+        pixels[offset + 2] * 0.114;
+    }
+  }
+
+  const rowEnergy = new Float32Array(analysisSize.height);
+  for (let y = 0; y < analysisSize.height; y += 1) {
+    let energy = 0;
+    for (let x = 1; x < analysisSize.width; x += 1) {
+      const current = grayscale[y * analysisSize.width + x];
+      const previous = grayscale[y * analysisSize.width + x - 1];
+      energy += Math.abs(current - previous);
+    }
+
+    const lowerBias = 1 + (y / Math.max(1, analysisSize.height - 1)) * 0.45;
+    rowEnergy[y] = energy * lowerBias;
+  }
+
+  const candidateBandHeights = [0.18, 0.24, 0.32].map((ratio) =>
+    Math.max(18, Math.round(analysisSize.height * ratio)),
+  );
+  let bestBandScore = -1;
+  let bestBandY = 0;
+  let bestBandHeight = candidateBandHeights[0] ?? analysisSize.height;
+
+  for (const bandHeight of candidateBandHeights) {
+    let runningScore = 0;
+    for (let y = 0; y < bandHeight; y += 1) {
+      runningScore += rowEnergy[y] ?? 0;
+    }
+
+    for (let startY = 0; startY <= analysisSize.height - bandHeight; startY += 2) {
+      if (startY > 0) {
+        runningScore += rowEnergy[startY + bandHeight - 1] ?? 0;
+        runningScore -= rowEnergy[startY - 1] ?? 0;
+      }
+
+      if (runningScore > bestBandScore) {
+        bestBandScore = runningScore;
+        bestBandY = startY;
+        bestBandHeight = bandHeight;
+      }
+    }
+  }
+
+  if (bestBandScore <= 0) {
+    logBarcodeDebug("localize-region:no-row-band", {
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+    });
+    return null;
+  }
+
+  const columnEnergy = new Float32Array(analysisSize.width);
+  for (let x = 1; x < analysisSize.width; x += 1) {
+    let energy = 0;
+    for (let y = bestBandY; y < bestBandY + bestBandHeight; y += 1) {
+      const current = grayscale[y * analysisSize.width + x];
+      const previous = grayscale[y * analysisSize.width + x - 1];
+      energy += Math.abs(current - previous);
+    }
+    columnEnergy[x] = energy;
+  }
+
+  const candidateBandWidths = [0.42, 0.58, 0.74].map((ratio) =>
+    Math.max(40, Math.round(analysisSize.width * ratio)),
+  );
+  let bestColumnScore = -1;
+  let bestBandX = 0;
+  let bestBandWidth = candidateBandWidths[0] ?? analysisSize.width;
+
+  for (const bandWidth of candidateBandWidths) {
+    let runningScore = 0;
+    for (let x = 0; x < bandWidth; x += 1) {
+      runningScore += columnEnergy[x] ?? 0;
+    }
+
+    for (let startX = 0; startX <= analysisSize.width - bandWidth; startX += 2) {
+      if (startX > 0) {
+        runningScore += columnEnergy[startX + bandWidth - 1] ?? 0;
+        runningScore -= columnEnergy[startX - 1] ?? 0;
+      }
+
+      if (runningScore > bestColumnScore) {
+        bestColumnScore = runningScore;
+        bestBandX = startX;
+        bestBandWidth = bandWidth;
+      }
+    }
+  }
+
+  if (bestColumnScore <= 0) {
+    logBarcodeDebug("localize-region:no-column-band", {
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+      bestBandY,
+      bestBandHeight,
+    });
+    return null;
+  }
+
+  const xScale = image.naturalWidth / analysisSize.width;
+  const yScale = image.naturalHeight / analysisSize.height;
+  const horizontalPadding = Math.round(bestBandWidth * 0.08 * xScale);
+  const verticalPadding = Math.round(bestBandHeight * 0.12 * yScale);
+
+  const region = clampCropRegion(image, {
+    x: Math.round(bestBandX * xScale) - horizontalPadding,
+    y: Math.round(bestBandY * yScale) - verticalPadding,
+    width: Math.round(bestBandWidth * xScale) + horizontalPadding * 2,
+    height: Math.round(bestBandHeight * yScale) + verticalPadding * 2,
+  });
+
+  logBarcodeDebug("localize-region:success", {
+    imageWidth: image.naturalWidth,
+    imageHeight: image.naturalHeight,
+    analysisWidth: analysisSize.width,
+    analysisHeight: analysisSize.height,
+    bestBandScore,
+    bestColumnScore,
+    region,
+  });
+
+  return region;
+}
+
+function createBarcodeVariantSource(
+  image: HTMLImageElement,
+  options: {
+    grayscale?: boolean;
+    threshold?: number;
+    contrastBoost?: number;
+    crop?: { x: number; y: number; width: number; height: number };
+    scaleMultiplier?: number;
+    rotateDegrees?: number;
+    stretchX?: number;
+    stretchY?: number;
+  } = {},
+): string | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const cropX = options.crop?.x ?? 0;
+  const cropY = options.crop?.y ?? 0;
+  const cropWidth = options.crop?.width ?? image.naturalWidth;
+  const cropHeight = options.crop?.height ?? image.naturalHeight;
+  const scaleMultiplier = options.scaleMultiplier ?? 1;
+  const stretchX = options.stretchX ?? 1;
+  const stretchY = options.stretchY ?? 1;
+  const rotationRadians = ((options.rotateDegrees ?? 0) * Math.PI) / 180;
+  const baseTargetSize = clampBarcodeCanvasSize(
+    cropWidth * scaleMultiplier * stretchX,
+    cropHeight * scaleMultiplier * stretchY,
+  );
+  const targetSize = rotationRadians === 0
+    ? baseTargetSize
+    : clampBarcodeCanvasSize(
+        Math.abs(baseTargetSize.width * Math.cos(rotationRadians)) +
+          Math.abs(baseTargetSize.height * Math.sin(rotationRadians)),
+        Math.abs(baseTargetSize.width * Math.sin(rotationRadians)) +
+          Math.abs(baseTargetSize.height * Math.cos(rotationRadians)),
+      );
+
+  const canvas = document.createElement("canvas");
+  canvas.width = targetSize.width;
+  canvas.height = targetSize.height;
+
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) {
+    return null;
+  }
+
+  context.save();
+  context.translate(targetSize.width / 2, targetSize.height / 2);
+  if (rotationRadians !== 0) {
+    context.rotate(rotationRadians);
+  }
+  context.drawImage(
+    image,
+    cropX,
+    cropY,
+    cropWidth,
+    cropHeight,
+    -baseTargetSize.width / 2,
+    -baseTargetSize.height / 2,
+    baseTargetSize.width,
+    baseTargetSize.height,
+  );
+  context.restore();
+
+  if (options.grayscale || typeof options.threshold === "number") {
+    const imageData = context.getImageData(0, 0, targetSize.width, targetSize.height);
+    const pixels = imageData.data;
+    const contrast = options.contrastBoost ?? 0;
+    const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast || 1));
+
+    for (let index = 0; index < pixels.length; index += 4) {
+      const luminance =
+        pixels[index] * 0.299 +
+        pixels[index + 1] * 0.587 +
+        pixels[index + 2] * 0.114;
+
+      let nextValue = luminance;
+      if (contrast !== 0) {
+        nextValue = contrastFactor * (luminance - 128) + 128;
+      }
+
+      if (typeof options.threshold === "number") {
+        nextValue = nextValue >= options.threshold ? 255 : 0;
+      }
+
+      const normalizedValue = Math.max(0, Math.min(255, Math.round(nextValue)));
+      pixels[index] = normalizedValue;
+      pixels[index + 1] = normalizedValue;
+      pixels[index + 2] = normalizedValue;
+    }
+
+    context.putImageData(imageData, 0, 0);
+  }
+
+  return canvas.toDataURL("image/png");
+}
+
+function createBarcodeImageCandidateSources(image: HTMLImageElement): BarcodeImageCandidate[] {
+  const localizedRegion = localizeBarcodeRegion(image);
+  const centerCropWidth = Math.round(image.naturalWidth * 0.84);
+  const centerCropHeight = Math.round(image.naturalHeight * 0.45);
+  const centerCropX = Math.max(0, Math.round((image.naturalWidth - centerCropWidth) / 2));
+  const centerCropY = Math.max(0, Math.round((image.naturalHeight - centerCropHeight) / 2));
+  const bottomWideWidth = Math.round(image.naturalWidth * 0.92);
+  const bottomWideHeight = Math.round(image.naturalHeight * 0.34);
+  const bottomWideX = Math.max(0, Math.round((image.naturalWidth - bottomWideWidth) / 2));
+  const bottomWideY = Math.max(0, image.naturalHeight - bottomWideHeight - Math.round(image.naturalHeight * 0.03));
+  const bottomTightWidth = Math.round(image.naturalWidth * 0.82);
+  const bottomTightHeight = Math.round(image.naturalHeight * 0.24);
+  const bottomTightX = Math.max(0, Math.round((image.naturalWidth - bottomTightWidth) / 2));
+  const bottomTightY = Math.max(0, image.naturalHeight - bottomTightHeight - Math.round(image.naturalHeight * 0.02));
+
+  const candidates = [
+    localizedRegion
+      ? {
+          label: "localized-grayscale",
+          source: createBarcodeVariantSource(image, {
+            grayscale: true,
+            contrastBoost: 105,
+            scaleMultiplier: 1.5,
+            crop: localizedRegion,
+          }),
+        }
+      : null,
+    localizedRegion
+      ? {
+          label: "localized-threshold",
+          source: createBarcodeVariantSource(image, {
+            grayscale: true,
+            contrastBoost: 130,
+            threshold: 148,
+            scaleMultiplier: 1.75,
+            crop: localizedRegion,
+          }),
+        }
+      : null,
+    localizedRegion
+      ? {
+          label: "localized-stretch-wide",
+          source: createBarcodeVariantSource(image, {
+            grayscale: true,
+            contrastBoost: 110,
+            scaleMultiplier: 1.45,
+            stretchX: 1.45,
+            crop: localizedRegion,
+          }),
+        }
+      : null,
+    localizedRegion
+      ? {
+          label: "localized-stretch-wide-threshold",
+          source: createBarcodeVariantSource(image, {
+            grayscale: true,
+            contrastBoost: 125,
+            threshold: 144,
+            scaleMultiplier: 1.55,
+            stretchX: 1.6,
+            crop: localizedRegion,
+          }),
+        }
+      : null,
+    localizedRegion
+      ? {
+          label: "localized-rotate-left-soft",
+          source: createBarcodeVariantSource(image, {
+            grayscale: true,
+            contrastBoost: 100,
+            scaleMultiplier: 1.55,
+            rotateDegrees: -3,
+            stretchX: 1.25,
+            crop: localizedRegion,
+          }),
+        }
+      : null,
+    localizedRegion
+      ? {
+          label: "localized-rotate-right-soft",
+          source: createBarcodeVariantSource(image, {
+            grayscale: true,
+            contrastBoost: 100,
+            scaleMultiplier: 1.55,
+            rotateDegrees: 3,
+            stretchX: 1.25,
+            crop: localizedRegion,
+          }),
+        }
+      : null,
+    localizedRegion
+      ? {
+          label: "localized-rotate-left",
+          source: createBarcodeVariantSource(image, {
+            grayscale: true,
+            contrastBoost: 120,
+            threshold: 145,
+            scaleMultiplier: 1.7,
+            rotateDegrees: -6,
+            stretchX: 1.2,
+            crop: localizedRegion,
+          }),
+        }
+      : null,
+    localizedRegion
+      ? {
+          label: "localized-rotate-right",
+          source: createBarcodeVariantSource(image, {
+            grayscale: true,
+            contrastBoost: 120,
+            threshold: 145,
+            scaleMultiplier: 1.7,
+            rotateDegrees: 6,
+            stretchX: 1.2,
+            crop: localizedRegion,
+          }),
+        }
+      : null,
+    {
+      label: "full-grayscale",
+      source: createBarcodeVariantSource(image, { grayscale: true, contrastBoost: 80 }),
+    },
+    {
+      label: "full-threshold",
+      source: createBarcodeVariantSource(image, { grayscale: true, contrastBoost: 110, threshold: 150 }),
+    },
+    {
+      label: "center-grayscale",
+      source: createBarcodeVariantSource(image, {
+        grayscale: true,
+        contrastBoost: 90,
+        crop: {
+          x: centerCropX,
+          y: centerCropY,
+          width: centerCropWidth,
+          height: centerCropHeight,
+        },
+      }),
+    },
+    {
+      label: "bottom-wide-grayscale",
+      source: createBarcodeVariantSource(image, {
+        grayscale: true,
+        contrastBoost: 95,
+        scaleMultiplier: 1.35,
+        crop: {
+          x: bottomWideX,
+          y: bottomWideY,
+          width: bottomWideWidth,
+          height: bottomWideHeight,
+        },
+      }),
+    },
+    {
+      label: "bottom-wide-threshold",
+      source: createBarcodeVariantSource(image, {
+        grayscale: true,
+        contrastBoost: 125,
+        threshold: 152,
+        scaleMultiplier: 1.45,
+        crop: {
+          x: bottomWideX,
+          y: bottomWideY,
+          width: bottomWideWidth,
+          height: bottomWideHeight,
+        },
+      }),
+    },
+    {
+      label: "bottom-tight-grayscale",
+      source: createBarcodeVariantSource(image, {
+        grayscale: true,
+        contrastBoost: 105,
+        scaleMultiplier: 1.6,
+        crop: {
+          x: bottomTightX,
+          y: bottomTightY,
+          width: bottomTightWidth,
+          height: bottomTightHeight,
+        },
+      }),
+    },
+    {
+      label: "bottom-tight-threshold",
+      source: createBarcodeVariantSource(image, {
+        grayscale: true,
+        contrastBoost: 135,
+        threshold: 145,
+        scaleMultiplier: 1.8,
+        crop: {
+          x: bottomTightX,
+          y: bottomTightY,
+          width: bottomTightWidth,
+          height: bottomTightHeight,
+        },
+      }),
+    },
+    {
+      label: "center-threshold",
+      source: createBarcodeVariantSource(image, {
+        grayscale: true,
+        contrastBoost: 120,
+        threshold: 145,
+        crop: {
+          x: centerCropX,
+          y: centerCropY,
+          width: centerCropWidth,
+          height: centerCropHeight,
+        },
+      }),
+    },
+  ].filter((value): value is BarcodeImageCandidate => Boolean(value?.source));
+
+  logBarcodeDebug("image-candidates:prepared", {
+    imageWidth: image.naturalWidth,
+    imageHeight: image.naturalHeight,
+    localizedRegion,
+    candidateLabels: candidates.map((candidate) => candidate.label),
+  });
+
+  return candidates;
+}
 
 async function detectBarcodeFromImageWithNativeDetector(file: File): Promise<string | null> {
   const BarcodeDetectorConstructor = getBarcodeDetectorConstructor();
@@ -84,24 +607,61 @@ async function detectBarcodeFromImageWithNativeDetector(file: File): Promise<str
     const formats = BARCODE_DETECTOR_FORMATS.filter((format) => supportedFormats.includes(format));
 
     if (formats.length === 0) {
+      logBarcodeDebug("native-detector:no-supported-formats");
       return null;
     }
 
     imageBitmap = await createImageBitmap(file);
     const detector = new BarcodeDetectorConstructor({ formats });
     const detections = await detector.detect(imageBitmap);
-
-    return (
+    const value =
       detections
         .find(
           (candidate) =>
             typeof candidate.rawValue === "string" && candidate.rawValue.trim().length > 0,
         )
-        ?.rawValue?.trim() ?? null
-    );
+        ?.rawValue?.trim() ?? null;
+
+    logBarcodeDebug("native-detector:completed", {
+      detectionCount: detections.length,
+      found: Boolean(value),
+      value,
+    });
+
+    return value;
   } finally {
     imageBitmap?.close();
   }
+}
+
+async function detectBarcodeFromImageElementWithNativeDetector(
+  image: HTMLImageElement,
+): Promise<string | null> {
+  const BarcodeDetectorConstructor = getBarcodeDetectorConstructor();
+  if (!BarcodeDetectorConstructor) {
+    return null;
+  }
+
+  const supportedFormats =
+    typeof BarcodeDetectorConstructor.getSupportedFormats === "function"
+      ? await BarcodeDetectorConstructor.getSupportedFormats()
+      : BARCODE_DETECTOR_FORMATS;
+  const formats = BARCODE_DETECTOR_FORMATS.filter((format) => supportedFormats.includes(format));
+
+  if (formats.length === 0) {
+    return null;
+  }
+
+  const detector = new BarcodeDetectorConstructor({ formats });
+  const detections = await detector.detect(image);
+  return (
+    detections
+      .find(
+        (candidate) =>
+          typeof candidate.rawValue === "string" && candidate.rawValue.trim().length > 0,
+      )
+      ?.rawValue?.trim() ?? null
+  );
 }
 
 async function loadImageElement(src: string): Promise<HTMLImageElement> {
@@ -124,9 +684,54 @@ async function loadImageElement(src: string): Promise<HTMLImageElement> {
   });
 }
 
+function createCanvasFromImageElement(image: HTMLImageElement): HTMLCanvasElement | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, image.naturalWidth || image.width);
+  canvas.height = Math.max(1, image.naturalHeight || image.height);
+
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) {
+    return null;
+  }
+
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas;
+}
+
+function runWithSuppressedZxingNotFound<T>(action: () => T): T {
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    if (
+      typeof args[0] === "string" &&
+      args[0].includes("MultiFormatReader: non-ReaderException from reader: NotFoundException")
+    ) {
+      return;
+    }
+
+    originalWarn(...args);
+  };
+
+  try {
+    return action();
+  } finally {
+    console.warn = originalWarn;
+  }
+}
+
 async function detectBarcodeFromImageWithZxing(file: File): Promise<string | null> {
-  const { BrowserMultiFormatReader, BarcodeFormat, DecodeHintType, NotFoundException } =
-    await import("@zxing/library");
+  const {
+    BarcodeFormat,
+    BinaryBitmap,
+    DecodeHintType,
+    GlobalHistogramBinarizer,
+    HTMLCanvasElementLuminanceSource,
+    HybridBinarizer,
+    MultiFormatReader,
+  } = await import("@zxing/library");
 
   const hints = new Map();
   hints.set(DecodeHintType.POSSIBLE_FORMATS, [
@@ -138,19 +743,99 @@ async function detectBarcodeFromImageWithZxing(file: File): Promise<string | nul
   ]);
   hints.set(DecodeHintType.TRY_HARDER, true);
 
-  const reader = new BrowserMultiFormatReader(hints);
+  const reader = new MultiFormatReader();
+  reader.setHints(hints);
+  const decodeBarcodeFromCanvas = (canvas: HTMLCanvasElement): string | null => {
+    const luminanceSource = new HTMLCanvasElementLuminanceSource(canvas);
+    const decodeInputs = [
+      new BinaryBitmap(new HybridBinarizer(luminanceSource)),
+      new BinaryBitmap(new HybridBinarizer(luminanceSource.invert())),
+      new BinaryBitmap(new GlobalHistogramBinarizer(luminanceSource)),
+      new BinaryBitmap(new GlobalHistogramBinarizer(luminanceSource.invert())),
+    ];
+
+    for (const bitmap of decodeInputs) {
+      try {
+        const result = runWithSuppressedZxingNotFound(() => reader.decodeWithState(bitmap));
+        const value = result.getText().trim();
+        if (value) {
+          return value;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return null;
+  };
   const imageUrl = URL.createObjectURL(file);
 
   try {
-    const image = await loadImageElement(imageUrl);
-    const result = await reader.decodeFromImageElement(image);
-    return result.getText().trim() || null;
-  } catch (error) {
-    if (error instanceof NotFoundException) {
-      return null;
+    const baseImage = await loadImageElement(imageUrl);
+    const candidateSources = [
+      { label: "original", source: imageUrl },
+      ...createBarcodeImageCandidateSources(baseImage),
+    ];
+
+    logBarcodeDebug("zxing-image:start", {
+      candidateCount: candidateSources.length,
+      fileName: file.name,
+      fileSize: file.size,
+    });
+
+    for (const candidate of candidateSources) {
+      try {
+        const image = candidate.source === imageUrl
+          ? baseImage
+          : await loadImageElement(candidate.source);
+
+        try {
+          const nativeValue = await detectBarcodeFromImageElementWithNativeDetector(image);
+          if (nativeValue) {
+            logBarcodeDebug("native-candidate:success", {
+              candidateLabel: candidate.label,
+              value: nativeValue,
+            });
+            return nativeValue;
+          }
+        } catch (error) {
+          logBarcodeDebug("native-candidate:error", {
+            candidateLabel: candidate.label,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+
+        const canvas = createCanvasFromImageElement(image);
+        if (!canvas) {
+          logBarcodeDebug("zxing-image:canvas-unavailable", {
+            candidateLabel: candidate.label,
+          });
+          continue;
+        }
+
+        const value = decodeBarcodeFromCanvas(canvas);
+        if (value) {
+          logBarcodeDebug("zxing-image:success", {
+            candidateLabel: candidate.label,
+            value,
+          });
+          return value;
+        }
+
+        logBarcodeDebug("zxing-image:not-found", {
+          candidateLabel: candidate.label,
+        });
+      } catch (error) {
+        logBarcodeDebug("zxing-image:error", {
+          candidateLabel: candidate.label,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
+      }
     }
 
-    throw error;
+    logBarcodeDebug("zxing-image:no-match");
+    return null;
   } finally {
     reader.reset();
     URL.revokeObjectURL(imageUrl);
@@ -159,15 +844,27 @@ async function detectBarcodeFromImageWithZxing(file: File): Promise<string | nul
 
 async function detectBarcodeFromImageFile(file: File): Promise<string | null> {
   try {
+    logBarcodeDebug("image-decode:start", {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+    });
     const barcode = await detectBarcodeFromImageWithNativeDetector(file);
     if (barcode) {
+      logBarcodeDebug("image-decode:native-success", { barcode });
       return barcode;
     }
   } catch {
     // Fall through to the JS decoder when native detection is unavailable or fails.
+    logBarcodeDebug("image-decode:native-failed-falling-back");
   }
 
-  return await detectBarcodeFromImageWithZxing(file);
+  const barcode = await detectBarcodeFromImageWithZxing(file);
+  logBarcodeDebug("image-decode:final-result", {
+    found: Boolean(barcode),
+    barcode,
+  });
+  return barcode;
 }
 
 function getBarcodeCameraErrorKey(error: unknown) {
@@ -369,10 +1066,12 @@ export default function ReceiptScanModal({
   const handleBarcodeLookup = useCallback(
     async (barcode: string) => {
       if (barcodeLookupInFlightRef.current) {
+        logBarcodeDebug("lookup:skipped-in-flight", { barcode });
         return;
       }
 
       barcodeLookupInFlightRef.current = true;
+      logBarcodeDebug("lookup:start", { barcode });
       stopBarcodeScanner();
       setLastDetectedBarcode(barcode);
       setPhase("scanning");
@@ -393,6 +1092,11 @@ export default function ReceiptScanModal({
         };
 
         if (!response.ok) {
+          logBarcodeDebug("lookup:error-response", {
+            barcode,
+            status: response.status,
+            error: data.error ?? null,
+          });
           toast.error(data.error || t("barcode_lookup_error"));
           setPhase("idle");
           setBarcodeScannerState("error");
@@ -406,9 +1110,20 @@ export default function ReceiptScanModal({
         setCurrency(data.currency ?? null);
         setPartial(data.partial);
         setBarcodeLookupOutcome(data.lookupOutcome ?? null);
+        logBarcodeDebug("lookup:success", {
+          barcode,
+          itemCount: data.items.length,
+          warnings: data.warnings?.length ?? 0,
+          lookupOutcome: data.lookupOutcome ?? null,
+          partial: data.partial,
+        });
         setPhase("review");
       } catch (error) {
         console.error("[ReceiptScanModal] barcode lookup failed", error);
+        logBarcodeDebug("lookup:exception", {
+          barcode,
+          error: error instanceof Error ? error.message : String(error),
+        });
         toast.error(t("barcode_lookup_error"));
         setPhase("idle");
         setBarcodeScannerState("error");
@@ -461,6 +1176,10 @@ export default function ReceiptScanModal({
 
     async function startBarcodeScanner() {
       const BarcodeDetectorConstructor = getBarcodeDetectorConstructor();
+      logBarcodeDebug("live-scanner:start", {
+        hasGetUserMedia: Boolean(navigator.mediaDevices?.getUserMedia),
+        hasBarcodeDetector: Boolean(BarcodeDetectorConstructor),
+      });
       if (!navigator.mediaDevices?.getUserMedia) {
         setBarcodeScannerState("unsupported");
         setBarcodeScannerMessage(t("barcode_scanner_unsupported"));
@@ -485,6 +1204,9 @@ export default function ReceiptScanModal({
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: "environment" } },
           audio: false,
+        });
+        logBarcodeDebug("live-scanner:stream-opened", {
+          trackCount: stream.getTracks().length,
         });
 
         if (cancelled) {
@@ -517,6 +1239,7 @@ export default function ReceiptScanModal({
         );
 
         if (BarcodeDetectorConstructor && formats.length > 0) {
+          logBarcodeDebug("live-scanner:mode-native", { formats });
           barcodeDetectorRef.current = new BarcodeDetectorConstructor({ formats });
           setBarcodeScannerState("ready");
 
@@ -580,6 +1303,7 @@ export default function ReceiptScanModal({
 
         const reader = new BrowserMultiFormatReader(hints) as ContinuousBarcodeReaderLike;
         barcodeReaderRef.current = reader;
+        logBarcodeDebug("live-scanner:mode-zxing-fallback");
         setBarcodeScannerState("ready");
 
         reader.decodeFromVideoElementContinuously(video, (result, error) => {
@@ -612,6 +1336,10 @@ export default function ReceiptScanModal({
       } catch (error) {
         const errorKey = getBarcodeCameraErrorKey(error);
         console.error("[ReceiptScanModal] barcode camera failed", error);
+        logBarcodeDebug("live-scanner:error", {
+          errorKey,
+          error: error instanceof Error ? error.message : String(error),
+        });
         setBarcodeScannerState("error");
         setBarcodeScannerMessage(t(errorKey));
       }
@@ -635,6 +1363,7 @@ export default function ReceiptScanModal({
   ]);
 
   const requestBarcodeScannerStart = useCallback(() => {
+    logBarcodeDebug("live-scanner:requested");
     stopBarcodeScanner();
     setBarcodeScannerRequested(true);
     setBarcodeScannerState("idle");
