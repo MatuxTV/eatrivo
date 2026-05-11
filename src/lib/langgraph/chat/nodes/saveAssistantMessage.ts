@@ -27,7 +27,10 @@ export async function saveAssistantMessage(
       role: "assistant",
       content,
       intent: state.intent ?? null,
-      metadata: { model: "gemini-3-flash-preview" },
+      metadata: {
+        model: "gemini-3-flash-preview",
+        payload: state.assistantMessageMetadata,
+      },
     });
 
     await db

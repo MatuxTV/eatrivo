@@ -33,13 +33,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { targetUserId, tier, reason, durationMonths } = body as {
       targetUserId: string;
-      tier: "premium" | "pro";
+      tier: "premium";
       reason?: string;
       durationMonths?: number;
     };
 
     // Validate input
-    if (!targetUserId || !tier || !["premium", "pro"].includes(tier)) {
+    if (!targetUserId || tier !== "premium") {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 

@@ -82,7 +82,7 @@ File: `src/lib/stripe.ts`
 
 What changed:
 
-- `STRIPE_PRICE_PREMIUM` and `STRIPE_PRICE_PRO` are now validated with the same fail-fast behavior as `STRIPE_SECRET_KEY`.
+- `STRIPE_PRICE_PLUS_MONTHLY` and `STRIPE_PRICE_PLUS_YEARLY` are now validated with the same fail-fast behavior as `STRIPE_SECRET_KEY`.
 
 ### 6. Manifest now reflects active app surfaces
 
@@ -105,7 +105,7 @@ Files:
 
 Current behavior:
 
-- `STRIPE_SECRET_KEY`, `STRIPE_PRICE_PREMIUM`, and `STRIPE_PRICE_PRO` now fail fast at startup.
+- `STRIPE_SECRET_KEY`, `STRIPE_PRICE_PLUS_MONTHLY`, and `STRIPE_PRICE_PLUS_YEARLY` now fail fast at startup.
 - `RESEND_FROM_EMAIL` still falls back to `Acme <onboarding@resend.dev>` and should be reviewed separately before production.
 
 Why this matters:

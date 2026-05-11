@@ -18,6 +18,12 @@ import {
   getPantryAiSuggestions,
 } from "@/lib/pantry/ai-normalization";
 import {
+  PantryIngredientResolutionError,
+  loadIngredientAliasIndex,
+  resolveRequiredPantryIngredientIdentity,
+} from "@/lib/pantry/ingredient-resolution";
+import { reportIngredientResolutionFeedback } from "@/lib/feedback/ingredient-resolution-feedback";
+import {
   resolveShoppingListSeedFromPantryItem,
 } from "@/lib/pantry/grocery";
 import { formatAmountLabel } from "@/lib/pantry/format";
@@ -48,6 +54,15 @@ type ShoppingListItemResponse = {
   isChecked: boolean;
   checkedAt: string | null;
 };
+
+type RouteSession = {
+  user?: {
+    id?: string;
+    locale?: string | null;
+    email?: string | null;
+    name?: string | null;
+  };
+} | null;
 
 function getShoppingListPlaceholderTimestamp() {
   return new Date();
@@ -173,8 +188,10 @@ export async function GET(_request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  let session: RouteSession = null;
+
   try {
-    const session = await auth();
+    session = await auth();
 
     if (!session?.user?.id) {
       return unauthorizedError("Unauthorized");
@@ -306,11 +323,12 @@ export async function POST(request: NextRequest) {
       ...(body.pantryItemIds ?? []),
     ]);
 
+    const locale = userInfo?.language ?? "sk";
     const aiSuggestion = body.name
       ? findPantrySuggestionForItem(
           await getPantryAiSuggestions({
             userProfileId,
-            locale: userInfo?.language ?? "sk",
+            locale,
             currentPantry: pantryRows,
             pendingItems: [
               {
@@ -328,6 +346,24 @@ export async function POST(request: NextRequest) {
           0,
         )
       : null;
+
+    const aliasIndex = body.name
+      ? await loadIngredientAliasIndex(locale)
+      : null;
+    const resolvedManualIdentity =
+      body.name && aliasIndex
+        ? resolveRequiredPantryIngredientIdentity(
+            body.name.trim(),
+            locale,
+            aliasIndex,
+            aiSuggestion?.ingredientSpecificKey ??
+              aiSuggestion?.matchedExistingIngredientSpecificKey ??
+              null,
+            aiSuggestion?.ingredientKey ??
+              aiSuggestion?.matchedExistingIngredientKey ??
+              null,
+          )
+        : null;
 
     if (body.name) {
       apiLogger.debug("[shopping-list.current.upsert] AI normalization resolved", {
@@ -354,16 +390,10 @@ export async function POST(request: NextRequest) {
       body.name
         ? [
             {
-              name: aiSuggestion?.normalizedName ?? body.name.trim(),
-              ingredientName: aiSuggestion?.normalizedName ?? body.name.trim(),
-              ingredientKey:
-                aiSuggestion?.ingredientKey ??
-                aiSuggestion?.matchedExistingIngredientKey ??
-                null,
-              ingredientSpecificKey:
-                aiSuggestion?.ingredientSpecificKey ??
-                aiSuggestion?.matchedExistingIngredientSpecificKey ??
-                null,
+              name: resolvedManualIdentity!.ingredientName,
+              ingredientName: resolvedManualIdentity!.ingredientName,
+              ingredientKey: resolvedManualIdentity!.ingredientKey,
+              ingredientSpecificKey: resolvedManualIdentity!.ingredientSpecificKey,
               quantity:
                 resolvedManualAmount.quantity !== null
                   ? String(resolvedManualAmount.quantity)
@@ -572,6 +602,23 @@ export async function POST(request: NextRequest) {
       addedItemIds,
     });
   } catch (error) {
+    if (error instanceof PantryIngredientResolutionError) {
+      const feedbackRecorded = await reportIngredientResolutionFeedback({
+        source: "shopping-list-current-upsert",
+        rawName: error.rawName,
+        locale: session?.user?.locale ?? "sk",
+        userId: session?.user?.id ?? null,
+        userEmail: session?.user?.email ?? null,
+        userName: session?.user?.name ?? null,
+      });
+
+      return safeErrorResponse("We could not recognize this item as a food ingredient.", {
+        status: 422,
+        code: "INGREDIENT_RESOLUTION_FAILED",
+        details: { feedbackRecorded },
+      });
+    }
+
     apiLogger.error("Failed to upsert current shopping list item", error);
     return handleApiError(error, "POST /api/shopping-lists/current", {
       status: 500,

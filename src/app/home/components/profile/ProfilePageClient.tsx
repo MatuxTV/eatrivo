@@ -29,6 +29,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import LanguageSwitcher from "../LanguageSwitcher";
 import FeedbackButton from "@/components/FeedbackButton";
+import { UserBadge } from "@/components/ui/UserBadge";
 
 interface ProfilePageClientProps {
   onBack?: () => void;
@@ -264,11 +265,19 @@ export default function ProfilePageClient({
                     {profileData?.membership?.toUpperCase() || "FREE"}
                   </span>
                   {(profileData?.badges?.length ?? 0) > 0 ? (
-                    <span className="rounded-full bg-[#f5ecff] px-3 py-1.5 text-[11px] font-bold text-[#7d49cf] ring-1 ring-[#eadcff]">
-                      {t("header.badgesCount", {
+                    <div
+                      aria-label={t("header.badgesCount", {
                         count: profileData?.badges?.length ?? 0,
                       })}
-                    </span>
+                      title={t("header.badgesCount", {
+                        count: profileData?.badges?.length ?? 0,
+                      })}
+                      className="flex items-center gap-2 rounded-full px-2.5 py-1.5 "
+                    >
+                      {profileData?.badges?.map((badgeStr) => (
+                        <UserBadge key={badgeStr} type={badgeStr} />
+                      ))}
+                    </div>
                   ) : null}
                 </div>
                 <p className="max-w-xl text-sm font-medium leading-6 text-[#87739f]">

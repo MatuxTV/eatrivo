@@ -27,8 +27,6 @@ import HomeSidebar from "../components/HomeSidebar";
 import HomeHeader from "../components/HomeHeader";
 import MobileNavigation from "../components/MobileNavigation";
 import AppShellViewport from "../components/AppShellViewport";
-import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
-import { NotificationBanner } from "@/components/pwa/NotificationBanner";
 
 /* ---- Extracted modules ---- */
 import { usePantrySync } from "@/hooks/usePantrySync";
@@ -119,7 +117,9 @@ function readStoredKitchenCounterRecipe(): BasicHomeRecipePreview | null {
 /* ------------------------------------------------------------------ */
 
 interface HomePageProps {
+  membership?: "basic" | "premium" | "pro" | "trainer";
   featuredRecipes?: BasicHomeRecipePreview[];
+  recipeShuffleTime?: number;
   recipeBrowseAvailableFilters?: RecipeBrowseAvailableFilters;
   initialRecipeHasMore?: boolean;
   initialRecipeTotalCount?: number;
@@ -137,7 +137,9 @@ interface HomePageProps {
 /* ------------------------------------------------------------------ */
 
 export default function HomePage({
+  membership = "basic",
   featuredRecipes = [],
+  recipeShuffleTime = 0,
   recipeBrowseAvailableFilters = { categoryKeys: [], dietTags: [] },
   initialRecipeHasMore = false,
   initialRecipeTotalCount = featuredRecipes.length,
@@ -412,6 +414,7 @@ export default function HomePage({
                 ) : (
                   <RecipesSection
                     featuredRecipes={featuredRecipes}
+                    recipeShuffleTime={recipeShuffleTime}
                     recipeBrowseAvailableFilters={recipeBrowseAvailableFilters}
                     initialRecipeHasMore={initialRecipeHasMore}
                     initialRecipeTotalCount={initialRecipeTotalCount}
@@ -442,6 +445,7 @@ export default function HomePage({
               className="max-w-7xl mx-auto"
             >
               <PantrySection
+                membership={membership}
                 onPantryChanged={pantrySync.refreshPantrySummary}
                 initialData={initialPantryData}
               />
@@ -472,7 +476,7 @@ export default function HomePage({
               transition={{ duration: 0.3 }}
               className="h-full"
             >
-              <ChatWithRivoPage />
+              <ChatWithRivoPage onCookRecipe={handleCookRecipe} />
             </motion.div>
           ) : primaryActiveSection === "kitchenCounter" ? (
             <motion.div
@@ -495,8 +499,6 @@ export default function HomePage({
         activeSection={activeSection}
         onSectionChange={setActiveSection}
       />
-      <PWAInstallPrompt />
-      <NotificationBanner />
     </div>
   );
 }

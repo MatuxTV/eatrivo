@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
 import { auth } from "@/../auth";
 import {
   createCheckoutSession,
@@ -34,12 +35,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       tier,
+      billingCycle = "monthly",
       discountCode,
       locale = "en",
       sourcePage = "unknown",
       surface = "checkout",
     } = body as {
-      tier: "premium" | "pro";
+      tier: "premium";
+      billingCycle?: "monthly" | "yearly";
       discountCode?: string;
       locale?: string;
       sourcePage?: string;
@@ -47,14 +50,26 @@ export async function POST(req: NextRequest) {
     };
 
     // Validate tier
-    if (!tier || !["premium", "pro"].includes(tier)) {
+    if (tier !== "premium") {
       return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
     }
 
-    const priceId = STRIPE_PRICES[tier];
+    if (!["monthly", "yearly"].includes(billingCycle)) {
+      return NextResponse.json({ error: "Invalid billing cycle" }, { status: 400 });
+    }
+
+    const priceId =
+      tier === "premium" && billingCycle === "yearly"
+        ? STRIPE_PRICES.premiumYearly
+        : STRIPE_PRICES[tier];
     if (!priceId) {
       return NextResponse.json(
-        { error: "Price not configured" },
+        {
+          error:
+            tier === "premium" && billingCycle === "yearly"
+              ? "Yearly Plus price not configured"
+              : "Price not configured",
+        },
         { status: 500 },
       );
     }
@@ -110,6 +125,7 @@ export async function POST(req: NextRequest) {
       eventName: "checkout_started",
       metadata: {
         tier,
+        billing_cycle: billingCycle,
         price_id: priceId,
         locale,
         source_page: sourcePage,
@@ -121,7 +137,28 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: checkoutSession.url });
   } catch (error) {
-    console.error("Checkout error:", error);
+    if (error instanceof Stripe.errors.StripeError) {
+      console.error("Checkout error", {
+        type: error.type,
+        code: error.code,
+        statusCode: error.statusCode,
+        requestId: error.requestId,
+      });
+
+      return NextResponse.json(
+        {
+          error:
+            error.code === "resource_missing"
+              ? "Checkout price is misconfigured"
+              : "Failed to create checkout session",
+        },
+        { status: 500 },
+      );
+    }
+
+    console.error("Checkout error", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
     return NextResponse.json(
       { error: "Failed to create checkout session" },
       { status: 500 },

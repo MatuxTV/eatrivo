@@ -13,7 +13,7 @@ import {
 } from "@/lib/pantry/draft-cache";
 import {
   loadIngredientAliasIndex,
-  resolvePantryIngredientIdentity,
+  resolveRequiredPantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
 import {
   resolvePantryTrackingMode,
@@ -30,36 +30,6 @@ interface PreparedPantryDraftsResult {
   userProfileId: string;
   locale: string;
   drafts: PantryDraftItem[];
-}
-
-function normalizeGrammarComparisonValue(value: string): string {
-  return value
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function resolveGrammarOnlyName(
-  rawName: string,
-  aiNormalizedName?: string | null,
-): string {
-  const trimmedRawName = rawName.trim();
-  const trimmedAiNormalizedName = aiNormalizedName?.trim();
-
-  if (!trimmedAiNormalizedName) {
-    return trimmedRawName;
-  }
-
-  if (
-    normalizeGrammarComparisonValue(trimmedRawName) !==
-    normalizeGrammarComparisonValue(trimmedAiNormalizedName)
-  ) {
-    return trimmedRawName;
-  }
-
-  return trimmedAiNormalizedName;
 }
 
 function parseNumericQuantity(value: string | null): number | null {
@@ -114,17 +84,14 @@ export async function preparePantryDrafts(
       aiSuggestion?.ingredientKey ??
       aiSuggestion?.matchedExistingIngredientKey ??
       null;
-    const ingredientIdentity = resolvePantryIngredientIdentity(
+    const ingredientIdentity = resolveRequiredPantryIngredientIdentity(
       item.name,
       locale,
       aliasIndex,
       aiSuggestedSpecificKey,
       aiSuggestedKey,
     );
-    const displayName = resolveGrammarOnlyName(
-      item.name,
-      aiSuggestion?.normalizedName,
-    );
+    const displayName = ingredientIdentity.ingredientName;
     const trackingMode = resolvePantryTrackingMode({
       name: displayName,
       ingredientKey: ingredientIdentity.ingredientKey,

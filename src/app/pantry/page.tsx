@@ -34,5 +34,5 @@ export default async function PantryPageCanonical() {
     redirect(`/${safeLocale}`);
   }
 
-  return <PantryPage />;
+  return <PantryPage membership={session.user.membership ?? "basic"} />;
 }

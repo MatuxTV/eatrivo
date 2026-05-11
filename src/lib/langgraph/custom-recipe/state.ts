@@ -47,6 +47,14 @@ export const CustomRecipeState = Annotation.Root({
     value: (current, update) => (update !== undefined ? update : current),
     default: () => false,
   }),
+  respectUserProfile: Annotation<boolean>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => true,
+  }),
+  userRecipeBrief: Annotation<string | null>({
+    value: (current, update) => (update !== undefined ? update : current),
+    default: () => null,
+  }),
 
   userProfile: Annotation<InferSelectModel<typeof userProfiles> | null>({
     value: (current, update) => (update !== undefined ? update : current),

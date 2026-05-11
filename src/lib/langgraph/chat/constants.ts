@@ -10,6 +10,11 @@ export const NUTRITION_KEYWORDS = [
   "makr",
   "vymeni",
   "recept",
+  "vytvor",
+  "vymysli",
+  "navrhni",
+  "sprav",
+  "create",
   "špajz",
   "nákup",
   "plán",
@@ -38,6 +43,7 @@ Klasifikuj nasledujúcu správu do jednej z kategórií:
 - macros: pýta sa na kalórie, makrá, výživové hodnoty
 - pantry: pýta sa na obsah špajze alebo čo má doma
 - recipe: chce recept alebo postup prípravy
+- recipe_creation: chce aby si mu navrhol alebo vytvoril recept na konkrétne jedlo, napríklad "daj mi recept na chrumkavé kura" alebo "navrhni mi večeru"
 - general: všeobecná otázka o výžive alebo zdraví
 
 Odpovedz LEN jedným slovom (jednou z kategórií vyššie).

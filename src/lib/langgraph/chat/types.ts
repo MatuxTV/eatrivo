@@ -1,4 +1,10 @@
-export type Intent = "meal_swap" | "macros" | "pantry" | "recipe" | "general";
+export type Intent =
+  | "meal_swap"
+  | "macros"
+  | "pantry"
+  | "recipe"
+  | "recipe_creation"
+  | "general";
 
 export interface ChatUserProfile {
   id: string;

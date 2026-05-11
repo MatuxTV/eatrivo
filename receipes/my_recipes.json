@@ -4383,6 +4383,151 @@
         }
       },
       "meal_prep_friendly": true
+    },
+    {
+      "external_key": "dessert-protein-chocolate-cheesecake",
+      "default_locale": "sk",
+      "category_key": "dessert",
+      "diet_tags": [
+        "vegetarian",
+        "high-protein",
+        "gluten-free"
+      ],
+      "restriction_flags": [
+        "contains-dairy",
+        "contains-eggs"
+      ],
+      "servings": 8,
+      "prep_time_min": 10,
+      "total_time_min": 40,
+      "nutrition_per_serving": {
+        "calories": 309,
+        "protein_g": 11,
+        "carbohydrates_g": 19,
+        "fat_g": 21
+      },
+      "ingredients": [
+        {
+          "ingredient_key": "greek-yogurt",
+          "ingredient_specific_key": "greek-yogurt",
+          "canonical_name": "greek yogurt",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 400,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 0,
+          "translations": {
+            "en": {
+              "display_name": "greek yogurt"
+            },
+            "cs": {
+              "display_name": "řecký jogurt"
+            },
+            "sk": {
+              "display_name": "grécky jogurt"
+            }
+          }
+        },
+        {
+          "ingredient_key": "dark-chocolate",
+          "ingredient_specific_key": "dark-chocolate",
+          "canonical_name": "dark chocolate",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 300,
+          "unit": "g",
+          "optional": false,
+          "sort_order": 1,
+          "translations": {
+            "en": {
+              "display_name": "dark chocolate"
+            },
+            "cs": {
+              "display_name": "hořká čokoláda"
+            },
+            "sk": {
+              "display_name": "horká čokoláda"
+            }
+          }
+        },
+        {
+          "ingredient_key": "egg",
+          "ingredient_specific_key": "egg",
+          "canonical_name": "egg",
+          "pantry_tracking_hint": "quantity",
+          "quantity": 6,
+          "unit": "pc",
+          "optional": false,
+          "sort_order": 2,
+          "translations": {
+            "en": {
+              "display_name": "egg"
+            },
+            "cs": {
+              "display_name": "vejce"
+            },
+            "sk": {
+              "display_name": "vajce"
+            }
+          }
+        },
+        {
+          "ingredient_key": "sweetener",
+          "ingredient_specific_key": "sweetener",
+          "canonical_name": "sweetener",
+          "pantry_tracking_hint": "availability",
+          "quantity": 0.5,
+          "unit": "tsp",
+          "optional": true,
+          "sort_order": 3,
+          "translations": {
+            "en": {
+              "display_name": "vanilla sweetener"
+            },
+            "cs": {
+              "display_name": "vanilkové sladidlo"
+            },
+            "sk": {
+              "display_name": "vanilkové sladidlo"
+            }
+          }
+        }
+      ],
+      "translations": {
+        "en": {
+          "name": "High-Protein Chocolate Cheesecake",
+          "category_label": "Dessert",
+          "serving_unit_label": "serving",
+          "instructions": [
+            "Melt the dark chocolate and mix it thoroughly with the Greek yogurt, eggs, and vanilla sweetener.",
+            "Pour the smooth mixture into a round baking pan.",
+            "Bake in an air fryer at 155 °C for 30 minutes. Let it cool completely before serving."
+          ],
+          "notes": null
+        },
+        "cs": {
+          "name": "Vysokoproteinový čokoládový cheesecake",
+          "category_label": "Dezert",
+          "serving_unit_label": "porce",
+          "instructions": [
+            "Hořkou čokoládu rozpusťte a důkladně ji smíchejte s řeckým jogurtem, vejci a vanilkovým sladidlem.",
+            "Vzniklou hladkou směs nalijte do kulaté formy vhodné pro pečení.",
+            "Pečte v horkovzdušné fritéze (air fryer) 30 minut při teplotě 155 °C. Před podáváním nechte zcela vychladnout."
+          ],
+          "notes": null
+        },
+        "sk": {
+          "name": "Vysokoproteínový čokoládový cheesecake",
+          "category_label": "Dezert",
+          "serving_unit_label": "porcia",
+          "instructions": [
+            "Horkú čokoládu rozpusťte a dôkladne ju zmiešajte s gréckym jogurtom, vajcami a vanilkovým sladidlom.",
+            "Vzniknutú hladkú zmes nalejte do okrúhlej formy vhodnej na pečenie.",
+            "Pečte v teplovzdušnej fritéze (air fryer) 30 minút pri teplote 155 °C. Pred podávaním nechajte úplne vychladnúť."
+          ],
+          "notes": null
+        }
+      },
+      "meal_prep_friendly": true
     }
   ],
   "rejected": [

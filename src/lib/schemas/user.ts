@@ -1,6 +1,17 @@
 import { z } from "zod";
 import { getAgeFromDate } from "../utils/functions";
 
+const requiredNumberSchema = () =>
+  z.number({
+    error: (issue) => {
+      if (issue.input === undefined || Number.isNaN(issue.input)) {
+        return "Musíte mať zadané číslo";
+      }
+
+      return undefined;
+    },
+  });
+
 // User profile onboarding schema (after Google OAuth)
 export const userProfileOnboardingSchema = z.object({
   fullName: z
@@ -22,12 +33,10 @@ export const userFoodPreferencesSchema = z.object({
   sex: z.enum(["man", "woman"], {
     message: "Prosím vyberte svoje pohlavie",
   }),
-  height: z
-    .number()
+  height: requiredNumberSchema()
     .min(100, "Výška musí byť aspoň 100cm")
     .max(250, "Výška nemôže presiahnuť 250cm"),
-  weight: z
-    .number()
+  weight: requiredNumberSchema()
     .min(30, "Hmotnosť musí byť aspoň 30kg")
     .max(300, "Hmotnosť nemôže presiahnuť 300kg"),
   activity_level: z.enum(
@@ -42,16 +51,14 @@ export const userFoodPreferencesSchema = z.object({
       message: "Prosím vyberte svoju úroveň aktivity",
     },
   ),
-  meal_per_day: z
-    .number()
+  meal_per_day: requiredNumberSchema()
     .min(1, "Aspoň 1 jedlo denne")
     .max(6, "Maximálne 6 jedál denne"),
   cooking_time_pref: z.enum(["quick", "normal", "slow"], {
     message: "Prosím vyberte svoju preferenciu času varenia",
   }),
   meal_prep: z.boolean().default(false).optional(),
-  meal_prep_days: z
-    .number()
+  meal_prep_days: requiredNumberSchema()
     .min(1, "Minimálne 1 deň")
     .max(7, "Maximálne 7 dní")
     .optional(),
@@ -85,6 +92,20 @@ export const userFoodPreferencesSchema = z.object({
     .optional(),
   allergies: z.string().max(500, "Popis alergií je príliš dlhý").optional(),
 });
+
+export const userProfileNutritionSchema = userFoodPreferencesSchema.pick({
+  sex: true,
+  height: true,
+  weight: true,
+  activity_level: true,
+  goal: true,
+  diet_preferences: true,
+  likes: true,
+  dislikes: true,
+  allergies: true,
+});
+
+export type UserProfileNutrition = z.infer<typeof userProfileNutritionSchema>;
 
 // Complete onboarding schema (combines both steps)
 export const completeOnboardingSchema = z.object({

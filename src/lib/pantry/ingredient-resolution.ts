@@ -39,6 +39,25 @@ export interface ResolvedPantryIngredientIdentity {
   candidateKeys: string[];
 }
 
+export interface RequiredPantryIngredientIdentity
+  extends Omit<ResolvedPantryIngredientIdentity, "ingredientName" | "ingredientKey" | "ingredientSpecificKey"> {
+  ingredientName: string;
+  ingredientKey: string;
+  ingredientSpecificKey: string;
+}
+
+export class PantryIngredientResolutionError extends Error {
+  readonly rawName: string;
+  readonly locale: string;
+
+  constructor(rawName: string, locale: string) {
+    super(`Unable to resolve canonical ingredient identity for "${rawName}" in locale "${locale}".`);
+    this.name = "PantryIngredientResolutionError";
+    this.rawName = rawName;
+    this.locale = locale;
+  }
+}
+
 function resolveValidatedSpecificKey(
   candidateKeys: string[],
   validKeys: Set<string>,
@@ -273,10 +292,12 @@ export async function loadIngredientAliasIndex(
       aliasCandidates.add(normalizeLookupValue(aliasForm));
     }
 
-    if (row.locale === locale && row.ingredientName) {
+    if (row.locale === locale) {
+      const localizedDisplayName =
+        normalizeIngredientName(row.displayName) ?? row.displayName;
       preferredNamesByKey.set(
         row.ingredientKey,
-        normalizeIngredientName(row.ingredientName) ?? row.ingredientName,
+        localizedDisplayName,
       );
     }
 
@@ -392,6 +413,46 @@ export function resolvePantryIngredientIdentity(
     ingredientSpecificKey: null,
     source: "fallback",
     candidateKeys,
+  };
+}
+
+export function resolveRequiredPantryIngredientIdentity(
+  rawName: string,
+  locale: string,
+  aliasIndex: IngredientAliasIndex,
+  aiSuggestedSpecificKey?: string | null,
+  aiSuggestedKey?: string | null,
+): RequiredPantryIngredientIdentity {
+  const resolved = resolvePantryIngredientIdentity(
+    rawName,
+    locale,
+    aliasIndex,
+    aiSuggestedSpecificKey,
+    aiSuggestedKey,
+  );
+
+  const ingredientSpecificKey =
+    resolved.ingredientSpecificKey ?? resolved.ingredientKey;
+  const ingredientKey =
+    resolved.ingredientKey ??
+    (ingredientSpecificKey
+      ? deriveIngredientFamilyKey(ingredientSpecificKey, aliasIndex.validKeys) ??
+        ingredientSpecificKey
+      : null);
+  const preferredNameKey = ingredientSpecificKey ?? ingredientKey;
+  const ingredientName = preferredNameKey
+    ? aliasIndex.preferredNamesByKey.get(preferredNameKey) ?? null
+    : null;
+
+  if (!ingredientName || !ingredientKey || !ingredientSpecificKey) {
+    throw new PantryIngredientResolutionError(rawName, locale);
+  }
+
+  return {
+    ...resolved,
+    ingredientName,
+    ingredientKey,
+    ingredientSpecificKey,
   };
 }
 

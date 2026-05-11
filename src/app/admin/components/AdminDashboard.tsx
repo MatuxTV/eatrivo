@@ -20,6 +20,7 @@ import AdminTabs, { type TabId } from "./shared/AdminTabs";
 import EmailsTab from "./tabs/EmailsTab";
 import AnalyticsTab from "./tabs/AnalyticsTab";
 import NotificationsTab from "./tabs/NotificationsTab";
+import RecipesTab from "./tabs/RecipesTab";
 
 export default function AdminDashboard() {
   const t = useTranslations("emails.admin.dashboard.page");
@@ -332,6 +333,19 @@ export default function AdminDashboard() {
               className="space-y-4 sm:space-y-6"
             >
               <AnalyticsTab />
+            </motion.div>
+          )}
+
+          {activeTab === "recipes" && (
+            <motion.div
+              key="recipes"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4 sm:space-y-6"
+            >
+              <RecipesTab />
             </motion.div>
           )}
 

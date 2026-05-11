@@ -35,6 +35,53 @@ export const maxDuration = 60;
 
 const CUSTOM_RECIPE_LOCK_TTL_SECONDS = 300;
 
+function buildCustomRecipeTrackingMetadata(
+  input: {
+    locale?: string;
+    fallbackSuggestionLimit: number;
+    servings: number;
+    mealType: string;
+    mealPrep: boolean;
+    mode: "pantry" | "preferences_only";
+  },
+  jobId: string,
+) {
+  return {
+    locale: input.locale ?? "en",
+    fallbackSuggestionLimit: input.fallbackSuggestionLimit,
+    servings: input.servings,
+    mealType: input.mealType,
+    mealPrep: input.mealPrep,
+    mode: input.mode,
+    usesPantry: input.mode === "pantry",
+    source: "custom_recipe_generator",
+    jobId,
+  };
+}
+
+function serializeErrorForAnalytics(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack ?? null,
+      cause:
+        error.cause instanceof Error
+          ? {
+              name: error.cause.name,
+              message: error.cause.message,
+              stack: error.cause.stack ?? null,
+            }
+          : error.cause ?? null,
+    };
+  }
+
+  return {
+    message: typeof error === "string" ? error : "Unknown error",
+    raw: error,
+  };
+}
+
 function jsonError(
   error: string,
   code: string,
@@ -201,19 +248,16 @@ export async function POST(request: NextRequest) {
   }
 
   const jobId = crypto.randomUUID();
+  const trackingBaseMetadata = buildCustomRecipeTrackingMetadata(
+    parsedBody.data,
+    jobId,
+  );
 
   await trackEvent({
     userId,
     eventName: "custom_recipe_generation_started",
     metadata: {
-      locale: parsedBody.data.locale ?? "en",
-      fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
-      servings: parsedBody.data.servings,
-      mealType: parsedBody.data.mealType,
-      mealPrep: parsedBody.data.mealPrep,
-      mode: parsedBody.data.mode,
-      source: "custom_recipe_generator",
-      jobId,
+      ...trackingBaseMetadata,
     },
   });
 
@@ -320,16 +364,17 @@ export async function POST(request: NextRequest) {
                 userId,
                 eventName: "custom_recipe_generation_failed",
                 metadata: {
-                  locale: parsedBody.data.locale ?? "en",
-                  fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
-                  servings: parsedBody.data.servings,
-                  mealType: parsedBody.data.mealType,
-                  mealPrep: parsedBody.data.mealPrep,
+                  ...trackingBaseMetadata,
                   reason: errorMessage,
                   code: errorCode,
                   node: nodeName,
-                  source: "custom_recipe_generator",
-                  jobId,
+                  errorLog: {
+                    kind: "graph_fatal_error",
+                    node: nodeName,
+                    fatalError: nodeState.fatalError ?? null,
+                    fatalErrorCode: errorCode,
+                    retryCount: nodeState.retryCount ?? 0,
+                  },
                 },
               });
 
@@ -423,11 +468,7 @@ export async function POST(request: NextRequest) {
                 userId,
                 eventName: "custom_recipe_generated",
                 metadata: {
-                  locale: parsedBody.data.locale ?? "en",
-                  fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
-                  servings: parsedBody.data.servings,
-                  mealType: parsedBody.data.mealType,
-                  mealPrep: parsedBody.data.mealPrep,
+                  ...trackingBaseMetadata,
                   fallbackUsed: nodeState.finalResult.meta.fallbackUsed,
                   retryCount,
                   pantryRecipeStatus: nodeState.finalResult.pantryRecipe.status,
@@ -436,8 +477,6 @@ export async function POST(request: NextRequest) {
                   fallbackSuggestionCount:
                     nodeState.finalResult.fallbackDatabaseSuggestions.length,
                   pantryItemCount: nodeState.finalResult.meta.pantryItemCount,
-                  source: "custom_recipe_generator",
-                  jobId,
                 },
               });
 
@@ -490,14 +529,14 @@ export async function POST(request: NextRequest) {
             userId,
             eventName: "custom_recipe_generation_failed",
             metadata: {
-              locale: parsedBody.data.locale ?? "en",
-              fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
-              servings: parsedBody.data.servings,
-              mealType: parsedBody.data.mealType,
-              mealPrep: parsedBody.data.mealPrep,
+              ...trackingBaseMetadata,
               reason: "missing_final_result",
-              source: "custom_recipe_generator",
-              jobId,
+              code: "GENERATION_FAILED",
+              node: "finalize_result",
+              errorLog: {
+                kind: "missing_final_result",
+                message: "Custom recipe generation completed without a final result",
+              },
             },
           });
 
@@ -534,14 +573,14 @@ export async function POST(request: NextRequest) {
             userId,
             eventName: "custom_recipe_generation_failed",
             metadata: {
-              locale: parsedBody.data.locale ?? "en",
-              fallbackSuggestionLimit: parsedBody.data.fallbackSuggestionLimit,
-              servings: parsedBody.data.servings,
-              mealType: parsedBody.data.mealType,
-              mealPrep: parsedBody.data.mealPrep,
+              ...trackingBaseMetadata,
               reason: errorMessage,
-              source: "custom_recipe_generator",
-              jobId,
+              code: "GENERATION_FAILED",
+              node: "failed",
+              errorLog: {
+                kind: "stream_exception",
+                ...serializeErrorForAnalytics(error),
+              },
             },
           });
 

@@ -18,6 +18,8 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
+const PWA_INSTALL_PROMPT_TEMPORARILY_DISABLED = true;
+
 export function PWAInstallPrompt() {
   const { data: session, status, update } = useSession();
   const t = useTranslations("pwa.installPrompt");
@@ -37,6 +39,10 @@ export function PWAInstallPrompt() {
   }, []);
 
   useEffect(() => {
+    if (PWA_INSTALL_PROMPT_TEMPORARILY_DISABLED) {
+      return;
+    }
+
     // Wait for session to load
     if (status === "loading") return;
 
@@ -186,7 +192,9 @@ export function PWAInstallPrompt() {
   };
 
   // Don't render on server or before mount
-  if (!mounted || !showPrompt) return null;
+  if (PWA_INSTALL_PROMPT_TEMPORARILY_DISABLED || !mounted || !showPrompt) {
+    return null;
+  }
 
   return (
     <>

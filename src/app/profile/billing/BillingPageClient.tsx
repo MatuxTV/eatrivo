@@ -110,7 +110,7 @@ export default function BillingPageClient() {
     }
   };
 
-  const handleUpgrade = async (tier: "premium" | "pro") => {
+  const handleUpgrade = async (tier: "premium") => {
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",

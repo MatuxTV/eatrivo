@@ -1,25 +1,58 @@
 import { db } from "@/index";
-import { shoppingLists, shoppingListItems, mealPlans, aiInsights } from "@/db/schema";
+import { shoppingLists, shoppingListItems, mealPlans, aiInsights, pantryItems } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
 import { CacheService } from "@/lib/cache/redis";
 import { Analytics } from "@/lib/analytics/analytics";
 import { EatrivoAIService } from "@/lib/langchain";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { normalizeShoppingListAmount } from "@/lib/pantry/shopping-list-amount";
+import {
+  findPantrySuggestionForItem,
+  getPantryAiSuggestions,
+} from "@/lib/pantry/ai-normalization";
+import {
+  loadIngredientAliasIndex,
+  PantryIngredientResolutionError,
+  resolveRequiredPantryIngredientIdentity,
+} from "@/lib/pantry/ingredient-resolution";
+import { reportIngredientResolutionFeedback } from "@/lib/feedback/ingredient-resolution-feedback";
 import { guessFoodCategory } from "@/lib/ingredients/units";
 import type { ShoppingListState } from "../state";
+
+function getShoppingListSaveErrorMessage(
+  locale: "sk" | "en",
+  feedbackRecorded?: boolean,
+): string {
+  if (locale === "en") {
+    return feedbackRecorded
+      ? "We could not recognize one of the shopping list items as a food ingredient. We sent this feedback to our team and the list was not saved."
+      : "We could not recognize one of the shopping list items as a food ingredient, so the list was not saved.";
+  }
+
+  return feedbackRecorded
+    ? "Jednu z poloziek v nakupnom zozname sa nepodarilo rozoznat ako potravinu. Spatnu vazbu sme poslali nasmu timu a zoznam sa neulozil."
+    : "Jednu z poloziek v nakupnom zozname sa nepodarilo rozoznat ako potravinu, preto sa zoznam neulozil.";
+}
+
+function getShoppingListGenericSaveErrorMessage(locale: "sk" | "en"): string {
+  return locale === "en"
+    ? "We could not save the shopping list right now. Please try again."
+    : "Nakupny zoznam sa teraz nepodarilo ulozit. Skuste to prosim znovu.";
+}
 
 export async function saveToDb(
   state: typeof ShoppingListState.State,
 ): Promise<Partial<typeof ShoppingListState.State>> {
   const { userId, userProfileId, userInfo, aiOutput } = state;
+  const locale: "sk" | "en" = userInfo?.language === "en" ? "en" : "sk";
 
   if (!aiOutput) {
-    return { error: "saveToDb: aiOutput is null" };
+    return { error: getShoppingListGenericSaveErrorMessage(locale) };
   }
 
   if (!userInfo) {
-    return { error: "saveToDb: userInfo is null" };
+    return { error: getShoppingListGenericSaveErrorMessage(locale) };
   }
 
   apiLogger.info("[saveToDb] start", { metadata: { userProfileId, title: aiOutput.title } });
@@ -68,6 +101,30 @@ Return JSON array only, no explanation, no markdown:`;
       // parsedItems stays empty — transaction below will still create the list
     }
 
+    const currentPantry = await db
+      .select()
+      .from(pantryItems)
+      .where(eq(pantryItems.userProfileId, userProfileId));
+    const aiSuggestions =
+      parsedItems.length > 0
+        ? await getPantryAiSuggestions({
+            userProfileId,
+            locale,
+            currentPantry,
+            pendingItems: parsedItems.map((item) => ({
+              name: item.name,
+              trackingMode: null,
+              inStock: null,
+              quantity: item.quantity,
+              unit: item.unit,
+              category: item.category,
+              expiryDate: null,
+            })),
+          })
+        : [];
+    const aliasIndex =
+      parsedItems.length > 0 ? await loadIngredientAliasIndex(locale) : null;
+
     // ── Atomic DB transaction: list + items + insights ──
     const expirationDate = new Date();
     expirationDate.setHours(expirationDate.getHours() + 24);
@@ -90,6 +147,22 @@ Return JSON array only, no explanation, no markdown:`;
       if (parsedItems.length > 0) {
         const toInsertItems = parsedItems.map((item, index) => {
           const normalizedName = item.name.trim();
+          const suggestion = findPantrySuggestionForItem(
+            aiSuggestions,
+            normalizedName,
+            index,
+          );
+          const resolvedIdentity = resolveRequiredPantryIngredientIdentity(
+            normalizedName,
+            locale,
+            aliasIndex!,
+            suggestion?.ingredientSpecificKey ??
+              suggestion?.matchedExistingIngredientSpecificKey ??
+              null,
+            suggestion?.ingredientKey ??
+              suggestion?.matchedExistingIngredientKey ??
+              null,
+          );
           const normalizedAmount = normalizeShoppingListAmount(item.quantity, item.unit);
 
           if (!normalizedAmount.ok) {
@@ -108,7 +181,10 @@ Return JSON array only, no explanation, no markdown:`;
           return {
             shoppingListId: list.id,
             sortOrder: index,
-            name: normalizedName,
+            name: resolvedIdentity.ingredientName,
+            ingredientName: resolvedIdentity.ingredientName,
+            ingredientKey: resolvedIdentity.ingredientKey,
+            ingredientSpecificKey: resolvedIdentity.ingredientSpecificKey,
             quantity:
               normalizedAmount.ok && normalizedAmount.quantity !== null
                 ? String(normalizedAmount.quantity)
@@ -276,8 +352,23 @@ Return JSON array only, no explanation, no markdown:`;
     };
   } catch (err) {
     apiLogger.error("saveToDb failed", err);
+
+    if (err instanceof PantryIngredientResolutionError) {
+      const feedbackRecorded = await reportIngredientResolutionFeedback({
+        source: "shopping-list-ai-save",
+        rawName: err.rawName,
+        locale,
+        userId,
+        userProfileId,
+      });
+
+      return {
+        error: getShoppingListSaveErrorMessage(locale, feedbackRecorded),
+      };
+    }
+
     return {
-      error: `saveToDb failed: ${err instanceof Error ? err.message : String(err)}`,
+      error: getShoppingListGenericSaveErrorMessage(locale),
     };
   }
 }

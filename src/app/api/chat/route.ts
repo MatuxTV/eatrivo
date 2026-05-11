@@ -158,9 +158,8 @@ export async function POST(req: NextRequest) {
         let accumulated = "";
 
         try {
-          for await (const [chunk, metadata] of stream) {
+          for await (const [chunk] of stream) {
             if (
-              metadata?.langgraph_node === "rivo_llm" &&
               (chunk as { getType?: () => string }).getType?.() === "ai" &&
               typeof chunk.content === "string"
             ) {

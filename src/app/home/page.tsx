@@ -329,6 +329,7 @@ export default async function HomePageCanonical() {
 
   return (
     <HomePage
+      membership={session.user.membership ?? "basic"}
       featuredRecipes={basicHomeData.featuredRecipes}
       recipeBrowseAvailableFilters={basicHomeData.recipeBrowseAvailableFilters}
       initialRecipeHasMore={basicHomeData.initialRecipeHasMore}

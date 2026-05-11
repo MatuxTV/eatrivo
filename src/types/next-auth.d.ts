@@ -3,7 +3,7 @@ import type { DefaultSession } from "next-auth";
 declare module "next-auth" {
   interface User {
     id: string;
-    membership?: "basic" | "premium" | "trainer";
+    membership?: "basic" | "premium" | "pro" | "trainer";
     role?: "user" | "admin";
     lastSeenWelcomeVersion?: string;
     locale?: string;
@@ -15,7 +15,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      membership?: "basic" | "premium" | "trainer";
+      membership?: "basic" | "premium" | "pro" | "trainer";
       role?: "user" | "admin";
       lastSeenWelcomeVersion?: string;
       locale?: string;

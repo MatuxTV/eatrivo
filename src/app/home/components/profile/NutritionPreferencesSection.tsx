@@ -11,19 +11,15 @@ import {
   Activity,
   Target,
   UtensilsCrossed,
-  Clock,
-  Wallet,
   Heart,
   AlertCircle,
   Ruler,
-  ChefHat,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -38,14 +34,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import {
-  userFoodPreferencesSchema,
-  type UserFoodPreferences,
+  userProfileNutritionSchema,
+  type UserProfileNutrition,
 } from "@/lib/schemas/user";
 import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
 
 interface UserNutritionData {
   sex: "man" | "woman";
@@ -53,12 +47,7 @@ interface UserNutritionData {
   weight: string | number;
   activity_level: string | null;
   goal: string | null;
-  meal_per_day: number | null;
-  cooking_time_pref: string | null;
-  meal_prep: boolean | null;
-  meal_prep_days: number | null;
   diet_preferences: string | null;
-  budget_preference: string | null;
   likes: string | null;
   dislikes: string | null;
   allergies: string | null;
@@ -78,21 +67,16 @@ export default function NutritionPreferencesSection({
   const t = useTranslations("profile");
   const [isSaving, setIsSaving] = useState(false);
 
-  const form = useForm<UserFoodPreferences>({
-    resolver: zodResolver(userFoodPreferencesSchema),
+  const form = useForm<UserProfileNutrition>({
+    resolver: zodResolver(userProfileNutritionSchema),
     mode: "onBlur",
     defaultValues: nutritionData ? {
       sex: nutritionData.sex,
       height: nutritionData.height,
       weight: Number(nutritionData.weight),
-      activity_level: nutritionData.activity_level as UserFoodPreferences["activity_level"],
-      goal: nutritionData.goal as UserFoodPreferences["goal"],
-      meal_per_day: nutritionData.meal_per_day ?? undefined,
-      cooking_time_pref: nutritionData.cooking_time_pref as UserFoodPreferences["cooking_time_pref"],
-      meal_prep: nutritionData.meal_prep ?? false,
-      meal_prep_days: nutritionData.meal_prep_days ?? undefined,
-      diet_preferences: nutritionData.diet_preferences as UserFoodPreferences["diet_preferences"],
-      budget_preference: nutritionData.budget_preference as UserFoodPreferences["budget_preference"],
+      activity_level: nutritionData.activity_level as UserProfileNutrition["activity_level"],
+      goal: nutritionData.goal as UserProfileNutrition["goal"],
+      diet_preferences: nutritionData.diet_preferences as UserProfileNutrition["diet_preferences"],
       likes: nutritionData.likes || "",
       dislikes: nutritionData.dislikes || "",
       allergies: nutritionData.allergies || "",
@@ -105,14 +89,9 @@ export default function NutritionPreferencesSection({
         sex: nutritionData.sex,
         height: nutritionData.height,
         weight: Number(nutritionData.weight),
-        activity_level: nutritionData.activity_level as UserFoodPreferences["activity_level"],
-        goal: nutritionData.goal as UserFoodPreferences["goal"],
-        meal_per_day: nutritionData.meal_per_day ?? undefined,
-        cooking_time_pref: nutritionData.cooking_time_pref as UserFoodPreferences["cooking_time_pref"],
-        meal_prep: nutritionData.meal_prep ?? false,
-        meal_prep_days: nutritionData.meal_prep_days ?? undefined,
-        diet_preferences: nutritionData.diet_preferences as UserFoodPreferences["diet_preferences"],
-        budget_preference: nutritionData.budget_preference as UserFoodPreferences["budget_preference"],
+        activity_level: nutritionData.activity_level as UserProfileNutrition["activity_level"],
+        goal: nutritionData.goal as UserProfileNutrition["goal"],
+        diet_preferences: nutritionData.diet_preferences as UserProfileNutrition["diet_preferences"],
         likes: nutritionData.likes || "",
         dislikes: nutritionData.dislikes || "",
         allergies: nutritionData.allergies || "",
@@ -120,7 +99,7 @@ export default function NutritionPreferencesSection({
     }
   }, [nutritionData, form]);
 
-  const onSubmit = async (data: UserFoodPreferences) => {
+  const onSubmit = async (data: UserProfileNutrition) => {
     try {
       setIsSaving(true);
       const response = await fetch("/api/user/nutrition", {
@@ -280,39 +259,6 @@ export default function NutritionPreferencesSection({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="meal_per_day"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={labelClasses}>
-                        <UtensilsCrossed className="w-4 h-4 text-eatrivo-blue" />
-                        {t("nutrition.fields.mealsPerDay.label")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className={inputClasses}
-                          type="number"
-                          min={1}
-                          max={10}
-                          placeholder="3"
-                          value={field.value ?? ""}
-                          onFocus={(e) => e.target.select()}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            field.onChange(v === "" ? ("" as string | number) : parseInt(v) || "");
-                          }}
-                          onBlur={(e) => {
-                            const v = e.target.value;
-                            field.onChange(v === "" ? undefined : parseInt(v));
-                            field.onBlur();
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
             </div>
 
@@ -425,153 +371,6 @@ export default function NutritionPreferencesSection({
                     </FormItem>
                   )}
                 />
-
-                <FormField
-                  control={form.control}
-                  name="cooking_time_pref"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={labelClasses}>
-                        <Clock className="w-4 h-4 text-eatrivo-blue" />
-                        {t("nutrition.fields.cookingTime.label")}
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className={selectTriggerClasses}>
-                            <SelectValue placeholder={t("nutrition.fields.cookingTime.placeholder")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="quick">{t("nutrition.fields.cookingTime.options.quick")}</SelectItem>
-                          <SelectItem value="normal">{t("nutrition.fields.cookingTime.options.normal")}</SelectItem>
-                          <SelectItem value="slow">{t("nutrition.fields.cookingTime.options.slow")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="budget_preference"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel className={labelClasses}>
-                        <Wallet className="w-4 h-4 text-eatrivo-yellow" />
-                        {t("nutrition.fields.budget.label")}
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className={selectTriggerClasses}>
-                            <SelectValue placeholder={t("nutrition.fields.budget.placeholder")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="low">{t("nutrition.fields.budget.options.low")}</SelectItem>
-                          <SelectItem value="medium">{t("nutrition.fields.budget.options.medium")}</SelectItem>
-                          <SelectItem value="high">{t("nutrition.fields.budget.options.high")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="space-y-4 border-t border-[#f1e8fb] pt-4">
-                <div className="flex gap-3 rounded-2xl border border-eatrivo-green/20 bg-eatrivo-green/5 p-4">
-                  <ChefHat className="w-5 h-5 text-eatrivo-green flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-gray-800">{t("nutrition.fields.mealPrep.noteTitle")}</p>
-                    <p className="text-xs text-gray-600 leading-relaxed">{t("nutrition.fields.mealPrep.noteDescription")}</p>
-                  </div>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="meal_prep"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={labelClasses}>
-                        <ChefHat className="w-4 h-4 text-eatrivo-orange" />
-                        {t("nutrition.fields.mealPrep.label")}
-                      </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={(value) => field.onChange(value === "true")}
-                          value={field.value ? "true" : "false"}
-                          className="flex flex-col space-y-2"
-                        >
-                          <div className="flex cursor-pointer items-center space-x-3 rounded-2xl border-2 border-[#eadcff] bg-white p-3 transition-colors hover:border-eatrivo-purple/50">
-                            <RadioGroupItem value="true" id="profile-mealPrep-yes" />
-                            <label htmlFor="profile-mealPrep-yes" className="flex-1 cursor-pointer text-sm font-medium text-gray-700">
-                              {t("nutrition.fields.mealPrep.yes")}
-                            </label>
-                          </div>
-                          <div className="flex cursor-pointer items-center space-x-3 rounded-2xl border-2 border-[#eadcff] bg-white p-3 transition-colors hover:border-eatrivo-purple/50">
-                            <RadioGroupItem value="false" id="profile-mealPrep-no" />
-                            <label htmlFor="profile-mealPrep-no" className="flex-1 cursor-pointer text-sm font-medium text-gray-700">
-                              {t("nutrition.fields.mealPrep.no")}
-                            </label>
-                          </div>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {form.watch("meal_prep") && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <FormField
-                      control={form.control}
-                      name="meal_prep_days"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className={labelClasses}>
-                            {t("nutrition.fields.mealPrep.daysLabel")}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              className={inputClasses}
-                              type="number"
-                              min="1"
-                              max="7"
-                              placeholder={t("nutrition.fields.mealPrep.daysPlaceholder")}
-                              value={field.value ?? ""}
-                              onFocus={(e) => e.target.select()}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                field.onChange(v === "" ? ("" as string | number) : parseInt(v) || "");
-                              }}
-                              onBlur={(e) => {
-                                const v = e.target.value;
-                                field.onChange(v === "" ? undefined : parseInt(v));
-                                field.onBlur();
-                              }}
-                            />
-                          </FormControl>
-                          <FormDescription className="text-xs text-gray-500">
-                            {t("nutrition.fields.mealPrep.daysHelp")}
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </motion.div>
-                )}
               </div>
             </div>
 

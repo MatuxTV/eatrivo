@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -9,12 +8,15 @@ import {
   Loader2,
   Package,
   Plus,
+  ScanBarcode,
   Search,
   XCircle,
+  Receipt
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
+import MembershipUpgradeModal from "@/components/billing/MembershipUpgradeModal";
 import { useTutorialSurface } from "@/components/tutorial/TutorialProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,8 @@ import { guessFoodCategory } from "@/lib/ingredients/units";
 import { cn } from "@/lib/utils/utils";
 import AddPantryItemModal from "./AddPantryItemModal";
 import PantryItemRow from "./PantryItemRow";
+import ReceiptScanModal from "./ReceiptScanModal";
+import ReceiptScanUpgradeHero from "./ReceiptScanUpgradeHero";
 import type { InitialPantrySectionData } from "@/app/home/types/section-data";
 
 type FilterKey = "all" | "restock" | "expiring" | "manual" | "shopping_list";
@@ -168,11 +172,13 @@ function SectionStateCard({
 }
 
 interface PantrySectionProps {
+  membership?: "basic" | "premium" | "pro" | "trainer";
   onPantryChanged?: () => void;
   initialData?: InitialPantrySectionData;
 }
 
 export default function PantrySection({
+  membership = "basic",
   onPantryChanged,
   initialData,
 }: PantrySectionProps = {}) {
@@ -197,7 +203,8 @@ export default function PantrySection({
     addItemToShoppingList,
     toggleRecurringForItem,
     confirmDrafts,
-    discardDrafts
+    discardDrafts,
+    refresh,
   } = usePantry({
     initialItems: initialData?.items,
     initialRestockItems: initialData?.restockItems,
@@ -206,6 +213,9 @@ export default function PantrySection({
 
   const [isMounted, setIsMounted] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [scanModalEntryMode, setScanModalEntryMode] = useState<"receipt" | "barcode">("receipt");
+  const [isScanUpgradeModalOpen, setIsScanUpgradeModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -213,6 +223,8 @@ export default function PantrySection({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [pendingRecurringId, setPendingRecurringId] = useState<string | null>(null);
   const [pendingAddPackageId, setPendingAddPackageId] = useState<string | null>(null);
+  const hasScanAccess =
+    membership === "premium" || membership === "pro" || membership === "trainer";
 
   useEffect(() => {
     setIsMounted(true);
@@ -435,6 +447,19 @@ export default function PantrySection({
     triggerHaptic("light");
   }
 
+  function handleOpenScanModal(entryMode: "receipt" | "barcode" = "receipt") {
+    if (!hasScanAccess) {
+      triggerHaptic("light");
+      setScanModalEntryMode(entryMode);
+      setIsScanUpgradeModalOpen(true);
+      return;
+    }
+
+    triggerHaptic("light");
+    setScanModalEntryMode(entryMode);
+    setIsScanModalOpen(true);
+  }
+
   return (
     <AnimatePresence mode="wait">
       <TrackPageEvent
@@ -530,8 +555,8 @@ export default function PantrySection({
                 <p className="text-xs font-medium text-gray-500">{headerSubtitle}</p>
               </div>
 
-              <div className="w-full max-w-[18rem] md:w-[18rem]">
-                <div className="grid grid-cols-2 gap-2">
+              <div className="w-full md:w-auto">
+                <div className="flex justify-start gap-2 md:justify-end">
                   <Button
                     data-tutorial-anchor="pantry-add-item"
                     type="button"
@@ -539,28 +564,43 @@ export default function PantrySection({
                       triggerHaptic("light");
                       setIsAddModalOpen(true);
                     }}
-                    className="h-11 rounded-xl bg-eatrivo-purple px-4 text-sm font-semibold text-white hover:bg-eatrivo-purple/90"
+                    aria-label={t("add_item")}
+                    title={t("add_item")}
+                    className="h-11 w-11 rounded-full bg-eatrivo-purple p-0 text-white hover:bg-eatrivo-purple/90"
                   >
-                    <Plus className="mr-1.5 h-4 w-4" />
-                    {t("add_item")}
+                    <Plus className="h-5 w-5" />
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={() => handleOpenScanModal("receipt")}
+                    aria-label={t("scan_bill")}
+                    title={t("scan_bill")}
+                    className={cn(
+                      "h-11 w-11 rounded-full p-0 shadow-sm transition-colors",
+                      hasScanAccess
+                        ? "border border-amber-300 bg-gradient-to-r from-amber-500 to-yellow-400 text-white hover:from-amber-500/90 hover:to-yellow-400/90"
+                        : "border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100",
+                    )}
+                  >
+                    <Receipt className="h-5 w-5" />
                   </Button>
 
                   {/* <Button
                     type="button"
-                    className="h-11 rounded-xl border border-eatrivo-purple/60 bg-eatrivo-white-primary px-3 text-sm font-semibold text-gray-800 shadow-sm"
+                    onClick={() => handleOpenScanModal("barcode")}
+                    aria-label={t("scan_mode_barcode")}
+                    title={t("scan_mode_barcode")}
+                    className={cn(
+                      "h-11 w-11 rounded-full p-0 shadow-sm transition-colors",
+                      hasScanAccess
+                        ? "border border-sky-300 bg-gradient-to-r from-sky-500 to-cyan-400 text-white hover:from-sky-500/90 hover:to-cyan-400/90"
+                        : "border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100",
+                    )}
                   >
-                    <span className="flex w-full items-center justify-center gap-2">
-                      <span>{t("scan_bill")}</span>
-                      <Image
-                        src="/icons/eatrivo_plus_icon.svg"
-                        alt={t("scan_bill")}
-                        width={24}
-                        height={24}
-                        className="h-5 w-5 object-contain"
-                      />
-                    </span>
+                    <ScanBarcode className="h-5 w-5" />
                   </Button> */}
-                </div>
+                </div>    
               </div>
             </div>
 
@@ -770,6 +810,17 @@ export default function PantrySection({
 
               return (await addItemsBatch(itemsToAdd)) !== null;
             }}
+          />
+          <MembershipUpgradeModal
+            isOpen={isScanUpgradeModalOpen}
+            onClose={() => setIsScanUpgradeModalOpen(false)}
+            hero={<ReceiptScanUpgradeHero mode={scanModalEntryMode} />}
+          />
+          <ReceiptScanModal
+            isOpen={isScanModalOpen}
+            onClose={() => setIsScanModalOpen(false)}
+            onCompleted={refresh}
+            initialEntryMode={scanModalEntryMode}
           />
         </motion.div>
       )}
