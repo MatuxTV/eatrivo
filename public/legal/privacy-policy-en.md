@@ -9,11 +9,11 @@
 
 The controller of personal data is:
 
-Address: Nad plážou 4419/25, 974 01 Banská Bystrica, Slovakia
-Company ID (IČO): 56024665
-Tax ID (DIČ): 2122162493
-Email: info@valorixdigital.com
-Phone: +421 944 488 206
+Address: [Company Address]
+Company ID (IČO): [Company ID]
+Tax ID (DIČ): [Tax ID]
+Email: [Company Email]
+Phone: [Company Phone]
 
 (hereinafter referred to as "EatRivo", "we", or "controller")
 
@@ -122,7 +122,7 @@ Under GDPR, you have the following rights:
 
 ### How to Exercise Your Rights
 
-Contact us at: **info@valorixdigital.com**
+Contact us at: **[Company Email]**
 
 We will respond to your request within 30 days.
 
@@ -181,5 +181,5 @@ Web: [dataprotection.gov.sk](https://dataprotection.gov.sk)
 
 For questions regarding data protection, contact us:
 
-**Email:** info@valorixdigital.com  
-**Address:** Nad plážou 4419/25, 974 01 Banská Bystrica, Slovakia
+**Email:** [Company Email]
+**Address:** [Company Address]

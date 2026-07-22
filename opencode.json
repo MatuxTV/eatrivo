@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "agent": {
+    "build": {
+      "mode": "primary",
+      "description": "Default builder for the eatrivo Next.js PWA. Full tool access."
+    },
+    "plan": {
+      "mode": "primary",
+      "description": "Read-only planning/architecture for eatrivo. No edits or shell side effects.",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "patch": false
+      }
+    }
+  }
+}
