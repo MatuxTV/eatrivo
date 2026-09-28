@@ -2342,8 +2342,6 @@
     "scan_error": "Receipt scan could not be completed.",
     "scan_finalize_error": "Could not prepare pantry drafts from the receipt review.",
     "scan_finalize_success": "Receipt scan drafts are now waiting for confirmation in your pantry.",
-    "ingredient_resolution_failed": "We could not recognize this item as a food ingredient. Please try to rename or clarify it.",
-    "ingredient_resolution_feedback_sent": "We could not recognize this item as a food ingredient. We have sent this feedback to our team.",
     "scan_review_empty": "Add at least one item before continuing.",
     "inventory_title": "Your items",
     "inventory_description": "Compact rows made for quick quantity updates on the go.",

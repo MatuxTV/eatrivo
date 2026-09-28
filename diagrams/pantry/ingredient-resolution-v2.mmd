@@ -1,0 +1,196 @@
+```mermaid
+%% POST /api/pantry — catalog-driven resolution, user-add and async AI classification
+%% Replaces the recipe-derived alias index with the canonical `ingredients` catalog.
+flowchart TB
+    Client(["📱 Client<br/>POST /api/pantry<br/>{ name, quantity, unit, ... }"])
+
+    subgraph Guard["🔐 Request guards"]
+        A1{"Session?"}
+        A2{"Rate limit OK?"}
+        A3{"pantryCreateItemSchema<br/>(zod) valid?"}
+        A4{"User profile exists?"}
+    end
+
+    subgraph Catalog["📚 loadIngredientAliasIndex(locale) · cached 60s"]
+        C1["ingredients<br/>(owner IS NULL, review_state != flagged)"]
+        C2["ingredient_names + ingredient_aliases<br/>→ byAlias · validKeys · preferredNamesByKey<br/>· recipeCountByKey"]
+        C1 --> C2
+    end
+
+    subgraph Precheck["🧮 Deterministic pre-check"]
+        P1["getAliasCandidateKeysForName(name)"]
+        P2{"candidateKeys.length<br/>=== 1 ?"}
+    end
+
+    subgraph AI1["🤖 Gemini · only when ambiguous/unknown"]
+        B1["getPantryAiSuggestions()<br/>→ ingredientSpecificKey, ingredientKey,<br/>recommendedTrackingMode"]
+    end
+
+    subgraph Resolve["🔎 resolvePantryIngredientIdentity()"]
+        D1["buildLookupCandidates(name)<br/>normalize · strip diacritics ·<br/>singularize SK · alias forms"]
+        D2["candidateKeys =<br/>aliases found in byAlias"]
+        D3{"How many<br/>candidateKeys?"}
+        D4["specificKey = the one candidate<br/>source: translation-exact"]
+        D5{"AI key / slug(name)<br/>in candidates OR validKeys?"}
+        D6["specificKey = that key<br/>source: ai-disambiguated / ai-suggested"]
+        D7["specificKey = pickHighestValueCandidate()<br/>(most recipes wins · no more 422)"]
+        D8["broadKey = family key<br/>(deriveIngredientFamilyKey / parent_id)"]
+        D1 --> D2 --> D3
+        D3 -- "exactly 1" --> D4
+        D3 -- "0 or 2+" --> D5
+        D5 -- "yes" --> D6
+        D5 -- "no" --> D7
+        D4 --> D8
+        D6 --> D8
+        D7 --> D8
+    end
+
+    subgraph UserAdd["🌱 ensureUserIngredient() — no more hard fail"]
+        U1{"resolved<br/>key?"}
+        U2{"slug(name) is an<br/>existing GLOBAL key?"}
+        U3["reuse global ingredient"]
+        U4{"same USER already<br/>has this key?"}
+        U5["reuse private ingredient"]
+        U6["INSERT ingredients<br/>owner_user_id · source=user<br/>review_state=unverified<br/>+ ingredient_names + ingredient_aliases<br/>(private, immediately usable)"]
+        U1 -- "yes" --> U3x["use resolved key"]
+        U1 -- "no" --> U2
+        U2 -- "yes" --> U3
+        U2 -- "no" --> U4
+        U4 -- "yes" --> U5
+        U4 -- "no" --> U6
+    end
+
+    subgraph Save["💾 Persist"]
+        F1["resolveIngredientIdByKeys()<br/>or userIngredient.id"]
+        F2["INSERT pantry_items<br/>(ingredient_id + legacy keys mirrored)"]
+        F3["invalidate Redis pantry cache"]
+        F4["after(): classifyUserIngredient()<br/>fire-and-forget"]
+        F1 --> F2 --> F3 --> F4
+    end
+
+    subgraph Classify["🤖 Async AI classification (gemini-2.5-flash)"]
+        G1{"is food?:<br/>canonicalKey in global validKeys?"}
+        G2["MERGE → relink pantry/shopping/<br/>restock/recipe rows to global id,<br/>delete private"]
+        G3{"isFoodIngredient?"}
+        G4["review_state=trusted<br/>(confidence ≥ 0.6)"]
+        G5["review_state=unverified"]
+        G6["review_state=flagged<br/>(stays in pantry,<br/>excluded from matching)"]
+        G1 -- "yes" --> G2
+        G1 -- "no" --> G3
+        G3 -- "yes" --> G4
+        G3 -- "low confidence" --> G5
+        G3 -- "no" --> G6
+    end
+
+    subgraph Match["🔗 Recipe matching uses ingredient_id graph"]
+        H1["matchPantryIngredient():<br/>same id = exact<br/>ancestor via parent_id = fallback<br/>key logic only as fallback"]
+    end
+
+    R401(["❌ 401"])
+    R400(["❌ 400 VALIDATION_ERROR"])
+    R404(["❌ 404 PROFILE_NOT_FOUND"])
+    R429(["❌ 429"])
+    R201(["✅ 201 { item,<br/>normalizationQueued: true }"])
+
+    Client --> A1
+    A1 -- no --> R401
+    A1 -- yes --> A2
+    A2 -- no --> R429
+    A2 -- yes --> A3
+    A3 -- no --> R400
+    A3 -- yes --> A4
+    A4 -- no --> R404
+    A4 -- yes --> C1
+    C2 --> P1 --> P2
+    P2 -- "yes: skip AI" --> D1
+    P2 -- "no: call AI" --> B1 --> D1
+    D8 --> U1
+    U3x --> F1
+    U3 --> F1
+    U5 --> F1
+    U6 --> F1
+    F4 -.-> Classify
+    F3 --> R201
+    G2 --> Match
+    G4 --> Match
+    G5 --> Match
+    G6 -. "excluded" .-> Match
+    P1 --> H1
+
+    classDef bad fill:#fde2e2,stroke:#c0392b,color:#7b1d1d
+    classDef good fill:#dff5e3,stroke:#2e8b57,color:#14532d
+    classDef warn fill:#fff4d6,stroke:#d4a017,color:#6b4f00
+    classDef ai fill:#e7e9ff,stroke:#4b4bd4,color:#26268c
+    class R400,R401,R404,R429 bad
+    class R201 good
+    class G6,U6 warn
+    class B1,F4,G1,G2,G3,G4,G5,Classify ai
+```
+
+```mermaid
+%% Real items traced through the new resolver + user-add + classification
+flowchart LR
+    subgraph Ex1["✅ Mlieko — catalog hit, NO AI"]
+        M1["candidateKeys: [milk]"] --> M2["1 candidate →<br/>specific=milk · family=milk"] --> M3(["201"])
+    end
+
+    subgraph Ex2["✅ Olivový olej — family via parent_id"]
+        S1["aliases → olive-oil"] --> S2["specific=olive-oil<br/>parent=oil (graph)"] --> S3(["201"])
+    end
+
+    subgraph Ex3["✅ Jogurt / Maslo — ambiguous, best-match"]
+        J1["candidates: [yogurt, natural-yogurt]<br/>or [butter, 50g-maslo]"] --> J2["pickHighestValueCandidate()<br/>(most recipes)"] --> J3(["201"])
+    end
+
+    subgraph Ex4["🌱 Chlieb — NEW user ingredient"]
+        U1["candidates: none"] --> U2["ensureUserIngredient()<br/>private 'chlieb' (unverified)"] --> U3["201 · usable immediately"] --> U4["async AI:<br/>real ingredient → trusted<br/>(family attached if known)"] --> U5(["stays private or merges to global"])
+    end
+
+    subgraph Ex5["🚫 Asdfg — nonsense"]
+        L1["candidates: none"] --> L2["private 'asdfg'<br/>usable in pantry"] --> L3["async AI:<br/>not food → flagged"] --> L4(["in pantry,<br/>excluded from matching"])
+    end
+
+    classDef bad fill:#fde2e2,stroke:#c0392b,color:#7b1d1d
+    classDef good fill:#dff5e3,stroke:#2e8b57,color:#14532d
+    classDef warn fill:#fff4d6,stroke:#d4a017,color:#6b4f00
+    classDef ai fill:#e7e9ff,stroke:#4b4bd4,color:#26268c
+    class M3,S3,J3 good
+    class U3,U4,U5,L2 warn
+    class L3,L4 bad
+    class U4,L3 ai
+```
+
+```mermaid
+%% Canonical catalog schema
+erDiagram
+    users ||--o{ ingredients : "owner_user_id (nullable = global)"
+    ingredients ||--o{ ingredients : "parent_id (family → specific)"
+    ingredients ||--o{ ingredient_names : "locale display names"
+    ingredients ||--o{ ingredient_aliases : "lookup aliases"
+    ingredients ||--o{ pantry_items : "ingredient_id"
+    ingredients ||--o{ shopping_list_items : "ingredient_id"
+    ingredients ||--o{ pantry_restock_items : "ingredient_id"
+    ingredients ||--o{ recipe_ingredients : "ingredient_id"
+
+    ingredients {
+        uuid id PK
+        text key "UNIQUE NULLS NOT DISTINCT (owner_user_id, key)"
+        uuid parent_id FK
+        text canonical_name
+        uuid owner_user_id "NULL = global, set = private"
+        enum review_state "trusted | unverified | flagged"
+        enum source "recipe | admin | user | ai"
+    }
+    ingredient_names {
+        uuid ingredient_id FK
+        text locale
+        text name
+    }
+    ingredient_aliases {
+        uuid id PK
+        uuid ingredient_id FK
+        text locale "nullable"
+        text alias
+        uuid owner_user_id "scoped uniqueness"
+    }
+```

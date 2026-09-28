@@ -15,3 +15,9 @@ test("pantryKeySatisfiesRecipeKey still accepts established generic ingredient f
   assert.equal(pantryKeySatisfiesRecipeKey("mozzarella-cheese", "cheese"), true);
   assert.equal(pantryKeySatisfiesRecipeKey("olive-oil", "oil"), true);
 });
+
+test("pantryKeySatisfiesRecipeKey accepts newly added families", () => {
+  assert.equal(pantryKeySatisfiesRecipeKey("almond-butter", "butter"), true);
+  assert.equal(pantryKeySatisfiesRecipeKey("salmon-fillet", "salmon"), true);
+  assert.equal(pantryKeySatisfiesRecipeKey("green-asparagus", "asparagus"), true);
+});

@@ -26,10 +26,14 @@ export function findMatchingShoppingListItem(
   shoppingItems: ShoppingListItemRow[],
   pantryItem: Pick<
     PantryRow,
-    "name" | "ingredientKey" | "ingredientSpecificKey"
+    "name" | "ingredientKey" | "ingredientSpecificKey" | "ingredientId"
   >,
 ): ShoppingListItemRow | undefined {
   return shoppingItems.find((item) => {
+    if (pantryItem.ingredientId && item.ingredientId === pantryItem.ingredientId) {
+      return true;
+    }
+
     if (
       pantryItem.ingredientSpecificKey &&
       item.ingredientSpecificKey === pantryItem.ingredientSpecificKey
@@ -55,6 +59,7 @@ export function derivePantryInventoryItem(
     name: pantryItem.name,
     ingredientKey: pantryItem.ingredientKey,
     ingredientSpecificKey: pantryItem.ingredientSpecificKey,
+    ingredientId: pantryItem.ingredientId,
   });
   const matchedShoppingItem = findMatchingShoppingListItem(
     shoppingItems,
@@ -168,6 +173,7 @@ export function resolveShoppingListSeedFromPantryItem(
     name: pantryItem.name,
     ingredientKey: pantryItem.ingredientKey,
     ingredientSpecificKey: pantryItem.ingredientSpecificKey,
+    ingredientId: pantryItem.ingredientId,
   });
   const trackingMode = pantryItem.trackingMode ?? "quantity";
   const isStamped =
@@ -194,6 +200,7 @@ export function resolveShoppingListSeedFromPantryItem(
     ingredientName: pantryItem.ingredientName ?? pantryItem.name.trim(),
     ingredientKey: pantryItem.ingredientKey,
     ingredientSpecificKey: pantryItem.ingredientSpecificKey,
+    ingredientId: pantryItem.ingredientId,
     trackingMode,
     inStock: pantryItem.inStock ?? true,
     quantity: normalizedAmount.ok ? quantity : null,

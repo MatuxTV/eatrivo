@@ -1,0 +1,117 @@
+```mermaid
+%% DEPRECATED — documents the legacy recipe-derived resolver (hard 422 on unknown).
+%% Current behavior: see ingredient-resolution-v2.mmd
+%% POST /api/pantry — how a manually added item is validated and resolved
+flowchart TB
+    Client(["📱 Client<br/>POST /api/pantry<br/>{ name, quantity, unit, ... }"])
+
+    subgraph Guard["🔐 Request guards"]
+        A1{"Session?"}
+        A2{"Rate limit OK?"}
+        A3{"pantryCreateItemSchema<br/>(zod) valid?"}
+        A4{"User profile exists?"}
+    end
+
+    subgraph AI["🤖 AI suggestion (Gemini)"]
+        B1["getPantryAiSuggestions()<br/>→ ingredientSpecificKey, ingredientKey,<br/>recommendedTrackingMode"]
+    end
+
+    subgraph Index["📚 loadIngredientAliasIndex(locale + 'en')"]
+        C1["recipe_ingredients ⨝ translations<br/>→ ONLY ingredients used in recipes<br/>(currently ~145 keys)"]
+        C2["byAlias: alias → keys<br/>validKeys: Set<br/>preferredNamesByKey: key → SK name"]
+        C1 --> C2
+    end
+
+    subgraph Lookup["🔎 resolvePantryIngredientIdentity()"]
+        D1["buildLookupCandidates(name)<br/>normalize · strip diacritics ·<br/>singularize SK · alias forms"]
+        D2["candidateKeys =<br/>aliases found in byAlias"]
+        D3{"How many<br/>candidateKeys?"}
+        D4["specificKey = the one candidate<br/>source: translation-exact"]
+        D5{"AI specific key / AI key /<br/>slug(name) in candidates<br/>OR in validKeys?"}
+        D6["specificKey = that key<br/>source: ai-disambiguated / ai-suggested"]
+        D7["specificKey = null<br/>source: fallback"]
+        D8["broadKey = family key<br/>(deriveIngredientFamilyKey)"]
+        D1 --> D2 --> D3
+        D3 -- "exactly 1" --> D4
+        D3 -- "0 or 2+" --> D5
+        D5 -- "yes" --> D6
+        D5 -- "no ⚠️ AI key outside the<br/>recipe list is DROPPED" --> D7
+        D4 --> D8
+        D6 --> D8
+    end
+
+    subgraph Strict["🚧 resolveRequiredPantryIngredientIdentity()"]
+        E1{"ingredientKey AND<br/>specificKey AND<br/>SK display name?"}
+    end
+
+    subgraph Save["💾 Persist"]
+        F1["resolvePantryTrackingMode()<br/>quantity vs availability"]
+        F2["INSERT pantry_items<br/>invalidate Redis cache"]
+    end
+
+    R400(["❌ 400 VALIDATION_ERROR"])
+    R401(["❌ 401"])
+    R404(["❌ 404 PROFILE_NOT_FOUND"])
+    R429(["❌ 429"])
+    R422(["❌ 422 INGREDIENT_RESOLUTION_FAILED<br/>+ reportIngredientResolutionFeedback()"])
+    R201(["✅ 201 { item }"])
+
+    Client --> A1
+    A1 -- no --> R401
+    A1 -- yes --> A2
+    A2 -- no --> R429
+    A2 -- yes --> A3
+    A3 -- no --> R400
+    A3 -- yes --> A4
+    A4 -- no --> R404
+    A4 -- yes --> B1
+    B1 --> C1
+    C2 --> D1
+    D7 --> E1
+    D8 --> E1
+    E1 -- no --> R422
+    E1 -- yes --> F1 --> F2 --> R201
+
+    classDef bad fill:#fde2e2,stroke:#c0392b,color:#7b1d1d
+    classDef good fill:#dff5e3,stroke:#2e8b57,color:#14532d
+    classDef warn fill:#fff4d6,stroke:#d4a017,color:#6b4f00
+    class R400,R401,R404,R429,R422 bad
+    class R201 good
+    class D7,E1,C1 warn
+```
+
+```mermaid
+%% Real items traced through the resolver (tested against DB, locale = sk, AI step off)
+flowchart LR
+    subgraph Ex1["✅ Mlieko"]
+        M1["candidates:<br/>milk"] --> M2["1 candidate →<br/>specific = milk<br/>family = milk"] --> M3["name = Mlieko"] --> M4(["201"])
+    end
+
+    subgraph Ex2["⚠️ Maslo — ambiguous"]
+        S1["candidates:<br/>butter, 50g-maslo 🗑️"] --> S2{"AI picks one?"}
+        S2 -- "yes: butter" --> S3(["201"])
+        S2 -- "AI fails / null" --> S4["specific = null"] --> S5(["422"])
+    end
+
+    subgraph Ex3["⚠️ Jogurt — ambiguous"]
+        J1["candidates:<br/>yogurt, natural-yogurt"] --> J2{"AI picks one?"}
+        J2 -- "yes" --> J3(["201"])
+        J2 -- "AI fails / null" --> J4(["422"])
+    end
+
+    subgraph Ex4["❌ Chlieb / Múka / Jablká — unknown"]
+        U1["candidates:<br/>(none — not in any recipe)"] --> U2{"AI key 'bread'<br/>in validKeys?"}
+        U2 -- "no → dropped" --> U3(["422 always"])
+    end
+
+    subgraph Ex5["🐛 Soľ — dirty data"]
+        L1["candidates:<br/>salt, sol 🗑️"] --> L2["slug(Soľ) = 'sol'<br/>matches junk key"] --> L3(["201 but saved as<br/>'sol', not 'salt'"])
+    end
+
+    classDef bad fill:#fde2e2,stroke:#c0392b,color:#7b1d1d
+    classDef good fill:#dff5e3,stroke:#2e8b57,color:#14532d
+    classDef warn fill:#fff4d6,stroke:#d4a017,color:#6b4f00
+    class S5,J4,U3 bad
+    class M4,S3,J3 good
+    class L3 warn
+```

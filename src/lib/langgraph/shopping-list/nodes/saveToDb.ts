@@ -13,27 +13,12 @@ import {
 } from "@/lib/pantry/ai-normalization";
 import {
   loadIngredientAliasIndex,
-  PantryIngredientResolutionError,
-  resolveRequiredPantryIngredientIdentity,
+  loadIngredientGraph,
+  resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
 import { reportIngredientResolutionFeedback } from "@/lib/feedback/ingredient-resolution-feedback";
 import { guessFoodCategory } from "@/lib/ingredients/units";
 import type { ShoppingListState } from "../state";
-
-function getShoppingListSaveErrorMessage(
-  locale: "sk" | "en",
-  feedbackRecorded?: boolean,
-): string {
-  if (locale === "en") {
-    return feedbackRecorded
-      ? "We could not recognize one of the shopping list items as a food ingredient. We sent this feedback to our team and the list was not saved."
-      : "We could not recognize one of the shopping list items as a food ingredient, so the list was not saved.";
-  }
-
-  return feedbackRecorded
-    ? "Jednu z poloziek v nakupnom zozname sa nepodarilo rozoznat ako potravinu. Spatnu vazbu sme poslali nasmu timu a zoznam sa neulozil."
-    : "Jednu z poloziek v nakupnom zozname sa nepodarilo rozoznat ako potravinu, preto sa zoznam neulozil.";
-}
 
 function getShoppingListGenericSaveErrorMessage(locale: "sk" | "en"): string {
   return locale === "en"
@@ -124,6 +109,8 @@ Return JSON array only, no explanation, no markdown:`;
         : [];
     const aliasIndex =
       parsedItems.length > 0 ? await loadIngredientAliasIndex(locale) : null;
+    const ingredientGraph =
+      parsedItems.length > 0 ? await loadIngredientGraph(locale) : null;
 
     // ── Atomic DB transaction: list + items + insights ──
     const expirationDate = new Date();
@@ -145,6 +132,7 @@ Return JSON array only, no explanation, no markdown:`;
 
       // INSERT Items (if parsing succeeded)
       if (parsedItems.length > 0) {
+        const unresolvedNames: string[] = [];
         const toInsertItems = parsedItems.map((item, index) => {
           const normalizedName = item.name.trim();
           const suggestion = findPantrySuggestionForItem(
@@ -152,7 +140,7 @@ Return JSON array only, no explanation, no markdown:`;
             normalizedName,
             index,
           );
-          const resolvedIdentity = resolveRequiredPantryIngredientIdentity(
+          const resolvedIdentity = resolvePantryIngredientIdentity(
             normalizedName,
             locale,
             aliasIndex!,
@@ -163,6 +151,18 @@ Return JSON array only, no explanation, no markdown:`;
               suggestion?.matchedExistingIngredientKey ??
               null,
           );
+          if (
+            !resolvedIdentity.ingredientKey &&
+            !resolvedIdentity.ingredientSpecificKey
+          ) {
+            unresolvedNames.push(normalizedName);
+          }
+          const identityKey =
+            resolvedIdentity.ingredientSpecificKey ??
+            resolvedIdentity.ingredientKey;
+          const ingredientId = identityKey
+            ? ingredientGraph?.idByKey.get(identityKey) ?? null
+            : null;
           const normalizedAmount = normalizeShoppingListAmount(item.quantity, item.unit);
 
           if (!normalizedAmount.ok) {
@@ -181,10 +181,11 @@ Return JSON array only, no explanation, no markdown:`;
           return {
             shoppingListId: list.id,
             sortOrder: index,
-            name: resolvedIdentity.ingredientName,
+            name: resolvedIdentity.ingredientName ?? normalizedName,
             ingredientName: resolvedIdentity.ingredientName,
             ingredientKey: resolvedIdentity.ingredientKey,
             ingredientSpecificKey: resolvedIdentity.ingredientSpecificKey,
+            ingredientId,
             quantity:
               normalizedAmount.ok && normalizedAmount.quantity !== null
                 ? String(normalizedAmount.quantity)
@@ -195,6 +196,16 @@ Return JSON array only, no explanation, no markdown:`;
           };
         });
         await tx.insert(shoppingListItems).values(toInsertItems);
+
+        for (const unresolvedName of unresolvedNames) {
+          await reportIngredientResolutionFeedback({
+            source: "shopping-list-ai-save",
+            rawName: unresolvedName,
+            locale,
+            userId,
+            userProfileId,
+          });
+        }
       }
 
       // INSERT AI Insights (Shopping List)
@@ -352,20 +363,6 @@ Return JSON array only, no explanation, no markdown:`;
     };
   } catch (err) {
     apiLogger.error("saveToDb failed", err);
-
-    if (err instanceof PantryIngredientResolutionError) {
-      const feedbackRecorded = await reportIngredientResolutionFeedback({
-        source: "shopping-list-ai-save",
-        rawName: err.rawName,
-        locale,
-        userId,
-        userProfileId,
-      });
-
-      return {
-        error: getShoppingListSaveErrorMessage(locale, feedbackRecorded),
-      };
-    }
 
     return {
       error: getShoppingListGenericSaveErrorMessage(locale),

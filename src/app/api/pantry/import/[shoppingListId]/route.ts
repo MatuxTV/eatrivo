@@ -117,6 +117,7 @@ export async function POST(
           ingredientName: item.ingredientName,
           ingredientKey: item.ingredientKey,
           ingredientSpecificKey: item.ingredientSpecificKey,
+          ingredientId: item.ingredientId ?? null,
           trackingMode,
           inStock: true,
           quantity:

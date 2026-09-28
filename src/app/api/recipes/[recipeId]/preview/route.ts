@@ -7,7 +7,6 @@ import { auth } from "../../../../../../auth";
 import { db } from "@/index";
 import {
   recipeIngredients,
-  recipeIngredientTranslations,
   recipes,
   recipeTranslations,
   userInfoTable,
@@ -23,6 +22,7 @@ import {
 } from "@/lib/recipes/recipe-localization";
 import { normalizeRecipeInstructions } from "@/lib/recipes/recipe-instructions";
 import { formatRecipeIngredientAmount } from "@/lib/recipes/recipe-ingredients";
+import { loadIngredientNameMap } from "@/lib/pantry/ingredient-resolution";
 import { guessFoodCategory } from "@/lib/ingredients/units";
 import { getRecipeAvailabilityForUserProfile } from "@/lib/recipes/recipe-matches";
 import {
@@ -114,7 +114,7 @@ export async function GET(
       return notFoundError("Recipe");
     }
 
-    const [translationRows, ingredientRows, ingredientTranslationRows, availabilityMap] =
+    const [translationRows, ingredientRows, availabilityMap] =
       await Promise.all([
         db
           .select({
@@ -133,6 +133,8 @@ export async function GET(
             canonicalName: recipeIngredients.canonicalName,
             ingredientKey: recipeIngredients.ingredientKey,
             ingredientSpecificKey: recipeIngredients.ingredientSpecificKey,
+            ingredientId: recipeIngredients.ingredientId,
+            displayLabel: recipeIngredients.displayLabel,
             quantity: recipeIngredients.quantity,
             unit: recipeIngredients.unit,
             sortOrder: recipeIngredients.sortOrder,
@@ -140,13 +142,6 @@ export async function GET(
           })
           .from(recipeIngredients)
           .where(eq(recipeIngredients.recipeId, recipeRow.id)),
-        db
-          .select({
-            recipeIngredientId: recipeIngredientTranslations.recipeIngredientId,
-            locale: recipeIngredientTranslations.locale,
-            displayName: recipeIngredientTranslations.displayName,
-          })
-          .from(recipeIngredientTranslations),
         userProfile
           ? getRecipeAvailabilityForUserProfile(userProfile.id, [recipeRow.id], {
               locale,
@@ -165,21 +160,44 @@ export async function GET(
       });
     }
 
+    const ingredientNameMap = await loadIngredientNameMap(
+      ingredientRows
+        .map((row) => row.ingredientId)
+        .filter((id): id is string => Boolean(id)),
+    );
+
     const ingredientTranslationMap = new Map<
       string,
       Map<string, { locale: string; displayName: string }>
     >();
-    for (const translation of ingredientTranslationRows) {
-      const translationsForIngredient =
-        ingredientTranslationMap.get(translation.recipeIngredientId) ?? new Map();
-      translationsForIngredient.set(
-        normalizeRecipeLocale(translation.locale),
-        translation,
-      );
-      ingredientTranslationMap.set(
-        translation.recipeIngredientId,
-        translationsForIngredient,
-      );
+    for (const row of ingredientRows) {
+      const translationsForIngredient = new Map<
+        string,
+        { locale: string; displayName: string }
+      >();
+      const names = row.ingredientId
+        ? ingredientNameMap.get(row.ingredientId)
+        : undefined;
+
+      if (names) {
+        for (const [nameLocale, name] of names) {
+          const normalized = normalizeRecipeLocale(nameLocale);
+          translationsForIngredient.set(normalized, {
+            locale: normalized,
+            displayName: name,
+          });
+        }
+      }
+
+      if (row.displayLabel) {
+        const normalizedDefault = normalizeRecipeLocale(recipeRow.defaultLocale);
+        translationsForIngredient.set(normalizedDefault, {
+          locale: normalizedDefault,
+          displayName: row.displayLabel,
+        });
+      }
+
+      ingredientTranslationMap.set(row.recipeIngredientId, translationsForIngredient);
     }
 
     const localizedRecipe = resolveRecipeTranslation(
@@ -204,8 +222,9 @@ export async function GET(
         const ingredientName =
           resolveIngredientDisplayName(
             localizedIngredient,
-            ingredient.canonicalName,
+            ingredient.displayLabel,
           ) ??
+          ingredient.displayLabel ??
           ingredient.canonicalName ??
           ingredient.ingredientKey ??
           "ingredient";
@@ -226,6 +245,7 @@ export async function GET(
           unit: ingredient.unit,
           ingredientKey: ingredient.ingredientKey,
           ingredientSpecificKey: ingredient.ingredientSpecificKey,
+          ingredientId: ingredient.ingredientId,
         };
       });
 

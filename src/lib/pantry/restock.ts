@@ -12,6 +12,7 @@ export interface RestockSeedInput {
   ingredientName: string | null;
   ingredientKey: string | null;
   ingredientSpecificKey: string | null;
+  ingredientId?: string | null;
   quantity: number | string | null;
   unit: string | null;
   category: string | null;
@@ -77,9 +78,14 @@ export function findMatchingRestockItem(
     name: string;
     ingredientKey: string | null;
     ingredientSpecificKey: string | null;
+    ingredientId?: string | null;
   },
 ): typeof pantryRestockItems.$inferSelect | undefined {
   return restockItems.find((item) => {
+    if (input.ingredientId && item.ingredientId === input.ingredientId) {
+      return true;
+    }
+
     if (
       input.ingredientSpecificKey &&
       item.ingredientSpecificKey === input.ingredientSpecificKey
@@ -101,15 +107,18 @@ export function findMatchingPantryItem(
     name: string;
     ingredientKey: string | null;
     ingredientSpecificKey: string | null;
+    ingredientId?: string | null;
     unit: string | null;
   },
 ): typeof pantryItems.$inferSelect | undefined {
   return pantryRows.find((item) => {
-    const matchesIdentity = input.ingredientSpecificKey
-      ? item.ingredientSpecificKey === input.ingredientSpecificKey
-      : input.ingredientKey
-        ? item.ingredientKey === input.ingredientKey
-        : namesMatch(item.name, input.name);
+    const matchesIdentity = input.ingredientId
+      ? item.ingredientId === input.ingredientId
+      : input.ingredientSpecificKey
+        ? item.ingredientSpecificKey === input.ingredientSpecificKey
+        : input.ingredientKey
+          ? item.ingredientKey === input.ingredientKey
+          : namesMatch(item.name, input.name);
 
     if (!matchesIdentity) {
       return false;
@@ -137,6 +146,9 @@ export async function upsertRestockItem(
     ingredientName: input.ingredientName,
     ingredientKey: input.ingredientKey,
     ingredientSpecificKey: input.ingredientSpecificKey,
+    ...(input.ingredientId !== undefined
+      ? { ingredientId: input.ingredientId }
+      : {}),
     defaultQuantity: serializeQuantity(input.quantity),
     defaultUnit: normalizeRestockUnit(input.unit),
     category: input.category,

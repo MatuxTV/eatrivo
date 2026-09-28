@@ -8,7 +8,8 @@ import {
   parseStoredQuantity,
   serializeQuantity,
 } from "@/lib/pantry/restock";
-import { pantryKeySatisfiesRecipeKey } from "@/lib/ingredients/ingredient-family";
+import { matchPantryIngredient } from "@/lib/ingredients/ingredient-matching";
+import { loadIngredientGraph } from "@/lib/pantry/ingredient-resolution";
 import { toCanonicalQuantity } from "@/lib/ingredients/units";
 
 export interface PantryRecipeConsumptionIngredient {
@@ -46,6 +47,7 @@ interface MutablePantryRow {
   ingredientName: string | null;
   ingredientKey: string | null;
   ingredientSpecificKey: string | null;
+  ingredientId: string | null;
   trackingMode: "quantity" | "availability";
   inStock: boolean;
   quantity: number | null;
@@ -100,23 +102,21 @@ function pantryRowMatchesIngredient(
   row: MutablePantryRow,
   ingredient: PantryRecipeConsumptionIngredient,
   pantryNameTargets: Set<string> | undefined,
+  resolveIngredientId: (ingredient: PantryRecipeConsumptionIngredient) => string | null,
+  graph: Awaited<ReturnType<typeof loadIngredientGraph>> | null,
 ): boolean {
-  if (
-    ingredient.ingredientSpecificKey &&
-    row.ingredientSpecificKey === ingredient.ingredientSpecificKey
-  ) {
-    return true;
-  }
+  const recipeIngredientId = resolveIngredientId(ingredient);
 
   if (
-    ingredient.ingredientKey &&
-    ((row.ingredientSpecificKey &&
-      pantryKeySatisfiesRecipeKey(
-        row.ingredientSpecificKey,
-        ingredient.ingredientKey,
-      )) ||
-      (row.ingredientKey &&
-        pantryKeySatisfiesRecipeKey(row.ingredientKey, ingredient.ingredientKey)))
+    matchPantryIngredient(
+      row,
+      {
+        ingredientId: recipeIngredientId,
+        ingredientKey: ingredient.ingredientKey ?? null,
+        ingredientSpecificKey: ingredient.ingredientSpecificKey ?? null,
+      },
+      graph,
+    ).matched
   ) {
     return true;
   }
@@ -148,6 +148,7 @@ export async function consumeRecipeFromPantry(
       ingredientName: pantryItems.ingredientName,
       ingredientKey: pantryItems.ingredientKey,
       ingredientSpecificKey: pantryItems.ingredientSpecificKey,
+      ingredientId: pantryItems.ingredientId,
       trackingMode: pantryItems.trackingMode,
       inStock: pantryItems.inStock,
       quantity: pantryItems.quantity,
@@ -163,6 +164,7 @@ export async function consumeRecipeFromPantry(
     ingredientName: row.ingredientName,
     ingredientKey: row.ingredientKey,
     ingredientSpecificKey: row.ingredientSpecificKey,
+    ingredientId: row.ingredientId,
     trackingMode: row.trackingMode,
     inStock: row.inStock,
     quantity: parseStoredQuantity(row.quantity),
@@ -170,6 +172,13 @@ export async function consumeRecipeFromPantry(
     changed: false,
     deleted: false,
   }));
+  const ingredientGraph = await loadIngredientGraph("en");
+  const resolveIngredientId = (
+    ingredient: PantryRecipeConsumptionIngredient,
+  ): string | null => {
+    const key = ingredient.ingredientSpecificKey ?? ingredient.ingredientKey;
+    return key ? ingredientGraph.idByKey.get(key) ?? null : null;
+  };
   const matchedPantryNames = buildMatchedPantryNameMap(input.matchedIngredients);
 
   let consumedIngredients = 0;
@@ -237,7 +246,13 @@ export async function consumeRecipeFromPantry(
       }
 
       if (
-        !pantryRowMatchesIngredient(row, ingredient, pantryNameTargets) ||
+        !pantryRowMatchesIngredient(
+          row,
+          ingredient,
+          pantryNameTargets,
+          resolveIngredientId,
+          ingredientGraph,
+        ) ||
         row.quantity === null ||
         !row.unit
       ) {

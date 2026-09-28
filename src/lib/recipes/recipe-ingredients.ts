@@ -9,6 +9,7 @@ export interface RecipeIngredientItem {
   unit?: string | null;
   ingredientKey?: string | null;
   ingredientSpecificKey?: string | null;
+  ingredientId?: string | null;
   pantryComparison?: RecipeIngredientPantryComparison | null;
 }
 

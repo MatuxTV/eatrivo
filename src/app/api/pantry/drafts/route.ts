@@ -19,8 +19,6 @@ import {
   normalizePreparedDraftInput,
   preparePantryDrafts,
 } from "@/lib/pantry/prepare-drafts";
-import { PantryIngredientResolutionError } from "@/lib/pantry/ingredient-resolution";
-import { reportIngredientResolutionFeedback } from "@/lib/feedback/ingredient-resolution-feedback";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
 function isValidDraftItem(value: unknown): value is PantryBatchInputItem {
@@ -153,25 +151,6 @@ export async function POST(req: NextRequest) {
       await releasePantryDraftLock(userProfileId);
     }
   } catch (error) {
-    if (error instanceof PantryIngredientResolutionError) {
-      const feedbackRecorded = await reportIngredientResolutionFeedback({
-        source: "pantry-drafts",
-        rawName: error.rawName,
-        locale: session.user.locale ?? "sk",
-        userId: session.user.id,
-        userEmail: session.user.email ?? null,
-        userName: session.user.name ?? null,
-      });
-
-      return NextResponse.json(
-        {
-          error: "We could not recognize one of the items as a food ingredient.",
-          code: "INGREDIENT_RESOLUTION_FAILED",
-          feedbackRecorded,
-        },
-        { status: 422 },
-      );
-    }
 
     apiLogger.error("POST /api/pantry/drafts error", error, {
       metadata: { userId: session.user.id, userProfileId },

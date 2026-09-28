@@ -13,7 +13,7 @@ import {
 } from "@/lib/pantry/draft-cache";
 import {
   loadIngredientAliasIndex,
-  resolveRequiredPantryIngredientIdentity,
+  resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
 import {
   resolvePantryTrackingMode,
@@ -84,14 +84,14 @@ export async function preparePantryDrafts(
       aiSuggestion?.ingredientKey ??
       aiSuggestion?.matchedExistingIngredientKey ??
       null;
-    const ingredientIdentity = resolveRequiredPantryIngredientIdentity(
+    const ingredientIdentity = resolvePantryIngredientIdentity(
       item.name,
       locale,
       aliasIndex,
       aiSuggestedSpecificKey,
       aiSuggestedKey,
     );
-    const displayName = ingredientIdentity.ingredientName;
+    const displayName = ingredientIdentity.ingredientName ?? item.name.trim();
     const trackingMode = resolvePantryTrackingMode({
       name: displayName,
       ingredientKey: ingredientIdentity.ingredientKey,
