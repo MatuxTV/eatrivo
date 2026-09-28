@@ -78,6 +78,7 @@ export async function POST(
       name: restockItem.name,
       ingredientKey: restockItem.ingredientKey,
       ingredientSpecificKey: restockItem.ingredientSpecificKey,
+      ingredientId: restockItem.ingredientId,
       unit: resolvedUnit,
     });
 
@@ -109,6 +110,7 @@ export async function POST(
           ingredientName: restockItem.ingredientName,
           ingredientKey: restockItem.ingredientKey,
           ingredientSpecificKey: restockItem.ingredientSpecificKey,
+          ingredientId: restockItem.ingredientId ?? null,
           quantity: serializeQuantity(resolvedQuantity),
           unit: resolvedUnit,
           category: restockItem.category,

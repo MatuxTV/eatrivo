@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { auth } from "../../../../auth";
 import { db } from "@/index";
 import {
@@ -25,11 +25,14 @@ import {
   getPantryAiSuggestions,
 } from "@/lib/pantry/ai-normalization";
 import {
-  loadIngredientAliasIndex,
-  PantryIngredientResolutionError,
-  resolveRequiredPantryIngredientIdentity,
+  getAliasCandidateKeysForName,
+  loadUserIngredientAliasIndex,
+  resolveIngredientIdByKeys,
+  resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
 import { reportIngredientResolutionFeedback } from "@/lib/feedback/ingredient-resolution-feedback";
+import { ensureUserIngredient } from "@/lib/pantry/user-ingredients";
+import { classifyUserIngredient } from "@/lib/pantry/ingredient-classification";
 import { buildPantryInventoryItems, derivePantryInventoryItem } from "@/lib/pantry/grocery";
 import { invalidatePantryCaches, pantryCacheKey } from "@/lib/pantry/restock";
 import {
@@ -235,29 +238,36 @@ export async function POST(req: NextRequest) {
         : guessFoodCategory(name.trim());
     const normalizedName = name.trim();
     const normalizedUnit = unit ? normalizeUnit(String(unit)) : null;
-    const aiSuggestions = await getPantryAiSuggestions({
-      userProfileId: userProfile.id,
-      locale,
-      currentPantry,
-      pendingItems: [
-        {
-          name: normalizedName,
-          trackingMode: trackingMode ?? null,
-          inStock: inStock ?? null,
-          quantity: quantity ?? null,
-          unit: normalizedUnit,
-          category: resolvedCategory,
-          expiryDate: expiryDate ?? null,
-        },
-      ],
-    });
-    const aiSuggestion = findPantrySuggestionForItem(
-      aiSuggestions,
+    const { index: aliasIndex, privateIdByKey } =
+      await loadUserIngredientAliasIndex(locale, session.user.id);
+    const deterministicCandidates = getAliasCandidateKeysForName(
       normalizedName,
-      0,
+      aliasIndex,
     );
-    const aliasIndex = await loadIngredientAliasIndex(locale);
-    const resolvedIdentity = resolveRequiredPantryIngredientIdentity(
+    const aiSuggestion =
+      deterministicCandidates.length === 1
+        ? null
+        : findPantrySuggestionForItem(
+            await getPantryAiSuggestions({
+              userProfileId: userProfile.id,
+              locale,
+              currentPantry,
+              pendingItems: [
+                {
+                  name: normalizedName,
+                  trackingMode: trackingMode ?? null,
+                  inStock: inStock ?? null,
+                  quantity: quantity ?? null,
+                  unit: normalizedUnit,
+                  category: resolvedCategory,
+                  expiryDate: expiryDate ?? null,
+                },
+              ],
+            }),
+            normalizedName,
+            0,
+          );
+    let resolvedIdentity = resolvePantryIngredientIdentity(
       normalizedName,
       locale,
       aliasIndex,
@@ -268,6 +278,41 @@ export async function POST(req: NextRequest) {
         aiSuggestion?.matchedExistingIngredientKey ??
         null,
     );
+
+    let userIngredient: Awaited<
+      ReturnType<typeof ensureUserIngredient>
+    > = null;
+
+    if (
+      !resolvedIdentity.ingredientKey &&
+      !resolvedIdentity.ingredientSpecificKey
+    ) {
+      userIngredient = await ensureUserIngredient({
+        userId: session.user.id,
+        locale,
+        rawName: normalizedName,
+      });
+
+      if (userIngredient) {
+        resolvedIdentity = {
+          ...resolvedIdentity,
+          ingredientName:
+            userIngredient.canonicalName ?? normalizedName,
+          ingredientKey: userIngredient.key,
+          ingredientSpecificKey: userIngredient.key,
+        };
+      } else {
+        await reportIngredientResolutionFeedback({
+          source: "pantry-manual-add",
+          rawName: normalizedName,
+          locale: session.user.locale ?? locale,
+          userId: session.user.id,
+          userEmail: session.user.email ?? null,
+          userName: session.user.name ?? null,
+        });
+      }
+    }
+
     const resolvedTrackingMode = resolvePantryTrackingMode({
       name: normalizedName,
       ingredientKey: resolvedIdentity.ingredientKey,
@@ -290,6 +335,15 @@ export async function POST(req: NextRequest) {
     });
     const resolvedInStock =
       resolvedTrackingMode === "availability" ? (inStock ?? true) : true;
+    const resolvedIdentityKey =
+      resolvedIdentity.ingredientSpecificKey ?? resolvedIdentity.ingredientKey;
+    const resolvedIngredientId =
+      userIngredient?.id ??
+      (await resolveIngredientIdByKeys(
+        resolvedIdentity.ingredientKey,
+        resolvedIdentity.ingredientSpecificKey,
+      )) ??
+      (resolvedIdentityKey ? privateIdByKey.get(resolvedIdentityKey) ?? null : null);
 
     apiLogger.debug("[pantry.create] resolved pantry item", {
       metadata: {
@@ -329,6 +383,7 @@ export async function POST(req: NextRequest) {
         ingredientName: resolvedIdentity.ingredientName,
         ingredientKey: resolvedIdentity.ingredientKey,
         ingredientSpecificKey: resolvedIdentity.ingredientSpecificKey,
+        ingredientId: resolvedIngredientId,
         trackingMode: resolvedTrackingMode,
         inStock: resolvedInStock,
         quantity:
@@ -373,6 +428,19 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    if (userIngredient?.created) {
+      const userIngredientId = userIngredient.id;
+      after(async () => {
+        await classifyUserIngredient({
+          ingredientId: userIngredientId,
+          userId: session.user.id,
+          userProfileId: userProfile.id,
+          locale,
+          rawName: normalizedName,
+        });
+      });
+    }
+
     return NextResponse.json(
       {
         item: derivePantryInventoryItem(
@@ -386,26 +454,6 @@ export async function POST(req: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
-    if (error instanceof PantryIngredientResolutionError) {
-      const feedbackRecorded = await reportIngredientResolutionFeedback({
-        source: "pantry-manual-add",
-        rawName: error.rawName,
-        locale: session.user.locale ?? "sk",
-        userId: session.user.id,
-        userEmail: session.user.email ?? null,
-        userName: session.user.name ?? null,
-      });
-
-      return NextResponse.json(
-        {
-          error: "We could not recognize this item as a food ingredient.",
-          code: "INGREDIENT_RESOLUTION_FAILED",
-          feedbackRecorded,
-        },
-        { status: 422 },
-      );
-    }
-
     apiLogger.error("POST /api/pantry error", { error });
     return handleApiError(error, "POST /api/pantry", {
       status: 500,

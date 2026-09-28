@@ -1,11 +1,11 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 import { auth } from "../../../../../../auth";
 import { eq } from "drizzle-orm";
 
 import { db } from "@/index";
-import { pantryItems, userProfiles } from "@/db/schema";
+import { pantryItems, userInfoTable, userProfiles } from "@/db/schema";
 import { apiLogger } from "@/lib/logger";
 import {
   acquirePantryDraftLock,
@@ -16,6 +16,12 @@ import {
 } from "@/lib/pantry/draft-cache";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import { CacheService } from "@/lib/cache/redis";
+import { loadIngredientGraph } from "@/lib/pantry/ingredient-resolution";
+import {
+  ensureUserIngredient,
+  type EnsuredUserIngredient,
+} from "@/lib/pantry/user-ingredients";
+import { classifyUserIngredient } from "@/lib/pantry/ingredient-classification";
 
 function parseTokens(body: unknown): string[] | undefined {
   const tokens = (body as { tokens?: unknown[] } | null)?.tokens;
@@ -78,24 +84,62 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      const [ingredientGraph, userInfo] = await Promise.all([
+        loadIngredientGraph("en"),
+        db.query.userInfoTable.findFirst({
+          where: eq(userInfoTable.userProfileId, userProfileId),
+        }),
+      ]);
+      const locale = userInfo?.language ?? "sk";
+
+      // Drafts the resolver could not map become private user ingredients,
+      // same as a manual add, so they are linked and classified later.
+      const userIngredientByToken = new Map<string, EnsuredUserIngredient>();
+      for (const draft of selectedDrafts) {
+        if (draft.ingredientKey || draft.ingredientSpecificKey) {
+          continue;
+        }
+        const userIngredient = await ensureUserIngredient({
+          userId: session.user.id,
+          locale,
+          rawName: draft.name,
+        });
+        if (userIngredient) {
+          userIngredientByToken.set(draft.token, userIngredient);
+        }
+      }
+
       const insertedItems = await db
         .insert(pantryItems)
         .values(
-          selectedDrafts.map((draft) => ({
-            userProfileId: userProfileId as string,
-            name: draft.name,
-            ingredientName: draft.ingredientName,
-            ingredientKey: draft.ingredientKey,
-            ingredientSpecificKey: draft.ingredientSpecificKey,
-            trackingMode: draft.trackingMode,
-            inStock: draft.inStock,
-            quantity: draft.quantity,
-            unit: draft.unit,
-            category: draft.category,
-            expiryDate: draft.expiryDate ? new Date(draft.expiryDate) : null,
-            source: "manual" as const,
-            shoppingListId: null,
-          })),
+          selectedDrafts.map((draft) => {
+            const userIngredient = userIngredientByToken.get(draft.token);
+            const identityKey =
+              draft.ingredientSpecificKey ?? draft.ingredientKey;
+            return {
+              userProfileId: userProfileId as string,
+              name: draft.name,
+              ingredientName:
+                draft.ingredientName ??
+                (userIngredient ? userIngredient.canonicalName ?? draft.name : null),
+              ingredientKey: draft.ingredientKey ?? userIngredient?.key ?? null,
+              ingredientSpecificKey:
+                draft.ingredientSpecificKey ?? userIngredient?.key ?? null,
+              ingredientId:
+                userIngredient?.id ??
+                (identityKey
+                  ? ingredientGraph.idByKey.get(identityKey) ?? null
+                  : null),
+              trackingMode: draft.trackingMode,
+              inStock: draft.inStock,
+              quantity: draft.quantity,
+              unit: draft.unit,
+              category: draft.category,
+              expiryDate: draft.expiryDate ? new Date(draft.expiryDate) : null,
+              source: "manual" as const,
+              shoppingListId: null,
+            };
+          }),
         )
         .returning();
 
@@ -104,6 +148,27 @@ export async function POST(req: NextRequest) {
         selectedDrafts.map((draft) => draft.token),
       );
       await CacheService.del(`pantry:${userProfileId}`);
+
+      const createdUserIngredients = [...userIngredientByToken.entries()].filter(
+        ([, ingredient]) => ingredient.created,
+      );
+      if (createdUserIngredients.length > 0) {
+        const classifyUserProfileId = userProfileId;
+        const draftNameByToken = new Map(
+          selectedDrafts.map((draft) => [draft.token, draft.name]),
+        );
+        after(async () => {
+          for (const [token, ingredient] of createdUserIngredients) {
+            await classifyUserIngredient({
+              ingredientId: ingredient.id,
+              userId: session.user.id,
+              userProfileId: classifyUserProfileId,
+              locale,
+              rawName: draftNameByToken.get(token) ?? ingredient.key,
+            });
+          }
+        });
+      }
 
       return NextResponse.json({
         items: insertedItems,

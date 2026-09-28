@@ -1,0 +1,3305 @@
+{
+  "generatedAt": "2026-09-28T16:03:28.935Z",
+  "summary": {
+    "translationRows": 568,
+    "rowsWithKey": 568,
+    "rowsWithoutKey": 0,
+    "distinctSpecificKeys": 147,
+    "junkKeyCount": 0,
+    "divergentCanonicalNameCount": 18,
+    "invalidHierarchyCount": 0,
+    "missingSlovakNameCount": 0,
+    "junkKeyImpacts": {
+      "pantryItems": 0,
+      "shoppingListItems": 0,
+      "pantryRestockItems": 0
+    }
+  },
+  "junkKeys": [],
+  "divergentCanonicalNames": [
+    {
+      "specificKey": "garlic",
+      "familyKeys": [
+        "garlic"
+      ],
+      "recipeCount": 16,
+      "canonicalNames": [
+        "garlic",
+        "Cesnak"
+      ],
+      "displayNames": {
+        "en": [
+          "garlic",
+          "Garlic"
+        ],
+        "sk": [
+          "cesnak",
+          "Cesnak"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "salt",
+      "familyKeys": [
+        "salt"
+      ],
+      "recipeCount": 13,
+      "canonicalNames": [
+        "salt",
+        "Soľ",
+        "soľ"
+      ],
+      "displayNames": {
+        "en": [
+          "salt",
+          "Salt"
+        ],
+        "sk": [
+          "soľ",
+          "Soľ"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "olive-oil",
+      "familyKeys": [
+        "olive-oil",
+        "oil"
+      ],
+      "recipeCount": 12,
+      "canonicalNames": [
+        "olive oil",
+        "olivový olej",
+        "Olivový olej"
+      ],
+      "displayNames": {
+        "en": [
+          "olive oil",
+          "Olive oil"
+        ],
+        "sk": [
+          "olivový olej",
+          "Olivový olej"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "onion",
+      "familyKeys": [
+        "onion"
+      ],
+      "recipeCount": 12,
+      "canonicalNames": [
+        "onion",
+        "Cibuľa"
+      ],
+      "displayNames": {
+        "en": [
+          "onion",
+          "Onion"
+        ],
+        "sk": [
+          "cibuľa",
+          "Cibuľa"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "black-pepper",
+      "familyKeys": [
+        "black-pepper",
+        "pepper"
+      ],
+      "recipeCount": 8,
+      "canonicalNames": [
+        "black pepper",
+        "pepper",
+        "Čierne korenie"
+      ],
+      "displayNames": {
+        "en": [
+          "black pepper",
+          "pepper",
+          "Black pepper"
+        ],
+        "sk": [
+          "čierne korenie",
+          "Čierne korenie"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "milk",
+      "familyKeys": [
+        "milk"
+      ],
+      "recipeCount": 6,
+      "canonicalNames": [
+        "milk",
+        "Mlieko"
+      ],
+      "displayNames": {
+        "en": [
+          "milk",
+          "Milk"
+        ],
+        "sk": [
+          "mlieko",
+          "Mlieko"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "tomato-puree",
+      "familyKeys": [
+        "tomato-puree",
+        "tomato"
+      ],
+      "recipeCount": 6,
+      "canonicalNames": [
+        "tomato puree",
+        "Paradajkový pretlak"
+      ],
+      "displayNames": {
+        "en": [
+          "tomato puree",
+          "tomato purée",
+          "Tomato paste"
+        ],
+        "sk": [
+          "paradajkový pretlak",
+          "Paradajkový pretlak"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "chicken-breast",
+      "familyKeys": [
+        "chicken-breast"
+      ],
+      "recipeCount": 5,
+      "canonicalNames": [
+        "chicken breast",
+        "Kuracie prsia"
+      ],
+      "displayNames": {
+        "en": [
+          "chicken breast",
+          "Chicken breast"
+        ],
+        "sk": [
+          "kuracie prsia",
+          "Kuracie prsia"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "beef-mince",
+      "familyKeys": [
+        "beef-mince"
+      ],
+      "recipeCount": 4,
+      "canonicalNames": [
+        "beef mince",
+        "Hovädzie mleté mäso"
+      ],
+      "displayNames": {
+        "en": [
+          "beef mince",
+          "Ground beef"
+        ],
+        "sk": [
+          "mleté hovädzie mäso",
+          "Hovädzie mleté mäso"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "rice",
+      "familyKeys": [
+        "rice"
+      ],
+      "recipeCount": 4,
+      "canonicalNames": [
+        "rice",
+        "Ryžová kaša",
+        "Jasminova ryža"
+      ],
+      "displayNames": {
+        "en": [
+          "rice",
+          "Rice porridge flakes",
+          "Jasmine rice"
+        ],
+        "sk": [
+          "ryža",
+          "Ryžová kaša",
+          "Jasminova ryža"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "banana",
+      "familyKeys": [
+        "banana"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "banana",
+        "Banán"
+      ],
+      "displayNames": {
+        "en": [
+          "banana",
+          "Banana"
+        ],
+        "sk": [
+          "banán",
+          "Banán"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "basil",
+      "familyKeys": [
+        "basil"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "basil",
+        "basil leaf"
+      ],
+      "displayNames": {
+        "en": [
+          "fresh basil",
+          "basil leaf",
+          "basil"
+        ],
+        "sk": [
+          "čerstvá bazalka",
+          "lístok bazalky",
+          "bazalka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "butter",
+      "familyKeys": [
+        "butter"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "butter",
+        "maslo"
+      ],
+      "displayNames": {
+        "en": [
+          "butter"
+        ],
+        "sk": [
+          "maslo"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "cumin",
+      "familyKeys": [
+        "cumin"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "cumin",
+        "Rímska rasca"
+      ],
+      "displayNames": {
+        "en": [
+          "ground cumin",
+          "cumin",
+          "Cumin"
+        ],
+        "sk": [
+          "rímska rasca",
+          "Rímska rasca"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "spaghetti",
+      "familyKeys": [
+        "spaghetti"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "spaghetti",
+        "Špagety"
+      ],
+      "displayNames": {
+        "en": [
+          "spaghetti",
+          "Spaghetti"
+        ],
+        "sk": [
+          "špagety",
+          "Špagety"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "sweet-paprika",
+      "familyKeys": [
+        "sweet-paprika"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "sweet paprika",
+        "Mletá sladká paprika"
+      ],
+      "displayNames": {
+        "en": [
+          "sweet paprika",
+          "Sweet paprika powder",
+          "Sweet paprika"
+        ],
+        "sk": [
+          "sladká mletá paprika",
+          "Mletá sladká paprika"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "cheese",
+      "familyKeys": [
+        "cheese"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "cheese",
+        "Nátierkový syr"
+      ],
+      "displayNames": {
+        "en": [
+          "cheese",
+          "Spread cheese"
+        ],
+        "sk": [
+          "syr",
+          "Nátierkový syr"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "garlic-powder",
+      "familyKeys": [
+        "garlic-powder"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "garlic powder",
+        "Sušený cesnak"
+      ],
+      "displayNames": {
+        "en": [
+          "garlic powder",
+          "Dried garlic powder"
+        ],
+        "sk": [
+          "sušený cesnak",
+          "Sušený cesnak"
+        ]
+      },
+      "junkReasons": []
+    }
+  ],
+  "invalidHierarchy": [],
+  "missingLocalizedNames": [],
+  "keys": [
+    {
+      "specificKey": "garlic",
+      "familyKeys": [
+        "garlic"
+      ],
+      "recipeCount": 16,
+      "canonicalNames": [
+        "garlic",
+        "Cesnak"
+      ],
+      "displayNames": {
+        "en": [
+          "garlic",
+          "Garlic"
+        ],
+        "sk": [
+          "cesnak",
+          "Cesnak"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "salt",
+      "familyKeys": [
+        "salt"
+      ],
+      "recipeCount": 13,
+      "canonicalNames": [
+        "salt",
+        "Soľ",
+        "soľ"
+      ],
+      "displayNames": {
+        "en": [
+          "salt",
+          "Salt"
+        ],
+        "sk": [
+          "soľ",
+          "Soľ"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "olive-oil",
+      "familyKeys": [
+        "olive-oil",
+        "oil"
+      ],
+      "recipeCount": 12,
+      "canonicalNames": [
+        "olive oil",
+        "olivový olej",
+        "Olivový olej"
+      ],
+      "displayNames": {
+        "en": [
+          "olive oil",
+          "Olive oil"
+        ],
+        "sk": [
+          "olivový olej",
+          "Olivový olej"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "onion",
+      "familyKeys": [
+        "onion"
+      ],
+      "recipeCount": 12,
+      "canonicalNames": [
+        "onion",
+        "Cibuľa"
+      ],
+      "displayNames": {
+        "en": [
+          "onion",
+          "Onion"
+        ],
+        "sk": [
+          "cibuľa",
+          "Cibuľa"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "black-pepper",
+      "familyKeys": [
+        "black-pepper",
+        "pepper"
+      ],
+      "recipeCount": 8,
+      "canonicalNames": [
+        "black pepper",
+        "pepper",
+        "Čierne korenie"
+      ],
+      "displayNames": {
+        "en": [
+          "black pepper",
+          "pepper",
+          "Black pepper"
+        ],
+        "sk": [
+          "čierne korenie",
+          "Čierne korenie"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "egg",
+      "familyKeys": [
+        "egg"
+      ],
+      "recipeCount": 6,
+      "canonicalNames": [
+        "egg"
+      ],
+      "displayNames": {
+        "en": [
+          "egg"
+        ],
+        "sk": [
+          "vajce"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "milk",
+      "familyKeys": [
+        "milk"
+      ],
+      "recipeCount": 6,
+      "canonicalNames": [
+        "milk",
+        "Mlieko"
+      ],
+      "displayNames": {
+        "en": [
+          "milk",
+          "Milk"
+        ],
+        "sk": [
+          "mlieko",
+          "Mlieko"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "tomato-puree",
+      "familyKeys": [
+        "tomato-puree",
+        "tomato"
+      ],
+      "recipeCount": 6,
+      "canonicalNames": [
+        "tomato puree",
+        "Paradajkový pretlak"
+      ],
+      "displayNames": {
+        "en": [
+          "tomato puree",
+          "tomato purée",
+          "Tomato paste"
+        ],
+        "sk": [
+          "paradajkový pretlak",
+          "Paradajkový pretlak"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "chicken-breast",
+      "familyKeys": [
+        "chicken-breast"
+      ],
+      "recipeCount": 5,
+      "canonicalNames": [
+        "chicken breast",
+        "Kuracie prsia"
+      ],
+      "displayNames": {
+        "en": [
+          "chicken breast",
+          "Chicken breast"
+        ],
+        "sk": [
+          "kuracie prsia",
+          "Kuracie prsia"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "beef-mince",
+      "familyKeys": [
+        "beef-mince"
+      ],
+      "recipeCount": 4,
+      "canonicalNames": [
+        "beef mince",
+        "Hovädzie mleté mäso"
+      ],
+      "displayNames": {
+        "en": [
+          "beef mince",
+          "Ground beef"
+        ],
+        "sk": [
+          "mleté hovädzie mäso",
+          "Hovädzie mleté mäso"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "ginger",
+      "familyKeys": [
+        "ginger"
+      ],
+      "recipeCount": 4,
+      "canonicalNames": [
+        "ginger"
+      ],
+      "displayNames": {
+        "en": [
+          "ginger"
+        ],
+        "sk": [
+          "zázvor"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "oil",
+      "familyKeys": [
+        "oil"
+      ],
+      "recipeCount": 4,
+      "canonicalNames": [
+        "oil"
+      ],
+      "displayNames": {
+        "en": [
+          "oil",
+          "rapeseed oil"
+        ],
+        "sk": [
+          "olej",
+          "repkový olej"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "rice",
+      "familyKeys": [
+        "rice"
+      ],
+      "recipeCount": 4,
+      "canonicalNames": [
+        "rice",
+        "Ryžová kaša",
+        "Jasminova ryža"
+      ],
+      "displayNames": {
+        "en": [
+          "rice",
+          "Rice porridge flakes",
+          "Jasmine rice"
+        ],
+        "sk": [
+          "ryža",
+          "Ryžová kaša",
+          "Jasminova ryža"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "vegetable-oil",
+      "familyKeys": [
+        "vegetable-oil",
+        "oil"
+      ],
+      "recipeCount": 4,
+      "canonicalNames": [
+        "vegetable oil"
+      ],
+      "displayNames": {
+        "en": [
+          "vegetable oil"
+        ],
+        "sk": [
+          "rastlinný olej",
+          "olej"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "banana",
+      "familyKeys": [
+        "banana"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "banana",
+        "Banán"
+      ],
+      "displayNames": {
+        "en": [
+          "banana",
+          "Banana"
+        ],
+        "sk": [
+          "banán",
+          "Banán"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "basil",
+      "familyKeys": [
+        "basil"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "basil",
+        "basil leaf"
+      ],
+      "displayNames": {
+        "en": [
+          "fresh basil",
+          "basil leaf",
+          "basil"
+        ],
+        "sk": [
+          "čerstvá bazalka",
+          "lístok bazalky",
+          "bazalka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "butter",
+      "familyKeys": [
+        "butter"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "butter",
+        "maslo"
+      ],
+      "displayNames": {
+        "en": [
+          "butter"
+        ],
+        "sk": [
+          "maslo"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "cherry-tomato",
+      "familyKeys": [
+        "tomato",
+        "cherry-tomato"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "cherry tomato"
+      ],
+      "displayNames": {
+        "en": [
+          "cherry tomato"
+        ],
+        "sk": [
+          "cherry paradajka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "chicken-stock",
+      "familyKeys": [
+        "chicken-stock"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "chicken stock"
+      ],
+      "displayNames": {
+        "en": [
+          "chicken stock"
+        ],
+        "sk": [
+          "kurací vývar"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "chili-flake",
+      "familyKeys": [
+        "chili-flake"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "chili flake"
+      ],
+      "displayNames": {
+        "en": [
+          "chilli flake",
+          "chili flakes"
+        ],
+        "sk": [
+          "čili vločka",
+          "čili vločky"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "cumin",
+      "familyKeys": [
+        "cumin"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "cumin",
+        "Rímska rasca"
+      ],
+      "displayNames": {
+        "en": [
+          "ground cumin",
+          "cumin",
+          "Cumin"
+        ],
+        "sk": [
+          "rímska rasca",
+          "Rímska rasca"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "honey",
+      "familyKeys": [
+        "honey"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "honey"
+      ],
+      "displayNames": {
+        "en": [
+          "honey"
+        ],
+        "sk": [
+          "med"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "lemon",
+      "familyKeys": [
+        "lemon"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "lemon"
+      ],
+      "displayNames": {
+        "en": [
+          "lemon"
+        ],
+        "sk": [
+          "citrón"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "paprika",
+      "familyKeys": [
+        "paprika"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "paprika"
+      ],
+      "displayNames": {
+        "en": [
+          "paprika"
+        ],
+        "sk": [
+          "mletá paprika"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "parmesan",
+      "familyKeys": [
+        "parmesan"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "parmesan"
+      ],
+      "displayNames": {
+        "en": [
+          "parmesan"
+        ],
+        "sk": [
+          "parmezán"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "spaghetti",
+      "familyKeys": [
+        "spaghetti"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "spaghetti",
+        "Špagety"
+      ],
+      "displayNames": {
+        "en": [
+          "spaghetti",
+          "Spaghetti"
+        ],
+        "sk": [
+          "špagety",
+          "Špagety"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "sweet-paprika",
+      "familyKeys": [
+        "sweet-paprika"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "sweet paprika",
+        "Mletá sladká paprika"
+      ],
+      "displayNames": {
+        "en": [
+          "sweet paprika",
+          "Sweet paprika powder",
+          "Sweet paprika"
+        ],
+        "sk": [
+          "sladká mletá paprika",
+          "Mletá sladká paprika"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "wheat-flour",
+      "familyKeys": [
+        "wheat-flour"
+      ],
+      "recipeCount": 3,
+      "canonicalNames": [
+        "wheat flour"
+      ],
+      "displayNames": {
+        "en": [
+          "wheat flour",
+          "plain flour"
+        ],
+        "sk": [
+          "hladká múka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "beef-stock-cube",
+      "familyKeys": [
+        "beef-stock-cube"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "beef stock cube"
+      ],
+      "displayNames": {
+        "en": [
+          "beef stock cube"
+        ],
+        "sk": [
+          "hovädzí bujón"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "carrot",
+      "familyKeys": [
+        "carrot"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "carrot"
+      ],
+      "displayNames": {
+        "en": [
+          "carrot"
+        ],
+        "sk": [
+          "mrkva"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "cheese",
+      "familyKeys": [
+        "cheese"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "cheese",
+        "Nátierkový syr"
+      ],
+      "displayNames": {
+        "en": [
+          "cheese",
+          "Spread cheese"
+        ],
+        "sk": [
+          "syr",
+          "Nátierkový syr"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "chicken-thigh",
+      "familyKeys": [
+        "chicken-thigh"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "chicken thigh"
+      ],
+      "displayNames": {
+        "en": [
+          "chicken thigh"
+        ],
+        "sk": [
+          "kuracie stehno"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "chili-powder",
+      "familyKeys": [
+        "chili-powder"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "chili powder"
+      ],
+      "displayNames": {
+        "en": [
+          "chilli powder",
+          "chili powder"
+        ],
+        "sk": [
+          "čili prášok"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "chopped-tomato",
+      "familyKeys": [
+        "chopped-tomato"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "chopped tomato"
+      ],
+      "displayNames": {
+        "en": [
+          "chopped tomato"
+        ],
+        "sk": [
+          "krájaná paradajka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "coriander",
+      "familyKeys": [
+        "coriander"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "coriander"
+      ],
+      "displayNames": {
+        "en": [
+          "coriander"
+        ],
+        "sk": [
+          "koriander"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "garam-masala",
+      "familyKeys": [
+        "garam-masala"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "garam masala"
+      ],
+      "displayNames": {
+        "en": [
+          "garam masala"
+        ],
+        "sk": [
+          "garam masala"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "garlic-powder",
+      "familyKeys": [
+        "garlic-powder"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "garlic powder",
+        "Sušený cesnak"
+      ],
+      "displayNames": {
+        "en": [
+          "garlic powder",
+          "Dried garlic powder"
+        ],
+        "sk": [
+          "sušený cesnak",
+          "Sušený cesnak"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "lime",
+      "familyKeys": [
+        "lime"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "lime"
+      ],
+      "displayNames": {
+        "en": [
+          "lime"
+        ],
+        "sk": [
+          "limetka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "red-onion",
+      "familyKeys": [
+        "red-onion"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "red onion"
+      ],
+      "displayNames": {
+        "en": [
+          "red onion"
+        ],
+        "sk": [
+          "červená cibuľa"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "sesame-oil",
+      "familyKeys": [
+        "sesame-oil"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "sesame oil"
+      ],
+      "displayNames": {
+        "en": [
+          "sesame oil"
+        ],
+        "sk": [
+          "sezamový olej"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "soy-sauce",
+      "familyKeys": [
+        "soy-sauce"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "soy sauce"
+      ],
+      "displayNames": {
+        "en": [
+          "soy sauce"
+        ],
+        "sk": [
+          "sójová omáčka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "spinach",
+      "familyKeys": [
+        "spinach"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "spinach"
+      ],
+      "displayNames": {
+        "en": [
+          "spinach"
+        ],
+        "sk": [
+          "špenát"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "spring-onion",
+      "familyKeys": [
+        "spring-onion"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "spring onion"
+      ],
+      "displayNames": {
+        "en": [
+          "spring onion"
+        ],
+        "sk": [
+          "jarná cibuľka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "sugar",
+      "familyKeys": [
+        "sugar"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "sugar"
+      ],
+      "displayNames": {
+        "en": [
+          "sugar",
+          "granulated sugar"
+        ],
+        "sk": [
+          "cukor",
+          "kryštálový cukor"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "thyme",
+      "familyKeys": [
+        "thyme"
+      ],
+      "recipeCount": 2,
+      "canonicalNames": [
+        "thyme"
+      ],
+      "displayNames": {
+        "en": [
+          "thyme"
+        ],
+        "sk": [
+          "tymian"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "agave-syrup",
+      "familyKeys": [
+        "agave-syrup"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "agave syrup"
+      ],
+      "displayNames": {
+        "en": [
+          "agave syrup"
+        ],
+        "sk": [
+          "agávový sirup"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "almond-butter",
+      "familyKeys": [
+        "butter"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "Mandľové maslo"
+      ],
+      "displayNames": {
+        "en": [
+          "Almond butter"
+        ],
+        "sk": [
+          "Mandľové maslo"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "amaretto",
+      "familyKeys": [
+        "amaretto"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "amaretto"
+      ],
+      "displayNames": {
+        "en": [
+          "amaretto"
+        ],
+        "sk": [
+          "amaretto"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "anchovy-fillet",
+      "familyKeys": [
+        "anchovy-fillet"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "anchovy fillet"
+      ],
+      "displayNames": {
+        "en": [
+          "anchovy fillet"
+        ],
+        "sk": [
+          "ančovička"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "avocado",
+      "familyKeys": [
+        "avocado"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "avocado"
+      ],
+      "displayNames": {
+        "en": [
+          "avocado"
+        ],
+        "sk": [
+          "avokádo"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "basmati-rice",
+      "familyKeys": [
+        "basmati-rice"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "basmati rice"
+      ],
+      "displayNames": {
+        "en": [
+          "basmati rice"
+        ],
+        "sk": [
+          "basmati ryža"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "bay-leaf",
+      "familyKeys": [
+        "bay-leaf"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "bay leaf"
+      ],
+      "displayNames": {
+        "en": [
+          "bay leaf"
+        ],
+        "sk": [
+          "bobkový list"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "beansprout",
+      "familyKeys": [
+        "beansprout"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "beansprout"
+      ],
+      "displayNames": {
+        "en": [
+          "beansprout"
+        ],
+        "sk": [
+          "fazuľové klíčky"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "beef-broth",
+      "familyKeys": [
+        "beef-broth"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "beef broth"
+      ],
+      "displayNames": {
+        "en": [
+          "beef broth"
+        ],
+        "sk": [
+          "hovädzí vývar"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "beef-stock",
+      "familyKeys": [
+        "beef-stock"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "beef stock"
+      ],
+      "displayNames": {
+        "en": [
+          "beef stock"
+        ],
+        "sk": [
+          "hovädzí vývar"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "black-olive",
+      "familyKeys": [
+        "black-olive"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "black olive"
+      ],
+      "displayNames": {
+        "en": [
+          "black olive"
+        ],
+        "sk": [
+          "čierna oliva"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "brown-rice",
+      "familyKeys": [
+        "brown-rice"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "brown rice"
+      ],
+      "displayNames": {
+        "en": [
+          "brown rice"
+        ],
+        "sk": [
+          "hnedá ryža"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "caper",
+      "familyKeys": [
+        "caper"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "caper"
+      ],
+      "displayNames": {
+        "en": [
+          "caper"
+        ],
+        "sk": [
+          "kapara"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "cashew-nut",
+      "familyKeys": [
+        "cashew-nut"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "cashew nut"
+      ],
+      "displayNames": {
+        "en": [
+          "cashew nut"
+        ],
+        "sk": [
+          "kešu orech"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "celery-stalk",
+      "familyKeys": [
+        "celery-stalk"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "celery stalk"
+      ],
+      "displayNames": {
+        "en": [
+          "celery stalk"
+        ],
+        "sk": [
+          "stonkový zeler"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "cheddar-cheese",
+      "familyKeys": [
+        "cheddar-cheese"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "cheddar cheese"
+      ],
+      "displayNames": {
+        "en": [
+          "cheddar cheese"
+        ],
+        "sk": [
+          "čedar"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "chicken-drumstick",
+      "familyKeys": [
+        "chicken-drumstick"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "chicken drumstick"
+      ],
+      "displayNames": {
+        "en": [
+          "chicken drumstick"
+        ],
+        "sk": [
+          "kuracie stehno dolné"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "chili",
+      "familyKeys": [
+        "chili"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "chili"
+      ],
+      "displayNames": {
+        "en": [
+          "chili"
+        ],
+        "sk": [
+          "čili "
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "chinese-five-spice-powder",
+      "familyKeys": [
+        "chinese-five-spice-powder"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "chinese five-spice powder"
+      ],
+      "displayNames": {
+        "en": [
+          "chinese five-spice powder"
+        ],
+        "sk": [
+          "čínske korenie piatich vôní"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "chipotle-paste",
+      "familyKeys": [
+        "chipotle-paste"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "chipotle paste"
+      ],
+      "displayNames": {
+        "en": [
+          "chipotle paste"
+        ],
+        "sk": [
+          "chipotle pasta"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "citronova-stava",
+      "familyKeys": [
+        "citronova-stava"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "citrónová šťava"
+      ],
+      "displayNames": {
+        "en": [
+          "lemon juice"
+        ],
+        "sk": [
+          "citrónová šťava"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "cocoa-powder",
+      "familyKeys": [
+        "cocoa-powder"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "cocoa powder"
+      ],
+      "displayNames": {
+        "en": [
+          "cocoa powder"
+        ],
+        "sk": [
+          "kakao"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "coconut-oil",
+      "familyKeys": [
+        "coconut-oil"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "coconut oil"
+      ],
+      "displayNames": {
+        "en": [
+          "coconut oil"
+        ],
+        "sk": [
+          "kokosový olej"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "coffee",
+      "familyKeys": [
+        "coffee"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "coffee"
+      ],
+      "displayNames": {
+        "en": [
+          "strong coffee"
+        ],
+        "sk": [
+          "silná káva"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "corn-starch",
+      "familyKeys": [
+        "corn-starch"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "corn starch"
+      ],
+      "displayNames": {
+        "en": [
+          "corn starch"
+        ],
+        "sk": [
+          "kukuričný škrob"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "cornflour",
+      "familyKeys": [
+        "cornflour"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "cornflour"
+      ],
+      "displayNames": {
+        "en": [
+          "cornflour"
+        ],
+        "sk": [
+          "kukuričný škrob"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "couscous",
+      "familyKeys": [
+        "couscous"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "couscous"
+      ],
+      "displayNames": {
+        "en": [
+          "couscous"
+        ],
+        "sk": [
+          "kuskus"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "crusty-bread",
+      "familyKeys": [
+        "crusty-bread"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "crusty bread"
+      ],
+      "displayNames": {
+        "en": [
+          "crusty bread"
+        ],
+        "sk": [
+          "chrumkavý chlieb"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "cumin-seed",
+      "familyKeys": [
+        "cumin-seed"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "cumin seed"
+      ],
+      "displayNames": {
+        "en": [
+          "cumin seeds"
+        ],
+        "sk": [
+          "rímska rasca"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "desiccated-coconut",
+      "familyKeys": [
+        "desiccated-coconut"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "desiccated coconut"
+      ],
+      "displayNames": {
+        "en": [
+          "desiccated coconut"
+        ],
+        "sk": [
+          "strúhaný kokos"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "double-cream",
+      "familyKeys": [
+        "cream"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "double cream"
+      ],
+      "displayNames": {
+        "en": [
+          "double cream"
+        ],
+        "sk": [
+          "smotana na šľahanie"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "dried-apricot",
+      "familyKeys": [
+        "dried-apricot"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "dried apricot"
+      ],
+      "displayNames": {
+        "en": [
+          "dried apricot"
+        ],
+        "sk": [
+          "sušená marhuľa"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "dried-basil",
+      "familyKeys": [
+        "basil"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "basil"
+      ],
+      "displayNames": {
+        "en": [
+          "basil"
+        ],
+        "sk": [
+          "bazalka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "dried-shiitake-mushroom",
+      "familyKeys": [
+        "dried-shiitake-mushroom"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "dried shiitake mushroom"
+      ],
+      "displayNames": {
+        "en": [
+          "dried shiitake mushroom"
+        ],
+        "sk": [
+          "sušená shiitake"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "firm-tofu",
+      "familyKeys": [
+        "firm-tofu"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "firm tofu"
+      ],
+      "displayNames": {
+        "en": [
+          "firm tofu"
+        ],
+        "sk": [
+          "pevné tofu"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "flaked-almond",
+      "familyKeys": [
+        "flaked-almond"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "flaked almond"
+      ],
+      "displayNames": {
+        "en": [
+          "flaked almond"
+        ],
+        "sk": [
+          "plátková mandľa"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "frozen-vegetable",
+      "familyKeys": [
+        "frozen-vegetable"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "frozen vegetable"
+      ],
+      "displayNames": {
+        "en": [
+          "frozen vegetable"
+        ],
+        "sk": [
+          "mrazená zelenina"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "goose-breast",
+      "familyKeys": [
+        "goose-breast"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "goose breast"
+      ],
+      "displayNames": {
+        "en": [
+          "goose breast"
+        ],
+        "sk": [
+          "husacie prsia"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "green-asparagus",
+      "familyKeys": [
+        "asparagus"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "zelená špargľa"
+      ],
+      "displayNames": {
+        "en": [
+          "green asparagus"
+        ],
+        "sk": [
+          "zelená špargľa"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "green-chili",
+      "familyKeys": [
+        "green-chili"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "green chili"
+      ],
+      "displayNames": {
+        "en": [
+          "green chili"
+        ],
+        "sk": [
+          "zelená čili paprička"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "ground-fenugreek",
+      "familyKeys": [
+        "ground-fenugreek"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "ground fenugreek"
+      ],
+      "displayNames": {
+        "en": [
+          "ground fenugreek"
+        ],
+        "sk": [
+          "mletá senovka grécka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "ground-paprika",
+      "familyKeys": [
+        "ground-paprika"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "ground paprika"
+      ],
+      "displayNames": {
+        "en": [
+          "ground paprika"
+        ],
+        "sk": [
+          "mletá sladká paprika"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "halloumi-cheese",
+      "familyKeys": [
+        "halloumi-cheese"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "halloumi cheese"
+      ],
+      "displayNames": {
+        "en": [
+          "halloumi cheese"
+        ],
+        "sk": [
+          "syr halloumi"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "hard-cheese",
+      "familyKeys": [
+        "hard-cheese"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "hard cheese"
+      ],
+      "displayNames": {
+        "en": [
+          "hard cheese"
+        ],
+        "sk": [
+          "tvrdý syr"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "hoisin-sauce",
+      "familyKeys": [
+        "hoisin-sauce"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "hoisin sauce"
+      ],
+      "displayNames": {
+        "en": [
+          "hoisin sauce"
+        ],
+        "sk": [
+          "hoisin omáčka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "hot-water",
+      "familyKeys": [
+        "hot-water"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "hot water"
+      ],
+      "displayNames": {
+        "en": [
+          "hot water"
+        ],
+        "sk": [
+          "horúca voda"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "jasmine-rice",
+      "familyKeys": [
+        "rice"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "jasmine rice"
+      ],
+      "displayNames": {
+        "en": [
+          "jasmine rice"
+        ],
+        "sk": [
+          "jazmínová ryža"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "kale",
+      "familyKeys": [
+        "kale"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "kale"
+      ],
+      "displayNames": {
+        "en": [
+          "kale"
+        ],
+        "sk": [
+          "kel"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "ks-wrapy",
+      "familyKeys": [
+        "ks-wrapy"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "Wrapy"
+      ],
+      "displayNames": {
+        "en": [
+          "Wraps"
+        ],
+        "sk": [
+          "Wrapy"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "ladyfinger",
+      "familyKeys": [
+        "ladyfinger"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "ladyfinger"
+      ],
+      "displayNames": {
+        "en": [
+          "ladyfinger"
+        ],
+        "sk": [
+          "cukrárska piškóta"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "lasagna-sheet",
+      "familyKeys": [
+        "lasagna-sheet"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "lasagna sheet"
+      ],
+      "displayNames": {
+        "en": [
+          "lasagna sheet"
+        ],
+        "sk": [
+          "lasagne"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "long-grain-rice",
+      "familyKeys": [
+        "rice"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "long grain rice"
+      ],
+      "displayNames": {
+        "en": [
+          "long grain rice"
+        ],
+        "sk": [
+          "dlhozrnná ryža"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "mango-chutney",
+      "familyKeys": [
+        "mango-chutney"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "mango chutney"
+      ],
+      "displayNames": {
+        "en": [
+          "mango chutney"
+        ],
+        "sk": [
+          "mangové chutney"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "marjoram",
+      "familyKeys": [
+        "marjoram"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "marjoram"
+      ],
+      "displayNames": {
+        "en": [
+          "marjoram"
+        ],
+        "sk": [
+          "majoránka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "mascarpone",
+      "familyKeys": [
+        "mascarpone"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "mascarpone"
+      ],
+      "displayNames": {
+        "en": [
+          "mascarpone"
+        ],
+        "sk": [
+          "mascarpone"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "minced-meat",
+      "familyKeys": [
+        "minced-meat"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "minced meat"
+      ],
+      "displayNames": {
+        "en": [
+          "minced meat"
+        ],
+        "sk": [
+          "mleté mäso"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "mozzarella-cheese",
+      "familyKeys": [
+        "cheese"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "mozzarella cheese"
+      ],
+      "displayNames": {
+        "en": [
+          "mozzarella cheese"
+        ],
+        "sk": [
+          "mozzarella"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "naan-bread",
+      "familyKeys": [
+        "naan-bread"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "naan bread"
+      ],
+      "displayNames": {
+        "en": [
+          "naan bread"
+        ],
+        "sk": [
+          "chlieb naan"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "natural-yogurt",
+      "familyKeys": [
+        "natural-yogurt"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "natural yogurt"
+      ],
+      "displayNames": {
+        "en": [
+          "natural yogurt"
+        ],
+        "sk": [
+          "biely jogurt"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "nori",
+      "familyKeys": [
+        "nori"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "nori"
+      ],
+      "displayNames": {
+        "en": [
+          "nori"
+        ],
+        "sk": [
+          "riasa nori"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "nutmeg",
+      "familyKeys": [
+        "nutmeg"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "nutmeg"
+      ],
+      "displayNames": {
+        "en": [
+          "nutmeg"
+        ],
+        "sk": [
+          "muškátový oriešok"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "onion-powder",
+      "familyKeys": [
+        "onion-powder"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "onion powder"
+      ],
+      "displayNames": {
+        "en": [
+          "onion powder"
+        ],
+        "sk": [
+          "sušená cibuľa"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "orange",
+      "familyKeys": [
+        "orange"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "orange"
+      ],
+      "displayNames": {
+        "en": [
+          "orange"
+        ],
+        "sk": [
+          "pomaranč"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "oregano",
+      "familyKeys": [
+        "oregano"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "oregano"
+      ],
+      "displayNames": {
+        "en": [
+          "oregano"
+        ],
+        "sk": [
+          "oregáno"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "pak-choi",
+      "familyKeys": [
+        "pak-choi"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "pak choi"
+      ],
+      "displayNames": {
+        "en": [
+          "pak choi"
+        ],
+        "sk": [
+          "pak choi"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "parsley",
+      "familyKeys": [
+        "parsley"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "parsley"
+      ],
+      "displayNames": {
+        "en": [
+          "parsley"
+        ],
+        "sk": [
+          "petržlenová vňať"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "pasta",
+      "familyKeys": [
+        "pasta"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "pasta"
+      ],
+      "displayNames": {
+        "en": [
+          "pasta"
+        ],
+        "sk": [
+          "cestovina"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "peanut",
+      "familyKeys": [
+        "peanut"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "peanut"
+      ],
+      "displayNames": {
+        "en": [
+          "peanut"
+        ],
+        "sk": [
+          "arašid"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "peeled-tomato",
+      "familyKeys": [
+        "peeled-tomato"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "peeled tomato"
+      ],
+      "displayNames": {
+        "en": [
+          "peeled tomato"
+        ],
+        "sk": [
+          "lúpaná paradajka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "pistachio-butter",
+      "familyKeys": [
+        "pistachio-butter"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "pistachio butter"
+      ],
+      "displayNames": {
+        "en": [
+          "pistachio butter"
+        ],
+        "sk": [
+          "pistáciové maslo"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "plant-milk",
+      "familyKeys": [
+        "plant-milk"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "plant milk"
+      ],
+      "displayNames": {
+        "en": [
+          "plant milk"
+        ],
+        "sk": [
+          "rastlinné mlieko"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "plum-tomato",
+      "familyKeys": [
+        "plum-tomato"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "plum tomato"
+      ],
+      "displayNames": {
+        "en": [
+          "plum tomato"
+        ],
+        "sk": [
+          "slivková paradajka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "potato",
+      "familyKeys": [
+        "potato"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "potato"
+      ],
+      "displayNames": {
+        "en": [
+          "potato"
+        ],
+        "sk": [
+          "zemiak"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "protein-powder",
+      "familyKeys": [
+        "protein-powder"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "protein powder"
+      ],
+      "displayNames": {
+        "en": [
+          "protein powder"
+        ],
+        "sk": [
+          "proteínový prášok"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "ramen-noodle",
+      "familyKeys": [
+        "ramen-noodle"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "ramen noodle"
+      ],
+      "displayNames": {
+        "en": [
+          "ramen noodle"
+        ],
+        "sk": [
+          "ramen rezance"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "red-bell-pepper",
+      "familyKeys": [
+        "red-bell-pepper"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "red bell pepper"
+      ],
+      "displayNames": {
+        "en": [
+          "red bell pepper"
+        ],
+        "sk": [
+          "červená paprika"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "red-chili",
+      "familyKeys": [
+        "red-chili"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "red chili"
+      ],
+      "displayNames": {
+        "en": [
+          "red chili"
+        ],
+        "sk": [
+          "červená čili paprička"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "red-kidney-bean",
+      "familyKeys": [
+        "red-kidney-bean"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "red kidney bean"
+      ],
+      "displayNames": {
+        "en": [
+          "red kidney bean"
+        ],
+        "sk": [
+          "červená fazuľa"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "red-wine",
+      "familyKeys": [
+        "red-wine"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "red wine"
+      ],
+      "displayNames": {
+        "en": [
+          "red wine"
+        ],
+        "sk": [
+          "červené víno"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "rolled-oat",
+      "familyKeys": [
+        "rolled-oat"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "rolled oat"
+      ],
+      "displayNames": {
+        "en": [
+          "rolled oats"
+        ],
+        "sk": [
+          "ovsené vločky"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "rosemary",
+      "familyKeys": [
+        "rosemary"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "rosemary"
+      ],
+      "displayNames": {
+        "en": [
+          "rosemary"
+        ],
+        "sk": [
+          "rozmarín"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "salmon-fillet",
+      "familyKeys": [
+        "salmon"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "losos filet"
+      ],
+      "displayNames": {
+        "en": [
+          "salmon fillet"
+        ],
+        "sk": [
+          "losos filet"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "sesame-paste",
+      "familyKeys": [
+        "sesame-paste"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "sesame paste"
+      ],
+      "displayNames": {
+        "en": [
+          "sesame paste"
+        ],
+        "sk": [
+          "sezamová pasta"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "smoked-streaky-bacon",
+      "familyKeys": [
+        "smoked-streaky-bacon"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "smoked streaky bacon"
+      ],
+      "displayNames": {
+        "en": [
+          "smoked streaky bacon"
+        ],
+        "sk": [
+          "údená prerastená slanina"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "soured-cream",
+      "familyKeys": [
+        "soured-cream"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "soured cream"
+      ],
+      "displayNames": {
+        "en": [
+          "soured cream"
+        ],
+        "sk": [
+          "kyslá smotana"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "sriracha",
+      "familyKeys": [
+        "sriracha"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "sriracha"
+      ],
+      "displayNames": {
+        "en": [
+          "sriracha"
+        ],
+        "sk": [
+          "sriracha"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "strawberry",
+      "familyKeys": [
+        "strawberry"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "strawberry"
+      ],
+      "displayNames": {
+        "en": [
+          "strawberry"
+        ],
+        "sk": [
+          "jahoda"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "sun-dried-tomato",
+      "familyKeys": [
+        "tomato"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "sun-dried tomato in oil"
+      ],
+      "displayNames": {
+        "en": [
+          "sundried tomato in oil"
+        ],
+        "sk": [
+          "sušená paradajka "
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "sun-dried-tomato-oil",
+      "familyKeys": [
+        "oil"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "sun-dried tomato oil"
+      ],
+      "displayNames": {
+        "en": [
+          "sundried tomato oil"
+        ],
+        "sk": [
+          "olej zo sušených paradajok"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "sunflower-oil",
+      "familyKeys": [
+        "sunflower-oil"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "sunflower oil"
+      ],
+      "displayNames": {
+        "en": [
+          "sunflower oil"
+        ],
+        "sk": [
+          "slnečnicový olej"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "sunka",
+      "familyKeys": [
+        "sunka"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "Šunka"
+      ],
+      "displayNames": {
+        "en": [
+          "Ham"
+        ],
+        "sk": [
+          "Šunka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "tomato",
+      "familyKeys": [
+        "tomato"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "tomato"
+      ],
+      "displayNames": {
+        "en": [
+          "tomato"
+        ],
+        "sk": [
+          "paradajka"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "tortilla",
+      "familyKeys": [
+        "tortilla"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "tortilla"
+      ],
+      "displayNames": {
+        "en": [
+          "tortilla"
+        ],
+        "sk": [
+          "tortilla"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "turmeric",
+      "familyKeys": [
+        "turmeric"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "turmeric"
+      ],
+      "displayNames": {
+        "en": [
+          "turmeric"
+        ],
+        "sk": [
+          "kurkuma"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "vegan-egg-replacer",
+      "familyKeys": [
+        "vegan-egg-replacer"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "vegan egg replacer"
+      ],
+      "displayNames": {
+        "en": [
+          "vegan egg replacer"
+        ],
+        "sk": [
+          "vegánska náhrada vajca"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "vegan-stock",
+      "familyKeys": [
+        "vegan-stock"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "vegan stock"
+      ],
+      "displayNames": {
+        "en": [
+          "vegan stock"
+        ],
+        "sk": [
+          "vegánsky vývar"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "vegetable-broth",
+      "familyKeys": [
+        "vegetable-broth"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "vegetable broth"
+      ],
+      "displayNames": {
+        "en": [
+          "vegetable broth"
+        ],
+        "sk": [
+          "zeleninový vývar"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "water",
+      "familyKeys": [
+        "water"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "water"
+      ],
+      "displayNames": {
+        "en": [
+          "water"
+        ],
+        "sk": [
+          "voda"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "whipping-cream",
+      "familyKeys": [
+        "whipping-cream"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "whipping cream"
+      ],
+      "displayNames": {
+        "en": [
+          "whipping cream"
+        ],
+        "sk": [
+          "smotana na šľahanie"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "white-miso-paste",
+      "familyKeys": [
+        "white-miso-paste"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "white miso paste"
+      ],
+      "displayNames": {
+        "en": [
+          "white miso paste"
+        ],
+        "sk": [
+          "biela miso pasta"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "yogurt",
+      "familyKeys": [
+        "yogurt"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "yogurt"
+      ],
+      "displayNames": {
+        "en": [
+          "yogurt"
+        ],
+        "sk": [
+          "jogurt"
+        ]
+      },
+      "junkReasons": []
+    },
+    {
+      "specificKey": "zucchini",
+      "familyKeys": [
+        "zucchini"
+      ],
+      "recipeCount": 1,
+      "canonicalNames": [
+        "zucchini"
+      ],
+      "displayNames": {
+        "en": [
+          "zucchini"
+        ],
+        "sk": [
+          "cuketa"
+        ]
+      },
+      "junkReasons": []
+    }
+  ]
+}

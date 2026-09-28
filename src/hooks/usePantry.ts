@@ -10,6 +10,7 @@ export interface PantryItem {
   ingredientName: string | null;
   ingredientKey: string | null;
   ingredientSpecificKey: string | null;
+  ingredientId: string | null;
   trackingMode: "quantity" | "availability";
   inStock: boolean;
   quantity: string | null;
@@ -103,8 +104,6 @@ interface PantryMutationResponse {
   deletedItemId?: string;
   normalizationQueued?: boolean;
   error?: string;
-  code?: string;
-  feedbackRecorded?: boolean;
 }
 
 interface ShoppingListHandoffResponse {
@@ -133,8 +132,6 @@ interface PantryRestockQuickAddResponse {
 interface PantryDraftsResponse {
   drafts?: PantryDraftItem[];
   error?: string;
-  code?: string;
-  feedbackRecorded?: boolean;
 }
 
 interface PantryDraftConfirmResponse extends PantryDraftsResponse {
@@ -148,12 +145,6 @@ interface UsePantryOptions {
 }
 
 const PANTRY_CHANGED_EVENT = "pantry:changed";
-
-function getIngredientResolutionToastMessage(feedbackRecorded?: boolean): string {
-  return feedbackRecorded
-    ? "Položku sa nepodarilo rozoznať ako potravinu. Poslali sme spätnú väzbu nášmu tímu."
-    : "Položku sa nepodarilo rozoznať ako potravinu. Skús ju prosím premenovať presnejšie.";
-}
 
 export function usePantry(options: UsePantryOptions = {}) {
   const hasInitialItems = options.initialItems !== undefined;
@@ -263,11 +254,7 @@ export function usePantry(options: UsePantryOptions = {}) {
         const data = (await response.json()) as PantryDraftsResponse;
 
         if (!response.ok) {
-          toast.error(
-            data.code === "INGREDIENT_RESOLUTION_FAILED"
-              ? getIngredientResolutionToastMessage(data.feedbackRecorded)
-              : data.error || "Nepodarilo sa pripraviť položky",
-          );
+          toast.error(data.error || "Nepodarilo sa pripraviť položky");
           return false;
         }
 
@@ -299,11 +286,7 @@ export function usePantry(options: UsePantryOptions = {}) {
       const data = (await response.json()) as PantryMutationResponse;
 
       if (!response.ok || !data.item) {
-        toast.error(
-          data.code === "INGREDIENT_RESOLUTION_FAILED"
-            ? getIngredientResolutionToastMessage(data.feedbackRecorded)
-            : data.error || "Nepodarilo sa pridať položku",
-        );
+        toast.error(data.error || "Nepodarilo sa pridať položku");
         return false;
       }
 

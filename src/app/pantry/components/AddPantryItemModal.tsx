@@ -28,6 +28,8 @@ function createBatchDraftItem(): BatchDraftItem {
     unit: "ks",
     category: "other",
     expiryDate: "",
+    trackingMode: "quantity",
+    inStock: true,
   };
 }
 
@@ -67,7 +69,7 @@ export default function AddPantryItemModal({
   function updateBatchItem(
     id: string,
     field: keyof Omit<BatchDraftItem, "id">,
-    value: string,
+    value: BatchDraftItem[keyof Omit<BatchDraftItem, "id">],
   ) {
     setBatchItems((currentItems) =>
       currentItems.map((item) =>
@@ -97,8 +99,18 @@ export default function AddPantryItemModal({
       .filter((item) => item.name.trim().length > 0)
       .map((item) => ({
         name: item.name.trim(),
-        quantity: item.quantity ? parseFloat(item.quantity) : null,
-        unit: item.quantity ? item.unit || null : null,
+        trackingMode: item.trackingMode,
+        ...(item.trackingMode === "availability"
+          ? { inStock: item.inStock }
+          : {}),
+        quantity:
+          item.trackingMode === "quantity" && item.quantity
+            ? parseFloat(item.quantity)
+            : null,
+        unit:
+          item.trackingMode === "quantity" && item.quantity
+            ? item.unit || null
+            : null,
         category: item.category,
         expiryDate: item.expiryDate ? `${item.expiryDate}T12:00:00` : null,
       }));
@@ -205,9 +217,15 @@ export default function AddPantryItemModal({
                         fieldCategory: t("field_category"),
                         fieldExpiry: t("field_expiry"),
                         fieldOptional: t("field_optional"),
+                        trackingModeToggleLabel: t("tracking_mode_toggle_label"),
+                        trackingModeHelpText: t("tracking_mode_toggle_help"),
+                        fieldAvailability: t("field_availability"),
+                        availableLabel: t("availability_in_stock"),
+                        unavailableLabel: t("availability_out_of_stock"),
                       }}
                       onChange={updateBatchItem}
                       onRemove={removeBatchRow}
+                      showTrackingControls
                     />
                   ))}
                 </div>

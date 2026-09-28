@@ -14,6 +14,7 @@ import {
 } from "@/lib/custom-recipes/contracts";
 import { apiLogger } from "@/lib/logger";
 import { normalizeRecipeCategoryKey } from "@/lib/recipes/category-keys";
+import { ensureCatalogIngredients } from "@/lib/ingredients/catalog";
 
 type PersistableCanonicalRecipe = NonNullable<
   CustomRecipeGeneratedRecipe["canonicalRecipe"]
@@ -238,7 +239,30 @@ export async function persistAcceptedCustomRecipe(
     })),
   );
 
+  const catalogIdByKey = await ensureCatalogIngredients(
+    persistedIngredients.map((ingredient) => ({
+      specificKey: ingredient.row.ingredientSpecificKey,
+      familyKey: ingredient.row.ingredientKey,
+      canonicalName: ingredient.row.canonicalName,
+      names: ingredient.translations.map((translation) => ({
+        locale: translation.locale,
+        name: translation.displayName,
+      })),
+    })),
+  );
+
   for (const ingredient of persistedIngredients) {
+    const identityKey =
+      ingredient.row.ingredientSpecificKey ?? ingredient.row.ingredientKey;
+    const displayLabel =
+      ingredient.translations.find(
+        (translation) => translation.locale === canonicalRecipe.default_locale,
+      )?.displayName ??
+      ingredient.translations.find(
+        (translation) => translation.locale === "en",
+      )?.displayName ??
+      ingredient.translations[0]?.displayName ??
+      null;
     const [insertedIngredient] = await db
       .insert(recipeIngredients)
       .values({
@@ -246,6 +270,10 @@ export async function persistAcceptedCustomRecipe(
         canonicalName: ingredient.row.canonicalName,
         ingredientKey: ingredient.row.ingredientKey,
         ingredientSpecificKey: ingredient.row.ingredientSpecificKey,
+        ingredientId: identityKey
+          ? catalogIdByKey.get(identityKey) ?? null
+          : null,
+        displayLabel,
         quantity: ingredient.row.quantity,
         unit: ingredient.row.unit,
         optional: ingredient.row.optional,
@@ -254,14 +282,18 @@ export async function persistAcceptedCustomRecipe(
       })
       .returning({ id: recipeIngredients.id });
 
-    await db.insert(recipeIngredientTranslations).values(
-      ingredient.translations.map((translation) => ({
-        recipeIngredientId: insertedIngredient.id,
-        locale: translation.locale,
-        displayName: translation.displayName,
-        updatedAt: new Date(),
-      })),
-    );
+    // Keep the per-recipe, per-locale wording until the legacy table is
+    // retired; ingredient_names only holds catalog names.
+    if (ingredient.translations.length > 0) {
+      await db.insert(recipeIngredientTranslations).values(
+        ingredient.translations.map((translation) => ({
+          recipeIngredientId: insertedIngredient.id,
+          locale: translation.locale,
+          displayName: translation.displayName,
+          updatedAt: new Date(),
+        })),
+      );
+    }
   }
 
   apiLogger.info("[customRecipe.accept] recipe persisted", {

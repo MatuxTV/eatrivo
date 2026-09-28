@@ -4,7 +4,6 @@ import { db } from "@/index";
 import {
   pantryItems,
   recipeIngredients,
-  recipeIngredientTranslations,
   recipes,
   recipeTranslations,
   userInfoTable,
@@ -30,9 +29,10 @@ import {
 } from "@/lib/recipes/recipe-quantity-comparison";
 import { guessFoodCategory } from "@/lib/ingredients/units";
 import {
-  isLessSpecificIngredientMatch,
-  pantryKeySatisfiesRecipeKey,
-} from "@/lib/ingredients/ingredient-family";
+  matchPantryIngredient,
+  type IngredientGraph,
+} from "@/lib/ingredients/ingredient-matching";
+import { loadIngredientGraph, loadIngredientNameMap } from "@/lib/pantry/ingredient-resolution";
 
 export interface RecipeMatchOptions {
   maxMissingIngredients?: number;
@@ -100,10 +100,11 @@ export interface RecipePreferenceSuggestionOptions {
 interface RecipeBucket {
   recipe: Omit<MatchedRecipe, "totalRequiredIngredients" | "matchedRequiredIngredients" | "missingRequiredIngredients" | "matchRatio" | "matchedIngredients" | "matchedIngredientNames" | "missingIngredientNames">;
   defaultLocale: string;
-  requiredIngredients: Map<string, { recipeMatchKey: string; ingredientKey: string; ingredientSpecificKey: string | null; fallbackName: string; category: string | null; recipeIngredientId: string; amount: string | null; quantity: string | null; unit: string | null; sortOrder: number }>;
+  requiredIngredients: Map<string, { recipeMatchKey: string; ingredientKey: string; ingredientSpecificKey: string | null; ingredientId: string | null; fallbackName: string; category: string | null; recipeIngredientId: string; amount: string | null; quantity: string | null; unit: string | null; sortOrder: number }>;
 }
 
 interface PantryIngredientMatchCandidate {
+  ingredientId: string | null;
   ingredientKey: string | null;
   ingredientSpecificKey: string | null;
   ingredientName: string | null;
@@ -192,59 +193,35 @@ function resolvePantryIngredientDisplayName(
 
 function resolveMatchedIngredient(
   pantryRows: PantryIngredientMatchCandidate[],
-  recipeIngredientKey: string,
-  recipeIngredientSpecificKey: string | null,
+  recipeIngredient: {
+    ingredientId: string | null;
+    ingredientKey: string;
+    ingredientSpecificKey: string | null;
+  },
   recipeIngredientName: string,
+  graph: IngredientGraph | null,
 ): {
   match: RecipeIngredientMatch | null;
   matchedPantryRows: PantryIngredientMatchCandidate[];
 } {
-  const preferredRecipeKey = recipeIngredientSpecificKey ?? recipeIngredientKey;
   let fallbackMatch: RecipeIngredientMatch | null = null;
   const fallbackRows: PantryIngredientMatchCandidate[] = [];
   const exactRows: PantryIngredientMatchCandidate[] = [];
 
   for (const pantryRow of pantryRows) {
+    const result = matchPantryIngredient(pantryRow, recipeIngredient, graph);
+    if (!result.matched) {
+      continue;
+    }
+
     const pantryIngredientName = resolvePantryIngredientDisplayName(pantryRow);
 
-    if (
-      pantryRow.ingredientSpecificKey &&
-      pantryKeySatisfiesRecipeKey(
-        pantryRow.ingredientSpecificKey,
-        preferredRecipeKey,
-      )
-    ) {
-      if (
-        isLessSpecificIngredientMatch(
-          pantryRow.ingredientSpecificKey,
-          preferredRecipeKey,
-        )
-      ) {
-        fallbackRows.push(pantryRow);
-        fallbackMatch = {
-          recipeIngredientName,
-          pantryIngredientName,
-          matchType: "fallback",
-          displayName: buildMatchedIngredientDisplayName(
-            recipeIngredientName,
-            pantryIngredientName,
-            "fallback",
-          ),
-          amount: null,
-        };
-        continue;
-      }
-
+    if (result.matchType === "exact") {
       exactRows.push(pantryRow);
       continue;
     }
 
-    if (
-      !fallbackMatch &&
-      pantryRow.ingredientKey &&
-      pantryKeySatisfiesRecipeKey(pantryRow.ingredientKey, preferredRecipeKey)
-    ) {
-      fallbackRows.push(pantryRow);
+    if (!fallbackMatch) {
       fallbackMatch = {
         recipeIngredientName,
         pantryIngredientName,
@@ -256,15 +233,8 @@ function resolveMatchedIngredient(
         ),
         amount: null,
       };
-      continue;
     }
-
-    if (
-      pantryRow.ingredientKey &&
-      pantryKeySatisfiesRecipeKey(pantryRow.ingredientKey, preferredRecipeKey)
-    ) {
-      fallbackRows.push(pantryRow);
-    }
+    fallbackRows.push(pantryRow);
   }
 
   if (exactRows.length > 0) {
@@ -449,13 +419,14 @@ async function analyzeRecipeMatchesForUserProfile(
 
   const dietFilterCondition = getDietFilterCondition(userInfo?.diet_preferences);
 
-  const [pantryRows, recipeRows, recipeTranslationRows, ingredientTranslationRows] =
+  const [pantryRows, recipeRows, recipeTranslationRows] =
     await Promise.all([
       db
         .select({
           name: pantryItems.name,
           ingredientKey: pantryItems.ingredientKey,
           ingredientSpecificKey: pantryItems.ingredientSpecificKey,
+          ingredientId: pantryItems.ingredientId,
           ingredientName: pantryItems.ingredientName,
           trackingMode: pantryItems.trackingMode,
           inStock: pantryItems.inStock,
@@ -492,6 +463,8 @@ async function analyzeRecipeMatchesForUserProfile(
           canonicalName: recipeIngredients.canonicalName,
           ingredientKey: recipeIngredients.ingredientKey,
           ingredientSpecificKey: recipeIngredients.ingredientSpecificKey,
+          ingredientId: recipeIngredients.ingredientId,
+          displayLabel: recipeIngredients.displayLabel,
           quantity: recipeIngredients.quantity,
           unit: recipeIngredients.unit,
           optional: recipeIngredients.optional,
@@ -516,16 +489,15 @@ async function analyzeRecipeMatchesForUserProfile(
           instructions: recipeTranslations.instructions,
         })
         .from(recipeTranslations),
-      db
-        .select({
-          recipeIngredientId: recipeIngredientTranslations.recipeIngredientId,
-          locale: recipeIngredientTranslations.locale,
-          displayName: recipeIngredientTranslations.displayName,
-        })
-        .from(recipeIngredientTranslations),
     ]);
 
   const availablePantryRows = pantryRows.filter((row) => row.inStock);
+  const ingredientGraph = await loadIngredientGraph(requestedLocale);
+  const ingredientNameMap = await loadIngredientNameMap(
+    recipeRows
+      .map((row) => row.ingredientId)
+      .filter((id): id is string => Boolean(id)),
+  );
 
   const pantryMatchCandidates = availablePantryRows
     .map((row) => [row.ingredientSpecificKey, row.ingredientKey].filter((value): value is string => Boolean(value)))
@@ -563,14 +535,33 @@ async function analyzeRecipeMatchesForUserProfile(
     Map<string, { locale: string; displayName: string }>
   >();
 
-  for (const row of ingredientTranslationRows) {
+  for (const row of recipeRows) {
     let translationMap = ingredientTranslationMap.get(row.recipeIngredientId);
     if (!translationMap) {
       translationMap = new Map();
       ingredientTranslationMap.set(row.recipeIngredientId, translationMap);
     }
 
-    translationMap.set(normalizeRecipeLocale(row.locale), row);
+    const names = row.ingredientId
+      ? ingredientNameMap.get(row.ingredientId)
+      : undefined;
+    if (names) {
+      for (const [nameLocale, name] of names) {
+        const normalized = normalizeRecipeLocale(nameLocale);
+        translationMap.set(normalized, {
+          locale: normalized,
+          displayName: name,
+        });
+      }
+    }
+
+    if (row.displayLabel) {
+      const normalizedDefault = normalizeRecipeLocale(row.defaultLocale);
+      translationMap.set(normalizedDefault, {
+        locale: normalizedDefault,
+        displayName: row.displayLabel,
+      });
+    }
   }
 
   const recipeBuckets = new Map<string, RecipeBucket>();
@@ -632,7 +623,8 @@ async function analyzeRecipeMatchesForUserProfile(
         row.defaultLocale,
       );
       const fallbackName =
-        resolveIngredientDisplayName(localizedIngredient, row.canonicalName) ??
+        resolveIngredientDisplayName(localizedIngredient, row.displayLabel) ??
+        row.displayLabel ??
         row.canonicalName ??
         row.ingredientKey ??
         "ingredient";
@@ -646,6 +638,7 @@ async function analyzeRecipeMatchesForUserProfile(
           recipeMatchKey,
           ingredientKey,
           ingredientSpecificKey: row.ingredientSpecificKey,
+          ingredientId: row.ingredientId,
           fallbackName,
           category: guessFoodCategory(categoryLabel),
           recipeIngredientId: row.recipeIngredientId,
@@ -688,9 +681,13 @@ async function analyzeRecipeMatchesForUserProfile(
 
       const { match: matchedIngredient, matchedPantryRows } = resolveMatchedIngredient(
         availablePantryRows,
-        ingredientMeta.ingredientKey,
-        ingredientMeta.ingredientSpecificKey,
+        {
+          ingredientId: ingredientMeta.ingredientId,
+          ingredientKey: ingredientMeta.ingredientKey,
+          ingredientSpecificKey: ingredientMeta.ingredientSpecificKey,
+        },
         ingredientName,
+        ingredientGraph,
       );
 
       const pantryComparison = buildRecipeIngredientPantryComparison(
@@ -711,6 +708,7 @@ async function analyzeRecipeMatchesForUserProfile(
         unit: ingredientMeta.unit,
         ingredientKey: ingredientMeta.ingredientKey,
         ingredientSpecificKey: ingredientMeta.ingredientSpecificKey,
+        ingredientId: ingredientMeta.ingredientId,
         pantryComparison,
       });
 

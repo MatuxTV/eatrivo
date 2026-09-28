@@ -136,6 +136,7 @@ export async function POST(
         ingredientName: shoppingListItems.ingredientName,
         ingredientKey: shoppingListItems.ingredientKey,
         ingredientSpecificKey: shoppingListItems.ingredientSpecificKey,
+        ingredientId: shoppingListItems.ingredientId,
         quantity: shoppingListItems.quantity,
         unit: shoppingListItems.unit,
         category: shoppingListItems.category,
@@ -221,6 +222,7 @@ export async function POST(
           ingredientName: item.ingredientName,
           ingredientKey: item.ingredientKey,
           ingredientSpecificKey: item.ingredientSpecificKey,
+          ingredientId: item.ingredientId ?? null,
           trackingMode,
           inStock: true,
           quantity:

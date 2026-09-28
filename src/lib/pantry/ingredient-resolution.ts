@@ -1,459 +1,331 @@
-import { and, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, ne } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 import { db } from "@/index";
 import {
+  ingredientAliases,
+  ingredientNames,
+  ingredients,
   recipeIngredients,
-  recipeIngredientTranslations,
 } from "@/db/schema";
 import {
-  buildIngredientIdentity,
-  normalizeIngredientName,
-} from "@/lib/ingredients/ingredients";
-import {
-  buildIngredientAliasForms,
-  deriveIngredientFamilyKey,
-} from "@/lib/ingredients/ingredient-family";
+  normalizeLookupValue,
+  overlayUserIngredients,
+  resolvePantryIngredientIdentity,
+  type UserIngredientAliasIndex,
+  type IngredientAliasIndex,
+  type IngredientAliasRow,
+  type ResolvedPantryIngredientIdentity,
+} from "./ingredient-resolution-core";
+import type { IngredientGraph } from "@/lib/ingredients/ingredient-matching";
 
-export interface IngredientAliasRow {
-  ingredientKey: string;
-  locale: string;
-  ingredientName: string | null;
-  displayName: string;
+export * from "./ingredient-resolution-core";
+export type { IngredientGraph } from "@/lib/ingredients/ingredient-matching";
+
+const CACHE_TTL_MS = 60_000;
+
+const parentIngredients = alias(ingredients, "parent_ingredients");
+
+interface CachedValue<T> {
+  value: T;
+  expiresAt: number;
 }
 
-export interface IngredientAliasIndex {
-  byAlias: Map<string, IngredientAliasRow[]>;
-  validKeys: Set<string>;
-  preferredNamesByKey: Map<string, string>;
+const aliasIndexCache = new Map<string, CachedValue<IngredientAliasIndex>>();
+const ingredientGraphCache = new Map<string, CachedValue<IngredientGraph>>();
+
+export function invalidateIngredientAliasIndexCache(locale?: string): void {
+  invalidateCache(aliasIndexCache, locale);
+  invalidateCache(ingredientGraphCache, locale);
 }
 
-export interface ResolvedPantryIngredientIdentity {
-  ingredientName: string | null;
-  ingredientKey: string | null;
-  ingredientSpecificKey: string | null;
-  source:
-    | "translation-exact"
-    | "translation-ai-disambiguated"
-    | "ai-suggested"
-    | "fallback";
-  candidateKeys: string[];
-}
-
-export interface RequiredPantryIngredientIdentity
-  extends Omit<ResolvedPantryIngredientIdentity, "ingredientName" | "ingredientKey" | "ingredientSpecificKey"> {
-  ingredientName: string;
-  ingredientKey: string;
-  ingredientSpecificKey: string;
-}
-
-export class PantryIngredientResolutionError extends Error {
-  readonly rawName: string;
-  readonly locale: string;
-
-  constructor(rawName: string, locale: string) {
-    super(`Unable to resolve canonical ingredient identity for "${rawName}" in locale "${locale}".`);
-    this.name = "PantryIngredientResolutionError";
-    this.rawName = rawName;
-    this.locale = locale;
-  }
-}
-
-function resolveValidatedSpecificKey(
-  candidateKeys: string[],
-  validKeys: Set<string>,
-  aiSuggestedSpecificKey?: string | null,
-  aiSuggestedKey?: string | null,
-  fallbackKey?: string | null,
-): string | null {
-  const normalizedAiSpecificKey = aiSuggestedSpecificKey?.trim() || null;
-  const normalizedAiKey = aiSuggestedKey?.trim() || null;
-  const normalizedFallbackKey = fallbackKey?.trim() || null;
-
-  if (candidateKeys.length === 1) {
-    return candidateKeys[0];
+function invalidateCache<T>(
+  cache: Map<string, CachedValue<T>>,
+  locale?: string,
+): void {
+  if (locale) {
+    cache.delete(locale);
+    return;
   }
 
-  for (const candidate of [
-    normalizedAiSpecificKey,
-    normalizedAiKey,
-    normalizedFallbackKey,
-  ]) {
-    if (!candidate) {
-      continue;
-    }
-
-    if (candidateKeys.includes(candidate) || validKeys.has(candidate)) {
-      return candidate;
-    }
-  }
-
-  return null;
-}
-
-function resolveValidatedBroadKey(
-  specificKey: string | null,
-  validKeys: Set<string>,
-  aiSuggestedKey?: string | null,
-): string | null {
-  const normalizedAiKey = aiSuggestedKey?.trim() || null;
-  const derivedFamilyKey = specificKey
-    ? deriveIngredientFamilyKey(specificKey, validKeys)
-    : null;
-
-  if (
-    normalizedAiKey &&
-    validKeys.has(normalizedAiKey) &&
-    (!specificKey || normalizedAiKey === specificKey || normalizedAiKey === derivedFamilyKey)
-  ) {
-    return normalizedAiKey;
-  }
-
-  if (derivedFamilyKey) {
-    return derivedFamilyKey;
-  }
-
-  if (specificKey && validKeys.has(specificKey)) {
-    return specificKey;
-  }
-
-  if (normalizedAiKey && validKeys.has(normalizedAiKey)) {
-    return normalizedAiKey;
-  }
-
-  return null;
-}
-
-function normalizeLookupValue(value: string): string {
-  return value
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-const SLOVAK_IRREGULAR_TOKEN_MAP: Record<string, string> = {
-  paradajky: "paradajka",
-  fazulky: "fazuľka",
-  vajcia: "vajce",
-  zemiaky: "zemiak",
-  jablka: "jablko",
-  cestoviny: "cestovina",
-  spagety: "spageta",
-  rezance: "rezanec",
-};
-
-const GENERIC_PREFIX_TOKENS = new Set([
-  "cestoviny",
-  "cestovina",
-  "ryza",
-  "maso",
-]);
-
-function singularizeSlovakToken(token: string): string {
-  const irregular = SLOVAK_IRREGULAR_TOKEN_MAP[token];
-  if (irregular) {
-    return normalizeLookupValue(irregular);
-  }
-
-  if (token.endsWith("ky") && token.length > 4) {
-    return `${token.slice(0, -1)}a`;
-  }
-
-  if (token.endsWith("y") && token.length > 4) {
-    return token.slice(0, -1);
-  }
-
-  return token;
-}
-
-function singularizeSlovakAdjective(token: string): string {
-  if (token.endsWith("e") && token.length > 3) {
-    return `${token.slice(0, -1)}a`;
-  }
-
-  return token;
-}
-
-function expandLookupVariants(value: string): string[] {
-  const normalized = normalizeLookupValue(value);
-  if (!normalized) {
-    return [];
-  }
-
-  const variants = new Set<string>([normalized]);
-  const tokens = normalized.split(" ").filter(Boolean);
-
-  if (tokens.length > 1 && GENERIC_PREFIX_TOKENS.has(tokens[0])) {
-    variants.add(tokens.slice(1).join(" "));
-  }
-
-  const singularTokens = tokens.map((token) => singularizeSlovakToken(token));
-  variants.add(singularTokens.join(" "));
-
-  if (tokens.length > 1) {
-    const adjectiveAndNounVariant = [...tokens];
-    adjectiveAndNounVariant[0] = singularizeSlovakAdjective(
-      adjectiveAndNounVariant[0],
-    );
-    adjectiveAndNounVariant[adjectiveAndNounVariant.length - 1] =
-      singularizeSlovakToken(
-        adjectiveAndNounVariant[adjectiveAndNounVariant.length - 1],
-      );
-    variants.add(adjectiveAndNounVariant.join(" "));
-
-    if (GENERIC_PREFIX_TOKENS.has(singularTokens[0])) {
-      variants.add(singularTokens.slice(1).join(" "));
-    }
-  }
-
-  return [...variants].filter(Boolean);
-}
-
-function buildLookupCandidates(rawName: string): string[] {
-  const candidates = new Set<string>();
-  for (const normalizedRaw of expandLookupVariants(rawName)) {
-    candidates.add(normalizedRaw);
-    for (const aliasForm of buildIngredientAliasForms(normalizedRaw)) {
-      candidates.add(normalizeLookupValue(aliasForm));
-    }
-  }
-
-  const normalizedIngredientName = normalizeIngredientName(rawName);
-  if (normalizedIngredientName) {
-    for (const normalizedCandidate of expandLookupVariants(
-      normalizedIngredientName,
-    )) {
-      candidates.add(normalizedCandidate);
-      for (const aliasForm of buildIngredientAliasForms(normalizedCandidate)) {
-        candidates.add(normalizeLookupValue(aliasForm));
-      }
-    }
-  }
-
-  return [...candidates];
+  cache.clear();
 }
 
 export async function loadIngredientAliasIndex(
   locale: string,
 ): Promise<IngredientAliasIndex> {
-  const locales = [...new Set([locale, "en"])];
+  const cached = aliasIndexCache.get(locale);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
+  }
 
-  const rows = await db
-    .select({
-      ingredientKey: recipeIngredients.ingredientKey,
-      locale: recipeIngredientTranslations.locale,
-      ingredientName: recipeIngredients.canonicalName,
-      displayName: recipeIngredientTranslations.displayName,
-    })
-    .from(recipeIngredientTranslations)
-    .innerJoin(
-      recipeIngredients,
-      eq(
-        recipeIngredientTranslations.recipeIngredientId,
-        recipeIngredients.id,
-      ),
-    )
-    .where(
-      and(
-        inArray(recipeIngredientTranslations.locale, locales),
-        isNotNull(recipeIngredients.ingredientKey),
-      ),
-    );
+  const [ingredientRows, nameRows, aliasRows, recipeLinkRows] =
+    await Promise.all([
+      db
+        .select({
+          id: ingredients.id,
+          key: ingredients.key,
+          canonicalName: ingredients.canonicalName,
+          parentId: ingredients.parentId,
+        })
+        .from(ingredients)
+        .where(
+          and(
+            isNull(ingredients.ownerUserId),
+            ne(ingredients.reviewState, "flagged"),
+          ),
+        ),
+      db
+        .select({
+          ingredientId: ingredientNames.ingredientId,
+          locale: ingredientNames.locale,
+          name: ingredientNames.name,
+        })
+        .from(ingredientNames),
+      db
+        .select({
+          ingredientId: ingredientAliases.ingredientId,
+          locale: ingredientAliases.locale,
+          alias: ingredientAliases.alias,
+        })
+        .from(ingredientAliases)
+        .where(isNull(ingredientAliases.ownerUserId)),
+      db
+        .select({
+          ingredientId: recipeIngredients.ingredientId,
+          recipeId: recipeIngredients.recipeId,
+        })
+        .from(recipeIngredients)
+        .where(isNotNull(recipeIngredients.ingredientId)),
+    ]);
 
-  const byAlias = new Map<string, IngredientAliasRow[]>();
-  const validKeys = new Set<string>();
+  const keyById = new Map(ingredientRows.map((row) => [row.id, row.key]));
+  const canonicalById = new Map(
+    ingredientRows.map((row) => [row.id, row.canonicalName]),
+  );
+
+  const validKeys = new Set(ingredientRows.map((row) => row.key));
+
+  const familyKeyByKey = new Map<string, string>();
+  for (const row of ingredientRows) {
+    const parentKey = row.parentId ? keyById.get(row.parentId) : null;
+    familyKeyByKey.set(row.key, parentKey ?? row.key);
+  }
+
   const preferredNamesByKey = new Map<string, string>();
-
-  for (const row of rows) {
-    if (!row.ingredientKey) {
+  for (const row of nameRows) {
+    const key = keyById.get(row.ingredientId);
+    if (!key) {
       continue;
     }
 
-    validKeys.add(row.ingredientKey);
-
-    const aliasCandidates = new Set<string>();
-    if (row.ingredientName) {
-      aliasCandidates.add(normalizeLookupValue(row.ingredientName));
-      for (const aliasForm of buildIngredientAliasForms(row.ingredientName)) {
-        aliasCandidates.add(normalizeLookupValue(aliasForm));
-      }
+    if (row.locale === "en" && !preferredNamesByKey.has(key)) {
+      preferredNamesByKey.set(key, row.name);
     }
-
-    const normalizedDisplayAlias = normalizeIngredientName(row.displayName);
-    if (normalizedDisplayAlias) {
-      aliasCandidates.add(normalizeLookupValue(normalizedDisplayAlias));
-      for (const aliasForm of buildIngredientAliasForms(normalizedDisplayAlias)) {
-        aliasCandidates.add(normalizeLookupValue(aliasForm));
-      }
-    }
-
-    for (const aliasForm of buildIngredientAliasForms(row.ingredientKey)) {
-      aliasCandidates.add(normalizeLookupValue(aliasForm));
-    }
-
     if (row.locale === locale) {
-      const localizedDisplayName =
-        normalizeIngredientName(row.displayName) ?? row.displayName;
-      preferredNamesByKey.set(
-        row.ingredientKey,
-        localizedDisplayName,
-      );
-    }
-
-    for (const alias of aliasCandidates) {
-      if (!alias) {
-        continue;
-      }
-
-      const existingRows = byAlias.get(alias) ?? [];
-      existingRows.push({
-        ingredientKey: row.ingredientKey,
-        locale: row.locale,
-        ingredientName: row.ingredientName,
-        displayName: row.displayName,
-      });
-      byAlias.set(alias, existingRows);
+      preferredNamesByKey.set(key, row.name);
     }
   }
 
-  return {
+  const recipeIdsByKey = new Map<string, Set<string>>();
+  for (const row of recipeLinkRows) {
+    const key = row.ingredientId ? keyById.get(row.ingredientId) : null;
+    if (!key) {
+      continue;
+    }
+
+    const recipeIds = recipeIdsByKey.get(key) ?? new Set<string>();
+    recipeIds.add(row.recipeId);
+    recipeIdsByKey.set(key, recipeIds);
+  }
+
+  const recipeCountByKey = new Map<string, number>();
+  for (const [key, recipeIds] of recipeIdsByKey) {
+    recipeCountByKey.set(key, recipeIds.size);
+  }
+
+  const byAlias = new Map<string, IngredientAliasRow[]>();
+  for (const row of aliasRows) {
+    const key = keyById.get(row.ingredientId);
+    if (!key) {
+      continue;
+    }
+
+    const alias = normalizeLookupValue(row.alias);
+    if (!alias) {
+      continue;
+    }
+
+    const existing = byAlias.get(alias) ?? [];
+    existing.push({
+      ingredientKey: key,
+      locale: row.locale ?? "en",
+      ingredientName: canonicalById.get(row.ingredientId) ?? null,
+      displayName: row.alias,
+    });
+    byAlias.set(alias, existing);
+  }
+
+  const index: IngredientAliasIndex = {
     byAlias,
     validKeys,
     preferredNamesByKey,
+    recipeCountByKey,
+    familyKeyByKey,
   };
+
+  aliasIndexCache.set(locale, {
+    value: index,
+    expiresAt: Date.now() + CACHE_TTL_MS,
+  });
+
+  return index;
 }
 
-function getUniqueCandidateKeys(
-  aliasIndex: IngredientAliasIndex,
-  candidates: string[],
-): string[] {
-  const keys = new Set<string>();
+// Global alias index overlaid with the user's own private ingredients and
+// aliases (including aliases learned when a private item was merged into a
+// global one). Not cached: the per-user rows are small and change often.
+export async function loadUserIngredientAliasIndex(
+  locale: string,
+  userId: string,
+): Promise<UserIngredientAliasIndex> {
+  const [globalIndex, privateRows, privateAliasRows] = await Promise.all([
+    loadIngredientAliasIndex(locale),
+    db
+      .select({
+        id: ingredients.id,
+        key: ingredients.key,
+        canonicalName: ingredients.canonicalName,
+        parentKey: parentIngredients.key,
+      })
+      .from(ingredients)
+      .leftJoin(parentIngredients, eq(parentIngredients.id, ingredients.parentId))
+      .where(
+        and(
+          eq(ingredients.ownerUserId, userId),
+          ne(ingredients.reviewState, "flagged"),
+        ),
+      ),
+    db
+      .select({
+        locale: ingredientAliases.locale,
+        alias: ingredientAliases.alias,
+        key: ingredients.key,
+        canonicalName: ingredients.canonicalName,
+      })
+      .from(ingredientAliases)
+      .innerJoin(ingredients, eq(ingredients.id, ingredientAliases.ingredientId))
+      .where(
+        and(
+          eq(ingredientAliases.ownerUserId, userId),
+          ne(ingredients.reviewState, "flagged"),
+        ),
+      ),
+  ]);
 
-  for (const candidate of candidates) {
-    const rows = aliasIndex.byAlias.get(candidate) ?? [];
-    for (const row of rows) {
-      keys.add(row.ingredientKey);
+  const privateIds = privateRows.map((row) => row.id);
+  const privateNameRows =
+    privateIds.length > 0
+      ? await db
+          .select({
+            ingredientId: ingredientNames.ingredientId,
+            locale: ingredientNames.locale,
+            name: ingredientNames.name,
+          })
+          .from(ingredientNames)
+          .where(inArray(ingredientNames.ingredientId, privateIds))
+      : [];
+
+  return overlayUserIngredients(globalIndex, {
+    locale,
+    privateRows,
+    privateNameRows,
+    privateAliasRows,
+  });
+}
+
+export async function loadIngredientGraph(
+  locale = "en",
+): Promise<IngredientGraph> {
+  const cached = ingredientGraphCache.get(locale);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
+  }
+
+  // Private (user-owned) ingredients are part of the graph so a classified
+  // user item can match recipes through its parent family. Only global
+  // ingredients are addressable by key, since private keys are per-user.
+  const ingredientRows = await db
+    .select({
+      id: ingredients.id,
+      key: ingredients.key,
+      parentId: ingredients.parentId,
+      ownerUserId: ingredients.ownerUserId,
+    })
+    .from(ingredients)
+    .where(ne(ingredients.reviewState, "flagged"));
+
+  const parentById = new Map<string, string | null>();
+  const keyById = new Map<string, string>();
+  const idByKey = new Map<string, string>();
+
+  for (const row of ingredientRows) {
+    parentById.set(row.id, row.parentId ?? null);
+    keyById.set(row.id, row.key);
+    if (!row.ownerUserId) {
+      idByKey.set(row.key, row.id);
     }
   }
 
-  return [...keys];
+  const graph: IngredientGraph = { parentById, keyById, idByKey };
+
+  ingredientGraphCache.set(locale, {
+    value: graph,
+    expiresAt: Date.now() + CACHE_TTL_MS,
+  });
+
+  return graph;
 }
 
-export function getAliasCandidateKeysForName(
-  rawName: string,
-  aliasIndex: IngredientAliasIndex,
-): string[] {
-  const lookupCandidates = buildLookupCandidates(rawName);
-  return getUniqueCandidateKeys(aliasIndex, lookupCandidates);
+export async function loadIngredientNameMap(
+  ingredientIds: string[],
+): Promise<Map<string, Map<string, string>>> {
+  const map = new Map<string, Map<string, string>>();
+  if (ingredientIds.length === 0) {
+    return map;
+  }
+
+  const uniqueIds = [...new Set(ingredientIds)];
+  const rows = await db
+    .select({
+      ingredientId: ingredientNames.ingredientId,
+      locale: ingredientNames.locale,
+      name: ingredientNames.name,
+    })
+    .from(ingredientNames)
+    .where(inArray(ingredientNames.ingredientId, uniqueIds));
+
+  for (const row of rows) {
+    const localeMap = map.get(row.ingredientId) ?? new Map<string, string>();
+    localeMap.set(row.locale, row.name);
+    map.set(row.ingredientId, localeMap);
+  }
+
+  return map;
 }
 
-export function resolvePantryIngredientIdentity(
-  rawName: string,
-  _locale: string,
-  aliasIndex: IngredientAliasIndex,
-  aiSuggestedSpecificKey?: string | null,
-  aiSuggestedKey?: string | null,
-): ResolvedPantryIngredientIdentity {
-  const fallbackIdentity = buildIngredientIdentity(rawName);
-  const lookupCandidates = buildLookupCandidates(rawName);
-  const candidateKeys = getUniqueCandidateKeys(aliasIndex, lookupCandidates);
-  const specificKey = resolveValidatedSpecificKey(
-    candidateKeys,
-    aliasIndex.validKeys,
-    aiSuggestedSpecificKey,
-    aiSuggestedKey,
-    fallbackIdentity.ingredientKey,
-  );
-  const broadKey = resolveValidatedBroadKey(
-    specificKey,
-    aliasIndex.validKeys,
-    aiSuggestedKey,
-  );
-
-  if (candidateKeys.length === 1 && specificKey) {
-    return {
-      ingredientName:
-        aliasIndex.preferredNamesByKey.get(specificKey) ??
-        fallbackIdentity.ingredientName,
-      ingredientKey: broadKey,
-      ingredientSpecificKey: specificKey,
-      source: "translation-exact",
-      candidateKeys,
-    };
+export async function resolveIngredientIdByKeys(
+  ingredientKey: string | null | undefined,
+  ingredientSpecificKey: string | null | undefined,
+  graph?: IngredientGraph | null,
+): Promise<string | null> {
+  const key = ingredientSpecificKey ?? ingredientKey;
+  if (!key) {
+    return null;
   }
 
-  if (specificKey && candidateKeys.includes(specificKey)) {
-    return {
-      ingredientName:
-        aliasIndex.preferredNamesByKey.get(specificKey) ??
-        fallbackIdentity.ingredientName,
-      ingredientKey: broadKey,
-      ingredientSpecificKey: specificKey,
-      source: "translation-ai-disambiguated",
-      candidateKeys,
-    };
-  }
-
-  if (specificKey || broadKey) {
-    return {
-      ingredientName:
-        aliasIndex.preferredNamesByKey.get(specificKey ?? broadKey ?? "") ??
-        fallbackIdentity.ingredientName,
-      ingredientKey: broadKey,
-      ingredientSpecificKey: specificKey,
-      source: "ai-suggested",
-      candidateKeys,
-    };
-  }
-
-  return {
-    ingredientName: fallbackIdentity.ingredientName,
-    ingredientKey: null,
-    ingredientSpecificKey: null,
-    source: "fallback",
-    candidateKeys,
-  };
-}
-
-export function resolveRequiredPantryIngredientIdentity(
-  rawName: string,
-  locale: string,
-  aliasIndex: IngredientAliasIndex,
-  aiSuggestedSpecificKey?: string | null,
-  aiSuggestedKey?: string | null,
-): RequiredPantryIngredientIdentity {
-  const resolved = resolvePantryIngredientIdentity(
-    rawName,
-    locale,
-    aliasIndex,
-    aiSuggestedSpecificKey,
-    aiSuggestedKey,
-  );
-
-  const ingredientSpecificKey =
-    resolved.ingredientSpecificKey ?? resolved.ingredientKey;
-  const ingredientKey =
-    resolved.ingredientKey ??
-    (ingredientSpecificKey
-      ? deriveIngredientFamilyKey(ingredientSpecificKey, aliasIndex.validKeys) ??
-        ingredientSpecificKey
-      : null);
-  const preferredNameKey = ingredientSpecificKey ?? ingredientKey;
-  const ingredientName = preferredNameKey
-    ? aliasIndex.preferredNamesByKey.get(preferredNameKey) ?? null
-    : null;
-
-  if (!ingredientName || !ingredientKey || !ingredientSpecificKey) {
-    throw new PantryIngredientResolutionError(rawName, locale);
-  }
-
-  return {
-    ...resolved,
-    ingredientName,
-    ingredientKey,
-    ingredientSpecificKey,
-  };
+  const resolvedGraph = graph ?? (await loadIngredientGraph("en"));
+  return resolvedGraph.idByKey.get(key) ?? null;
 }
 
 export async function resolveStoredPantryIngredientIdentity(

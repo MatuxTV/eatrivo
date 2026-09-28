@@ -113,6 +113,7 @@ export async function POST(req: NextRequest) {
       ingredientKey: sourceItem?.ingredientKey ?? body.ingredientKey ?? null,
       ingredientSpecificKey:
         sourceItem?.ingredientSpecificKey ?? body.ingredientSpecificKey ?? null,
+      ingredientId: sourceItem?.ingredientId ?? null,
       quantity: sourceItem?.quantity ?? body.quantity ?? null,
       unit: sourceItem?.unit ?? body.unit ?? null,
       category: sourceItem?.category ?? body.category ?? null,

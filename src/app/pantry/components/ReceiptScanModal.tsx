@@ -905,6 +905,8 @@ function createManualReviewItem(): ReviewFormItem {
     confidence: null,
     source: "manual",
     needsReview: false,
+    trackingMode: "quantity",
+    inStock: true,
   };
 }
 
@@ -920,6 +922,8 @@ function mapReviewItem(item: ReceiptScanReviewItem): ReviewFormItem {
     confidence: item.confidence,
     source: item.source,
     needsReview: item.needsReview,
+    trackingMode: "quantity",
+    inStock: true,
   };
 }
 
@@ -1046,7 +1050,7 @@ export default function ReceiptScanModal({
   function updateItem(
     id: string,
     field: keyof Omit<EditablePantryFormItem, "id">,
-    value: string,
+    value: EditablePantryFormItem[keyof Omit<EditablePantryFormItem, "id">],
   ) {
     setItems((current) =>
       current.map((item) =>
@@ -1473,20 +1477,10 @@ export default function ReceiptScanModal({
           partial,
         }),
       });
-      const data = (await response.json()) as {
-        error?: string;
-        code?: string;
-        feedbackRecorded?: boolean;
-      };
+      const data = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        toast.error(
-          data.code === "INGREDIENT_RESOLUTION_FAILED"
-            ? data.feedbackRecorded
-              ? t("ingredient_resolution_feedback_sent")
-              : t("ingredient_resolution_failed")
-            : data.error || t("scan_finalize_error"),
-        );
+        toast.error(data.error || t("scan_finalize_error"));
         setPhase("review");
         return;
       }

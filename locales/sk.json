@@ -2351,8 +2351,6 @@
     "scan_error": "Sken bloku sa nepodaril dokončiť.",
     "scan_finalize_error": "Nepodarilo sa pripraviť návrhy do špajze.",
     "scan_finalize_success": "Návrhy zo skenu čakajú na potvrdenie v špajzi.",
-    "ingredient_resolution_failed": "Položku sa nepodarilo rozoznať ako potravinu. Skús ju prosím upraviť alebo spresniť.",
-    "ingredient_resolution_feedback_sent": "Položku sa nepodarilo rozoznať ako potravinu. Spätnú väzbu sme poslali nášmu tímu.",
     "scan_review_empty": "Pridaj aspoň jednu položku pred pokračovaním.",
     "inventory_title": "Tvoje položky",
     "inventory_description": "Kompaktný zoznam pre rýchle úpravy množstva aj počas nákupu.",

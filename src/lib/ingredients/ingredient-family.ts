@@ -43,6 +43,12 @@ const FAMILY_TOKEN_MAP = new Map<string, string>([
   ["omáčka", "sauce"],
   ["bread", "bread"],
   ["chlieb", "bread"],
+  ["butter", "butter"],
+  ["maslo", "butter"],
+  ["salmon", "salmon"],
+  ["losos", "salmon"],
+  ["asparagus", "asparagus"],
+  ["spargla", "asparagus"],
 ]);
 
 const CANONICAL_FAMILY_TOKENS = new Set(FAMILY_TOKEN_MAP.values());

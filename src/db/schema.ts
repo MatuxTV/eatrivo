@@ -11,6 +11,7 @@ import {
   boolean,
   index,
   unique,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 // Define the authorization role enum
@@ -110,6 +111,19 @@ export const recipeSourceEnum = pgEnum("recipe_source", [
   "ai_custom",
 ]);
 
+export const ingredientSourceEnum = pgEnum("ingredient_source", [
+  "recipe",
+  "admin",
+  "user",
+  "ai",
+]);
+
+export const ingredientReviewStateEnum = pgEnum("ingredient_review_state", [
+  "trusted",
+  "unverified",
+  "flagged",
+]);
+
 export const foodItems = pgTable("food_items", {
   id: integer("id").primaryKey().notNull(),
   name: text().notNull(),
@@ -152,6 +166,78 @@ export const recipes = pgTable("recipes", {
     .notNull(),
 });
 
+export const ingredients = pgTable("ingredients", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  key: text("key").notNull(),
+  parentId: uuid("parent_id").references((): AnyPgColumn => ingredients.id, {
+    onDelete: "set null",
+  }),
+  canonicalName: text("canonical_name"),
+  ownerUserId: uuid("owner_user_id"),
+  reviewState: ingredientReviewStateEnum("review_state")
+    .default("trusted")
+    .notNull(),
+  source: ingredientSourceEnum("source").default("recipe").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+}, (table) => ({
+  parentIdx: index("ingredients_parent_idx").on(table.parentId),
+  ownerIdx: index("ingredients_owner_idx").on(table.ownerUserId),
+  scopedKeyUnique: unique("ingredients_scoped_key_unique")
+    .on(table.ownerUserId, table.key)
+    .nullsNotDistinct(),
+}));
+
+export const ingredientNames = pgTable(
+  "ingredient_names",
+  {
+    ingredientId: uuid("ingredient_id")
+      .notNull()
+      .references(() => ingredients.id, { onDelete: "cascade" }),
+    locale: text("locale").notNull(),
+    name: text("name").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    compoundKey: primaryKey({ columns: [table.ingredientId, table.locale] }),
+  }),
+);
+
+export const ingredientAliases = pgTable(
+  "ingredient_aliases",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ingredientId: uuid("ingredient_id")
+      .notNull()
+      .references(() => ingredients.id, { onDelete: "cascade" }),
+    locale: text("locale"),
+    alias: text("alias").notNull(),
+    source: ingredientSourceEnum("source").default("recipe").notNull(),
+    ownerUserId: uuid("owner_user_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    aliasIdx: index("ingredient_aliases_alias_idx").on(table.alias),
+    ingredientIdx: index("ingredient_aliases_ingredient_idx").on(
+      table.ingredientId,
+    ),
+    scopedUnique: unique("ingredient_aliases_scoped_unique")
+      .on(table.ownerUserId, table.locale, table.alias)
+      .nullsNotDistinct(),
+  }),
+);
+
 export const recipeIngredients = pgTable("recipe_ingredients", {
   id: uuid("id").primaryKey().defaultRandom(),
   recipeId: uuid("recipe_id")
@@ -160,6 +246,10 @@ export const recipeIngredients = pgTable("recipe_ingredients", {
   canonicalName: text("canonical_name"),
   ingredientKey: text("ingredient_key"),
   ingredientSpecificKey: text("ingredient_specific_key"),
+  ingredientId: uuid("ingredient_id").references(() => ingredients.id, {
+    onDelete: "set null",
+  }),
+  displayLabel: text("display_label"),
   quantity: numeric("quantity", { precision: 8, scale: 3 }),
   unit: text("unit"),
   optional: boolean("optional").default(false).notNull(),
@@ -377,6 +467,9 @@ export const shoppingListItems = pgTable("shopping_list_items", {
   ingredientName: text("ingredient_name"),
   ingredientKey: text("ingredient_key"),
   ingredientSpecificKey: text("ingredient_specific_key"),
+  ingredientId: uuid("ingredient_id").references(() => ingredients.id, {
+    onDelete: "set null",
+  }),
   quantity: numeric("quantity", { precision: 8, scale: 3 }),
   unit: text("unit"),
   amountLabel: text("amount_label"),
@@ -430,6 +523,9 @@ export const pantryItems = pgTable("pantry_items", {
   ingredientName: text("ingredient_name"),
   ingredientKey: text("ingredient_key"),
   ingredientSpecificKey: text("ingredient_specific_key"),
+  ingredientId: uuid("ingredient_id").references(() => ingredients.id, {
+    onDelete: "set null",
+  }),
   trackingMode: pantryTrackingModeEnum("tracking_mode")
     .default("quantity")
     .notNull(),
@@ -459,6 +555,9 @@ export const pantryRestockItems = pgTable("pantry_restock_items", {
   ingredientName: text("ingredient_name"),
   ingredientKey: text("ingredient_key"),
   ingredientSpecificKey: text("ingredient_specific_key"),
+  ingredientId: uuid("ingredient_id").references(() => ingredients.id, {
+    onDelete: "set null",
+  }),
   defaultQuantity: numeric("default_quantity", { precision: 8, scale: 3 }),
   defaultUnit: text("default_unit"),
   category: text("category"),

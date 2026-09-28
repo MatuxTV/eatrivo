@@ -11,6 +11,7 @@ import {
 } from "@/db/schema";
 import { createIngredientKey } from "@/lib/ingredients/ingredients";
 import { pantryKeySatisfiesRecipeKey } from "@/lib/ingredients/ingredient-family";
+import { ensureCatalogIngredients } from "@/lib/ingredients/catalog";
 
 interface RecipeTranslationJson {
   name: string;
@@ -269,10 +270,16 @@ function resolveCanonicalIngredientName(
         display_name?: string | null;
       }
     | undefined,
+  englishDisplayName?: string | null,
 ): string | null {
   const canonicalName = value?.canonical_name?.trim();
   if (canonicalName) {
     return canonicalName;
+  }
+
+  const englishName = englishDisplayName?.trim();
+  if (englishName) {
+    return englishName;
   }
 
   const displayName = value?.display_name?.trim();
@@ -408,10 +415,14 @@ function normalizeRecipeIngredients(
       ? defaultLocale
       : Object.keys(ingredient.translations)[0];
     const fallbackTranslation = ingredient.translations[fallbackLocale];
-    const canonicalName = resolveCanonicalIngredientName({
-      canonical_name: ingredient.canonical_name,
-      display_name: fallbackTranslation?.display_name,
-    });
+    const englishTranslation = ingredient.translations["en"];
+    const canonicalName = resolveCanonicalIngredientName(
+      {
+        canonical_name: ingredient.canonical_name,
+        display_name: fallbackTranslation?.display_name,
+      },
+      englishTranslation?.display_name ?? null,
+    );
     const ingredientKey =
       ingredient.ingredient_key ??
       buildIngredientMachineKey(canonicalName, fallbackTranslation.display_name);
@@ -617,7 +628,30 @@ export async function persistPreparedRecipeImport(
       continue;
     }
 
+    const catalogIdByKey = await ensureCatalogIngredients(
+      row.recipeIngredients.map((ingredient) => ({
+        specificKey: ingredient.row.ingredientSpecificKey,
+        familyKey: ingredient.row.ingredientKey,
+        canonicalName: ingredient.row.canonicalName,
+        names: ingredient.translations.map((translation) => ({
+          locale: translation.locale,
+          name: translation.displayName,
+        })),
+      })),
+    );
+
     for (const ingredient of row.recipeIngredients) {
+      const identityKey =
+        ingredient.row.ingredientSpecificKey ?? ingredient.row.ingredientKey;
+      const displayLabel =
+        ingredient.translations.find(
+          (translation) => translation.locale === row.recipe.defaultLocale,
+        )?.displayName ??
+        ingredient.translations.find(
+          (translation) => translation.locale === "en",
+        )?.displayName ??
+        ingredient.translations[0]?.displayName ??
+        null;
       const [insertedIngredient] = await db
         .insert(recipeIngredients)
         .values({
@@ -625,6 +659,10 @@ export async function persistPreparedRecipeImport(
           canonicalName: ingredient.row.canonicalName,
           ingredientKey: ingredient.row.ingredientKey,
           ingredientSpecificKey: ingredient.row.ingredientSpecificKey,
+          ingredientId: identityKey
+            ? catalogIdByKey.get(identityKey) ?? null
+            : null,
+          displayLabel,
           quantity: ingredient.row.quantity,
           unit: ingredient.row.unit,
           optional: ingredient.row.optional,
@@ -633,6 +671,8 @@ export async function persistPreparedRecipeImport(
         })
         .returning({ id: recipeIngredients.id });
 
+      // Keep the per-recipe, per-locale wording ("lístok bazalky") until the
+      // legacy table is retired; ingredient_names only holds catalog names.
       if (ingredient.translations.length > 0) {
         await db.insert(recipeIngredientTranslations).values(
           ingredient.translations.map((translation) => ({

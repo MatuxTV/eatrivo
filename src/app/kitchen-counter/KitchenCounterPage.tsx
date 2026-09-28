@@ -84,6 +84,14 @@ function pantryRowMatchesIngredient(
   pantryNameTargets: Set<string> | undefined,
 ) {
   if (
+    row.ingredientId &&
+    ingredient.ingredientId &&
+    row.ingredientId === ingredient.ingredientId
+  ) {
+    return true;
+  }
+
+  if (
     ingredient.ingredientSpecificKey &&
     row.ingredientSpecificKey === ingredient.ingredientSpecificKey
   ) {

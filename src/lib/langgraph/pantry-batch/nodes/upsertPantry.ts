@@ -6,6 +6,7 @@ import { apiLogger } from "@/lib/logger";
 import { findPantrySuggestionForItem } from "@/lib/pantry/ai-normalization";
 import {
   loadIngredientAliasIndex,
+  resolveIngredientIdByKeys,
   resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
 import { CacheService } from "@/lib/cache/redis";
@@ -64,6 +65,10 @@ export async function upsertPantry(
     const resolvedUnit = item.unit ? normalizeUnit(item.unit) : null;
     const resolvedCategory =
       item.category ?? suggestion?.category ?? guessFoodCategory(item.name);
+    const resolvedIngredientId = await resolveIngredientIdByKeys(
+      resolvedIdentity.ingredientKey,
+      resolvedIdentity.ingredientSpecificKey,
+    );
 
     const existingItem = existingItems.find((existing) => {
       if (
@@ -108,6 +113,7 @@ export async function upsertPantry(
           ingredientName: resolvedIdentity.ingredientName,
           ingredientKey: resolvedIdentity.ingredientKey,
           ingredientSpecificKey: resolvedIdentity.ingredientSpecificKey,
+          ingredientId: resolvedIngredientId,
           quantity: mergedQuantity,
           unit: resolvedUnit ?? existingItem.unit,
           category: resolvedCategory,
@@ -162,6 +168,7 @@ export async function upsertPantry(
         ingredientName: resolvedIdentity.ingredientName,
         ingredientKey: resolvedIdentity.ingredientKey,
         ingredientSpecificKey: resolvedIdentity.ingredientSpecificKey,
+        ingredientId: resolvedIngredientId,
         quantity: item.quantity !== null ? String(item.quantity) : null,
         unit: resolvedUnit,
         category: resolvedCategory,

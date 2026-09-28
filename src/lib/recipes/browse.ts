@@ -3,7 +3,6 @@ import { and, asc, count, desc, eq, inArray, lte, type SQL } from "drizzle-orm";
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import {
   recipeIngredients,
-  recipeIngredientTranslations,
   recipes,
   recipeTranslations,
 } from "@/db/schema";
@@ -14,6 +13,7 @@ import {
   type RecipeIngredientItem,
 } from "@/lib/recipes/recipe-ingredients";
 import { normalizeRecipeInstructions } from "@/lib/recipes/recipe-instructions";
+import { loadIngredientNameMap } from "@/lib/pantry/ingredient-resolution";
 import {
   normalizeRecipeLocale,
   resolveIngredientDisplayName,
@@ -151,7 +151,7 @@ async function buildRecipePreviews(
 
   const recipeIds = recipeRows.map((row) => row.id);
 
-  const [translationRows, ingredientRows, ingredientTranslationRows, availabilityMap] =
+  const [translationRows, ingredientRows, availabilityMap] =
     await Promise.all([
       db
         .select({
@@ -172,6 +172,8 @@ async function buildRecipePreviews(
           canonicalName: recipeIngredients.canonicalName,
           ingredientKey: recipeIngredients.ingredientKey,
           ingredientSpecificKey: recipeIngredients.ingredientSpecificKey,
+          ingredientId: recipeIngredients.ingredientId,
+          displayLabel: recipeIngredients.displayLabel,
           quantity: recipeIngredients.quantity,
           unit: recipeIngredients.unit,
           sortOrder: recipeIngredients.sortOrder,
@@ -180,13 +182,6 @@ async function buildRecipePreviews(
         .from(recipeIngredients)
         .innerJoin(recipes, eq(recipeIngredients.recipeId, recipes.id))
         .where(inArray(recipeIngredients.recipeId, recipeIds)),
-      db
-        .select({
-          recipeIngredientId: recipeIngredientTranslations.recipeIngredientId,
-          locale: recipeIngredientTranslations.locale,
-          displayName: recipeIngredientTranslations.displayName,
-        })
-        .from(recipeIngredientTranslations),
       userProfileId
         ? getRecipeAvailabilityForUserProfile(userProfileId, recipeIds, { locale })
         : Promise.resolve(new Map()),
@@ -213,19 +208,39 @@ async function buildRecipePreviews(
     });
   }
 
+  const ingredientNameMap = await loadIngredientNameMap(
+    ingredientRows
+      .map((row) => row.ingredientId)
+      .filter((id): id is string => Boolean(id)),
+  );
+
   const ingredientTranslationMap = new Map<
     string,
     Map<string, { locale: string; displayName: string }>
   >();
 
-  for (const row of ingredientTranslationRows) {
-    let translationsForIngredient = ingredientTranslationMap.get(row.recipeIngredientId);
-    if (!translationsForIngredient) {
-      translationsForIngredient = new Map();
-      ingredientTranslationMap.set(row.recipeIngredientId, translationsForIngredient);
+  for (const row of ingredientRows) {
+    const localeMap = new Map<string, { locale: string; displayName: string }>();
+    const names = row.ingredientId
+      ? ingredientNameMap.get(row.ingredientId)
+      : undefined;
+
+    if (names) {
+      for (const [nameLocale, name] of names) {
+        const normalized = normalizeRecipeLocale(nameLocale);
+        localeMap.set(normalized, { locale: normalized, displayName: name });
+      }
     }
 
-    translationsForIngredient.set(normalizeRecipeLocale(row.locale), row);
+    if (row.displayLabel) {
+      const normalizedDefault = normalizeRecipeLocale(row.defaultLocale);
+      localeMap.set(normalizedDefault, {
+        locale: normalizedDefault,
+        displayName: row.displayLabel,
+      });
+    }
+
+    ingredientTranslationMap.set(row.recipeIngredientId, localeMap);
   }
 
   const ingredientItemsByRecipeId = new Map<string, RecipeIngredientItem[]>();
@@ -242,7 +257,8 @@ async function buildRecipePreviews(
     );
 
     const ingredientName =
-      resolveIngredientDisplayName(localizedIngredient, row.canonicalName) ??
+      resolveIngredientDisplayName(localizedIngredient, row.displayLabel) ??
+      row.displayLabel ??
       row.canonicalName ??
       row.ingredientKey ??
       "ingredient";
@@ -257,6 +273,7 @@ async function buildRecipePreviews(
       unit: row.unit,
       ingredientKey: row.ingredientKey,
       ingredientSpecificKey: row.ingredientSpecificKey,
+      ingredientId: row.ingredientId,
     });
     ingredientItemsByRecipeId.set(row.recipeId, existingItems);
   }

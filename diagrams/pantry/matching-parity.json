@@ -1,0 +1,193 @@
+{
+  "generatedAt": "2026-09-28T18:00:58.362Z",
+  "summary": {
+    "pantryRows": 41,
+    "recipeRows": 284,
+    "pairsCompared": 11644,
+    "oldMatchedPairs": 242,
+    "newMatchedPairs": 230,
+    "diffPairs": 12
+  },
+  "diffs": [
+    {
+      "pantryName": "Olivový olej",
+      "pantryKeys": "olive-oil / oil",
+      "pantryIngredientId": "adbc06ab-4ff2-41fd-9ccc-36b2822c1a1e",
+      "recipeIngredientId": "ed880d20-1a39-48a8-9de2-da80262daa50",
+      "recipeKeys": "sun-dried-tomato-oil / oil",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    },
+    {
+      "pantryName": "Olivový olej",
+      "pantryKeys": "olive-oil / oil",
+      "pantryIngredientId": "adbc06ab-4ff2-41fd-9ccc-36b2822c1a1e",
+      "recipeIngredientId": "e505a991-1f57-4bb0-90cf-afe1604d94dd",
+      "recipeKeys": "vegetable-oil / vegetable-oil",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    },
+    {
+      "pantryName": "Olivový olej",
+      "pantryKeys": "olive-oil / oil",
+      "pantryIngredientId": "adbc06ab-4ff2-41fd-9ccc-36b2822c1a1e",
+      "recipeIngredientId": "88d73772-924d-473d-9aa9-c7c2d44d8122",
+      "recipeKeys": "sesame-oil / sesame-oil",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    },
+    {
+      "pantryName": "Olivový olej",
+      "pantryKeys": "olive-oil / oil",
+      "pantryIngredientId": "adbc06ab-4ff2-41fd-9ccc-36b2822c1a1e",
+      "recipeIngredientId": "57419926-2b0b-42e7-9f72-0fc95e228339",
+      "recipeKeys": "sunflower-oil / sunflower-oil",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    },
+    {
+      "pantryName": "Olivový olej",
+      "pantryKeys": "olive-oil / oil",
+      "pantryIngredientId": "adbc06ab-4ff2-41fd-9ccc-36b2822c1a1e",
+      "recipeIngredientId": "88d73772-924d-473d-9aa9-c7c2d44d8122",
+      "recipeKeys": "sesame-oil / sesame-oil",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    },
+    {
+      "pantryName": "Olivový olej",
+      "pantryKeys": "olive-oil / oil",
+      "pantryIngredientId": "adbc06ab-4ff2-41fd-9ccc-36b2822c1a1e",
+      "recipeIngredientId": "e505a991-1f57-4bb0-90cf-afe1604d94dd",
+      "recipeKeys": "vegetable-oil / vegetable-oil",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    },
+    {
+      "pantryName": "Olivový olej",
+      "pantryKeys": "olive-oil / oil",
+      "pantryIngredientId": "adbc06ab-4ff2-41fd-9ccc-36b2822c1a1e",
+      "recipeIngredientId": "e505a991-1f57-4bb0-90cf-afe1604d94dd",
+      "recipeKeys": "vegetable-oil / oil",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    },
+    {
+      "pantryName": "Olivový olej",
+      "pantryKeys": "olive-oil / oil",
+      "pantryIngredientId": "adbc06ab-4ff2-41fd-9ccc-36b2822c1a1e",
+      "recipeIngredientId": "d94f0854-a486-4fe7-94df-1910e7f44de6",
+      "recipeKeys": "coconut-oil / coconut-oil",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    },
+    {
+      "pantryName": "Olivový olej",
+      "pantryKeys": "olive-oil / oil",
+      "pantryIngredientId": "adbc06ab-4ff2-41fd-9ccc-36b2822c1a1e",
+      "recipeIngredientId": "e505a991-1f57-4bb0-90cf-afe1604d94dd",
+      "recipeKeys": "vegetable-oil / vegetable-oil",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    },
+    {
+      "pantryName": "Čierne korenie",
+      "pantryKeys": "black-pepper / pepper",
+      "pantryIngredientId": "e4016ebf-4fee-42cb-843a-8a9a8c97325c",
+      "recipeIngredientId": "dcf2a8d8-63fd-4df7-a225-96a2fe7bcd38",
+      "recipeKeys": "red-bell-pepper / red-bell-pepper",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    },
+    {
+      "pantryName": "Pear tomato",
+      "pantryKeys": "tomato / tomato",
+      "pantryIngredientId": "c914e982-db1a-43c9-a7cd-b6ef927489ca",
+      "recipeIngredientId": "ed880d20-1a39-48a8-9de2-da80262daa50",
+      "recipeKeys": "sun-dried-tomato-oil / oil",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    },
+    {
+      "pantryName": "Crushed tomato",
+      "pantryKeys": "tomato / tomato",
+      "pantryIngredientId": "c914e982-db1a-43c9-a7cd-b6ef927489ca",
+      "recipeIngredientId": "ed880d20-1a39-48a8-9de2-da80262daa50",
+      "recipeKeys": "sun-dried-tomato-oil / oil",
+      "old": {
+        "matched": true,
+        "matchType": "fallback"
+      },
+      "new": {
+        "matched": false,
+        "matchType": null
+      }
+    }
+  ]
+}
