@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 
 import { db } from "@/index";
 import { pantryItems } from "@/db/schema";
@@ -7,6 +7,7 @@ import {
   getPantryAiSuggestions,
 } from "@/lib/pantry/ai-normalization";
 import {
+  loadIngredientGraph,
   loadIngredientAliasIndex,
   resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
@@ -57,10 +58,17 @@ export async function normalizePantryItemsInBackground(
   }
 
   try {
+    // Items that already link to an ingredient are resolved; re-running the
+    // AI on them could only move their keys away from ingredient_id.
     const itemsToNormalize = await db
       .select()
       .from(pantryItems)
-      .where(inArray(pantryItems.id, input.pantryItemIds));
+      .where(
+        and(
+          inArray(pantryItems.id, input.pantryItemIds),
+          isNull(pantryItems.ingredientId),
+        ),
+      );
 
     if (itemsToNormalize.length === 0) {
       return;
@@ -82,7 +90,10 @@ export async function normalizePantryItemsInBackground(
         expiryDate: item.expiryDate?.toISOString() ?? null,
       })),
     });
-    const aliasIndex = await loadIngredientAliasIndex(input.locale);
+    const [aliasIndex, ingredientGraph] = await Promise.all([
+      loadIngredientAliasIndex(input.locale),
+      loadIngredientGraph(input.locale),
+    ]);
 
     for (const [index, item] of itemsToNormalize.entries()) {
       const aiSuggestion = findPantrySuggestionForItem(
@@ -137,12 +148,18 @@ export async function normalizePantryItemsInBackground(
         continue;
       }
 
+      const identityKey =
+        ingredientIdentity.ingredientSpecificKey ?? ingredientIdentity.ingredientKey;
+
       await db
         .update(pantryItems)
         .set({
           ingredientName: ingredientIdentity.ingredientName,
           ingredientKey: ingredientIdentity.ingredientKey,
           ingredientSpecificKey: ingredientIdentity.ingredientSpecificKey,
+          ingredientId: identityKey
+            ? ingredientGraph.idByKey.get(identityKey) ?? null
+            : null,
           category:
             item.category ??
             aiSuggestion?.category ??

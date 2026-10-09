@@ -24,6 +24,7 @@ import {
   shouldPreservePantryQuantity,
 } from "@/lib/pantry/tracking";
 import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
+import { planPantryCheckout } from "@/lib/pantry/shopping-list-core";
 
 function errorResponse(error: string, code: string, status: number) {
   return NextResponse.json({ error, code }, { status });
@@ -129,6 +130,18 @@ export async function POST(
       return errorResponse("Validation failed", "INVALID_SHOPPING_LIST_STATE", 400);
     }
 
+    // Checkout adds quantities onto existing pantry items, so it must not run
+    // twice for the same list. Only checkout completes a list.
+    if (shoppingList.status === "completed") {
+      return NextResponse.json({
+        shoppingList,
+        importedCount: 0,
+        insertedCount: 0,
+        mergedCount: 0,
+        alreadyCompleted: true,
+      });
+    }
+
     const allItems = await db
       .select({
         id: shoppingListItems.id,
@@ -177,27 +190,35 @@ export async function POST(
       );
     }
 
-    const existingPantryItems = await db
+    const userPantryItems = await db
       .select({
         id: pantryItems.id,
         name: pantryItems.name,
+        ingredientId: pantryItems.ingredientId,
         ingredientKey: pantryItems.ingredientKey,
         ingredientSpecificKey: pantryItems.ingredientSpecificKey,
+        trackingMode: pantryItems.trackingMode,
+        inStock: pantryItems.inStock,
+        quantity: pantryItems.quantity,
+        unit: pantryItems.unit,
+        shoppingListId: pantryItems.shoppingListId,
       })
       .from(pantryItems)
-      .where(
-        and(
-          eq(pantryItems.userProfileId, userProfile.id),
-          eq(pantryItems.shoppingListId, shoppingList.id),
-        ),
-      );
+      .where(eq(pantryItems.userProfileId, userProfile.id));
 
     const existingImportKeys = new Set(
-      existingPantryItems.map((item) => buildPantryImportKey(item)),
+      userPantryItems
+        .filter((item) => item.shoppingListId === shoppingList.id)
+        .map((item) => buildPantryImportKey(item)),
+    );
+    const itemsToImport = selectedItems.filter(
+      (item) => !existingImportKeys.has(buildPantryImportKey(item)),
     );
 
-    const pantryValues = selectedItems
-      .filter((item) => !existingImportKeys.has(buildPantryImportKey(item)))
+    // Bought items top up matching pantry items; the rest become new rows.
+    const checkoutPlan = planPantryCheckout(itemsToImport, userPantryItems);
+
+    const pantryValues = checkoutPlan.inserts
       .map((item) => {
         const normalizedUnit = item.unit ? normalizeUnit(item.unit) : null;
         const trackingMode = resolvePantryTrackingMode({
@@ -261,9 +282,9 @@ export async function POST(
         shoppingListId: shoppingList.id,
         userProfileId: userProfile.id,
         selectedItems: selectedItems.length,
-        existingImportedItems: existingPantryItems.length,
+        skippedAsAlreadyImported: selectedItems.length - itemsToImport.length,
+        mergedIntoPantryItems: checkoutPlan.merges.length,
         preparedPantryRows: pantryValues.length,
-        skippedAsDuplicates: selectedItems.length - pantryValues.length,
       },
     });
 
@@ -274,6 +295,7 @@ export async function POST(
           .returning({
             id: pantryItems.id,
             name: pantryItems.name,
+            ingredientId: pantryItems.ingredientId,
             trackingMode: pantryItems.trackingMode,
             inStock: pantryItems.inStock,
             quantity: pantryItems.quantity,
@@ -281,6 +303,34 @@ export async function POST(
             category: pantryItems.category,
           })
       : [];
+
+    for (const merge of checkoutPlan.merges) {
+      await db
+        .update(pantryItems)
+        .set({
+          quantity: merge.quantity,
+          unit: merge.unit,
+          inStock: merge.inStock,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(pantryItems.id, merge.pantryItemId),
+            eq(pantryItems.userProfileId, userProfile.id),
+          ),
+        );
+
+      apiLogger.info("[shopping-list.checkout] topped up pantry item", {
+        metadata: {
+          shoppingListId: shoppingList.id,
+          userProfileId: userProfile.id,
+          pantryItemId: merge.pantryItemId,
+          shoppingListItemIds: merge.shoppingListItemIds,
+          quantity: merge.quantity,
+          unit: merge.unit,
+        },
+      });
+    }
 
     for (const insertedItem of insertedItems) {
       apiLogger.info("[shopping-list.checkout] inserted pantry item", {
@@ -298,25 +348,22 @@ export async function POST(
       });
     }
 
-    const [updatedShoppingList] =
-      shoppingList.status === "completed"
-        ? [shoppingList]
-        : await db
-            .update(shoppingLists)
-            .set({
-              status: "completed",
-              updated_at: new Date(),
-            })
-            .where(
-              and(
-                eq(shoppingLists.id, shoppingList.id),
-                eq(shoppingLists.userProfileId, userProfile.id),
-              ),
-            )
-            .returning({
-              id: shoppingLists.id,
-              status: shoppingLists.status,
-            });
+    const [updatedShoppingList] = await db
+      .update(shoppingLists)
+      .set({
+        status: "completed",
+        updated_at: new Date(),
+      })
+      .where(
+        and(
+          eq(shoppingLists.id, shoppingList.id),
+          eq(shoppingLists.userProfileId, userProfile.id),
+        ),
+      )
+      .returning({
+        id: shoppingLists.id,
+        status: shoppingLists.status,
+      });
 
     if (!updatedShoppingList) {
       apiLogger.error("Shopping list checkout status update failed after pantry insert", {
@@ -330,14 +377,18 @@ export async function POST(
     await CacheService.del(`shopping-lists:${session.user.id}`);
     await CacheService.del(`pantry:${userProfile.id}`);
 
-    if (insertedItems.length > 0) {
+    const unlinkedInsertedIds = insertedItems
+      .filter((item) => !item.ingredientId)
+      .map((item) => item.id);
+
+    if (unlinkedInsertedIds.length > 0) {
       after(async () => {
         try {
           await normalizePantryItemsInBackground({
             source: "shopping-list-checkout",
             userProfileId: userProfile.id,
             locale: userInfo?.language ?? "sk",
-            pantryItemIds: insertedItems.map((item) => item.id),
+            pantryItemIds: unlinkedInsertedIds,
           });
         } catch (error) {
           apiLogger.error("Shopping list checkout normalization failed", {
@@ -353,14 +404,17 @@ export async function POST(
       metadata: {
         shoppingListId: shoppingList.id,
         userProfileId: userProfile.id,
-        importedCount: insertedItems.length,
+        insertedCount: insertedItems.length,
+        mergedCount: checkoutPlan.merges.length,
         shoppingListStatus: updatedShoppingList.status,
       },
     });
 
     return NextResponse.json({
       shoppingList: updatedShoppingList,
-      importedCount: insertedItems.length,
+      importedCount: insertedItems.length + checkoutPlan.merges.length,
+      insertedCount: insertedItems.length,
+      mergedCount: checkoutPlan.merges.length,
     });
   } catch (error) {
     apiLogger.error("POST /api/shopping-lists/[id]/checkout-to-pantry error", {
