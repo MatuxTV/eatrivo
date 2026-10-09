@@ -1,19 +1,22 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["AGENTS.md"],
+  "subagent_depth": 0,
   "agent": {
-    "build": {
+    "coder": {
       "mode": "primary",
-      "description": "Default builder for the eatrivo Next.js PWA. Full tool access."
+      "description": "Implementuje kód podľa .agent/spec.md",
+      "model": "openrouter/deepseek/deepseek-v4.1-flash",
+      "temperature": 0.2,
+      "steps": 20,
+      "permission": { "read": "allow", "edit": "allow", "bash": "allow" }
     },
-    "plan": {
+    "tester": {
       "mode": "primary",
-      "description": "Read-only planning/architecture for eatrivo. No edits or shell side effects.",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "patch": false
-      }
+      "description": "Píše a spúšťa testy, hlási zlyhania",
+      "model": "openrouter/deepseek/deepseek-v4.1-flash",
+      "temperature": 0.1,
+      "steps": 20,
+      "permission": { "read": "allow", "edit": "allow", "bash": "allow" }
     }
   }
 }

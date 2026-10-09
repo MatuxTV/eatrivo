@@ -52,24 +52,4 @@ public/workbox-*.js.map
 # .agents
 # .claude
 
-# skills
-.claude/skills/
-.opencode/skills/
-
-# audit reports
-security-scan-report.json
-legal-compliance-report.json
-pwa-audit-report.json
-
-# internal docs
-SECURITY_AUDIT.md
-docs/RELEASE_AUDIT_*.md
-EATRIVO BrandBook.md
-DESIGN.md
-
-# planning / debug
-.planning/
-
-scripts
-
-receipes
+.agent/

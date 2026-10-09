@@ -190,10 +190,12 @@ function ChatSessionList({
 
 interface ChatWithRivoPageProps {
   onCookRecipe?: (recipe: BasicHomeRecipePreview) => void;
+  isActive?: boolean;
 }
 
 export default function ChatWithRivoPage({
   onCookRecipe,
+  isActive = true,
 }: ChatWithRivoPageProps = {}) {
   const t = useTranslations("home.comingSoon.chatWithRivo");
   const locale = useLocale();
@@ -388,11 +390,15 @@ export default function ChatWithRivoPage({
   }, [fetchChatLimit]);
 
   useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+
     scrollChatToBottom("smooth");
-  }, [loaderStepIndex, messages, isStreaming, scrollChatToBottom]);
+  }, [isActive, loaderStepIndex, messages, isStreaming, scrollChatToBottom]);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !window.visualViewport) {
+    if (typeof window === "undefined" || !window.visualViewport || !isActive) {
       return;
     }
 
@@ -465,7 +471,7 @@ export default function ChatWithRivoPage({
       window.removeEventListener("focusout", settleViewport);
       document.removeEventListener("visibilitychange", settleViewport);
     };
-  }, []);
+  }, [isActive]);
 
   useEffect(() => {
     if (keyboardOffset === 0) {

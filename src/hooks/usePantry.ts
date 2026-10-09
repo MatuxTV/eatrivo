@@ -164,7 +164,7 @@ export function usePantry(options: UsePantryOptions = {}) {
     !hasInitialRestockItems,
   );
 
-  const fetchItems = useCallback(async (showLoading = true) => {
+  const fetchItems = useCallback(async (showLoading = true, notify = true) => {
     try {
       if (showLoading) {
         setIsLoading(true);
@@ -174,7 +174,7 @@ export function usePantry(options: UsePantryOptions = {}) {
       if (!response.ok) throw new Error("Failed to fetch pantry items");
       const data = await response.json();
       setItems(data.items ?? []);
-      if (typeof window !== "undefined") {
+      if (notify && typeof window !== "undefined") {
         window.dispatchEvent(new Event(PANTRY_CHANGED_EVENT));
       }
     } catch (err) {
@@ -228,7 +228,7 @@ export function usePantry(options: UsePantryOptions = {}) {
 
   useEffect(() => {
     void Promise.all([
-      fetchItems(!hasInitialItems),
+      fetchItems(!hasInitialItems, !hasInitialItems),
       fetchDrafts(),
       fetchRestockItems(!hasInitialRestockItems),
     ]).finally(() => {

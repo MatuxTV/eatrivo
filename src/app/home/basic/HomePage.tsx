@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { TrackPageEvent } from "@/components/analytics/TrackPageEvent";
@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { cn } from "@/lib/utils/utils";
 import { normalizeRecipeInstructions } from "@/lib/recipes/recipe-instructions";
 import type { CustomRecipeHeroSnapshot } from "../components/RivoCustomRecipeExperience";
 import type {
@@ -18,6 +19,7 @@ import type {
 } from "@/app/home/types/data";
 import {
   type AppHomeSection,
+  type PrimaryAppHomeSection,
   getPrimaryAppHomeSection,
   isHomeSection,
 } from "../types/navigation";
@@ -113,6 +115,45 @@ function readStoredKitchenCounterRecipe(): BasicHomeRecipePreview | null {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Section pane (keep-alive wrapper + CSS enter animation)           */
+/* ------------------------------------------------------------------ */
+
+function SectionPane({
+  active,
+  className,
+  children,
+}: {
+  active: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const savedScrollTopRef = useRef(0);
+
+  useLayoutEffect(() => {
+    const node = scrollContainerRef.current;
+    if (!active || !node) {
+      return;
+    }
+
+    node.scrollTop = savedScrollTopRef.current;
+  }, [active]);
+
+  return (
+    <div
+      ref={scrollContainerRef}
+      onScroll={(event) => {
+        savedScrollTopRef.current = event.currentTarget.scrollTop;
+      }}
+      style={{ display: active ? undefined : "none" }}
+      className={cn("section-pane-enter h-full", className)}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Props                                                              */
 /* ------------------------------------------------------------------ */
 
@@ -180,6 +221,53 @@ export default function HomePage({
     : null;
 
   useTutorialSurface(activeTutorialSurface);
+
+  /* ---- Keep-alive: remember every section that has been opened ---- */
+
+  const [visitedSections, setVisitedSections] = useState<
+    Set<PrimaryAppHomeSection>
+  >(() => new Set<PrimaryAppHomeSection>([primaryActiveSection]));
+
+  useEffect(() => {
+    setVisitedSections((previous) => {
+      if (previous.has(primaryActiveSection)) {
+        return previous;
+      }
+      const next = new Set(previous);
+      next.add(primaryActiveSection);
+      return next;
+    });
+  }, [primaryActiveSection]);
+
+  const shouldRenderSection = useCallback(
+    (section: PrimaryAppHomeSection) =>
+      visitedSections.has(section) || primaryActiveSection === section,
+    [primaryActiveSection, visitedSections],
+  );
+
+  /* ---- Prefetch heavy lazy sections once the shell is idle ---- */
+
+  useEffect(() => {
+    const prefetch = () => {
+      void import("@/app/chat-with-rivo/ChatWithRivoPage");
+      void import("@/app/kitchen-counter/KitchenCounterPage");
+    };
+
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    if (typeof idleWindow.requestIdleCallback === "function") {
+      const handle = idleWindow.requestIdleCallback(prefetch);
+      return () => {
+        idleWindow.cancelIdleCallback?.(handle);
+      };
+    }
+
+    const timeout = window.setTimeout(prefetch, 1500);
+    return () => window.clearTimeout(timeout);
+  }, []);
 
   /* ---- Recipes state (owned here, passed to RecipesSection) ---- */
 
@@ -315,27 +403,15 @@ export default function HomePage({
       <HomeHeader />
       <AppShellViewport
         as="main"
-        includeBottomNavOffset={
-          primaryActiveSection !== "chatWithRivo" &&
-          primaryActiveSection !== "profile" &&
-          primaryActiveSection !== "kitchenCounter"
-        }
-        className={`flex-1 w-full md:max-w-[calc(100vw-256px)] h-[100dvh] ${
-          primaryActiveSection === "chatWithRivo"
-            ? "overflow-hidden p-0"
-            : "overflow-x-hidden overflow-y-auto overscroll-y-contain pt-16 md:pt-8 px-4 md:px-8"
-        }`}
+        includeBottomNavOffset={false}
+        className="flex-1 w-full md:max-w-[calc(100vw-256px)] h-[100dvh] overflow-hidden"
       >
-        <AnimatePresence mode="wait">
-          {isHomeSection(activeSection) ? (
-            <motion.div
-              key="home"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="max-w-7xl mx-auto space-y-6"
-            >
+        {shouldRenderSection("home") ? (
+          <SectionPane
+            active={primaryActiveSection === "home"}
+            className="overflow-x-hidden overflow-y-auto overscroll-y-contain pt-16 md:pt-8 px-4 md:px-8 pb-[calc(100px+env(safe-area-inset-bottom))] md:pb-8"
+          >
+            <div className="max-w-7xl mx-auto space-y-6">
               {/* ---- Section switcher ---- */}
               <div className="mb-6">
                 <div
@@ -434,31 +510,30 @@ export default function HomePage({
                   />
                 )}
               </AnimatePresence>
-            </motion.div>
-          ) : primaryActiveSection === "pantry" ? (
-            <motion.div
-              key="pantry"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="max-w-7xl mx-auto"
-            >
+            </div>
+          </SectionPane>
+        ) : null}
+
+        {shouldRenderSection("pantry") ? (
+          <SectionPane
+            active={primaryActiveSection === "pantry"}
+            className="overflow-x-hidden overflow-y-auto overscroll-y-contain pt-16 md:pt-8 px-4 md:px-8 pb-[calc(100px+env(safe-area-inset-bottom))] md:pb-8"
+          >
+            <div className="max-w-7xl mx-auto">
               <PantrySection
                 membership={membership}
-                onPantryChanged={pantrySync.refreshPantrySummary}
                 initialData={initialPantryData}
               />
-            </motion.div>
-          ) : primaryActiveSection === "profile" ? (
-            <motion.div
-              key="profile"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="-mx-4 md:-mx-8 md:-my-8"
-            >
+            </div>
+          </SectionPane>
+        ) : null}
+
+        {shouldRenderSection("profile") ? (
+          <SectionPane
+            active={primaryActiveSection === "profile"}
+            className="overflow-x-hidden overflow-y-auto overscroll-y-contain pt-16 md:pt-8 px-4 md:px-8"
+          >
+            <div className="-mx-4 md:-mx-8 md:-my-8">
               <ProfilePageClient
                 onBack={() => setActiveSection("home")}
                 onOpenBookmarkedRecipe={handleOpenBookmarkedRecipeFromProfile}
@@ -466,34 +541,36 @@ export default function HomePage({
                 initialNutritionData={initialNutritionData}
                 initialView={initialProfileView}
               />
-            </motion.div>
-          ) : primaryActiveSection === "chatWithRivo" ? (
-            <motion.div
-              key="chatWithRivo"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="h-full"
-            >
-              <ChatWithRivoPage onCookRecipe={handleCookRecipe} />
-            </motion.div>
-          ) : primaryActiveSection === "kitchenCounter" ? (
-            <motion.div
-              key="kitchenCounter"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="h-full w-full max-w-7xl mx-auto p-0 md:px-4 md:py-6"
-            >
+            </div>
+          </SectionPane>
+        ) : null}
+
+        {shouldRenderSection("chatWithRivo") ? (
+          <SectionPane
+            active={primaryActiveSection === "chatWithRivo"}
+            className="overflow-hidden p-0"
+          >
+            <ChatWithRivoPage
+              isActive={primaryActiveSection === "chatWithRivo"}
+              onCookRecipe={handleCookRecipe}
+            />
+          </SectionPane>
+        ) : null}
+
+        {shouldRenderSection("kitchenCounter") ? (
+          <SectionPane
+            active={primaryActiveSection === "kitchenCounter"}
+            className="overflow-x-hidden overflow-y-auto overscroll-y-contain"
+          >
+            <div className="h-full w-full max-w-7xl mx-auto p-0 md:px-4 md:py-6">
               <KitchenCounterPage
+                isActive={primaryActiveSection === "kitchenCounter"}
                 recipe={selectedKitchenCounter}
                 onBack={handleKitchenCounterBack}
               />
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
+            </div>
+          </SectionPane>
+        ) : null}
       </AppShellViewport>
       <MobileNavigation
         activeSection={activeSection}

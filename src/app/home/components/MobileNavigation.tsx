@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { ElementType } from "react";
+import type { ButtonHTMLAttributes, ElementType } from "react";
 import {
   LayoutDashboard,
   User,
@@ -10,10 +10,15 @@ import {
   MessageSquarePlus,
   CookingPot,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useReducedMotion,
+  type Transition,
+} from "framer-motion";
 import { useTranslations } from "next-intl";
 import { FeedbackDialog } from "@/components/FeedbackButton";
-import { MOBILE_BOTTOM_NAV_HEIGHT_CLASS } from "@/app/home/constants/app-shell";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import {
   type AppHomeSection,
   getPrimaryAppHomeSection,
@@ -29,8 +34,14 @@ export default function MobileNavigation({
   onSectionChange,
 }: MobileNavigationProps) {
   const t = useTranslations("home");
+  const triggerHaptic = useHapticFeedback();
   const [showTooltip, setShowTooltip] = useState(false);
   const primaryActiveSection = getPrimaryAppHomeSection(activeSection);
+  const shouldReduceMotion = useReducedMotion();
+
+  const indicatorTransition: Transition = shouldReduceMotion
+    ? { duration: 0 }
+    : { type: "spring", duration: 0.35, bounce: 0.15 };
 
   useEffect(() => {
     // Show tooltip after 3 seconds
@@ -43,13 +54,85 @@ export default function MobileNavigation({
     return () => clearTimeout(timer);
   }, []);
 
-  // navItems removed
+  const handleSectionChange = (section: AppHomeSection) => {
+    triggerHaptic("light");
+    onSectionChange(section);
+  };
 
   return (
-    <div className={`md:hidden fixed bottom-0 left-0 right-0 z-50 pointer-events-none ${MOBILE_BOTTOM_NAV_HEIGHT_CLASS}`}>
+    <>
+      <div className="md:hidden fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pointer-events-none">
+        <nav
+          aria-label={t("nav.home")}
+          className="pointer-events-auto relative flex w-full max-w-[400px] h-16 items-center gap-1 rounded-full border border-black/[0.06] bg-white/90 px-2 shadow-[0_8px_32px_rgba(17,12,34,0.12),0_2px_8px_rgba(17,12,34,0.06)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/75"
+        >
+          <IslandItem
+            data-tutorial-anchor="nav-home"
+            label={t("nav.home")}
+            icon={LayoutDashboard}
+            isActive={primaryActiveSection === "home"}
+            indicatorTransition={indicatorTransition}
+            onClick={() => handleSectionChange("home")}
+          />
+          <IslandItem
+            data-tutorial-anchor="nav-pantry"
+            label={t("nav.pantry")}
+            icon={CakeSlice}
+            isActive={primaryActiveSection === "pantry"}
+            indicatorTransition={indicatorTransition}
+            onClick={() => handleSectionChange("pantry")}
+          />
+
+          {/* Rivo hero action */}
+          <button
+            type="button"
+            data-tutorial-anchor="nav-chat"
+            aria-label={t("nav.chatWithRivo")}
+            aria-current={
+              primaryActiveSection === "chatWithRivo" ? "page" : undefined
+            }
+            onClick={() => handleSectionChange("chatWithRivo")}
+            className="relative flex h-12 flex-1 items-center justify-center rounded-full touch-manipulation select-none [-webkit-tap-highlight-color:transparent] transition-transform duration-150 ease-out active:scale-[0.92]"
+          >
+            {primaryActiveSection === "chatWithRivo" && (
+              <motion.span
+                layoutId="mobile-nav-island-active"
+                className="absolute inset-0 rounded-full bg-eatrivo-purple/10"
+                transition={indicatorTransition}
+              />
+            )}
+            <span
+              className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-eatrivo-purple text-white shadow-[0_4px_14px_rgba(123,63,242,0.35)] transition-shadow duration-150 ${
+                primaryActiveSection === "chatWithRivo"
+                  ? "ring-4 ring-eatrivo-purple/15"
+                  : ""
+              }`}
+            >
+              <MessageCircleHeart className="h-5 w-5" strokeWidth={2.2} />
+              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-eatrivo-green" />
+            </span>
+          </button>
+
+          <IslandItem
+            label={t("nav.kitchenCounter")}
+            icon={CookingPot}
+            isActive={primaryActiveSection === "kitchenCounter"}
+            indicatorTransition={indicatorTransition}
+            onClick={() => handleSectionChange("kitchenCounter")}
+          />
+          <IslandItem
+            label={t("nav.profile")}
+            icon={User}
+            isActive={primaryActiveSection === "profile"}
+            indicatorTransition={indicatorTransition}
+            onClick={() => handleSectionChange("profile")}
+          />
+        </nav>
+      </div>
+
       {/* Floating Feedback Button — only on home section */}
       {primaryActiveSection === "home" && (
-        <div className="absolute bottom-[90px] mb-2 right-4 z-50 flex flex-row items-center gap-4 pointer-events-none">
+        <div className="md:hidden fixed right-4 z-50 bottom-[calc(88px+env(safe-area-inset-bottom))] flex flex-row items-center gap-4 pointer-events-none">
           <AnimatePresence>
             {showTooltip && (
               <motion.div
@@ -90,120 +173,46 @@ export default function MobileNavigation({
           </div>
         </div>
       )}
-
-      {/* Main Bottom Nav Bar Background */}
-      <div className="absolute bottom-0 left-0 right-0 h-[72px] bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] pointer-events-auto flex items-center px-1">
-        {/* LEFT NAV ITEMS */}
-        <div className="flex flex-1 items-center justify-around h-full pr-8">
-          <NavItem
-            id="home"
-            anchor="nav-home"
-            label={t("nav.home")}
-            icon={LayoutDashboard}
-            activeSection={primaryActiveSection}
-            onClick={() => onSectionChange("home")}
-          />
-          <NavItem
-            id="pantry"
-            anchor="nav-pantry"
-            label={t("nav.pantry")}
-            icon={CakeSlice}
-            activeSection={primaryActiveSection}
-            onClick={() => onSectionChange("pantry")}
-          />
-        </div>
-
-        {/* RIGHT NAV ITEMS */}
-        <div className="flex flex-1 items-center justify-around h-full pl-8">
-          <NavItem
-            id="kitchenCounter"
-            label={t("nav.kitchenCounter")}
-            icon={CookingPot}
-            activeSection={primaryActiveSection}
-            onClick={() => onSectionChange("kitchenCounter")}
-          />
-          <NavItem
-            id="profile"
-            label={t("nav.profile")}
-            icon={User}
-            activeSection={primaryActiveSection}
-            onClick={() => onSectionChange("profile")}
-          />
-        </div>
-      </div>
-
-      {/* CENTER FLOATING ACTION BUTTON */}
-      <div className="absolute bottom-[30px] left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-auto">
-        {/* Outer white halo to cut into the background (simulated clipping) */}
-        <div className="bg-eatrivo-white-secondary p-1 rounded-full drop-shadow-sm flex items-center justify-center">
-          <div className="bg-eatrivo-white-primary p-1 rounded-full flex items-center justify-center">
-            <button
-              data-tutorial-anchor="nav-chat"
-              onClick={() => onSectionChange("chatWithRivo")}
-              className={`w-11 h-11 rounded-full flex flex-col items-center justify-center shadow-lg transition-transform active:scale-95 duration-200 relative ${
-                primaryActiveSection === "chatWithRivo"
-                  ? "bg-eatrivo-purple text-white shadow-eatrivo-purple/40 ring-4 ring-eatrivo-purple/20"
-                  : "bg-eatrivo-purple/90 text-white hover:bg-eatrivo-purple"
-              }`}
-            >
-              <MessageCircleHeart className="w-6 h-6" strokeWidth={2} />
-
-              <span className="absolute top-[2px] right-[2px] flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-eatrivo-green opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-eatrivo-green" />
-              </span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
 
-function NavItem({
-  id,
-  anchor,
+function IslandItem({
   label,
   icon: Icon,
-  activeSection,
+  isActive,
+  indicatorTransition,
   onClick,
+  ...rest
 }: {
-  id: string;
-  anchor?: string;
   label: string;
   icon: ElementType;
-  activeSection: string;
+  isActive: boolean;
+  indicatorTransition: Transition;
   onClick: () => void;
-}) {
-  const isActive = activeSection === id;
+} & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      data-tutorial-anchor={anchor}
+      type="button"
+      {...rest}
+      aria-label={label}
+      aria-current={isActive ? "page" : undefined}
       onClick={onClick}
-      className="relative flex flex-col items-center justify-center w-full h-full pt-1 pb-1"
+      className="relative flex h-12 flex-1 items-center justify-center rounded-full touch-manipulation select-none [-webkit-tap-highlight-color:transparent] transition-transform duration-150 ease-out active:scale-[0.92]"
     >
       {isActive && (
-        <motion.div
-          layoutId="mobile-nav-active"
-          className="absolute top-0 w-10 h-1 bg-eatrivo-purple rounded-b-full"
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        <motion.span
+          layoutId="mobile-nav-island-active"
+          className="absolute inset-0 rounded-full bg-eatrivo-purple/10"
+          transition={indicatorTransition}
         />
       )}
-      <div className="relative mb-1 mt-1">
-        <Icon
-          className={`w-[22px] h-[22px] transition-colors duration-200 ${
-            isActive ? "text-eatrivo-purple" : "text-gray-400"
-          }`}
-          strokeWidth={isActive ? 2.5 : 2}
-        />
-      </div>
-      <span
-        className={`text-[10px] font-medium transition-colors duration-200 ${
+      <Icon
+        className={`relative z-10 h-6 w-6 transition-colors duration-150 ${
           isActive ? "text-eatrivo-purple" : "text-gray-500"
         }`}
-      >
-        {label}
-      </span>
+        strokeWidth={isActive ? 2.4 : 1.9}
+      />
     </button>
   );
 }
