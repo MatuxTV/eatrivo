@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { and, asc, eq } from "drizzle-orm";
 
 import { auth } from "../../../../../auth";
@@ -18,10 +18,14 @@ import {
   getPantryAiSuggestions,
 } from "@/lib/pantry/ai-normalization";
 import {
-  loadIngredientAliasIndex,
+  getAliasCandidateKeysForName,
   loadIngredientGraph,
+  loadUserIngredientAliasIndex,
   resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
+import { ensureUserIngredient } from "@/lib/pantry/user-ingredients";
+import { classifyUserIngredient } from "@/lib/pantry/ingredient-classification";
+import { findSameIngredientItem } from "@/lib/pantry/shopping-list-core";
 import { reportIngredientResolutionFeedback } from "@/lib/feedback/ingredient-resolution-feedback";
 import {
   resolveShoppingListSeedFromPantryItem,
@@ -92,34 +96,6 @@ async function getUserProfileId(userId: string) {
     .limit(1);
 
   return userProfile?.id ?? null;
-}
-
-function namesMatch(left: string, right: string): boolean {
-  return left.trim().toLowerCase() === right.trim().toLowerCase();
-}
-
-function findExistingShoppingListItem(
-  existingItems: Array<typeof shoppingListItems.$inferSelect>,
-  candidate: {
-    name: string;
-    ingredientKey: string | null;
-    ingredientSpecificKey: string | null;
-  },
-) {
-  return existingItems.find((item) => {
-    if (
-      candidate.ingredientSpecificKey &&
-      item.ingredientSpecificKey === candidate.ingredientSpecificKey
-    ) {
-      return true;
-    }
-
-    if (candidate.ingredientKey && item.ingredientKey === candidate.ingredientKey) {
-      return true;
-    }
-
-    return namesMatch(item.name, candidate.name);
-  });
 }
 
 export async function GET(_request: NextRequest) {
@@ -324,7 +300,17 @@ export async function POST(request: NextRequest) {
     ]);
 
     const locale = userInfo?.language ?? "sk";
-    const aiSuggestion = body.name
+    const manualName = body.name?.trim() ?? null;
+    const userAliasIndex = manualName
+      ? await loadUserIngredientAliasIndex(locale, session.user.id)
+      : null;
+    // Same resolution as a manual pantry add: skip the AI call when the
+    // name maps to exactly one known ingredient.
+    const needsAiSuggestion =
+      manualName !== null &&
+      userAliasIndex !== null &&
+      getAliasCandidateKeysForName(manualName, userAliasIndex.index).length !== 1;
+    const aiSuggestion = needsAiSuggestion
       ? findPantrySuggestionForItem(
           await getPantryAiSuggestions({
             userProfileId,
@@ -332,31 +318,28 @@ export async function POST(request: NextRequest) {
             currentPantry: pantryRows,
             pendingItems: [
               {
-                name: body.name.trim(),
+                name: manualName!,
                 trackingMode: null,
                 inStock: null,
                 quantity: resolvedManualAmount.quantity,
                 unit: resolvedManualAmount.unit,
-                category: body.category ?? guessFoodCategory(body.name),
+                category: body.category ?? guessFoodCategory(manualName!),
                 expiryDate: null,
               },
             ],
           }),
-          body.name.trim(),
+          manualName!,
           0,
         )
       : null;
 
-    const aliasIndex = body.name
-      ? await loadIngredientAliasIndex(locale)
-      : null;
     const ingredientGraph = await loadIngredientGraph(locale);
-    const resolvedManualIdentity =
-      body.name && aliasIndex
+    let resolvedManualIdentity =
+      manualName && userAliasIndex
         ? resolvePantryIngredientIdentity(
-            body.name.trim(),
+            manualName,
             locale,
-            aliasIndex,
+            userAliasIndex.index,
             aiSuggestion?.ingredientSpecificKey ??
               aiSuggestion?.matchedExistingIngredientSpecificKey ??
               null,
@@ -365,20 +348,47 @@ export async function POST(request: NextRequest) {
               null,
           )
         : null;
+    let manualIngredientId: string | null = null;
+    let createdUserIngredientId: string | null = null;
 
-    if (
-      resolvedManualIdentity &&
-      !resolvedManualIdentity.ingredientKey &&
-      !resolvedManualIdentity.ingredientSpecificKey
-    ) {
-      await reportIngredientResolutionFeedback({
-        source: "shopping-list-current-upsert",
-        rawName: body.name!.trim(),
-        locale: session?.user?.locale ?? "sk",
-        userId: session?.user?.id ?? null,
-        userEmail: session?.user?.email ?? null,
-        userName: session?.user?.name ?? null,
-      });
+    if (manualName && resolvedManualIdentity) {
+      const identityKey =
+        resolvedManualIdentity.ingredientSpecificKey ??
+        resolvedManualIdentity.ingredientKey;
+
+      if (identityKey) {
+        manualIngredientId =
+          ingredientGraph.idByKey.get(identityKey) ??
+          userAliasIndex?.privateIdByKey.get(identityKey) ??
+          null;
+      } else {
+        // Unknown item → private user ingredient, classified in the background.
+        const userIngredient = await ensureUserIngredient({
+          userId: session.user.id,
+          locale,
+          rawName: manualName,
+        });
+
+        if (userIngredient) {
+          manualIngredientId = userIngredient.id;
+          createdUserIngredientId = userIngredient.created ? userIngredient.id : null;
+          resolvedManualIdentity = {
+            ...resolvedManualIdentity,
+            ingredientName: userIngredient.canonicalName ?? manualName,
+            ingredientKey: userIngredient.key,
+            ingredientSpecificKey: userIngredient.key,
+          };
+        } else {
+          await reportIngredientResolutionFeedback({
+            source: "shopping-list-current-upsert",
+            rawName: manualName,
+            locale: session?.user?.locale ?? "sk",
+            userId: session?.user?.id ?? null,
+            userEmail: session?.user?.email ?? null,
+            userName: session?.user?.name ?? null,
+          });
+        }
+      }
     }
 
     if (body.name) {
@@ -410,6 +420,7 @@ export async function POST(request: NextRequest) {
               ingredientName: resolvedManualIdentity!.ingredientName,
               ingredientKey: resolvedManualIdentity!.ingredientKey,
               ingredientSpecificKey: resolvedManualIdentity!.ingredientSpecificKey,
+              ingredientId: manualIngredientId,
               quantity:
                 resolvedManualAmount.quantity !== null
                   ? String(resolvedManualAmount.quantity)
@@ -474,7 +485,7 @@ export async function POST(request: NextRequest) {
     const addedItemIds: string[] = [];
 
     for (const seed of seeds) {
-      const existingItem = findExistingShoppingListItem(mutableItems, seed);
+      const existingItem = findSameIngredientItem(mutableItems, seed);
 
       if (existingItem) {
         const seedQuantity = parseStoredQuantity(seed.quantity);
@@ -569,6 +580,9 @@ export async function POST(request: NextRequest) {
           ingredientKey: seed.ingredientKey,
           ingredientSpecificKey: seed.ingredientSpecificKey,
           ingredientId: (() => {
+            if (seed.ingredientId) {
+              return seed.ingredientId;
+            }
             const identityKey =
               seed.ingredientSpecificKey ?? seed.ingredientKey;
             return identityKey
@@ -612,6 +626,20 @@ export async function POST(request: NextRequest) {
 
     await CacheService.del(`shopping-lists:${session.user.id}`);
     await CacheService.del(`pantry:${userProfileId}`);
+
+    if (createdUserIngredientId && manualName) {
+      const classifyUserId = session.user.id;
+      const classifyIngredientId = createdUserIngredientId;
+      after(async () => {
+        await classifyUserIngredient({
+          ingredientId: classifyIngredientId,
+          userId: classifyUserId,
+          userProfileId,
+          locale,
+          rawName: manualName,
+        });
+      });
+    }
 
     return NextResponse.json({
       success: true,

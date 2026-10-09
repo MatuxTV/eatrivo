@@ -336,6 +336,7 @@ export async function PUT(
               ingredientName: null,
               ingredientKey: null,
               ingredientSpecificKey: null,
+              ingredientId: null,
             }
           : {}),
         ...(trackingMode !== undefined ? { trackingMode: resolvedTrackingMode } : {}),

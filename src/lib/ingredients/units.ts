@@ -124,6 +124,7 @@ const CANONICAL_UNIT_CONVERSIONS: Record<
   kg: { dimension: "mass", targetUnit: "g", multiplier: 1000 },
   ml: { dimension: "volume", targetUnit: "ml", multiplier: 1 },
   dl: { dimension: "volume", targetUnit: "ml", multiplier: 100 },
+  l: { dimension: "volume", targetUnit: "ml", multiplier: 1000 },
   tsp: { dimension: "volume", targetUnit: "ml", multiplier: 5 },
   tbsp: { dimension: "volume", targetUnit: "ml", multiplier: 15 },
   ks: { dimension: "count", targetUnit: "ks", multiplier: 1 },
