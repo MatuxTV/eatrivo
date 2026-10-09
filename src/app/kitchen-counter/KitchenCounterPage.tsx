@@ -37,6 +37,7 @@ const PANTRY_CHANGED_EVENT = "pantry:changed";
 interface KitchenCounterPageProps {
   recipe?: BasicHomeRecipePreview | null;
   onBack: () => void;
+  isActive?: boolean;
 }
 
 type KitchenCounterIngredient = {
@@ -239,6 +240,7 @@ function buildKitchenCounterSteps(
 export default function KitchenCounterPage({
   recipe,
   onBack,
+  isActive = true,
 }: KitchenCounterPageProps) {
   const t = useTranslations("home");
   const locale = useLocale();
@@ -307,7 +309,7 @@ export default function KitchenCounterPage({
   }, [activeRecipe, loadPantryItems]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || !isActive) {
       return;
     }
 
@@ -319,10 +321,10 @@ export default function KitchenCounterPage({
     return () => {
       window.removeEventListener(PANTRY_CHANGED_EVENT, handlePantryChanged);
     };
-  }, [loadPantryItems]);
+  }, [isActive, loadPantryItems]);
 
   useEffect(() => {
-    if (!activeRecipe) {
+    if (!isActive || !activeRecipe) {
       return;
     }
 
@@ -356,7 +358,7 @@ export default function KitchenCounterPage({
       }
       wakeLock = null;
     };
-  }, [activeRecipe]);
+  }, [activeRecipe, isActive]);
 
   const handleNextStep = () => {
     if (canGoToNextStep) {

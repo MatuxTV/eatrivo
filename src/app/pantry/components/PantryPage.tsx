@@ -8,7 +8,6 @@ import {
   Loader2,
   Package,
   Plus,
-  ScanBarcode,
   Search,
   XCircle,
   Receipt
@@ -42,7 +41,7 @@ const fadeIn = {
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.4, ease: "easeOut" as const },
+  transition: { duration: 0.2, ease: "easeOut" as const },
 };
 
 function getLocaleTag(locale: string): string {
@@ -173,13 +172,11 @@ function SectionStateCard({
 
 interface PantrySectionProps {
   membership?: "basic" | "premium" | "pro" | "trainer";
-  onPantryChanged?: () => void;
   initialData?: InitialPantrySectionData;
 }
 
 export default function PantrySection({
   membership = "basic",
-  onPantryChanged,
   initialData,
 }: PantrySectionProps = {}) {
   const t = useTranslations("pantry");
@@ -191,7 +188,6 @@ export default function PantrySection({
     items,
     restockItems,
     pendingDrafts,
-    expiringItems,
     isLoading,
     isPreparingDrafts,
     isConfirmingDrafts,
@@ -211,7 +207,6 @@ export default function PantrySection({
     initialPendingDrafts: initialData?.pendingDrafts,
   });
 
-  const [isMounted, setIsMounted] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [scanModalEntryMode, setScanModalEntryMode] = useState<"receipt" | "barcode">("receipt");
@@ -225,16 +220,6 @@ export default function PantrySection({
   const [pendingAddPackageId, setPendingAddPackageId] = useState<string | null>(null);
   const hasScanAccess =
     membership === "premium" || membership === "pro" || membership === "trainer";
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (isMounted && !isLoading) {
-      onPantryChanged?.();
-    }
-  }, [expiringItems.length, isLoading, isMounted, items.length, onPantryChanged]);
 
   const categoryLabels = useMemo(
     () => ({
@@ -461,12 +446,12 @@ export default function PantrySection({
   }
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence initial={false} mode="wait">
       <TrackPageEvent
         eventName="pantry_viewed"
         metadata={{ locale, surface: "pantry" }}
       />
-      {!isMounted || isLoading ? (
+      {isLoading ? (
         <motion.div
           key="loading"
           {...(shouldReduceMotion ? {} : fadeIn)}

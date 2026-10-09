@@ -51,3 +51,5 @@ public/workbox-*.js.map
 
 # .agents
 # .claude
+
+.agent/

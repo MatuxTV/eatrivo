@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { logger } from "@/lib/logger";
 import { useLocale } from "next-intl";
 import { normalizeRecipeInstructions } from "@/lib/recipes/recipe-instructions";
@@ -74,111 +74,148 @@ export function usePantrySync({
 
   /* ---- refresh callback ---- */
 
+  const inFlightRefreshRef = useRef<Promise<void> | null>(null);
+  const lastSignatureRef = useRef<string | null>(null);
+
   const refreshPantrySummary = useCallback(async () => {
-    try {
-      logger.debug("[usePantrySync] refreshPantrySummary: start", {
-        metadata: { locale },
-      });
+    if (inFlightRefreshRef.current) {
+      return inFlightRefreshRef.current;
+    }
 
-      const [pantryResponse, matchesResponse] = await Promise.all([
-        fetch("/api/pantry", { cache: "no-store" }),
-        fetch(`/api/recipes/matches?locale=${locale}&maxMissingIngredients=3`, {
-          cache: "no-store",
-        }),
-      ]);
-
-      if (!pantryResponse.ok || !matchesResponse.ok) {
-        logger.debug("[usePantrySync] refreshPantrySummary: aborted due to non-ok response");
-        return;
-      }
-
-      const pantryPayload = (await pantryResponse.json()) as { items?: unknown[] };
-      const matchesPayload = (await matchesResponse.json()) as {
-        cookable?: unknown[];
-        almostCookable?: unknown[];
-        pantryIngredientKeyCount?: number;
-        recipeCountAnalyzed?: number;
-      };
-
-      setLivePantrySummary({
-        itemCount: pantryPayload.items?.length ?? 0,
-        cookableCount: matchesPayload.cookable?.length ?? 0,
-      });
-
-      if (Array.isArray(pantryPayload.items)) {
-        const newNames = (
-          pantryPayload.items as Array<{ name?: string; ingredientName?: string | null }>
-        ).flatMap((item) => {
-          const names: string[] = [];
-          if (item.name) names.push(item.name.toLowerCase().trim());
-          if (item.ingredientName) names.push(item.ingredientName.toLowerCase().trim());
-          return names;
+    const run = (async () => {
+      try {
+        logger.debug("[usePantrySync] refreshPantrySummary: start", {
+          metadata: { locale },
         });
-        setLivePantryNames(newNames);
-      }
 
-      if (matchesPayload.cookable) {
-        setLiveCookableRecipes(
-          (matchesPayload.cookable as RecipeMatchPayloadItem[]).map((match) => ({
-            id: match.id,
-            slug: match.slug,
-            title: match.name,
-            category: match.category,
-            categoryKey: match.categoryKey,
-            servings: match.servings,
-            totalTimeMin: match.totalTimeMin,
-            calories: match.calories,
-            proteinG: match.proteinG,
-            carbsG: match.carbohydratesG,
-            fatG: match.fatG,
-            restrictionFlags: match.restrictionFlags,
-            instructions: normalizeRecipeInstructions(match.instructions),
-            dietTags: [],
-            ingredientItems: match.ingredientItems ?? [],
-            ingredientPreview: match.matchedIngredientNames,
-            matchedIngredients: match.matchedIngredients,
-            mealPrepFriendly: match.mealPrepFriendly,
-          })),
-        );
-      }
+        const [pantryResponse, matchesResponse] = await Promise.all([
+          fetch("/api/pantry", { cache: "no-store" }),
+          fetch(`/api/recipes/matches?locale=${locale}&maxMissingIngredients=3`, {
+            cache: "no-store",
+          }),
+        ]);
 
-      if (matchesPayload.almostCookable) {
-        setLiveAlmostCookableRecipes(
-          (matchesPayload.almostCookable as RecipeMatchPayloadItem[]).map((match) => ({
-            id: match.id,
-            slug: match.slug,
-            title: match.name,
-            category: match.category,
-            categoryKey: match.categoryKey,
-            servings: match.servings,
-            totalTimeMin: match.totalTimeMin,
-            calories: match.calories,
-            proteinG: match.proteinG,
-            carbsG: match.carbohydratesG,
-            fatG: match.fatG,
-            restrictionFlags: match.restrictionFlags,
-            instructions: normalizeRecipeInstructions(match.instructions),
-            dietTags: [],
-            ingredientItems: match.ingredientItems ?? [],
-            ingredientPreview: match.matchedIngredientNames,
-            matchedIngredients: match.matchedIngredients,
-            mealPrepFriendly: match.mealPrepFriendly,
-            missingIngredients: match.missingIngredientNames,
-          })),
-        );
-      }
+        if (!pantryResponse.ok || !matchesResponse.ok) {
+          logger.debug("[usePantrySync] refreshPantrySummary: aborted due to non-ok response");
+          return;
+        }
 
-      logger.debug("[usePantrySync] refreshPantrySummary: done", {
-        metadata: {
-          itemCount: pantryPayload.items?.length ?? 0,
-          cookableCount: matchesPayload.cookable?.length ?? 0,
-        },
-      });
-    } catch (error) {
-      logger.warn("Failed to refresh pantry summary", {
-        context: "usePantrySync",
-        metadata: { error: error instanceof Error ? error.message : String(error) },
-      });
+        const pantryPayload = (await pantryResponse.json()) as { items?: unknown[] };
+        const matchesPayload = (await matchesResponse.json()) as {
+          cookable?: unknown[];
+          almostCookable?: unknown[];
+          pantryIngredientKeyCount?: number;
+          recipeCountAnalyzed?: number;
+        };
+
+        const itemCount = pantryPayload.items?.length ?? 0;
+        const cookableCount = matchesPayload.cookable?.length ?? 0;
+        const almostCookableCount = matchesPayload.almostCookable?.length ?? 0;
+
+        const newNames = Array.isArray(pantryPayload.items)
+          ? (
+              pantryPayload.items as Array<{ name?: string; ingredientName?: string | null }>
+            ).flatMap((item) => {
+              const names: string[] = [];
+              if (item.name) names.push(item.name.toLowerCase().trim());
+              if (item.ingredientName) names.push(item.ingredientName.toLowerCase().trim());
+              return names;
+            })
+          : null;
+
+        const signature = [
+          itemCount,
+          cookableCount,
+          almostCookableCount,
+          newNames?.join(",") ?? "",
+        ].join("|");
+
+        if (signature === lastSignatureRef.current) {
+          logger.debug("[usePantrySync] refreshPantrySummary: skipped, no change");
+          return;
+        }
+
+        lastSignatureRef.current = signature;
+
+        setLivePantrySummary({
+          itemCount,
+          cookableCount,
+        });
+
+        if (newNames) {
+          setLivePantryNames(newNames);
+        }
+
+        if (matchesPayload.cookable) {
+          setLiveCookableRecipes(
+            (matchesPayload.cookable as RecipeMatchPayloadItem[]).map((match) => ({
+              id: match.id,
+              slug: match.slug,
+              title: match.name,
+              category: match.category,
+              categoryKey: match.categoryKey,
+              servings: match.servings,
+              totalTimeMin: match.totalTimeMin,
+              calories: match.calories,
+              proteinG: match.proteinG,
+              carbsG: match.carbohydratesG,
+              fatG: match.fatG,
+              restrictionFlags: match.restrictionFlags,
+              instructions: normalizeRecipeInstructions(match.instructions),
+              dietTags: [],
+              ingredientItems: match.ingredientItems ?? [],
+              ingredientPreview: match.matchedIngredientNames,
+              matchedIngredients: match.matchedIngredients,
+              mealPrepFriendly: match.mealPrepFriendly,
+            })),
+          );
+        }
+
+        if (matchesPayload.almostCookable) {
+          setLiveAlmostCookableRecipes(
+            (matchesPayload.almostCookable as RecipeMatchPayloadItem[]).map((match) => ({
+              id: match.id,
+              slug: match.slug,
+              title: match.name,
+              category: match.category,
+              categoryKey: match.categoryKey,
+              servings: match.servings,
+              totalTimeMin: match.totalTimeMin,
+              calories: match.calories,
+              proteinG: match.proteinG,
+              carbsG: match.carbohydratesG,
+              fatG: match.fatG,
+              restrictionFlags: match.restrictionFlags,
+              instructions: normalizeRecipeInstructions(match.instructions),
+              dietTags: [],
+              ingredientItems: match.ingredientItems ?? [],
+              ingredientPreview: match.matchedIngredientNames,
+              matchedIngredients: match.matchedIngredients,
+              mealPrepFriendly: match.mealPrepFriendly,
+              missingIngredients: match.missingIngredientNames,
+            })),
+          );
+        }
+
+        logger.debug("[usePantrySync] refreshPantrySummary: done", {
+          metadata: {
+            itemCount,
+            cookableCount,
+          },
+        });
+      } catch (error) {
+        logger.warn("Failed to refresh pantry summary", {
+          context: "usePantrySync",
+          metadata: { error: error instanceof Error ? error.message : String(error) },
+        });
+      }
+    })();
+
+    inFlightRefreshRef.current = run;
+    try {
+      await run;
+    } finally {
+      inFlightRefreshRef.current = null;
     }
   }, [locale]);
 
