@@ -8,7 +8,7 @@
   "results": [
     {
       "url": "https://www.bbcgoodfood.com/recipes/bean-enchiladas",
-      "outputPath": "/Users/matuxtv/Code/my_projects/eatrivo-full/eatrivo/receipes/generated/www-bbcgoodfood-com-recipes-bean-enchiladas.json",
+      "outputPath": "[project-path]/receipes/generated/www-bbcgoodfood-com-recipes-bean-enchiladas.json",
       "importCompleted": false,
       "recipesCount": 0,
       "rejectedCount": 0,

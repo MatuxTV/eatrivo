@@ -73,7 +73,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="mailto:info@valorixdigital.com"
+                  href="mailto:[Company Email]"
                   className="text-gray-400 hover:text-white text-sm transition-colors"
                 >
                   {t("footer.contact")}

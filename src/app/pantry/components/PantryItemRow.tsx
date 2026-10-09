@@ -10,7 +10,11 @@ import {
 import { motion, useReducedMotion } from "framer-motion";
 
 import { Badge } from "@/components/ui/badge";
-import InlineEditPanel from "@/components/inline-edit/InlineEditPanel";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import InlineEditToggleButton from "@/components/inline-edit/InlineEditToggleButton";
 import QuantityUnitEditor from "@/components/inline-edit/QuantityUnitEditor";
 import type { PantryItem } from "@/hooks/usePantry";
@@ -81,7 +85,11 @@ function formatQuantity(
   unit: string | null,
   locale: string,
 ): string {
-  return formatLocalizedAmountLabel(quantity, unit, locale) ?? "—";
+  return (
+    formatLocalizedAmountLabel(quantity, unit, locale, {
+      maximumFractionDigits: 2,
+    }) ?? "—"
+  );
 }
 
 function formatDraftQuantityForEditor(
@@ -102,13 +110,13 @@ function formatDraftQuantityForEditor(
     return quantity;
   }
 
-  const roundedValue = Math.round(parsedValue * 1000) / 1000;
+  const roundedValue = Math.round(parsedValue * 100) / 100;
   if (Number.isInteger(roundedValue)) {
     return String(roundedValue);
   }
 
   return roundedValue
-    .toFixed(3)
+    .toFixed(2)
     .replace(/\.0+$/, "")
     .replace(/(\.\d*?)0+$/, "$1");
 }
@@ -330,12 +338,26 @@ export default function PantryItemRow({
             </div>
           </div>
 
-          {isEditing ? (
-            <InlineEditPanel
-              isOpen={isEditing}
-              className="pt-1"
-              panelClassName="border-gray-100 bg-none bg-eatrivo-white-secondary shadow-none"
+          <Dialog
+            open={isEditing}
+            onOpenChange={(open) => {
+              if (!open) {
+                setDraftQuantity(formatDraftQuantityForEditor(item.quantity, item.unit));
+                setDraftUnit(item.unit ?? "ks");
+                setDraftCategory(item.category ?? categoryValue ?? guessFoodCategory(item.name));
+                setDraftTrackingMode(item.trackingMode);
+                setDraftInStock(item.inStock);
+                setIsEditing(false);
+              }
+            }}
+          >
+            <DialogContent
+              showCloseButton={false}
+              className="rounded-2xl border-gray-100 bg-white p-4 sm:max-w-md"
             >
+              <DialogTitle className="sr-only">{item.name}</DialogTitle>
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold text-gray-900">{item.name}</h3>
               <QuantityUnitEditor
                 quantityLabel={quantityLabel}
                 unitLabel={unitLabel}
@@ -403,8 +425,9 @@ export default function PantryItemRow({
                   }
                 }}
               />
-            </InlineEditPanel>
-          ) : null}
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </motion.article>

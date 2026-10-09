@@ -9,11 +9,11 @@
 
 Prevádzkovateľom osobných údajov je:
 
-Sídlo: Nad plážou 4419/25, 974 01 Banská Bystrica
-IČO: 56024665
-DIČ: 2122162493
-Email: info@valorixdigital.com
-Telefón: +421 944 488 206
+Sídlo: [Company Address]
+IČO: [Company ID]
+DIČ: [Tax ID]
+Email: [Company Email]
+Telefón: [Company Phone]
 
 (ďalej len „EatRivo", „my" alebo „prevádzkovateľ")
 
@@ -122,7 +122,7 @@ Podľa GDPR máte nasledujúce práva:
 
 ### Ako uplatniť svoje práva
 
-Kontaktujte nás na: **info@valorixdigital.com**
+Kontaktujte nás na: **[Company Email]**
 
 Na Vašu žiadosť odpovieme do 30 dní.
 
@@ -181,5 +181,5 @@ Web: [dataprotection.gov.sk](https://dataprotection.gov.sk)
 
 S otázkami ohľadom ochrany osobných údajov nás kontaktujte:
 
-**Email:** info@valorixdigital.com  
-**Adresa:** Nad plážou 4419/25, 974 01 Banská Bystrica
+**Email:** [Company Email]
+**Adresa:** [Company Address]
