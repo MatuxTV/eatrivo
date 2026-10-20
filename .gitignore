@@ -52,7 +52,7 @@ public/workbox-*.js.map
 # .agents
 # .claude
 
-.agent
+.agent/
 
 # skills
 .claude/skills/
