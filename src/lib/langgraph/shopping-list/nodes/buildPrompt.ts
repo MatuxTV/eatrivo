@@ -1,4 +1,5 @@
 import type { ShoppingListState } from "../state";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import { apiLogger } from "@/lib/logger";
 
 export async function buildPrompt(
@@ -126,18 +127,25 @@ Oprav tieto problémy v novom zozname.
       quantity: number | null;
       unit: string | null;
     }[];
-    const pantryLines = items
-      .map((item) => {
-        const qty = item.quantity
-          ? `${item.quantity}${item.unit ? " " + item.unit : ""}`
-          : "";
-        return `- ${item.name}${qty ? ": " + qty : ""}`;
-      })
-      .join("\n");
-    const pantryHeader =
-      language === "en"
+    const pantryLines = PANTRY_QUANTITY_TRACKING
+      ? items
+          .map((item) => {
+            const qty = item.quantity
+              ? `${item.quantity}${item.unit ? " " + item.unit : ""}`
+              : "";
+            return `- ${item.name}${qty ? ": " + qty : ""}`;
+          })
+          .join("\n")
+      : // [PANTRY_QUANTITY_TRACKING] flag off: names only, amounts not tracked
+        items.map((item) => `- ${item.name}`).join("\n");
+    const pantryHeader = PANTRY_QUANTITY_TRACKING
+      ? language === "en"
         ? `## PANTRY INVENTORY (items already at home)\nThe user already has these items at home. Do not add them to the shopping list unless restocking is necessary:`
-        : `## ZÁSOBY V ŠPAJZI (už má doma)\nPoužívateľ už má tieto potraviny doma. Nepridávaj ich do nákupného zoznamu, pokiaľ nie je potrebné doplniť zásoby:`;
+        : `## ZÁSOBY V ŠPAJZI (už má doma)\nPoužívateľ už má tieto potraviny doma. Nepridávaj ich do nákupného zoznamu, pokiaľ nie je potrebné doplniť zásoby:`
+      : // [PANTRY_QUANTITY_TRACKING] flag off: every listed item is owned, amounts unknown
+        language === "en"
+        ? `## PANTRY INVENTORY (items already at home)\nThe user already has these items at home (amounts are not tracked). Treat every listed item as already owned: do NOT add it to the shopping list.`
+        : `## ZÁSOBY V ŠPAJZI (už má doma)\nPoužívateľ už má tieto potraviny doma (množstvo nesledujeme). Každú uvedenú položku považuj za dostupnú: NEPRIDÁVAJ ju do nákupného zoznamu.`;
     pantryBlock = `\n${pantryHeader}\n${pantryLines}\n`;
   }
 

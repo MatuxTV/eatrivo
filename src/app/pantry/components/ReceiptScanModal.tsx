@@ -23,6 +23,7 @@ import type {
   ReceiptScanReviewItem,
   ReceiptScanStartResponse,
 } from "@/lib/pantry/receipt-scan-contracts";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import PantryEditableItemCard, {
   type EditablePantryFormItem,
 } from "./PantryEditableItemCard";
@@ -1727,7 +1728,8 @@ export default function ReceiptScanModal({
 
               {phase === "review" || phase === "submitting" ? (
                 <div className="space-y-4">
-                  {!isBarcodeFlow ? (
+                  {/* [PANTRY_QUANTITY_TRACKING] flag off: no "check quantities" hint */}
+                  {PANTRY_QUANTITY_TRACKING && !isBarcodeFlow ? (
                     <div className="rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-900">
                       <div className="flex items-start gap-2">
                         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />

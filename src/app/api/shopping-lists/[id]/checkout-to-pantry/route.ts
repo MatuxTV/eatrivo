@@ -20,11 +20,12 @@ import {
 } from "@/lib/schemas/shopping-list";
 import { CacheService, RequestLock } from "@/lib/cache/redis";
 import {
-  resolvePantryTrackingMode,
-  shouldPreservePantryQuantity,
+  resolveEffectiveTrackingMode,
+  shouldPreserveEffectiveQuantity,
 } from "@/lib/pantry/tracking";
 import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
 import { planPantryCheckout } from "@/lib/pantry/shopping-list-core";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 
 function errorResponse(error: string, code: string, status: number) {
   return NextResponse.json({ error, code }, { status });
@@ -216,19 +217,25 @@ export async function POST(
     );
 
     // Bought items top up matching pantry items; the rest become new rows.
-    const checkoutPlan = planPantryCheckout(itemsToImport, userPantryItems);
+    // [PANTRY_QUANTITY_TRACKING] flag off: bought items carry no amount, so the planner only marks matching rows in stock
+    const itemsForPlan = PANTRY_QUANTITY_TRACKING
+      ? itemsToImport
+      : itemsToImport.map((item) => ({ ...item, quantity: null, unit: null }));
+    const checkoutPlan = planPantryCheckout(itemsForPlan, userPantryItems);
 
     const pantryValues = checkoutPlan.inserts
       .map((item) => {
         const normalizedUnit = item.unit ? normalizeUnit(item.unit) : null;
-        const trackingMode = resolvePantryTrackingMode({
+        // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+        const trackingMode = resolveEffectiveTrackingMode({
           name: item.name,
           ingredientKey: item.ingredientKey,
           ingredientSpecificKey: item.ingredientSpecificKey,
           quantity: item.quantity != null ? Number(item.quantity) : null,
           unit: normalizedUnit,
         });
-        const preserveQuantity = shouldPreservePantryQuantity({
+        // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+        const preserveQuantity = shouldPreserveEffectiveQuantity({
           name: item.name,
           ingredientKey: item.ingredientKey,
           ingredientSpecificKey: item.ingredientSpecificKey,
@@ -308,8 +315,10 @@ export async function POST(
       await db
         .update(pantryItems)
         .set({
-          quantity: merge.quantity,
-          unit: merge.unit,
+          // [PANTRY_QUANTITY_TRACKING] flag off: leave stored quantity/unit untouched
+          ...(PANTRY_QUANTITY_TRACKING
+            ? { quantity: merge.quantity, unit: merge.unit }
+            : {}),
           inStock: merge.inStock,
           updatedAt: new Date(),
         })

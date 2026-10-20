@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { pantryItems } from "@/db/schema";
 import { db } from "@/lib/db/pool";
 import { apiLogger } from "@/lib/logger";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
+import { effectiveTrackingMode } from "@/lib/pantry/tracking";
 import type { CustomRecipePantryContextItem } from "@/lib/custom-recipes/contracts";
 import type { CustomRecipeState } from "../state";
 
@@ -35,10 +37,13 @@ export async function fetchPantry(
         ingredientName: row.ingredientName,
         ingredientKey: row.ingredientKey,
         ingredientSpecificKey: row.ingredientSpecificKey,
-        trackingMode: row.trackingMode,
+        // [PANTRY_QUANTITY_TRACKING] flag off: amounts hidden from the AI
+        trackingMode: effectiveTrackingMode(row.trackingMode),
         inStock: row.inStock,
-        quantity: row.quantity,
-        unit: row.unit,
+        // [PANTRY_QUANTITY_TRACKING] flag off: amounts hidden from the AI
+        quantity: PANTRY_QUANTITY_TRACKING ? row.quantity : null,
+        // [PANTRY_QUANTITY_TRACKING] flag off: amounts hidden from the AI
+        unit: PANTRY_QUANTITY_TRACKING ? row.unit : null,
         category: row.category,
       }),
     );

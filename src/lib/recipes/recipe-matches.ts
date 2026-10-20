@@ -24,7 +24,7 @@ import {
   type RecipeIngredientItem,
 } from "@/lib/recipes/recipe-ingredients";
 import {
-  buildRecipeIngredientPantryComparison,
+  buildEffectivePantryComparison,
   type RecipeIngredientPantryComparison,
 } from "@/lib/recipes/recipe-quantity-comparison";
 import { guessFoodCategory } from "@/lib/ingredients/units";
@@ -690,7 +690,8 @@ async function analyzeRecipeMatchesForUserProfile(
         ingredientGraph,
       );
 
-      const pantryComparison = buildRecipeIngredientPantryComparison(
+      // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+      const pantryComparison = buildEffectivePantryComparison(
         ingredientMeta.quantity,
         ingredientMeta.unit,
         matchedPantryRows,

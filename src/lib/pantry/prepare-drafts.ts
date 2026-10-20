@@ -16,8 +16,8 @@ import {
   resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
 import {
-  resolvePantryTrackingMode,
-  shouldPreservePantryQuantity,
+  resolveEffectiveTrackingMode,
+  shouldPreserveEffectiveQuantity,
 } from "@/lib/pantry/tracking";
 import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
 
@@ -92,7 +92,8 @@ export async function preparePantryDrafts(
       aiSuggestedKey,
     );
     const displayName = ingredientIdentity.ingredientName ?? item.name.trim();
-    const trackingMode = resolvePantryTrackingMode({
+    // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+    const trackingMode = resolveEffectiveTrackingMode({
       name: displayName,
       ingredientKey: ingredientIdentity.ingredientKey,
       ingredientSpecificKey: ingredientIdentity.ingredientSpecificKey,
@@ -102,7 +103,8 @@ export async function preparePantryDrafts(
       unit: item.unit ?? null,
     });
     const normalizedUnit = item.unit ? normalizeUnit(item.unit) : null;
-    const preserveQuantity = shouldPreservePantryQuantity({
+    // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+    const preserveQuantity = shouldPreserveEffectiveQuantity({
       name: displayName,
       ingredientKey: ingredientIdentity.ingredientKey,
       ingredientSpecificKey: ingredientIdentity.ingredientSpecificKey,

@@ -8,8 +8,8 @@ import { apiLogger } from "@/lib/logger";
 import { CacheService } from "@/lib/cache/redis";
 import { normalizePantryItemsInBackground } from "@/lib/pantry/background-normalization";
 import {
-  resolvePantryTrackingMode,
-  shouldPreservePantryQuantity,
+  resolveEffectiveTrackingMode,
+  shouldPreserveEffectiveQuantity,
 } from "@/lib/pantry/tracking";
 import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
 
@@ -95,14 +95,16 @@ export async function POST(
       .map(async (item) => {
         const normalizedName = item.name.trim();
         const normalizedUnit = item.unit ? normalizeUnit(item.unit) : null;
-        const trackingMode = resolvePantryTrackingMode({
+        // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+        const trackingMode = resolveEffectiveTrackingMode({
           name: normalizedName,
           ingredientKey: item.ingredientKey,
           ingredientSpecificKey: item.ingredientSpecificKey,
           quantity: item.quantity !== null ? Number(item.quantity) : null,
           unit: normalizedUnit,
         });
-        const preserveQuantity = shouldPreservePantryQuantity({
+        // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+        const preserveQuantity = shouldPreserveEffectiveQuantity({
           name: normalizedName,
           ingredientKey: item.ingredientKey,
           ingredientSpecificKey: item.ingredientSpecificKey,

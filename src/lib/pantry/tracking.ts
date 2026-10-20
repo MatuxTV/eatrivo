@@ -1,3 +1,5 @@
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
+
 export type PantryTrackingMode = "quantity" | "availability";
 
 interface PantryTrackingInferenceInput {
@@ -356,4 +358,44 @@ export function resolvePantryTrackingMode(
   }
 
   return "quantity";
+}
+
+// [PANTRY_QUANTITY_TRACKING] Flag-aware wrappers. The pure helpers above stay untouched
+// (their unit tests keep passing); callers use these so that, with the flag off, every
+// row behaves like an availability row and stored amounts are ignored.
+
+/** Mode to use when READING a stored row. Old `quantity` rows act as availability rows. */
+export function effectiveTrackingMode(
+  mode: PantryTrackingMode | null | undefined,
+): PantryTrackingMode {
+  if (!PANTRY_QUANTITY_TRACKING) {
+    return "availability";
+  }
+
+  return mode ?? "quantity";
+}
+
+/** Mode to use when WRITING a new/updated row. */
+export function resolveEffectiveTrackingMode(
+  input: PantryTrackingInferenceInput,
+): PantryTrackingMode {
+  if (!PANTRY_QUANTITY_TRACKING) {
+    return "availability";
+  }
+
+  return resolvePantryTrackingMode(input);
+}
+
+/** Whether a quantity/unit should be persisted. Always false with the flag off. */
+export function shouldPreserveEffectiveQuantity(
+  input: PantryTrackingInferenceInput,
+): boolean {
+  return PANTRY_QUANTITY_TRACKING && shouldPreservePantryQuantity(input);
+}
+
+/** Whether quantity increment/decrement/set operations are allowed. Always false with the flag off. */
+export function supportsEffectiveQuantityMutations(
+  input: PantryTrackingInferenceInput,
+): boolean {
+  return PANTRY_QUANTITY_TRACKING && supportsPantryQuantityMutations(input);
 }

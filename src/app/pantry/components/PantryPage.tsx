@@ -4,13 +4,13 @@ import { useLocale, useTranslations } from "next-intl";
 import {
   AlertTriangle,
   CheckCircle2,
-  ChevronDown,
+  ChevronRight,
   Loader2,
   Package,
   Plus,
+  ScanLine,
   Search,
   XCircle,
-  Receipt
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
@@ -29,6 +29,8 @@ import { trackClientEvent } from "@/lib/analytics/analytics-client";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { guessFoodCategory } from "@/lib/ingredients/units";
 import { cn } from "@/lib/utils/utils";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
+import { getCategoryTint, splitCategoryLabel } from "./categoryVisuals";
 import AddPantryItemModal from "./AddPantryItemModal";
 import PantryItemRow from "./PantryItemRow";
 import ReceiptScanModal from "./ReceiptScanModal";
@@ -522,9 +524,12 @@ export default function PantrySection({
                       <p className="truncate text-sm font-semibold text-gray-900">
                         {draft.name}
                       </p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {draft.quantity ? `${draft.quantity}${draft.unit ? ` ${draft.unit}` : ""}` : draft.unit ?? "—"}
-                      </p>
+                      {/* [PANTRY_QUANTITY_TRACKING] flag off: drafts show only the name */}
+                      {PANTRY_QUANTITY_TRACKING ? (
+                        <p className="mt-1 text-xs text-gray-500">
+                          {draft.quantity ? `${draft.quantity}${draft.unit ? ` ${draft.unit}` : ""}` : draft.unit ?? "—"}
+                        </p>
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -532,60 +537,47 @@ export default function PantrySection({
             ) : null}
           </AnimatePresence>
 
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 space-y-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div className="space-y-1.5">
-                <h2 className="text-xl font-bold text-gray-900">{t("inventory_title")}</h2>
-                <p className="text-sm text-gray-600">{t("inventory_description")}</p>
-                <p className="text-xs font-medium text-gray-500">{headerSubtitle}</p>
+          <div className="font-brand space-y-5 rounded-2xl border border-gray-100 bg-white p-4 md:p-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-[1.75rem] font-bold leading-[1.2] tracking-[-0.03em] text-gray-900">
+                    {t("inventory_title")}
+                  </h2>
+                  <span className="shrink-0 rounded-full bg-eatrivo-purple/10 px-3 py-1.5 text-[13px] font-bold leading-4 text-eatrivo-purple">
+                    {headerSubtitle}
+                  </span>
+                </div>
+                <p className="text-sm font-medium leading-[1.5] text-gray-500">
+                  {/* [PANTRY_QUANTITY_TRACKING] flag off: the description no longer promises quantity edits */}
+                  {PANTRY_QUANTITY_TRACKING
+                    ? t("inventory_description")
+                    : t("inventory_description_presence")}
+                </p>
               </div>
 
-              <div className="w-full md:w-auto">
-                <div className="flex justify-start gap-2 md:justify-end">
-                  <Button
-                    data-tutorial-anchor="pantry-add-item"
-                    type="button"
-                    onClick={() => {
-                      triggerHaptic("light");
-                      setIsAddModalOpen(true);
-                    }}
-                    aria-label={t("add_item")}
-                    title={t("add_item")}
-                    className="h-11 w-11 rounded-full bg-eatrivo-purple p-0 text-white hover:bg-eatrivo-purple/90"
-                  >
-                    <Plus className="h-5 w-5" />
-                  </Button>
+              <div className="flex gap-2.5">
+                <Button
+                  data-tutorial-anchor="pantry-add-item"
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic("light");
+                    setIsAddModalOpen(true);
+                  }}
+                  className="h-12 flex-1 gap-2 rounded-2xl bg-eatrivo-purple px-4 text-[15px] font-bold text-white shadow-[0_6px_14px_-4px_rgba(123,63,242,0.35)] transition-[transform,background-color] duration-150 hover:bg-eatrivo-purple/90 active:scale-[0.97] md:flex-none md:px-7"
+                >
+                  <Plus className="h-[18px] w-[18px]" />
+                  <span>{t("add_item")}</span>
+                </Button>
 
-                  <Button
-                    type="button"
-                    onClick={() => handleOpenScanModal("receipt")}
-                    aria-label={t("scan_bill")}
-                    title={t("scan_bill")}
-                    className={cn(
-                      "h-11 w-11 rounded-full p-0 shadow-sm transition-colors",
-                      hasScanAccess
-                        ? "border border-amber-300 bg-gradient-to-r from-amber-500 to-yellow-400 text-white hover:from-amber-500/90 hover:to-yellow-400/90"
-                        : "border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100",
-                    )}
-                  >
-                    <Receipt className="h-5 w-5" />
-                  </Button>
-
-                  {/* <Button
-                    type="button"
-                    onClick={() => handleOpenScanModal("barcode")}
-                    aria-label={t("scan_mode_barcode")}
-                    title={t("scan_mode_barcode")}
-                    className={cn(
-                      "h-11 w-11 rounded-full p-0 shadow-sm transition-colors",
-                      hasScanAccess
-                        ? "border border-sky-300 bg-gradient-to-r from-sky-500 to-cyan-400 text-white hover:from-sky-500/90 hover:to-cyan-400/90"
-                        : "border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100",
-                    )}
-                  >
-                    <ScanBarcode className="h-5 w-5" />
-                  </Button> */}
-                </div>    
+                <Button
+                  type="button"
+                  onClick={() => handleOpenScanModal("receipt")}
+                  className="h-12 flex-1 gap-2 rounded-2xl border-[1.5px] border-[#E9D9FF] bg-white px-4 text-[15px] font-bold text-eatrivo-purple shadow-none transition-[transform,background-color] duration-150 hover:bg-eatrivo-purple/5 active:scale-[0.97] md:flex-none md:px-7"
+                >
+                  <ScanLine className="h-[18px] w-[18px]" />
+                  <span>{t("scan_bill")}</span>
+                </Button>
               </div>
             </div>
 
@@ -622,71 +614,82 @@ export default function PantrySection({
                 }
               />
             ) : groupedItems.length > 0 ? (
-              <div className="space-y-6">
-                {groupedItems.map(([category, categoryItems]) => {
+              <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
+                {groupedItems.map(([category, categoryItems], categoryIndex) => {
                   const categoryLabel =
                     categoryLabels[category as keyof typeof categoryLabels] ??
                     formatCategoryFallback(category);
-                  const isExpanded = expandedCategories[category] ?? true;
+                  const { emoji: categoryEmoji, name: categoryName } =
+                    splitCategoryLabel(categoryLabel);
+                  const isExpanded = expandedCategories[category] ?? false;
                   const hasExpiringItems = categoryItems.some((item) =>
                     isExpiringSoon(item.expiryDate),
                   );
+                  const toggleLabel = isExpanded
+                    ? t("aria_collapse_category", { category: categoryName })
+                    : t("aria_expand_category", { category: categoryName });
 
                   return (
-                    <section key={category} className="space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <div className="p-1 bg-eatrivo-blue/10 rounded-lg">
-                            <Package className="w-5 h-5 text-eatrivo-blue" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-lg font-semibold text-gray-900">
-                                {categoryLabel}
-                              </h3>
-                              {hasExpiringItems ? (
-                                <span
-                                  className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-eatrivo-red/10 text-eatrivo-red"
-                                  title={t("expiry_warning_one")}
-                                  aria-label={t("expiry_warning_one")}
-                                >
-                                  <AlertTriangle className="h-4 w-4" />
-                                </span>
-                              ) : null}
-                            </div>
-                            <p className="text-xs text-gray-500">{categoryItems.length}</p>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => toggleCategory(category)}
-                          className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-eatrivo-blue/10 hover:text-eatrivo-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                          aria-label={
-                            isExpanded
-                              ? t("aria_collapse_category", { category: categoryLabel })
-                              : t("aria_expand_category", { category: categoryLabel })
-                          }
-                          aria-expanded={isExpanded}
-                          title={
-                            isExpanded
-                              ? t("aria_collapse_category", { category: categoryLabel })
-                              : t("aria_expand_category", { category: categoryLabel })
-                          }
+                    <section
+                      key={category}
+                      className={cn(categoryIndex > 0 && "border-t border-gray-100")}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleCategory(category)}
+                        aria-expanded={isExpanded}
+                        aria-controls={`pantry-category-${category}`}
+                        aria-label={toggleLabel}
+                        title={toggleLabel}
+                        className={cn(
+                          "flex w-full items-center gap-3.5 px-3.5 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-400",
+                          isExpanded ? "bg-[#FAF7FF]" : "hover:bg-gray-50/70",
+                        )}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            "flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] text-[22px] leading-none",
+                            getCategoryTint(category),
+                          )}
                         >
-                          <ChevronDown
-                            className={cn(
-                              "h-4 w-4 transition-transform duration-200",
-                              isExpanded ? "rotate-0" : "-rotate-90",
-                            )}
-                          />
-                        </button>
-                      </div>
+                          {categoryEmoji ?? <Package className="h-5 w-5 text-eatrivo-purple" />}
+                        </span>
+
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <span className="truncate text-base font-semibold leading-snug tracking-[-0.015em] text-gray-900">
+                              {categoryName}
+                            </span>
+                            {hasExpiringItems ? (
+                              <span
+                                className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-eatrivo-red/10 text-eatrivo-red"
+                                title={t("expiry_warning_one")}
+                                aria-label={t("expiry_warning_one")}
+                              >
+                                <AlertTriangle className="h-3 w-3" />
+                              </span>
+                            ) : null}
+                          </span>
+                          <span className="block text-[13px] font-medium leading-[18px] text-gray-500">
+                            {t("category_item_count", { count: categoryItems.length })}
+                          </span>
+                        </span>
+
+                        <ChevronRight
+                          aria-hidden="true"
+                          className={cn(
+                            "h-5 w-5 shrink-0 transition-transform duration-200 ease-out",
+                            isExpanded ? "rotate-90 text-eatrivo-purple" : "text-gray-400",
+                          )}
+                        />
+                      </button>
 
                       <AnimatePresence initial={false}>
                         {isExpanded ? (
                           <motion.div
                             key={`${category}-items`}
+                            id={`pantry-category-${category}`}
                             initial={shouldReduceMotion ? undefined : { opacity: 0, height: 0 }}
                             animate={
                               shouldReduceMotion
@@ -694,71 +697,74 @@ export default function PantrySection({
                                 : { opacity: 1, height: "auto" }
                             }
                             exit={shouldReduceMotion ? undefined : { opacity: 0, height: 0 }}
-                            className="space-y-3 overflow-hidden"
+                            className="overflow-hidden bg-[#FAF7FF]"
                           >
-                            {categoryItems.map((item) => {
-                              const recurringItem = recurringLookup.get(item.id);
+                            <div className="space-y-0.5 px-3.5 pb-3.5 pt-0.5">
+                              {categoryItems.map((item) => {
+                                const recurringItem = recurringLookup.get(item.id);
 
-                              return (
-                                <PantryItemRow
-                                  key={item.id}
-                                  item={item}
-                                  locale={locale}
-                                  categoryLabel={categoryLabel}
-                                  categoryValue={item.category ?? guessFoodCategory(item.name)}
-                                  categoryFieldLabel={t("field_category")}
-                                  categoryOptions={categoryOptions}
-                                  expiryLabel={formatExpiry(item.expiryDate, locale)}
-                                  isExpiring={isExpiringSoon(item.expiryDate)}
-                                  isLowStock={item.lowStock}
-                                  isRecurring={Boolean(recurringItem?.isActive)}
-                                  isPendingQuantity={false}
-                                  isPendingDelete={pendingDeleteId === item.id}
-                                  isPendingRecurring={pendingRecurringId === item.id}
-                                  sourceLabel={
-                                    item.source === "shopping_list"
-                                      ? t("source_shopping_list")
-                                      : t("source_manual")
-                                  }
-                                  lowStockLabel={t("row_low_stock")}
-                                  expiringLabel={t("row_expiring")}
-                                  recurringLabel={
-                                    recurringItem?.isActive ? t("row_tracked") : t("row_track")
-                                  }
-                                  editLabel={t("aria_edit")}
-                                  saveLabel={t("save_changes")}
-                                  cancelLabel={t("cancel")}
-                                  quantityLabel={t("field_quantity")}
-                                  unitLabel={t("field_unit")}
-                                  quantityPlaceholder={t("field_quantity_placeholder")}
-                                  unitPlaceholder={t("field_unit")}
-                                  quantityCaption={t("field_quantity")}
-                                  availabilityCaption={t("field_availability")}
-                                  trackingModeToggleLabel={t("tracking_mode_toggle_label")}
-                                  trackingModeHelpText={t("tracking_mode_toggle_help")}
-                                  availableLabel={t("availability_in_stock")}
-                                  unavailableLabel={t("availability_out_of_stock")}
-                                  toggleAvailabilityLabel={t("toggle_availability")}
-                                  deleteLabel={t("aria_delete")}
-                                  addPackageLabel={t("row_add_package_label")}
-                                  addPackageCtaLabel={t("row_add_package")}
-                                  addPackagePendingLabel={t("row_add_package_pending")}
-                                  addPackageReadyLabel={t("row_add_package_again")}
-                                  showAddPackageAction={item.supportsRestockPackage}
-                                  isPendingAddPackage={pendingAddPackageId === item.id}
-                                  onDelete={() => void handleDeleteItem(item.id)}
-                                  onSaveEdit={(updates) => handleItemEdit(item.id, updates)}
-                                  onToggleRecurring={() =>
-                                    void handleToggleRecurring(
-                                      item,
-                                      !recurringItem?.isActive,
-                                      recurringItem?.id,
-                                    )
-                                  }
-                                  onAddPackage={() => void handleAddPackage(item)}
-                                />
-                              );
-                            })}
+                                return (
+                                  <PantryItemRow
+                                    key={item.id}
+                                    item={item}
+                                    locale={locale}
+                                    categoryLabel={categoryLabel}
+                                    categoryValue={item.category ?? guessFoodCategory(item.name)}
+                                    categoryFieldLabel={t("field_category")}
+                                    categoryOptions={categoryOptions}
+                                    expiryLabel={formatExpiry(item.expiryDate, locale)}
+                                    isExpiring={isExpiringSoon(item.expiryDate)}
+                                    // [PANTRY_QUANTITY_TRACKING] flag off: no low-stock highlight (the row already shows availability)
+                                    isLowStock={PANTRY_QUANTITY_TRACKING && item.lowStock}
+                                    isRecurring={Boolean(recurringItem?.isActive)}
+                                    isPendingQuantity={false}
+                                    isPendingDelete={pendingDeleteId === item.id}
+                                    isPendingRecurring={pendingRecurringId === item.id}
+                                    sourceLabel={
+                                      item.source === "shopping_list"
+                                        ? t("source_shopping_list")
+                                        : t("source_manual")
+                                    }
+                                    lowStockLabel={t("row_low_stock")}
+                                    expiringLabel={t("row_expiring")}
+                                    recurringLabel={
+                                      recurringItem?.isActive ? t("row_tracked") : t("row_track")
+                                    }
+                                    editLabel={t("aria_edit")}
+                                    saveLabel={t("save_changes")}
+                                    cancelLabel={t("cancel")}
+                                    quantityLabel={t("field_quantity")}
+                                    unitLabel={t("field_unit")}
+                                    quantityPlaceholder={t("field_quantity_placeholder")}
+                                    unitPlaceholder={t("field_unit")}
+                                    quantityCaption={t("field_quantity")}
+                                    availabilityCaption={t("field_availability")}
+                                    trackingModeToggleLabel={t("tracking_mode_toggle_label")}
+                                    trackingModeHelpText={t("tracking_mode_toggle_help")}
+                                    availableLabel={t("availability_in_stock")}
+                                    unavailableLabel={t("availability_out_of_stock")}
+                                    toggleAvailabilityLabel={t("toggle_availability")}
+                                    deleteLabel={t("aria_delete")}
+                                    addPackageLabel={t("row_add_package_label")}
+                                    addPackageCtaLabel={t("row_add_package")}
+                                    addPackagePendingLabel={t("row_add_package_pending")}
+                                    addPackageReadyLabel={t("row_add_package_again")}
+                                    showAddPackageAction={item.supportsRestockPackage}
+                                    isPendingAddPackage={pendingAddPackageId === item.id}
+                                    onDelete={() => void handleDeleteItem(item.id)}
+                                    onSaveEdit={(updates) => handleItemEdit(item.id, updates)}
+                                    onToggleRecurring={() =>
+                                      void handleToggleRecurring(
+                                        item,
+                                        !recurringItem?.isActive,
+                                        recurringItem?.id,
+                                      )
+                                    }
+                                    onAddPackage={() => void handleAddPackage(item)}
+                                  />
+                                );
+                              })}
+                            </div>
                           </motion.div>
                         ) : null}
                       </AnimatePresence>

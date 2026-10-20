@@ -1,3 +1,4 @@
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import type { CustomRecipePantryContextItem } from "@/lib/custom-recipes/contracts";
 
 function stringifyCustomRecipePantryItem(
@@ -23,6 +24,23 @@ export function buildPantryPromptContext(
   stapleNames: string[];
 } {
   const availableRows = pantryRows.filter((row) => row.inStock);
+
+  // [PANTRY_QUANTITY_TRACKING] flag off: one plain list of owned items, amounts unknown
+  if (!PANTRY_QUANTITY_TRACKING) {
+    const ownedSection = availableRows.length
+      ? availableRows.map((item) => `- ${item.pantryName}`).join("\n")
+      : "- none";
+    return {
+      summary: [
+        "Pantry items already in stock (amounts are not tracked, treat each as available):",
+        ownedSection,
+      ].join("\n"),
+      quantityTrackedCount: 0,
+      availabilityStapleCount: availableRows.length,
+      stapleNames: availableRows.map((item) => item.pantryName),
+    };
+  }
+
   const quantityTrackedItems = availableRows.filter(
     (row) => row.trackingMode !== "availability",
   );

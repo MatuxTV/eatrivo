@@ -5,7 +5,11 @@ import type {
 } from "@/db/schema";
 import { formatAmountLabel } from "@/lib/pantry/format";
 import { normalizeShoppingListAmount } from "@/lib/pantry/shopping-list-amount";
-import { isStampedAvailabilityCandidate } from "@/lib/pantry/tracking";
+import {
+  effectiveTrackingMode,
+  isStampedAvailabilityCandidate,
+} from "@/lib/pantry/tracking";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import { guessFoodCategory } from "@/lib/ingredients/units";
 
 import {
@@ -73,9 +77,12 @@ export function derivePantryInventoryItem(
   const thresholdUnit = restockItem
     ? normalizeRestockUnit(restockItem.defaultUnit)
     : null;
-  const trackingMode = pantryItem.trackingMode ?? "quantity";
+  // [PANTRY_QUANTITY_TRACKING] flag off: every row acts as an availability row
+  const trackingMode = effectiveTrackingMode(pantryItem.trackingMode);
   const inStock = pantryItem.inStock ?? true;
+  // [PANTRY_QUANTITY_TRACKING] flag off: no restock-threshold / stamped logic
   const isStamped =
+    PANTRY_QUANTITY_TRACKING &&
     trackingMode === "availability" &&
     (pantryQuantity !== null ||
       isStampedAvailabilityCandidate({
@@ -175,8 +182,11 @@ export function resolveShoppingListSeedFromPantryItem(
     ingredientSpecificKey: pantryItem.ingredientSpecificKey,
     ingredientId: pantryItem.ingredientId,
   });
-  const trackingMode = pantryItem.trackingMode ?? "quantity";
+  // [PANTRY_QUANTITY_TRACKING] flag off: every row acts as an availability row
+  const trackingMode = effectiveTrackingMode(pantryItem.trackingMode);
+  // [PANTRY_QUANTITY_TRACKING] flag off: no restock-threshold / stamped logic
   const isStamped =
+    PANTRY_QUANTITY_TRACKING &&
     trackingMode === "availability" &&
     isStampedAvailabilityCandidate({
       name: pantryItem.name,

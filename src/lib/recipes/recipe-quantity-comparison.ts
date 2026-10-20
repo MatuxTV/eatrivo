@@ -1,3 +1,4 @@
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import { formatLocalizedAmountLabel } from "@/lib/pantry/format";
 import {
   fromCanonicalQuantity,
@@ -288,5 +289,49 @@ export function buildRecipeIngredientPantryComparison(
       locale,
     ),
     matchingPantryItems: 0,
+  };
+}
+// [PANTRY_QUANTITY_TRACKING] Flag-aware entry point for callers. With the flag off, stored
+// pantry amounts are ignored and presence decides the status: "available-staple" when at
+// least one matching row is in stock, otherwise "unavailable". The recipe's own required
+// amount is still returned (requiredQuantity / requiredUnit / requiredLabel) for display,
+// and unit-mismatch / missing-recipe-quantity never surface because nothing is compared.
+export function buildEffectivePantryComparison(
+  requiredQuantity: string | number | null | undefined,
+  requiredUnit: string | null | undefined,
+  pantryCandidates: PantryQuantityCandidate[],
+  locale: string,
+): RecipeIngredientPantryComparison {
+  if (PANTRY_QUANTITY_TRACKING) {
+    return buildRecipeIngredientPantryComparison(
+      requiredQuantity,
+      requiredUnit,
+      pantryCandidates,
+      locale,
+    );
+  }
+
+  const requiredOnly = buildRecipeIngredientPantryComparison(
+    requiredQuantity,
+    requiredUnit,
+    [],
+    locale,
+  );
+  const inStockCount = pantryCandidates.filter(
+    (candidate) => candidate.inStock ?? true,
+  ).length;
+  const isInPantry = inStockCount > 0;
+
+  return {
+    ...requiredOnly,
+    status: isInPantry ? "available-staple" : "unavailable",
+    canCompare: false,
+    isEnough: isInPantry ? true : null,
+    availableQuantity: null,
+    availableUnit: null,
+    availableLabel: null,
+    missingQuantity: isInPantry ? 0 : null,
+    missingLabel: null,
+    matchingPantryItems: inStockCount,
   };
 }

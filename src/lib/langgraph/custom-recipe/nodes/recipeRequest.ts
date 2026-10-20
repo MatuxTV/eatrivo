@@ -4,6 +4,7 @@ import { setMaxListeners } from "events";
 import { z } from "zod";
 
 import { CUSTOM_RECIPE_AI_TIMEOUT_MS } from "../constants";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import {
   buildPreviousRecipePromptContext,
   CUSTOM_RECIPE_MIN_DIVERSITY,
@@ -346,11 +347,17 @@ User brief:
   const pantrySummarySection =
     state.mode === "preferences_only"
       ? ""
-      : `
+      : PANTRY_QUANTITY_TRACKING
+        ? `
 
 Pantry context summary:
 - Quantity-tracked pantry items: ${pantryContext.quantityTrackedCount}
-- Availability items: ${pantryContext.availabilityStapleCount}`;
+- Availability items: ${pantryContext.availabilityStapleCount}`
+        : // [PANTRY_QUANTITY_TRACKING] flag off: single "in stock" count, amounts unknown
+          `
+
+Pantry context summary:
+- Pantry items in stock: ${pantryContext.availabilityStapleCount}`;
 
   return `
 You are Rivo, the recipe generation workflow for Eatrivo.

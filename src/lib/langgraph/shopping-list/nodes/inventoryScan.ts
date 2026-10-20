@@ -2,6 +2,7 @@ import { db } from "@/index";
 import { pantryItems } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { apiLogger } from "@/lib/logger";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import type { ShoppingListState } from "../state";
 
 export type PantryItem = {
@@ -34,18 +35,27 @@ export async function inventoryScan(
         unit: pantryItems.unit,
         category: pantryItems.category,
         expiryDate: pantryItems.expiryDate,
+        inStock: pantryItems.inStock,
       })
       .from(pantryItems)
       .where(eq(pantryItems.userProfileId, userProfileId));
 
-    if (items.length === 0) {
+    // [PANTRY_QUANTITY_TRACKING] flag off: out-of-stock rows are not "owned"
+    const ownedItems = PANTRY_QUANTITY_TRACKING
+      ? items
+      : items.filter((item) => item.inStock);
+
+    if (ownedItems.length === 0) {
       return { virtualPantry: null };
     }
 
     // Convert numeric strings back to numbers
-    const pantry: PantryItem[] = items.map((item) => ({
+    const pantry: PantryItem[] = ownedItems.map(({ inStock: _inStock, ...item }) => ({
       ...item,
-      quantity: item.quantity ? parseFloat(String(item.quantity)) : null,
+      quantity:
+        PANTRY_QUANTITY_TRACKING && item.quantity
+          ? parseFloat(String(item.quantity))
+          : null,
     }));
 
     apiLogger.info("inventoryScan completed", {

@@ -11,6 +11,7 @@ import {
 import { matchPantryIngredient } from "@/lib/ingredients/ingredient-matching";
 import { loadIngredientGraph } from "@/lib/pantry/ingredient-resolution";
 import { toCanonicalQuantity } from "@/lib/ingredients/units";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 
 export interface PantryRecipeConsumptionIngredient {
   name: string;
@@ -131,6 +132,16 @@ function pantryRowMatchesIngredient(
 export async function consumeRecipeFromPantry(
   input: ConsumeRecipeFromPantryInput,
 ): Promise<ConsumeRecipeFromPantryResult> {
+  // [PANTRY_QUANTITY_TRACKING] flag off: cooking must not change the pantry
+  if (!PANTRY_QUANTITY_TRACKING) {
+    return {
+      updatedItems: 0,
+      deletedItems: 0,
+      consumedIngredients: 0,
+      skippedIngredients: 0,
+    };
+  }
+
   apiLogger.debug("[pantry.consumeRecipe] loading pantry rows", {
     metadata: {
       userProfileId: input.userProfileId,
