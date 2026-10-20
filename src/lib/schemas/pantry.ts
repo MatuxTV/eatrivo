@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
+import { effectiveTrackingMode } from "@/lib/pantry/tracking";
 
 function trimToNull(value: unknown) {
   if (typeof value !== "string") {
@@ -91,7 +93,8 @@ export const pantryCreateItemSchema = z
     expiryDate: pantryExpiryDateSchema.optional(),
   })
   .superRefine((value, ctx) => {
-    const trackingMode = value.trackingMode ?? "quantity";
+    // [PANTRY_QUANTITY_TRACKING] flag off: every item is an availability item, so inStock is always allowed
+    const trackingMode = effectiveTrackingMode(value.trackingMode);
 
     if (trackingMode === "quantity" && value.inStock !== undefined) {
       ctx.addIssue({
@@ -122,7 +125,9 @@ export const pantryUpdateItemSchema = z
       value.category !== undefined ||
       value.expiryDate !== undefined ||
       value.quantityOperation !== undefined ||
-      value.quantityDelta !== undefined;
+      value.quantityDelta !== undefined ||
+      // [PANTRY_QUANTITY_TRACKING] flag off: an in-stock toggle alone is a valid update
+      (!PANTRY_QUANTITY_TRACKING && value.inStock !== undefined);
 
     if (!hasMutation) {
       ctx.addIssue({
@@ -155,7 +160,12 @@ export const pantryUpdateItemSchema = z
       });
     }
 
-    if (value.trackingMode === "quantity" && value.inStock !== undefined) {
+    // [PANTRY_QUANTITY_TRACKING] flag off: stored quantity-mode rows behave like availability rows
+    if (
+      value.trackingMode !== undefined &&
+      effectiveTrackingMode(value.trackingMode) === "quantity" &&
+      value.inStock !== undefined
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "inStock is only allowed for availability mode",

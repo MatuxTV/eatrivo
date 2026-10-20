@@ -8,6 +8,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import type { NewPantryItem } from "@/hooks/usePantry";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import PantryEditableItemCard, {
   type EditablePantryFormItem,
 } from "./PantryEditableItemCard";
@@ -28,7 +29,8 @@ function createBatchDraftItem(): BatchDraftItem {
     unit: "ks",
     category: "other",
     expiryDate: "",
-    trackingMode: "quantity",
+    // [PANTRY_QUANTITY_TRACKING] flag off: new items are availability items (in stock, no amount)
+    trackingMode: PANTRY_QUANTITY_TRACKING ? "quantity" : "availability",
     inStock: true,
   };
 }

@@ -4,21 +4,23 @@ import { useEffect, useState } from "react";
 import {
   Loader2,
   PackagePlus,
+  Pencil,
   Pin,
   Trash2,
+  X,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import InlineEditToggleButton from "@/components/inline-edit/InlineEditToggleButton";
 import QuantityUnitEditor from "@/components/inline-edit/QuantityUnitEditor";
 import type { PantryItem } from "@/hooks/usePantry";
 import { guessFoodCategory } from "@/lib/ingredients/units";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import { cn } from "@/lib/utils/utils";
 import { formatLocalizedAmountLabel } from "@/lib/pantry/format";
 
@@ -124,20 +126,17 @@ function formatDraftQuantityForEditor(
 export default function PantryItemRow({
   item,
   locale,
-  categoryLabel,
   categoryValue,
   categoryFieldLabel,
   categoryOptions,
   expiryLabel,
+  expiringLabel,
   isExpiring,
   isLowStock,
   isRecurring,
-  isPendingQuantity,
   isPendingDelete,
   isPendingRecurring,
-  sourceLabel,
   lowStockLabel,
-  expiringLabel,
   recurringLabel,
   editLabel,
   saveLabel,
@@ -146,8 +145,6 @@ export default function PantryItemRow({
   unitLabel,
   quantityPlaceholder,
   unitPlaceholder,
-  quantityCaption,
-  availabilityCaption,
   trackingModeToggleLabel,
   trackingModeHelpText,
   availableLabel,
@@ -188,248 +185,230 @@ export default function PantryItemRow({
     setDraftInStock(item.inStock);
   }, [categoryValue, item.category, item.inStock, item.name, item.quantity, item.trackingMode, item.unit]);
 
+  // [PANTRY_QUANTITY_TRACKING] flag off: the sub-line shows only "out of stock" and the expiry, never an amount
+  const stockText =
+    item.trackingMode === "availability"
+      ? item.inStock
+        ? availableLabel
+        : unavailableLabel
+      : formatQuantity(item.quantity, item.unit, locale);
+  const expiryText = expiryLabel ? `${expiringLabel} ${expiryLabel}` : null;
+  const subline = (
+    PANTRY_QUANTITY_TRACKING
+      ? [stockText, isLowStock ? lowStockLabel : null, expiryText]
+      : [item.inStock ? null : unavailableLabel, expiryText]
+  )
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <motion.article
       layout={!shouldReduceMotion}
       {...(shouldReduceMotion ? {} : fadeIn)}
-      whileHover={shouldReduceMotion ? undefined : { y: -2 }}
-      className={cn(
-        "bg-white rounded-2xl border shadow-sm p-4 md:p-5 transition-colors hover:border-gray-200",
-        isExpiring
-          ? "border-eatrivo-red/20"
-          : isLowStock
-            ? "border-eatrivo-orange/20"
-            : "border-gray-100",
-      )}
+      className="flex items-center gap-2 py-1.5 pl-[58px]"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1 space-y-3">
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+      <div className="min-w-0 flex-1">
+        <h4
+          className={cn(
+            "truncate text-[15px] font-semibold leading-5 tracking-[-0.01em]",
+            item.inStock ? "text-gray-900" : "text-gray-400",
+          )}
+        >
+          {item.name}
+        </h4>
+        {subline ? (
+          <p
+            className={cn(
+              "truncate text-[13px] font-medium leading-[18px]",
+              isExpiring ? "text-eatrivo-red" : "text-gray-500",
+            )}
+          >
+            {subline}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="flex shrink-0 items-center gap-1.5">
+        {/* [PANTRY_QUANTITY_TRACKING] flag off: no pack/restock action */}
+        {PANTRY_QUANTITY_TRACKING && showAddPackageAction ? (
+          <button
+            type="button"
+            onClick={onAddPackage}
+            disabled={isPendingAddPackage}
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-eatrivo-blue/20 bg-eatrivo-blue/10 px-4 text-sm font-semibold text-eatrivo-blue transition-colors hover:bg-eatrivo-blue/15 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+            aria-label={addPackageLabel}
+            title={addPackageLabel}
+          >
+            {isPendingAddPackage ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <PackagePlus className="h-4 w-4" />
+            )}
+            <span>
+              {isPendingAddPackage
+                ? addPackagePendingLabel
+                : item.isOnActiveShoppingList
+                  ? addPackageReadyLabel
+                  : addPackageCtaLabel}
+            </span>
+          </button>
+        ) : null}
+
+        {/* [PANTRY_QUANTITY_TRACKING] flag off: no recurring-restock pin */}
+        {PANTRY_QUANTITY_TRACKING ? (
+          <button
+            type="button"
+            onClick={onToggleRecurring}
+            disabled={isPendingRecurring}
+            className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2",
+              isRecurring
+                ? "border-eatrivo-purple bg-eatrivo-purple text-white"
+                : "border-gray-200 bg-white text-gray-500 hover:bg-eatrivo-purple/10 hover:text-eatrivo-purple",
+            )}
+            aria-label={recurringLabel}
+            aria-pressed={isRecurring}
+            title={recurringLabel}
+          >
+            {isPendingRecurring ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Pin className="h-4 w-4" />
+            )}
+          </button>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={() => setIsEditing((current) => !current)}
+          disabled={isSavingEdit}
+          aria-label={editLabel}
+          title={editLabel}
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E9D9FF] bg-white text-eatrivo-purple transition-[transform,background-color] duration-150 hover:bg-eatrivo-purple/5 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+        >
+          <Pencil className="h-[18px] w-[18px]" />
+        </button>
+
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={isPendingDelete}
+          aria-label={deleteLabel}
+          title={deleteLabel}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600 transition-[transform,background-color] duration-150 hover:bg-red-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+        >
+          {isPendingDelete ? (
+            <Loader2 className="h-[18px] w-[18px] animate-spin" />
+          ) : (
+            <Trash2 className="h-[18px] w-[18px]" />
+          )}
+        </button>
+      </div>
+
+      <Dialog
+        open={isEditing}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDraftQuantity(formatDraftQuantityForEditor(item.quantity, item.unit));
+            setDraftUnit(item.unit ?? "ks");
+            setDraftCategory(item.category ?? categoryValue ?? guessFoodCategory(item.name));
+            setDraftTrackingMode(item.trackingMode);
+            setDraftInStock(item.inStock);
+            setIsEditing(false);
+          }
+        }}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="font-brand top-auto bottom-0 left-0 max-h-[90dvh] max-w-full translate-x-0 translate-y-0 gap-0 overflow-y-auto rounded-b-none rounded-t-[28px] border-0 bg-white p-5 pb-7 data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full data-[state=open]:zoom-in-100 data-[state=closed]:zoom-out-100 sm:top-[50%] sm:bottom-auto sm:left-[50%] sm:max-w-md sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-2xl sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0 sm:data-[state=open]:zoom-in-95 sm:data-[state=closed]:zoom-out-95"
+        >
+          <div aria-hidden="true" className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-gray-200 sm:hidden" />
+          <DialogTitle className="sr-only">{item.name}</DialogTitle>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h3 className="min-w-0 truncate text-[22px] font-bold leading-7 tracking-[-0.025em] text-gray-900">
               {item.name}
             </h3>
-
-            <div className="flex flex-wrap gap-2">
-              <Badge
-                variant="outline"
-                className="rounded-full border-gray-200 bg-eatrivo-white-secondary text-gray-600"
-              >
-                {categoryLabel}
-              </Badge>
-
-              <Badge
-                variant="outline"
-                className="rounded-full border-gray-200 bg-eatrivo-white-secondary text-gray-600"
-              >
-                {sourceLabel}
-              </Badge>
-
-              {isLowStock ? (
-                <Badge className="rounded-full border-transparent bg-eatrivo-orange/10 text-eatrivo-orange">
-                  {lowStockLabel}
-                </Badge>
-              ) : null}
-
-              {isExpiring ? (
-                <Badge className="rounded-full border-transparent bg-eatrivo-red/10 text-eatrivo-red">
-                  {expiringLabel}
-                </Badge>
-              ) : null}
-            </div>
-
-            {expiryLabel ? <p className="text-xs text-gray-500">{expiryLabel}</p> : null}
-          </div>
-
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="space-y-1">
-              <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                {item.trackingMode === "availability" ? availabilityCaption : quantityCaption}
-              </p>
-              {item.trackingMode === "availability" ? (
-                <Badge
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-sm font-semibold",
-                    item.inStock
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-gray-200 bg-gray-50 text-gray-600",
-                  )}
-                >
-                  {item.inStock ? availableLabel : unavailableLabel}
-                </Badge>
-              ) : (
-                <p className="text-lg font-bold text-eatrivo-purple">
-                  {isPendingQuantity ? (
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  </span>
-                ) : (
-                  formatQuantity(item.quantity, item.unit, locale)
-                )}
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {showAddPackageAction ? (
-                <button
-                  type="button"
-                  onClick={onAddPackage}
-                  disabled={isPendingAddPackage}
-                  className="inline-flex h-10 items-center gap-2 rounded-full border border-eatrivo-blue/20 bg-eatrivo-blue/10 px-4 text-sm font-semibold text-eatrivo-blue transition-colors hover:bg-eatrivo-blue/15 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                  aria-label={addPackageLabel}
-                  title={addPackageLabel}
-                >
-                  {isPendingAddPackage ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <PackagePlus className="h-4 w-4" />
-                  )}
-                  <span>
-                    {isPendingAddPackage
-                      ? addPackagePendingLabel
-                      : item.isOnActiveShoppingList
-                        ? addPackageReadyLabel
-                        : addPackageCtaLabel}
-                  </span>
-                </button>
-              ) : null}
-
-              <InlineEditToggleButton
-                label={editLabel}
-                isActive={isEditing}
-                onClick={() => setIsEditing((current) => !current)}
-                disabled={isSavingEdit}
-              />
-
+            <DialogClose asChild>
               <button
                 type="button"
-                onClick={onToggleRecurring}
-                disabled={isPendingRecurring}
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2",
-                  isRecurring
-                    ? "border-eatrivo-purple bg-eatrivo-purple text-white"
-                    : "border-gray-200 bg-white text-gray-500 hover:bg-eatrivo-purple/10 hover:text-eatrivo-purple",
-                )}
-                aria-label={recurringLabel}
-                aria-pressed={isRecurring}
-                title={recurringLabel}
+                aria-label={cancelLabel}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-[transform,background-color] duration-150 hover:bg-gray-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
               >
-                {isPendingRecurring ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Pin className="h-4 w-4" />
-                )}
+                <X className="h-4 w-4" />
               </button>
-
-              <button
-                type="button"
-                onClick={onDelete}
-                disabled={isPendingDelete}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 transition-colors hover:border-eatrivo-red/20 hover:bg-eatrivo-red/10 hover:text-eatrivo-red disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                aria-label={deleteLabel}
-              >
-                {isPendingDelete ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
-              </button>
-            </div>
+            </DialogClose>
           </div>
+          {/* [PANTRY_QUANTITY_TRACKING] flag off: presence-only editor */}
+          <QuantityUnitEditor
+            quantityLabel={quantityLabel}
+            unitLabel={unitLabel}
+            categoryLabel={categoryFieldLabel}
+            trackingModeToggleLabel={trackingModeToggleLabel}
+            trackingModeHelpText={trackingModeHelpText}
+            availabilityLabel={toggleAvailabilityLabel}
+            availableLabel={availableLabel}
+            unavailableLabel={unavailableLabel}
+            quantityPlaceholder={quantityPlaceholder}
+            unitPlaceholder={unitPlaceholder}
+            cancelLabel={cancelLabel}
+            saveLabel={saveLabel}
+            quantityValue={draftQuantity}
+            unitValue={draftUnit}
+            presenceOnly={!PANTRY_QUANTITY_TRACKING}
+            categoryValue={draftCategory}
+            trackingModeValue={draftTrackingMode}
+            inStockValue={draftInStock}
+            isSaving={isSavingEdit}
+            categoryOptions={categoryOptions}
+            onQuantityChange={setDraftQuantity}
+            onUnitChange={(nextUnit) => {
+              setDraftUnit(nextUnit);
+              setDraftQuantity((current) =>
+                formatDraftQuantityForEditor(current, nextUnit),
+              );
+            }}
+            onCategoryChange={setDraftCategory}
+            onTrackingModeChange={setDraftTrackingMode}
+            onAvailabilityChange={setDraftInStock}
+            onCancel={() => {
+              setDraftQuantity(formatDraftQuantityForEditor(item.quantity, item.unit));
+              setDraftUnit(item.unit ?? "ks");
+              setDraftCategory(item.category ?? categoryValue ?? guessFoodCategory(item.name));
+              setDraftTrackingMode(item.trackingMode);
+              setDraftInStock(item.inStock);
+              setIsEditing(false);
+            }}
+            onSave={async () => {
+              setIsSavingEdit(true);
+              try {
+                const parsedQuantity = draftQuantity.trim()
+                  ? Number.parseFloat(draftQuantity)
+                  : null;
+                const success = await onSaveEdit({
+                  quantity:
+                    draftTrackingMode === "quantity" &&
+                    parsedQuantity !== null &&
+                    Number.isFinite(parsedQuantity)
+                      ? parsedQuantity
+                      : null,
+                  unit: draftTrackingMode === "quantity" ? draftUnit || null : null,
+                  category: draftCategory || null,
+                  trackingMode: draftTrackingMode,
+                  ...(draftTrackingMode === "availability"
+                    ? { inStock: draftInStock }
+                    : {}),
+                });
 
-          <Dialog
-            open={isEditing}
-            onOpenChange={(open) => {
-              if (!open) {
-                setDraftQuantity(formatDraftQuantityForEditor(item.quantity, item.unit));
-                setDraftUnit(item.unit ?? "ks");
-                setDraftCategory(item.category ?? categoryValue ?? guessFoodCategory(item.name));
-                setDraftTrackingMode(item.trackingMode);
-                setDraftInStock(item.inStock);
-                setIsEditing(false);
+                if (success) {
+                  setIsEditing(false);
+                }
+              } finally {
+                setIsSavingEdit(false);
               }
             }}
-          >
-            <DialogContent
-              showCloseButton={false}
-              className="rounded-2xl border-gray-100 bg-white p-4 sm:max-w-md"
-            >
-              <DialogTitle className="sr-only">{item.name}</DialogTitle>
-              <div className="space-y-3">
-                <h3 className="text-base font-semibold text-gray-900">{item.name}</h3>
-              <QuantityUnitEditor
-                quantityLabel={quantityLabel}
-                unitLabel={unitLabel}
-                categoryLabel={categoryFieldLabel}
-                trackingModeToggleLabel={trackingModeToggleLabel}
-                trackingModeHelpText={trackingModeHelpText}
-                availabilityLabel={toggleAvailabilityLabel}
-                availableLabel={availableLabel}
-                unavailableLabel={unavailableLabel}
-                quantityPlaceholder={quantityPlaceholder}
-                unitPlaceholder={unitPlaceholder}
-                cancelLabel={cancelLabel}
-                saveLabel={saveLabel}
-                quantityValue={draftQuantity}
-                unitValue={draftUnit}
-                categoryValue={draftCategory}
-                trackingModeValue={draftTrackingMode}
-                inStockValue={draftInStock}
-                isSaving={isSavingEdit}
-                categoryOptions={categoryOptions}
-                onQuantityChange={setDraftQuantity}
-                onUnitChange={(nextUnit) => {
-                  setDraftUnit(nextUnit);
-                  setDraftQuantity((current) =>
-                    formatDraftQuantityForEditor(current, nextUnit),
-                  );
-                }}
-                onCategoryChange={setDraftCategory}
-                onTrackingModeChange={setDraftTrackingMode}
-                onAvailabilityChange={setDraftInStock}
-                onCancel={() => {
-                  setDraftQuantity(formatDraftQuantityForEditor(item.quantity, item.unit));
-                  setDraftUnit(item.unit ?? "ks");
-                  setDraftCategory(item.category ?? categoryValue ?? guessFoodCategory(item.name));
-                  setDraftTrackingMode(item.trackingMode);
-                  setDraftInStock(item.inStock);
-                  setIsEditing(false);
-                }}
-                onSave={async () => {
-                  setIsSavingEdit(true);
-                  try {
-                    const parsedQuantity = draftQuantity.trim()
-                      ? Number.parseFloat(draftQuantity)
-                      : null;
-                    const success = await onSaveEdit({
-                      quantity:
-                        draftTrackingMode === "quantity" &&
-                        parsedQuantity !== null &&
-                        Number.isFinite(parsedQuantity)
-                          ? parsedQuantity
-                          : null,
-                      unit: draftTrackingMode === "quantity" ? draftUnit || null : null,
-                      category: draftCategory || null,
-                      trackingMode: draftTrackingMode,
-                      ...(draftTrackingMode === "availability"
-                        ? { inStock: draftInStock }
-                        : {}),
-                    });
-
-                    if (success) {
-                      setIsEditing(false);
-                    }
-                  } finally {
-                    setIsSavingEdit(false);
-                  }
-                }}
-              />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+          />
+        </DialogContent>
+      </Dialog>
     </motion.article>
   );
 }

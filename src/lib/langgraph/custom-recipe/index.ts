@@ -79,7 +79,11 @@ function routeAfterUnitSemantics(state: typeof CustomRecipeState.State): string 
     return "validate_recipe_diversity";
   }
 
-  if (state.unitSemanticAudit && state.unitSemanticAudit.issues.length > 0) {
+  if (
+    state.unitSemanticAudit &&
+    state.unitSemanticAudit.issues.length > 0 &&
+    state.retryCount < CUSTOM_RECIPE_MAX_RETRIES
+  ) {
     return "repair_recipe_units";
   }
 

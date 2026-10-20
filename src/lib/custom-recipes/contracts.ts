@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { MatchedRecipe } from "@/lib/recipes/recipe-matches";
 import { parseRecipeIngredient } from "@/lib/ingredients/ingredients";
-import { buildRecipeIngredientPantryComparison } from "@/lib/recipes/recipe-quantity-comparison";
+import { buildEffectivePantryComparison } from "@/lib/recipes/recipe-quantity-comparison";
 import { guessFoodCategory } from "@/lib/ingredients/units";
 import { validateCustomRecipeIngredientAmountFormat } from "./unit-validation";
 
@@ -615,7 +615,8 @@ function normalizeCustomRecipeIngredientItem(
   }
 
   const pantryComparison = options?.locale
-    ? buildRecipeIngredientPantryComparison(
+    ? // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+      buildEffectivePantryComparison(
         parsedIngredient.quantity,
         parsedIngredient.unit,
         pantryMatch ? [pantryMatch] : [],

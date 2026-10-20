@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PANTRY_UNIT_OPTIONS } from "@/lib/ingredients/units";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 
 export interface EditablePantryFormItem {
   id: string;
@@ -103,46 +104,50 @@ export default function PantryEditableItemCard({
           />
         </div>
 
-        <div className={`flex gap-3 ${isAvailabilityMode ? "opacity-55" : ""}`}>
-          <div className="flex-1">
-            <Label className="mb-1.5 block text-sm font-medium text-gray-700">
-              {labels.fieldQuantity}
-            </Label>
-            <Input
-              type="number"
-              min="0"
-              step="0.001"
-              value={item.quantity}
-              onChange={(event) => onChange(item.id, "quantity", event.target.value)}
-              placeholder={labels.fieldQuantityPlaceholder}
-              className="w-full bg-white"
-              disabled={isAvailabilityMode}
-            />
+        {/* [PANTRY_QUANTITY_TRACKING] flag off: no amount / unit inputs */}
+        {PANTRY_QUANTITY_TRACKING ? (
+          <div className={`flex gap-3 ${isAvailabilityMode ? "opacity-55" : ""}`}>
+            <div className="flex-1">
+              <Label className="mb-1.5 block text-sm font-medium text-gray-700">
+                {labels.fieldQuantity}
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.001"
+                value={item.quantity}
+                onChange={(event) => onChange(item.id, "quantity", event.target.value)}
+                placeholder={labels.fieldQuantityPlaceholder}
+                className="w-full bg-white"
+                disabled={isAvailabilityMode}
+              />
+            </div>
+            <div className="w-28">
+              <Label className="mb-1.5 block text-sm font-medium text-gray-700">
+                {labels.fieldUnit}
+              </Label>
+              <Select
+                value={item.unit}
+                onValueChange={(value) => onChange(item.id, "unit", value)}
+                disabled={isAvailabilityMode}
+              >
+                <SelectTrigger className="bg-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PANTRY_UNIT_OPTIONS.map((unit) => (
+                    <SelectItem key={unit} value={unit}>
+                      {unit}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="w-28">
-            <Label className="mb-1.5 block text-sm font-medium text-gray-700">
-              {labels.fieldUnit}
-            </Label>
-            <Select
-              value={item.unit}
-              onValueChange={(value) => onChange(item.id, "unit", value)}
-              disabled={isAvailabilityMode}
-            >
-              <SelectTrigger className="bg-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PANTRY_UNIT_OPTIONS.map((unit) => (
-                  <SelectItem key={unit} value={unit}>
-                    {unit}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        ) : null}
 
-        {showTrackingControls ? (
+        {/* [PANTRY_QUANTITY_TRACKING] flag off: no tracking-mode toggle or availability buttons */}
+        {PANTRY_QUANTITY_TRACKING && showTrackingControls ? (
           <div className="rounded-2xl border border-gray-200 bg-white p-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-2">

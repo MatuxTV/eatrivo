@@ -1,7 +1,8 @@
 import { HumanMessage } from "@langchain/core/messages";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { z } from "zod";
 
+import { AiConfigError } from "@/lib/ai/model-config";
+import { invokeStructured } from "@/lib/ai/structured-output";
 import {
   CUSTOM_RECIPE_ALLOWED_UNITS,
   describeIngredientUnitRule,
@@ -24,6 +25,11 @@ const unitSemanticAuditSchema = z.object({
   passed: z.boolean(),
   issues: z.array(unitSemanticIssueSchema).max(20),
 });
+
+async function loadAuditModel() {
+  const { getChatModel } = await import("@/lib/ai/models");
+  return getChatModel("unitAudit").model;
+}
 
 function shouldIgnoreProduceGramToPieceSuggestion(
   issue: CustomRecipeUnitSemanticAudit["issues"][number],
@@ -120,32 +126,31 @@ export async function validateUnitSemantics(
     };
   }
 
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) {
+  let model: Awaited<ReturnType<typeof loadAuditModel>>;
+  try {
+    model = await loadAuditModel();
+  } catch (error) {
     return {
       unitSemanticAudit: null,
-      requestError: "GOOGLE_AI_API_KEY is not configured",
+      requestError: error instanceof AiConfigError ? error.message : "AI model is not configured",
       retryCount: state.retryCount + 1,
       validationErrorType: "unit_semantic_error",
     };
   }
 
-  const model = new ChatGoogleGenerativeAI({
-    model: "gemini-3.1-flash-lite-preview",
-    temperature: 0,
-    maxOutputTokens: 1200,
-    apiKey,
-  }).withStructuredOutput(unitSemanticAuditSchema, {
-    method: "functionCalling",
-    name: "audit_custom_recipe_units",
-  });
-
   const prompt = `You are validating ingredient units for a generated recipe.\n\nRules:\n- Allowed units only: ${CUSTOM_RECIPE_ALLOWED_UNITS.join(", ")}\n- Reject kitchen units like tbsp, tsp, cup.\n- Liquids should prefer ml/l/dl.\n- Pastes, dry goods and powders should prefer g/kg unless the provided allowed units specify otherwise.\n- Countable items should use ks.\n- Do NOT suggest changing grams/kilograms to pieces (ks) or vice versa for vegetables/fruits (e.g., paprika, cibuľa, zemiaky, cuketa) if they already have a realistic volume or count. Either volume or piece count forms are okay. Do not flag them!\n- Only return an issue when the current amount/unit is absolutely or semantically wrong for the ingredient.\n- If everything is fine, return passed=true and issues=[].\n- suggestedAmount must preserve the quantity intent and only fix the unit/amount formatting.\n\nIngredients to review:\n${ingredientLines.join("\n\n")}`;
 
   try {
-    const audit = normalizeUnitSemanticAudit(
-      (await model.invoke([new HumanMessage(prompt)])) as CustomRecipeUnitSemanticAudit,
-    );
+    const structured = await invokeStructured({
+      model,
+      schema: unitSemanticAuditSchema,
+      name: "audit_custom_recipe_units",
+      messages: [new HumanMessage(prompt)],
+    });
+    if (!structured.parsed) {
+      throw new Error("Unit audit returned invalid structured output.");
+    }
+    const audit = normalizeUnitSemanticAudit(structured.parsed as CustomRecipeUnitSemanticAudit);
 
     apiLogger.info("[customRecipe.validateUnitSemantics] semantic audit completed", {
       metadata: {

@@ -9,6 +9,8 @@ import { receiptScanStartResponseSchema } from "@/lib/pantry/receipt-scan-contra
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import { handleApiError, validationError } from "@/lib/safeError";
 
+export const maxDuration = 60;
+
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 

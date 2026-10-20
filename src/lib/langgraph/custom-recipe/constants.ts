@@ -1,6 +1,6 @@
 export const CUSTOM_RECIPE_MAX_RETRIES = 3;
 export const CUSTOM_RECIPE_GRAPH_RECURSION_LIMIT = 60;
-export const CUSTOM_RECIPE_AI_TIMEOUT_MS = 35_000; // Increased to 35s to reduce interruptions
+export const CUSTOM_RECIPE_AI_TIMEOUT_MS = 50_000; // Claude Haiku needs 8-18 s per candidate; per-candidate timeout is 60% of this
 export const CUSTOM_RECIPE_MIN_VALID_OUTPUT_LENGTH = 600; // Minimum chars for valid recipe JSON
 
 export const NODE_PROGRESS: Record<

@@ -1,9 +1,10 @@
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HumanMessage } from "@langchain/core/messages";
 import type { ChatState } from "../state";
 import { NUTRITION_KEYWORDS, INTENT_CLASSIFY_PROMPT } from "../constants";
 import type { Intent } from "../types";
 import { logger } from "@/lib/logger";
+import { getChatModel } from "@/lib/ai/models";
+import { messageText } from "@/lib/ai/message-text";
 
 const RECIPE_CREATION_PATTERNS = [
   "vytvor recept",
@@ -34,19 +35,11 @@ const RECIPE_TEXT_REPLY_PATTERNS = [
   "recipe steps",
 ];
 
-const intentModel = new ChatGoogleGenerativeAI({
-  model: "gemini-3-flash-preview",
-  temperature: 0,
-  apiKey: process.env.GOOGLE_AI_API_KEY,
-});
-
 export async function intentRouter(
   state: typeof ChatState.State,
 ): Promise<Partial<typeof ChatState.State>> {
   const lastMsg = state.messages.at(-1);
-  const text = (
-    typeof lastMsg?.content === "string" ? lastMsg.content : ""
-  ).toLowerCase();
+  const text = (lastMsg ? messageText(lastMsg) : "").toLowerCase();
 
   // ① Rule-based pre-filter — bez LLM (lacné správy: "ahoj", "ďakujem", "ok")
   const hasKeyword = NUTRITION_KEYWORDS.some((kw) => text.includes(kw));
@@ -65,11 +58,10 @@ export async function intentRouter(
 
   // ② LLM klasifikácia (iba ak obsahuje kľúčové slovo)
   try {
+    const { model: intentModel } = getChatModel("intent");
     const prompt = INTENT_CLASSIFY_PROMPT.replace("{{message}}", text);
     const response = await intentModel.invoke([new HumanMessage(prompt)]);
-    const raw = (typeof response.content === "string" ? response.content : "")
-      .trim()
-      .toLowerCase();
+    const raw = messageText(response).trim().toLowerCase();
 
     const validIntents: Intent[] = [
       "meal_swap",

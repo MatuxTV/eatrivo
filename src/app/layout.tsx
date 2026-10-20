@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "sk_SK",
     alternateLocale: "en_US",
-    url: process.env.NEXT_PUBLIC_APP_URL || "https://eatrivo.com",
+    url: process.env.NEXT_PUBLIC_APP_URL || "https://eatrivo.sk",
     title: "Eatrivo - Váš osobný plánovač jedál",
     description:
       "Plánujte jedlá, generujte nákupné zoznamy a dosiahnite svoje ciele.",

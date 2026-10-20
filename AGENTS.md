@@ -5,7 +5,7 @@ Shared project context for AI coding agents (Claude Code, OpenCode). `CLAUDE.md`
 ## Stack
 
 - **Framework**: Next.js (App Router, Turbopack) — installable **PWA** (`next-pwa`)
-- **AI**: LangChain + LangGraph with `@langchain/google-genai` (Google Gemini)
+- **AI**: LangChain 1.x + LangGraph; models are built only through `src/lib/ai/models.ts` (`getChatModel`), default provider Anthropic (`claude-haiku-5-5`), Google Gemini as rollback (see `docs/AI_PROVIDER.md`)
 - **DB**: Drizzle ORM on Neon (serverless Postgres)
 - **Auth**: NextAuth (`@auth/drizzle-adapter`)
 - **i18n**: `next-intl` (locales in `locales/`)

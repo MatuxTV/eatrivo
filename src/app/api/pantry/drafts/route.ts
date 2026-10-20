@@ -21,6 +21,8 @@ import {
 } from "@/lib/pantry/prepare-drafts";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
+const MAX_DRAFT_ITEMS_PER_REQUEST = 100;
+
 function isValidDraftItem(value: unknown): value is PantryBatchInputItem {
   if (!value || typeof value !== "object") {
     return false;
@@ -104,6 +106,13 @@ export async function POST(req: NextRequest) {
     if (!rawItems || rawItems.length === 0) {
       return NextResponse.json(
         { error: "At least one pantry item is required." },
+        { status: 400 },
+      );
+    }
+
+    if (rawItems.length > MAX_DRAFT_ITEMS_PER_REQUEST) {
+      return NextResponse.json(
+        { error: "Too many pantry items in one request." },
         { status: 400 },
       );
     }

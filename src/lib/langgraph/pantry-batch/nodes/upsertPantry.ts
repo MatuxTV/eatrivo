@@ -10,6 +10,7 @@ import {
   resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
 import { CacheService } from "@/lib/cache/redis";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
 import type { PantryBatchState } from "../state";
 import type { PantryBatchProcessedItem } from "../types";
@@ -31,6 +32,11 @@ function canMergeIntoExistingItem(
   existingUnit: string | null,
   incomingUnit: string | null,
 ): boolean {
+  // [PANTRY_QUANTITY_TRACKING] flag off: units are irrelevant, same ingredient always merges
+  if (!PANTRY_QUANTITY_TRACKING) {
+    return true;
+  }
+
   if (!existingUnit || !incomingUnit) {
     return true;
   }
@@ -114,8 +120,10 @@ export async function upsertPantry(
           ingredientKey: resolvedIdentity.ingredientKey,
           ingredientSpecificKey: resolvedIdentity.ingredientSpecificKey,
           ingredientId: resolvedIngredientId,
-          quantity: mergedQuantity,
-          unit: resolvedUnit ?? existingItem.unit,
+          // [PANTRY_QUANTITY_TRACKING] flag off: keep stored amounts, just mark in stock
+          ...(PANTRY_QUANTITY_TRACKING
+            ? { quantity: mergedQuantity, unit: resolvedUnit ?? existingItem.unit }
+            : { inStock: true }),
           category: resolvedCategory,
           expiryDate: item.expiryDate ? new Date(item.expiryDate) : existingItem.expiryDate,
           updatedAt: new Date(),
@@ -169,8 +177,13 @@ export async function upsertPantry(
         ingredientKey: resolvedIdentity.ingredientKey,
         ingredientSpecificKey: resolvedIdentity.ingredientSpecificKey,
         ingredientId: resolvedIngredientId,
-        quantity: item.quantity !== null ? String(item.quantity) : null,
-        unit: resolvedUnit,
+        // [PANTRY_QUANTITY_TRACKING] flag off: new items are availability-only, no amount
+        ...(PANTRY_QUANTITY_TRACKING
+          ? {
+              quantity: item.quantity !== null ? String(item.quantity) : null,
+              unit: resolvedUnit,
+            }
+          : { trackingMode: "availability" as const, quantity: null, unit: null }),
         category: resolvedCategory,
         expiryDate: item.expiryDate ? new Date(item.expiryDate) : null,
         source: "manual",

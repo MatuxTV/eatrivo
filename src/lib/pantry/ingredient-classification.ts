@@ -1,5 +1,5 @@
 import { HumanMessage } from "@langchain/core/messages";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { eq } from "drizzle-orm";
 
 import { db } from "@/index";
@@ -8,6 +8,8 @@ import {
   ingredientNames,
   ingredients,
 } from "@/db/schema";
+import { messageText } from "@/lib/ai/message-text";
+import { AiConfigError } from "@/lib/ai/model-config";
 import { apiLogger } from "@/lib/logger";
 import {
   invalidateIngredientAliasIndexCache,
@@ -35,23 +37,22 @@ export async function classifyUserIngredient(input: {
   locale: string;
   rawName: string;
 }): Promise<void> {
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) {
-    return;
-  }
-
   try {
     const [aliasIndex, graph] = await Promise.all([
       loadIngredientAliasIndex("en"),
       loadIngredientGraph("en"),
     ]);
 
-    const model = new ChatGoogleGenerativeAI({
-      model: "gemini-2.5-flash",
-      apiKey,
-      maxOutputTokens: 2048,
-      temperature: 0,
-    });
+    let model: BaseChatModel;
+    try {
+      const { getChatModel } = await import("@/lib/ai/models");
+      model = getChatModel("ingredientClassify").model;
+    } catch (error) {
+      if (error instanceof AiConfigError) {
+        return; // AI not configured: same silent skip as before
+      }
+      throw error;
+    }
 
     const response = await model.invoke([
       new HumanMessage(
@@ -63,10 +64,7 @@ export async function classifyUserIngredient(input: {
       ),
     ]);
 
-    const contentText =
-      typeof response.content === "string"
-        ? response.content
-        : JSON.stringify(response.content);
+    const contentText = messageText(response);
     const result = parseClassification(contentText);
 
     if (!result) {

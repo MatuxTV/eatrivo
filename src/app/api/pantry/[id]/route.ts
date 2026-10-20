@@ -23,9 +23,11 @@ import {
 import { derivePantryInventoryItem } from "@/lib/pantry/grocery";
 import { invalidatePantryCaches } from "@/lib/pantry/restock";
 import {
-  shouldPreservePantryQuantity,
-  supportsPantryQuantityMutations,
+  effectiveTrackingMode,
+  shouldPreserveEffectiveQuantity,
+  supportsEffectiveQuantityMutations,
 } from "@/lib/pantry/tracking";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import { pantryIdSchema, pantryUpdateItemSchema } from "@/lib/schemas/pantry";
 import { guessFoodCategory, normalizeUnit } from "@/lib/ingredients/units";
 
@@ -207,7 +209,10 @@ export async function PUT(
     const resolvedName =
       name !== undefined ? name.trim() : result.item.name;
     const shouldNormalizeInBackground = name !== undefined;
-    const resolvedTrackingMode = trackingMode ?? result.item.trackingMode;
+    // [PANTRY_QUANTITY_TRACKING] flag off: stored quantity-mode rows behave like availability rows
+    const resolvedTrackingMode = effectiveTrackingMode(
+      trackingMode ?? result.item.trackingMode,
+    );
     const resolvedCategory =
       category !== undefined ? category : name !== undefined
         ? guessFoodCategory(resolvedName)
@@ -236,7 +241,8 @@ export async function PUT(
           ? steppedQuantity
           : currentQuantity;
     const nextUnitValue = normalizedUnit !== undefined ? normalizedUnit : result.item.unit;
-    const preserveQuantity = shouldPreservePantryQuantity({
+    // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+    const preserveQuantity = shouldPreserveEffectiveQuantity({
       name: resolvedName,
       ingredientKey: result.item.ingredientKey,
       ingredientSpecificKey: result.item.ingredientSpecificKey,
@@ -244,7 +250,8 @@ export async function PUT(
       quantity: nextQuantityValue,
       unit: nextUnitValue,
     });
-    const canMutateQuantity = supportsPantryQuantityMutations({
+    // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+    const canMutateQuantity = supportsEffectiveQuantityMutations({
       name: resolvedName,
       ingredientKey: result.item.ingredientKey,
       ingredientSpecificKey: result.item.ingredientSpecificKey,
@@ -339,16 +346,24 @@ export async function PUT(
               ingredientId: null,
             }
           : {}),
-        ...(trackingMode !== undefined ? { trackingMode: resolvedTrackingMode } : {}),
+        // [PANTRY_QUANTITY_TRACKING] flag off: keep the stored tracking mode
+        ...(PANTRY_QUANTITY_TRACKING && trackingMode !== undefined
+          ? { trackingMode: resolvedTrackingMode }
+          : {}),
         ...(resolvedTrackingMode === "availability"
           ? {
               inStock: inStock ?? result.item.inStock,
-              quantity: preserveQuantity
-                ? nextQuantityValue !== null
-                  ? String(nextQuantityValue)
-                  : null
-                : null,
-              unit: preserveQuantity ? nextUnitValue ?? null : null,
+              // [PANTRY_QUANTITY_TRACKING] flag off: leave stored quantity/unit untouched
+              ...(PANTRY_QUANTITY_TRACKING
+                ? {
+                    quantity: preserveQuantity
+                      ? nextQuantityValue !== null
+                        ? String(nextQuantityValue)
+                        : null
+                      : null,
+                    unit: preserveQuantity ? nextUnitValue ?? null : null,
+                  }
+                : {}),
             }
           : {
               ...(quantity !== undefined

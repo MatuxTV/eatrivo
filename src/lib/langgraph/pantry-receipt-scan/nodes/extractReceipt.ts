@@ -1,6 +1,9 @@
 import { HumanMessage } from "@langchain/core/messages";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
+import { buildImageContentBlock } from "@/lib/ai/image-content";
+import { AiConfigError } from "@/lib/ai/model-config";
+import { messageText } from "@/lib/ai/message-text";
 import { apiLogger } from "@/lib/logger";
 import type { PantryReceiptScanState } from "../state";
 import type { ReceiptScanAiOutput } from "../types";
@@ -91,22 +94,21 @@ function normalizeAiOutput(value: unknown): ReceiptScanAiOutput {
 export async function extractReceipt(
   state: typeof PantryReceiptScanState.State,
 ): Promise<Partial<typeof PantryReceiptScanState.State>> {
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) {
-    return {
-      fatalError: "GOOGLE_AI_API_KEY is not configured.",
-      fatalErrorCode: "MISSING_GOOGLE_AI_API_KEY",
-    };
+  let model: BaseChatModel;
+  try {
+    const { getChatModel } = await import("@/lib/ai/models");
+    model = getChatModel("receiptScan").model;
+  } catch (error) {
+    if (error instanceof AiConfigError) {
+      return {
+        fatalError: error.message,
+        fatalErrorCode: "MISSING_AI_API_KEY",
+      };
+    }
+    throw error;
   }
 
   try {
-    const model = new ChatGoogleGenerativeAI({
-      model: "gemini-2.5-pro",
-      apiKey,
-      temperature: 0,
-      maxOutputTokens: 8192,
-    });
-
     const prompt = buildPrompt(
       state.locale,
       state.repairHint,
@@ -117,18 +119,12 @@ export async function extractReceipt(
       new HumanMessage({
         content: [
           { type: "text", text: prompt },
-          {
-            type: "image_url",
-            image_url: `data:${state.mimeType};base64,${state.imageBase64}`,
-          },
+          buildImageContentBlock(state.imageBase64, state.mimeType),
         ],
       }),
     ]);
 
-    const contentText =
-      typeof response.content === "string"
-        ? response.content
-        : JSON.stringify(response.content);
+    const contentText = messageText(response);
     const parsedReceipt = normalizeAiOutput(
       JSON.parse(extractJSONObject(contentText)),
     );
@@ -152,6 +148,7 @@ export async function extractReceipt(
       requestError: "Receipt extraction failed.",
       rawAiOutput: null,
       parsedReceipt: null,
+      retryCount: state.retryCount + 1,
     };
   }
 }

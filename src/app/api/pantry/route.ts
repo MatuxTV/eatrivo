@@ -36,8 +36,8 @@ import { classifyUserIngredient } from "@/lib/pantry/ingredient-classification";
 import { buildPantryInventoryItems, derivePantryInventoryItem } from "@/lib/pantry/grocery";
 import { invalidatePantryCaches, pantryCacheKey } from "@/lib/pantry/restock";
 import {
-  resolvePantryTrackingMode,
-  shouldPreservePantryQuantity,
+  resolveEffectiveTrackingMode,
+  shouldPreserveEffectiveQuantity,
 } from "@/lib/pantry/tracking";
 import {
   pantryCreateItemSchema,
@@ -313,7 +313,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const resolvedTrackingMode = resolvePantryTrackingMode({
+    // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+    const resolvedTrackingMode = resolveEffectiveTrackingMode({
       name: normalizedName,
       ingredientKey: resolvedIdentity.ingredientKey,
       ingredientSpecificKey: resolvedIdentity.ingredientSpecificKey,
@@ -323,7 +324,8 @@ export async function POST(req: NextRequest) {
       quantity: quantity ?? null,
       unit: normalizedUnit,
     });
-    const preserveQuantity = shouldPreservePantryQuantity({
+    // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+    const preserveQuantity = shouldPreserveEffectiveQuantity({
       name: normalizedName,
       ingredientKey: resolvedIdentity.ingredientKey,
       ingredientSpecificKey: resolvedIdentity.ingredientSpecificKey,

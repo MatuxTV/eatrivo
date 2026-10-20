@@ -54,6 +54,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 
 export type CustomRecipeGenerationStatus =
   | "idle"
@@ -2373,9 +2374,12 @@ const RivoCustomRecipeExperience = forwardRef<
                             ingredientName.trim().toLowerCase(),
                           );
 
+                          // [PANTRY_QUANTITY_TRACKING] flag off: keep the recipe's own amount, "have at home" only when there is no amount
                           if (
                             ingredient?.pantryComparison?.status ===
-                            "available-staple"
+                              "available-staple" &&
+                            (PANTRY_QUANTITY_TRACKING ||
+                              !(ingredient.pantryComparison.requiredLabel ?? ingredient.amount ?? fallbackAmount))
                           ) {
                             return t("basic.recipeDialog.stapleAvailable");
                           }
@@ -2446,6 +2450,8 @@ const RivoCustomRecipeExperience = forwardRef<
                             available: true,
                             matchType: ingredient.matchType,
                             isStaple:
+                              // [PANTRY_QUANTITY_TRACKING] flag off: nothing is shown as a "staple"
+                              PANTRY_QUANTITY_TRACKING &&
                               ingredientByName.get(
                                 ingredient.recipeIngredientName.trim().toLowerCase(),
                               )?.pantryComparison?.status === "available-staple",
@@ -2470,6 +2476,8 @@ const RivoCustomRecipeExperience = forwardRef<
                                 available: true,
                                 matchType: "exact" as const,
                                 isStaple:
+                                  // [PANTRY_QUANTITY_TRACKING] flag off: nothing is shown as a "staple"
+                                  PANTRY_QUANTITY_TRACKING &&
                                   ingredient.pantryComparison?.status === "available-staple",
                                 tone: resolveTone(ingredient.name, true, "exact"),
                               }))

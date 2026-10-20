@@ -29,7 +29,8 @@ import AppShellViewport from "@/app/home/components/AppShellViewport";
 import type { PantryItem } from "@/hooks/usePantry";
 import { pantryKeySatisfiesRecipeKey } from "@/lib/ingredients/ingredient-family";
 import { logger } from "@/lib/logger";
-import { buildRecipeIngredientPantryComparison } from "@/lib/recipes/recipe-quantity-comparison";
+import { buildEffectivePantryComparison } from "@/lib/recipes/recipe-quantity-comparison";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import { toast } from "sonner";
 
 const PANTRY_CHANGED_EVENT = "pantry:changed";
@@ -143,7 +144,8 @@ function resolveCurrentPantryComparison(
     return ingredient.pantryComparison;
   }
 
-  return buildRecipeIngredientPantryComparison(
+  // [PANTRY_QUANTITY_TRACKING] flag-aware: stored amounts ignored when flag is off
+  return buildEffectivePantryComparison(
     ingredient.quantityValue,
     ingredient.unit,
     matchedRows.map((row) => ({
@@ -175,7 +177,8 @@ function buildKitchenCounterIngredients(
         comparison?.status === "available-staple";
 
       const amount =
-        comparison?.status === "available-staple"
+        // [PANTRY_QUANTITY_TRACKING] flag off: show the recipe amount, not "have at home"
+        PANTRY_QUANTITY_TRACKING && comparison?.status === "available-staple"
           ? t("basic.kitchenCounter.stapleAvailable")
           : comparison?.status === "insufficient" &&
               comparison.requiredLabel &&
@@ -551,7 +554,10 @@ export default function KitchenCounterPage({
                   {t("basic.kitchenCounter.missingIngredientsTitle")}
                 </DialogTitle>
                 <DialogDescription className="text-sm font-medium leading-6 text-eatrivo-black-secondary">
-                  {t("basic.kitchenCounter.missingIngredientsDescription")}
+                  {/* [PANTRY_QUANTITY_TRACKING] flag off: cooking does not change the pantry, so do not promise a deduction */}
+                  {PANTRY_QUANTITY_TRACKING
+                    ? t("basic.kitchenCounter.missingIngredientsDescription")
+                    : t("basic.kitchenCounter.missingIngredientsDescriptionNoDeduction")}
                 </DialogDescription>
               </DialogHeader> 
             </div>

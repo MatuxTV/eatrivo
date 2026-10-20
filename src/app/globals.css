@@ -102,6 +102,12 @@
   }
 }
 
+/* Quicksand is loaded in layout.tsx (--font-quicksand) and named as the brand font in DESIGN.md,
+   but the app body still renders in Inter. `font-brand` opts a surface into Quicksand. */
+@theme inline {
+  --font-brand: var(--font-quicksand), ui-rounded, system-ui, sans-serif;
+}
+
 @keyframes section-pane-enter {
   from {
     opacity: 0;

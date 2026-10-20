@@ -36,6 +36,7 @@ interface QuantityUnitEditorProps {
   saveLabel: string;
   quantityValue: string;
   unitValue: string;
+  presenceOnly?: boolean;
   categoryValue?: string;
   trackingModeValue?: "quantity" | "availability";
   inStockValue?: boolean;
@@ -67,6 +68,7 @@ export default function QuantityUnitEditor({
   saveLabel,
   quantityValue,
   unitValue,
+  presenceOnly,
   categoryValue,
   trackingModeValue,
   inStockValue,
@@ -101,16 +103,21 @@ export default function QuantityUnitEditor({
   const handleCategoryChange = onCategoryChange ?? (() => undefined);
   const handleTrackingModeChange = onTrackingModeChange ?? (() => undefined);
   const handleAvailabilityChange = onAvailabilityChange ?? (() => undefined);
+  // [PANTRY_QUANTITY_TRACKING] presenceOnly: hide amount, unit, tracking toggle and quick-adjust chips; keep category and in-stock buttons
+  const isPresenceOnly = presenceOnly ?? false;
   const showCategoryField = resolvedCategoryOptions.length > 0;
   const showTrackingControls =
-    trackingModeValue !== undefined || onTrackingModeChange !== undefined;
+    isPresenceOnly ||
+    trackingModeValue !== undefined ||
+    onTrackingModeChange !== undefined;
   const quickAdjustmentRows = getQuantityQuickAdjustmentRows(unitValue);
   const localizedUnit = localizeUnitLabel(unitValue, locale) ?? unitValue;
   const usesDecimalInput = useMemo(() => {
     const normalizedUnit = unitValue.trim().toLowerCase();
     return normalizedUnit === "kg" || normalizedUnit === "l";
   }, [unitValue]);
-  const isAvailabilityMode = resolvedTrackingModeValue === "availability";
+  const isAvailabilityMode =
+    isPresenceOnly || resolvedTrackingModeValue === "availability";
 
   function parseDraftQuantity(value: string): number | null {
     const trimmedValue = value.trim();
@@ -168,58 +175,65 @@ export default function QuantityUnitEditor({
       <div
         className={cn(
           "grid gap-3",
-          showCategoryField
-            ? "md:grid-cols-[minmax(0,2fr)_minmax(5.5rem,1fr)_minmax(0,1.4fr)]"
-            : "md:grid-cols-[minmax(0,2fr)_minmax(5.5rem,1fr)]",
+          isPresenceOnly
+            ? null
+            : showCategoryField
+              ? "md:grid-cols-[minmax(0,2fr)_minmax(5.5rem,1fr)_minmax(0,1.4fr)]"
+              : "md:grid-cols-[minmax(0,2fr)_minmax(5.5rem,1fr)]",
         )}
       >
-        <div className={cn("min-w-0", isAvailabilityMode && "opacity-55")}>
-          <label
-            htmlFor={quantityInputId}
-            className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-gray-400"
-          >
-            {quantityLabel}
-          </label>
-          <Input
-            id={quantityInputId}
-            type="number"
-            min="0"
-            step={usesDecimalInput ? "0.01" : "1"}
-            inputMode={usesDecimalInput ? "decimal" : "numeric"}
-            value={quantityValue}
-            onChange={(event) => onQuantityChange(event.target.value)}
-            onKeyDown={onQuantityKeyDown}
-            placeholder={quantityPlaceholder}
-            className="h-11 rounded-xl border-gray-200 bg-white"
-            disabled={isAvailabilityMode}
-            autoFocus
-          />
-        </div>
+        {/* [PANTRY_QUANTITY_TRACKING] presenceOnly: hide quantity and unit fields */}
+        {isPresenceOnly ? null : (
+          <>
+            <div className={cn("min-w-0", isAvailabilityMode && "opacity-55")}>
+              <label
+                htmlFor={quantityInputId}
+                className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-gray-400"
+              >
+                {quantityLabel}
+              </label>
+              <Input
+                id={quantityInputId}
+                type="number"
+                min="0"
+                step={usesDecimalInput ? "0.01" : "1"}
+                inputMode={usesDecimalInput ? "decimal" : "numeric"}
+                value={quantityValue}
+                onChange={(event) => onQuantityChange(event.target.value)}
+                onKeyDown={onQuantityKeyDown}
+                placeholder={quantityPlaceholder}
+                className="h-11 rounded-xl border-gray-200 bg-white"
+                disabled={isAvailabilityMode}
+                autoFocus
+              />
+            </div>
 
-        <div className={cn("min-w-0", isAvailabilityMode && "opacity-55")}>
-          <label
-            htmlFor={unitInputId}
-            className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-gray-400"
-          >
-            {unitLabel}
-          </label>
-          <Select value={unitValue} onValueChange={onUnitChange}>
-            <SelectTrigger
-              id={unitInputId}
-              className="h-11 rounded-xl border-gray-200 bg-white shadow-none"
-              disabled={isAvailabilityMode}
-            >
-              <SelectValue placeholder={unitPlaceholder} />
-            </SelectTrigger>
-            <SelectContent>
-              {PANTRY_UNIT_OPTIONS.map((unit) => (
-                <SelectItem key={unit} value={unit}>
-                  {localizeUnitLabel(unit, locale) ?? unit}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <div className={cn("min-w-0", isAvailabilityMode && "opacity-55")}>
+              <label
+                htmlFor={unitInputId}
+                className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-gray-400"
+              >
+                {unitLabel}
+              </label>
+              <Select value={unitValue} onValueChange={onUnitChange}>
+                <SelectTrigger
+                  id={unitInputId}
+                  className="h-11 rounded-xl border-gray-200 bg-white shadow-none"
+                  disabled={isAvailabilityMode}
+                >
+                  <SelectValue placeholder={unitPlaceholder} />
+                </SelectTrigger>
+                <SelectContent>
+                  {PANTRY_UNIT_OPTIONS.map((unit) => (
+                    <SelectItem key={unit} value={unit}>
+                      {localizeUnitLabel(unit, locale) ?? unit}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
 
         {showCategoryField ? (
           <div className="min-w-0">
@@ -243,63 +257,66 @@ export default function QuantityUnitEditor({
       </div>
 
       {showTrackingControls ? (
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-none">
-              <div className="flex min-w-0 items-center gap-2">
-                <span className="truncate text-sm font-semibold text-gray-700">
-                  {resolvedTrackingModeToggleLabel}
-                </span>
-                <Tooltip.Provider delayDuration={120}>
-                  <Tooltip.Root>
-                    <Tooltip.Trigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 transition-colors hover:border-eatrivo-purple/20 hover:text-eatrivo-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
-                        aria-label={resolvedTrackingModeHelpText}
-                      >
-                        <Info className="h-3.5 w-3.5" />
-                      </button>
-                    </Tooltip.Trigger>
-                    <Tooltip.Portal>
-                      <Tooltip.Content
-                        className="z-50 max-w-[240px] rounded-lg border border-white/10 bg-eatrivo-black-primary/95 px-3 py-2 text-xs font-medium leading-snug text-white shadow-xl shadow-eatrivo-purple/10 backdrop-blur-md"
-                        sideOffset={6}
-                        side="top"
-                      >
-                        {resolvedTrackingModeHelpText}
-                        <Tooltip.Arrow className="fill-eatrivo-black-primary/95" />
-                      </Tooltip.Content>
-                    </Tooltip.Portal>
-                  </Tooltip.Root>
-                </Tooltip.Provider>
-              </div>
+        <div className={cn("grid gap-3", !isPresenceOnly && "md:grid-cols-2")}>
+          {/* [PANTRY_QUANTITY_TRACKING] presenceOnly: hide tracking-mode toggle */}
+          {isPresenceOnly ? null : (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-none">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="truncate text-sm font-semibold text-gray-700">
+                    {resolvedTrackingModeToggleLabel}
+                  </span>
+                  <Tooltip.Provider delayDuration={120}>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 transition-colors hover:border-eatrivo-purple/20 hover:text-eatrivo-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                          aria-label={resolvedTrackingModeHelpText}
+                        >
+                          <Info className="h-3.5 w-3.5" />
+                        </button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Portal>
+                        <Tooltip.Content
+                          className="z-50 max-w-[240px] rounded-lg border border-white/10 bg-eatrivo-black-primary/95 px-3 py-2 text-xs font-medium leading-snug text-white shadow-xl shadow-eatrivo-purple/10 backdrop-blur-md"
+                          sideOffset={6}
+                          side="top"
+                        >
+                          {resolvedTrackingModeHelpText}
+                          <Tooltip.Arrow className="fill-eatrivo-black-primary/95" />
+                        </Tooltip.Content>
+                      </Tooltip.Portal>
+                    </Tooltip.Root>
+                  </Tooltip.Provider>
+                </div>
 
-              <button
-                type="button"
-                role="switch"
-                aria-checked={isAvailabilityMode}
-                onClick={() =>
-                  handleTrackingModeChange(
-                    isAvailabilityMode ? "quantity" : "availability",
-                  )
-                }
-                className={cn(
-                  "relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2",
-                  isAvailabilityMode
-                    ? "border-eatrivo-purple/20 bg-eatrivo-purple"
-                    : "border-gray-200 bg-gray-200",
-                )}
-              >
-                <span
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isAvailabilityMode}
+                  onClick={() =>
+                    handleTrackingModeChange(
+                      isAvailabilityMode ? "quantity" : "availability",
+                    )
+                  }
                   className={cn(
-                    "inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform",
-                    isAvailabilityMode ? "translate-x-6" : "translate-x-1",
+                    "relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2",
+                    isAvailabilityMode
+                      ? "border-eatrivo-purple/20 bg-eatrivo-purple"
+                      : "border-gray-200 bg-gray-200",
                   )}
-                />
-              </button>
+                >
+                  <span
+                    className={cn(
+                      "inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform",
+                      isAvailabilityMode ? "translate-x-6" : "translate-x-1",
+                    )}
+                  />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
@@ -341,32 +358,35 @@ export default function QuantityUnitEditor({
         </div>
       ) : null}
 
-      <div className="grid gap-2">
-        {quickAdjustmentRows.map((row, rowIndex) => (
-          <div key={`${unitValue}-${rowIndex}`} className="grid grid-cols-3 gap-2">
-            {row.map((delta) => (
-              <Button
-                key={`${unitValue}-${rowIndex}-${delta}`}
-                type="button"
-                disabled={isAvailabilityMode}
-                className={cn(
-                  "h-10 rounded-xl border bg-white text-sm font-semibold shadow-none",
-                  isAvailabilityMode
-                    ? "cursor-not-allowed opacity-50"
-                    : delta > 0
-                      ? "text-eatrivo-purple hover:border-eatrivo-purple/20 hover:bg-eatrivo-purple/5"
-                      : "text-gray-700 hover:border-gray-300 hover:bg-gray-50",
-                )}
-                onClick={() => handleQuickAdjust(delta)}
-                aria-label={getAdjustmentAriaLabel(delta)}
-              >
-                {delta > 0 ? "+" : "-"}
-                {formatAdjustmentValue(delta)}
-              </Button>
-            ))}
-          </div>
-        ))}
-      </div>
+      {/* [PANTRY_QUANTITY_TRACKING] presenceOnly: hide quick-adjust chips */}
+      {isPresenceOnly ? null : (
+        <div className="grid gap-2">
+          {quickAdjustmentRows.map((row, rowIndex) => (
+            <div key={`${unitValue}-${rowIndex}`} className="grid grid-cols-3 gap-2">
+              {row.map((delta) => (
+                <Button
+                  key={`${unitValue}-${rowIndex}-${delta}`}
+                  type="button"
+                  disabled={isAvailabilityMode}
+                  className={cn(
+                    "h-10 rounded-xl border bg-white text-sm font-semibold shadow-none",
+                    isAvailabilityMode
+                      ? "cursor-not-allowed opacity-50"
+                      : delta > 0
+                        ? "text-eatrivo-purple hover:border-eatrivo-purple/20 hover:bg-eatrivo-purple/5"
+                        : "text-gray-700 hover:border-gray-300 hover:bg-gray-50",
+                  )}
+                  onClick={() => handleQuickAdjust(delta)}
+                  aria-label={getAdjustmentAriaLabel(delta)}
+                >
+                  {delta > 0 ? "+" : "-"}
+                  {formatAdjustmentValue(delta)}
+                </Button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-2">
         <Button
