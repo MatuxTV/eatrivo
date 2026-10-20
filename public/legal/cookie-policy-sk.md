@@ -15,10 +15,10 @@ Pod pojmom „cookies" rozumieme aj podobné technológie, ako sú Local Storage
 
 ## 2. Prevádzkovateľ
 
-Sídlo: Nad plážou 4419/25, 974 01 Banská Bystrica  
-IČO: 56024665  
-DIČ: 2122162493  
-Email: info@valorixdigital.com
+Sídlo: [Company Address]
+IČO: [Company ID]
+DIČ: [Tax ID]
+Email: [Company Email]
 
 ---
 
@@ -134,5 +134,5 @@ O zmenách tejto Cookie Policy Vás budeme informovať aktualizáciou tejto str�
 
 ## 10. Kontakt
 
-**Email:** info@valorixdigital.com  
-**Adresa:** Nad plážou 4419/25, 974 01 Banská Bystrica
+**Email:** [Company Email]
+**Adresa:** [Company Address]

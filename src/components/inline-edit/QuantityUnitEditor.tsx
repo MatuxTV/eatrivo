@@ -126,14 +126,14 @@ export default function QuantityUnitEditor({
   }
 
   function formatDraftQuantity(value: number): string {
-    const roundedValue = Math.round(value * 1000) / 1000;
+    const roundedValue = Math.round(value * 100) / 100;
 
     if (Number.isInteger(roundedValue)) {
       return String(roundedValue);
     }
 
     return roundedValue
-      .toFixed(3)
+      .toFixed(2)
       .replace(/\.0+$/, "")
       .replace(/(\.\d*?)0+$/, "$1");
   }
@@ -184,7 +184,7 @@ export default function QuantityUnitEditor({
             id={quantityInputId}
             type="number"
             min="0"
-            step={usesDecimalInput ? "0.001" : "1"}
+            step={usesDecimalInput ? "0.01" : "1"}
             inputMode={usesDecimalInput ? "decimal" : "numeric"}
             value={quantityValue}
             onChange={(event) => onQuantityChange(event.target.value)}

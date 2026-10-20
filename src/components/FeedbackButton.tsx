@@ -209,10 +209,10 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
             <span className="text-xs text-gray-500">
               {t("contactInfo")}{" "}
               <a
-                href="mailto:info@valorixdigital.com"
+                href="mailto:[Company Email]"
                 className="font-medium text-eatrivo-purple hover:underline"
               >
-                info@valorixdigital.com
+                [Company Email]
               </a>
             </span>
           </div>

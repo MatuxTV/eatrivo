@@ -15,10 +15,10 @@ The term "cookies" in this policy also covers similar technologies such as Local
 
 ## 2. Data Controller
 
-Address: Nad plážou 4419/25, 974 01 Banská Bystrica, Slovakia  
-Company ID (IČO): 56024665  
-Tax ID (DIČ): 2122162493  
-Email: info@valorixdigital.com
+Address: [Company Address]
+Company ID (IČO): [Company ID]
+Tax ID (DIČ): [Tax ID]
+Email: [Company Email]
 
 ---
 
@@ -134,5 +134,5 @@ We will inform you of changes to this Cookie Policy by updating this page.
 
 ## 10. Contact
 
-**Email:** info@valorixdigital.com  
-**Address:** Nad plážou 4419/25, 974 01 Banská Bystrica, Slovakia
+**Email:** [Company Email]
+**Address:** [Company Address]

@@ -6,9 +6,9 @@ _(podľa § 20 ods. 1 zákona č. 108/2024 Z. z. o ochrane spotrebiteľa)_
 
 **Komu:**
 
-Sídlo: Nad plážou 4419/25, 974 01 Banská Bystrica  
-IČO: 56024665  
-Email: info@valorixdigital.com
+Sídlo: [Company Address]
+IČO: [Company ID]
+Email: [Company Email]
 
 ---
 
@@ -44,6 +44,6 @@ Email: info@valorixdigital.com
 
 ---
 
-_Formulár vyplňte a zašlite na email info@valorixdigital.com alebo poštou na adresu sídla spoločnosti._
+_Formulár vyplňte a zašlite na email [Company Email] alebo poštou na adresu sídla spoločnosti._
 
 _Lehota na odstúpenie od zmluvy je 14 dní odo dňa uzavretia zmluvy._

@@ -6,9 +6,9 @@ _(pursuant to EU Consumer Rights Directive 2011/83/EU, Annex I(B))_
 
 **To:**
 
-Address: Nad plážou 4419/25, 974 01 Banská Bystrica, Slovakia  
-Company ID (IČO): 56024665  
-Email: info@valorixdigital.com
+Address: [Company Address]
+Company ID (IČO): [Company ID]
+Email: [Company Email]
 
 ---
 
@@ -44,6 +44,6 @@ Email: info@valorixdigital.com
 
 ---
 
-_Please complete and send this form to info@valorixdigital.com or by mail to the address above._
+_Please complete and send this form to [Company Email] or by mail to the address above._
 
 _The withdrawal period is 14 days from the date of contract conclusion._

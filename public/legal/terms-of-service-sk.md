@@ -9,11 +9,11 @@
 
 ### 1.1 Prevádzkovateľ služby
 
-Sídlo: Nad plážou 4419/25, 974 01 Banská Bystrica
-IČO: 56024665
-DIČ: 2122162493
-Email: info@valorixdigital.com
-Telefón: +421 944 488 206
+Sídlo: [Company Address]
+IČO: [Company ID]
+DIČ: [Tax ID]
+Email: [Company Email]
+Telefón: [Company Phone]
 
 (ďalej len „EatRivo" alebo „poskytovateľ")
 
@@ -97,7 +97,7 @@ Predplatné môžete kedykoľvek zrušiť:
 
 - Priamo v aplikácii v sekcii „Fakturácia"
 - Prostredníctvom zákazníckeho portálu Stripe
-- Kontaktovaním našej podpory na info@valorixdigital.com
+- Kontaktovaním našej podpory na [Company Email]
 
 ### 5.2 Účinok zrušenia
 
@@ -170,8 +170,8 @@ Používateľ má právo reklamovať:
 
 Reklamáciu je možné podať:
 
-- **Emailom:** info@valorixdigital.com
-- **Písomne:** Nad plážou 4419/25, 974 01 Banská Bystrica
+- **Emailom:** [Company Email]
+- **Písomne:** [Company Address]
 - **Prostredníctvom aplikácie:** Sekcia „Podpora"
 
 Reklamácia musí obsahovať:
@@ -281,6 +281,6 @@ Web: [soi.sk](https://www.soi.sk)
 
 ## 14. Kontakt
 
-**Email:** info@valorixdigital.com  
-**Adresa:** Nad plážou 4419/25, 974 01 Banská Bystrica  
-**Telefón:** +421 944 488 206
+**Email:** [Company Email]
+**Adresa:** [Company Address]
+**Telefón:** [Company Phone]
