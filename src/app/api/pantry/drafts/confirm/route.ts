@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { after, NextResponse } from "next/server";
 
 import { auth } from "../../../../../../auth";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 import { db } from "@/index";
 import { pantryItems, userInfoTable, userProfiles } from "@/db/schema";
@@ -15,7 +15,9 @@ import {
   releasePantryDraftLock,
 } from "@/lib/pantry/draft-cache";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
-import { CacheService } from "@/lib/cache/redis";
+import { invalidatePantryCaches } from "@/lib/pantry/restock";
+import { planDraftMerge } from "@/lib/pantry/draft-merge";
+import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import { loadIngredientGraph } from "@/lib/pantry/ingredient-resolution";
 import {
   ensureUserIngredient,
@@ -92,10 +94,36 @@ export async function POST(req: NextRequest) {
       ]);
       const locale = userInfo?.language ?? "sk";
 
+      // [PANTRY_QUANTITY_TRACKING] flag off: presence only, so a draft that already exists in the
+      // pantry (or twice in the batch) must not create a duplicate row.
+      let draftsToInsert = selectedDrafts;
+      let mergedCount = 0;
+      if (!PANTRY_QUANTITY_TRACKING) {
+        const existingRows = await db
+          .select({
+            id: pantryItems.id,
+            name: pantryItems.name,
+            ingredientKey: pantryItems.ingredientKey,
+            ingredientSpecificKey: pantryItems.ingredientSpecificKey,
+            inStock: pantryItems.inStock,
+          })
+          .from(pantryItems)
+          .where(eq(pantryItems.userProfileId, userProfileId));
+        const plan = planDraftMerge(selectedDrafts, existingRows);
+        draftsToInsert = plan.toInsert;
+        mergedCount = plan.mergedCount;
+        if (plan.restockRowIds.length > 0) {
+          await db
+            .update(pantryItems)
+            .set({ inStock: true })
+            .where(inArray(pantryItems.id, plan.restockRowIds));
+        }
+      }
+
       // Drafts the resolver could not map become private user ingredients,
       // same as a manual add, so they are linked and classified later.
       const userIngredientByToken = new Map<string, EnsuredUserIngredient>();
-      for (const draft of selectedDrafts) {
+      for (const draft of draftsToInsert) {
         if (draft.ingredientKey || draft.ingredientSpecificKey) {
           continue;
         }
@@ -109,45 +137,49 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      const insertedItems = await db
-        .insert(pantryItems)
-        .values(
-          selectedDrafts.map((draft) => {
-            const userIngredient = userIngredientByToken.get(draft.token);
-            const identityKey =
-              draft.ingredientSpecificKey ?? draft.ingredientKey;
-            return {
-              userProfileId: userProfileId as string,
-              name: draft.name,
-              ingredientName:
-                draft.ingredientName ??
-                (userIngredient ? userIngredient.canonicalName ?? draft.name : null),
-              ingredientKey: draft.ingredientKey ?? userIngredient?.key ?? null,
-              ingredientSpecificKey:
-                draft.ingredientSpecificKey ?? userIngredient?.key ?? null,
-              ingredientId:
-                userIngredient?.id ??
-                (identityKey
-                  ? ingredientGraph.idByKey.get(identityKey) ?? null
-                  : null),
-              trackingMode: draft.trackingMode,
-              inStock: draft.inStock,
-              quantity: draft.quantity,
-              unit: draft.unit,
-              category: draft.category,
-              expiryDate: draft.expiryDate ? new Date(draft.expiryDate) : null,
-              source: "manual" as const,
-              shoppingListId: null,
-            };
-          }),
-        )
-        .returning();
+      const insertedItems =
+        draftsToInsert.length === 0
+          ? []
+          : await db
+              .insert(pantryItems)
+              .values(
+                draftsToInsert.map((draft) => {
+                  const userIngredient = userIngredientByToken.get(draft.token);
+                  const identityKey =
+                    draft.ingredientSpecificKey ?? draft.ingredientKey;
+                  return {
+                    userProfileId: userProfileId as string,
+                    name: draft.name,
+                    ingredientName:
+                      draft.ingredientName ??
+                      (userIngredient ? userIngredient.canonicalName ?? draft.name : null),
+                    ingredientKey:
+                      draft.ingredientKey ?? userIngredient?.key ?? null,
+                    ingredientSpecificKey:
+                      draft.ingredientSpecificKey ?? userIngredient?.key ?? null,
+                    ingredientId:
+                      userIngredient?.id ??
+                      (identityKey
+                        ? ingredientGraph.idByKey.get(identityKey) ?? null
+                        : null),
+                    trackingMode: draft.trackingMode,
+                    inStock: draft.inStock,
+                    quantity: draft.quantity,
+                    unit: draft.unit,
+                    category: draft.category,
+                    expiryDate: draft.expiryDate ? new Date(draft.expiryDate) : null,
+                    source: "manual" as const,
+                    shoppingListId: null,
+                  };
+                }),
+              )
+              .returning();
 
       const remainingDrafts = await discardPantryDrafts(
         userProfileId,
         selectedDrafts.map((draft) => draft.token),
       );
-      await CacheService.del(`pantry:${userProfileId}`);
+      await invalidatePantryCaches(userProfileId);
 
       const createdUserIngredients = [...userIngredientByToken.entries()].filter(
         ([, ingredient]) => ingredient.created,
@@ -173,7 +205,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         items: insertedItems,
         drafts: remainingDrafts,
-        confirmedCount: insertedItems.length,
+        confirmedCount: insertedItems.length + mergedCount,
+        mergedCount,
         ttlSeconds: getPantryDraftTtlSeconds(),
       });
     } finally {

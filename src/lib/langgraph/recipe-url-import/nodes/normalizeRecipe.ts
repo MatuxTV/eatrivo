@@ -1,15 +1,16 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { HumanMessage } from "@langchain/core/messages";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { z } from "zod";
 
+import { AiConfigError } from "@/lib/ai/model-config";
+import { getChatModel } from "@/lib/ai/model-factory";
+import { invokeStructured } from "@/lib/ai/structured-output";
 import { validateCanonicalRecipeCollection } from "@/lib/recipes/recipe-validation";
 
 import type { RecipeUrlImportState } from "../state";
-
-const MODEL_NAME = "gemini-3-flash-preview";
 
 const localeKeySchema = z.enum(["en", "sk", "cs", "de", "hu"]);
 
@@ -158,40 +159,33 @@ export async function normalizeRecipe(
     return { error: "Missing prompt or output path for recipe normalization." };
   }
 
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) {
-    return { error: "Missing GOOGLE_AI_API_KEY environment variable." };
+  let model: BaseChatModel;
+  try {
+    model = getChatModel("recipeImport").model;
+  } catch (error) {
+    return {
+      error: error instanceof AiConfigError ? error.message : "AI model is not configured.",
+    };
   }
 
   let response:
     | {
-        parsed?: z.infer<typeof normalizedRecipeFileSchema>;
+        parsed?: z.infer<typeof normalizedRecipeFileSchema> | null;
         raw?: unknown;
       }
     | undefined;
 
   try {
-    const model = new ChatGoogleGenerativeAI({
-      model: MODEL_NAME,
-      apiKey,
-      temperature: 0,
-      maxOutputTokens: 12_288,
+    response = await invokeStructured({
+      model,
+      schema: normalizedRecipeFileSchema,
+      name: "normalize_recipe_json",
+      messages: [new HumanMessage(state.prompt)],
     });
-
-    const structuredModel = model.withStructuredOutput(
-      normalizedRecipeFileSchema,
-      {
-        method: "functionCalling",
-        name: "normalize_recipe_json",
-        includeRaw: true,
-      },
-    );
-
-    response = await structuredModel.invoke([new HumanMessage(state.prompt)]);
   } catch (error) {
     return {
       error:
-        error instanceof Error ? error.message : "Gemini normalization failed.",
+        error instanceof Error ? error.message : "AI normalization failed.",
     };
   }
 

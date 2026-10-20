@@ -14,6 +14,7 @@ import {
   getOwnedChatSession,
 } from "@/lib/chat/chat-auth";
 import { getRecentOwnedChatMessages } from "@/lib/chat/chat-history";
+import { messageText } from "@/lib/ai/message-text";
 
 const MAX_INPUT_CHARS = 600;  // ~4 vety / ~100 slov
 const MAX_HISTORY = 10;       // posledných 10 správ
@@ -158,13 +159,19 @@ export async function POST(req: NextRequest) {
         let accumulated = "";
 
         try {
-          for await (const [chunk] of stream) {
-            if (
-              (chunk as { getType?: () => string }).getType?.() === "ai" &&
-              typeof chunk.content === "string"
-            ) {
-              accumulated += chunk.content;
-              controller.enqueue(encoder.encode(chunk.content));
+          for await (const [chunk, metadata] of stream) {
+            // the intent classifier's one-word reply must never reach the user
+            if ((metadata as { langgraph_node?: string } | undefined)?.langgraph_node === "intent_router") {
+              continue;
+            }
+            if ((chunk as { getType?: () => string }).getType?.() !== "ai") {
+              continue;
+            }
+            // Claude may stream thinking/other blocks: keep only the text
+            const text = messageText(chunk);
+            if (text.length > 0) {
+              accumulated += text;
+              controller.enqueue(encoder.encode(text));
             }
           }
 

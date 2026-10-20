@@ -20,7 +20,7 @@ export const receiptScanReviewItemSchema = z.object({
 });
 
 export const receiptScanReviewPayloadSchema = z.object({
-  items: z.array(receiptScanReviewItemSchema).min(1).max(40),
+  items: z.array(receiptScanReviewItemSchema).min(1).max(100),
   vendor: z.string().trim().max(120).nullable().optional(),
   currency: z.string().trim().max(12).nullable().optional(),
   partial: z.boolean().default(false),

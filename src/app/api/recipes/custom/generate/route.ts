@@ -325,7 +325,7 @@ export async function POST(request: NextRequest) {
               continue;
             }
 
-            const nodeState = update[nodeName] as Partial<
+            const nodeState = (update as Record<string, unknown>)[nodeName] as Partial<
               typeof CustomRecipeState.State
             >;
 

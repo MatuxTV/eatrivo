@@ -1,9 +1,12 @@
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { AIMessage, HumanMessage } from "@langchain/core/messages";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { setMaxListeners } from "events";
 import { z } from "zod";
 
 import { CUSTOM_RECIPE_AI_TIMEOUT_MS } from "../constants";
+import { AiConfigError } from "@/lib/ai/model-config";
+import { messageText } from "@/lib/ai/message-text";
+import { invokeStructured } from "@/lib/ai/structured-output";
 import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
 import {
   buildPreviousRecipePromptContext,
@@ -108,7 +111,7 @@ type CustomRecipeProviderCandidate = z.infer<
   typeof customRecipeProviderCandidateSchema
 >;
 
-const customRecipeGeminiSingleCandidateSchema = z.object({
+export const customRecipeGeminiSingleCandidateSchema = z.object({
   recipe: customRecipeProviderCandidateSchema,
 });
 
@@ -568,22 +571,25 @@ function normalizeCandidate(
   };
 }
 
+function rawContentOf(raw: unknown): string {
+  if (!raw || typeof raw !== "object" || !("content" in raw)) {
+    return "";
+  }
+  return messageText(raw as { content: unknown });
+}
+
 async function requestSingleCandidate(
-  model: ChatGoogleGenerativeAI,
+  model: BaseChatModel,
   prompt: string,
   timeoutMs: number,
 ) {
-  const structuredModel = model.withStructuredOutput(
-    customRecipeGeminiSingleCandidateSchema,
-    {
-      method: "functionCalling",
-      name: "generate_custom_recipe_candidate",
-      includeRaw: true,
-    },
-  );
-
   return withTimeout(
-    structuredModel.invoke([new HumanMessage(prompt)]),
+    invokeStructured({
+      model,
+      schema: customRecipeGeminiSingleCandidateSchema,
+      name: "generate_custom_recipe_candidate",
+      messages: [new HumanMessage(prompt)],
+    }),
     timeoutMs,
   );
 }
@@ -591,10 +597,13 @@ async function requestSingleCandidate(
 export async function recipeRequest(
   state: typeof CustomRecipeState.State,
 ): Promise<Partial<typeof CustomRecipeState.State>> {
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) {
+  let model: BaseChatModel;
+  try {
+    const { getChatModel } = await import("@/lib/ai/models");
+    model = getChatModel("customRecipe").model;
+  } catch (error) {
     return {
-      requestError: "GOOGLE_AI_API_KEY is not configured",
+      requestError: error instanceof AiConfigError ? error.message : "AI model is not configured",
       rawAiOutput: null,
       parsedAiOutput: null,
       retryCount: state.retryCount + 1,
@@ -683,13 +692,6 @@ export async function recipeRequest(
     state,
   );
 
-  const model = new ChatGoogleGenerativeAI({
-    model: "gemini-3.1-flash-lite-preview",
-    temperature: 0.3,
-    maxOutputTokens: 4096,
-    apiKey,
-  });
-
   try {
     const perCandidateTimeoutMs = Math.max(
       12_000,
@@ -713,6 +715,8 @@ export async function recipeRequest(
                 },
               },
               raw: new AIMessage(""),
+              repaired: false,
+              issues: null,
             },
           } as const,
         ] satisfies [PromiseSettledResult<Awaited<ReturnType<typeof requestSingleCandidate>>>, PromiseSettledResult<Awaited<ReturnType<typeof requestSingleCandidate>>>])
@@ -747,44 +751,10 @@ export async function recipeRequest(
         : null;
 
     const pantryRawContent =
-      pantryResponse.status === "fulfilled" &&
-      pantryResponse.value.raw &&
-      typeof pantryResponse.value.raw === "object" &&
-      "content" in pantryResponse.value.raw
-        ? typeof pantryResponse.value.raw.content === "string"
-          ? pantryResponse.value.raw.content
-          : Array.isArray(pantryResponse.value.raw.content)
-            ? pantryResponse.value.raw.content
-                .map((part) =>
-                  typeof part === "object" &&
-                  part !== null &&
-                  "text" in part &&
-                  typeof part.text === "string"
-                    ? part.text
-                    : "",
-                )
-                .join("")
-            : JSON.stringify(pantryResponse.value.raw.content)
-        : "";
+      pantryResponse.status === "fulfilled" ? rawContentOf(pantryResponse.value.raw) : "";
     const almostRawContent =
-      almostCookableResponse.status === "fulfilled" &&
-      almostCookableResponse.value.raw &&
-      typeof almostCookableResponse.value.raw === "object" &&
-      "content" in almostCookableResponse.value.raw
-        ? typeof almostCookableResponse.value.raw.content === "string"
-          ? almostCookableResponse.value.raw.content
-          : Array.isArray(almostCookableResponse.value.raw.content)
-            ? almostCookableResponse.value.raw.content
-                .map((part) =>
-                  typeof part === "object" &&
-                  part !== null &&
-                  "text" in part &&
-                  typeof part.text === "string"
-                    ? part.text
-                    : "",
-                )
-                .join("")
-            : JSON.stringify(almostCookableResponse.value.raw.content)
+      almostCookableResponse.status === "fulfilled"
+        ? rawContentOf(almostCookableResponse.value.raw)
         : "";
 
     const content = [pantryRawContent, almostRawContent].filter(Boolean).join("\n");

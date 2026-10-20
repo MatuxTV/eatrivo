@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AlertTriangle,
+  Camera,
   CheckCircle2,
   ChevronRight,
   Loader2,
@@ -34,6 +35,7 @@ import { getCategoryTint, splitCategoryLabel } from "./categoryVisuals";
 import AddPantryItemModal from "./AddPantryItemModal";
 import PantryItemRow from "./PantryItemRow";
 import ReceiptScanModal from "./ReceiptScanModal";
+import PhotoScanModal from "./PhotoScanModal";
 import ReceiptScanUpgradeHero from "./ReceiptScanUpgradeHero";
 import type { InitialPantrySectionData } from "@/app/home/types/section-data";
 
@@ -211,6 +213,7 @@ export default function PantrySection({
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [scanModalEntryMode, setScanModalEntryMode] = useState<"receipt" | "barcode">("receipt");
   const [isScanUpgradeModalOpen, setIsScanUpgradeModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
@@ -556,7 +559,30 @@ export default function PantrySection({
                 </p>
               </div>
 
-              <div className="flex gap-2.5">
+              <div className="space-y-2.5">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic("light");
+                      setIsPhotoModalOpen(true);
+                    }}
+                    className="h-12 gap-2 rounded-2xl border-[1.5px] border-[#E9D9FF] bg-[#F6F0FF] px-3 text-[15px] font-bold text-eatrivo-purple shadow-none transition-[transform,background-color] duration-150 hover:bg-[#EFE4FF] active:scale-[0.97]"
+                  >
+                    <Camera className="h-[18px] w-[18px]" />
+                    <span>{t("photo_add_button")}</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={() => handleOpenScanModal("receipt")}
+                    className="h-12 gap-2 rounded-2xl border-[1.5px] border-[#E9D9FF] bg-white px-3 text-[15px] font-bold text-eatrivo-purple shadow-none transition-[transform,background-color] duration-150 hover:bg-eatrivo-purple/5 active:scale-[0.97]"
+                  >
+                    <ScanLine className="h-[18px] w-[18px]" />
+                    <span>{t("scan_bill")}</span>
+                  </Button>
+                </div>
+
                 <Button
                   data-tutorial-anchor="pantry-add-item"
                   type="button"
@@ -564,19 +590,10 @@ export default function PantrySection({
                     triggerHaptic("light");
                     setIsAddModalOpen(true);
                   }}
-                  className="h-12 flex-1 gap-2 rounded-2xl bg-eatrivo-purple px-4 text-[15px] font-bold text-white shadow-[0_6px_14px_-4px_rgba(123,63,242,0.35)] transition-[transform,background-color] duration-150 hover:bg-eatrivo-purple/90 active:scale-[0.97] md:flex-none md:px-7"
+                  className="h-12 w-full gap-2 rounded-2xl bg-eatrivo-purple px-4 text-[15px] font-bold text-white shadow-[0_6px_14px_-4px_rgba(123,63,242,0.35)] transition-[transform,background-color] duration-150 hover:bg-eatrivo-purple/90 active:scale-[0.97]"
                 >
                   <Plus className="h-[18px] w-[18px]" />
                   <span>{t("add_item")}</span>
-                </Button>
-
-                <Button
-                  type="button"
-                  onClick={() => handleOpenScanModal("receipt")}
-                  className="h-12 flex-1 gap-2 rounded-2xl border-[1.5px] border-[#E9D9FF] bg-white px-4 text-[15px] font-bold text-eatrivo-purple shadow-none transition-[transform,background-color] duration-150 hover:bg-eatrivo-purple/5 active:scale-[0.97] md:flex-none md:px-7"
-                >
-                  <ScanLine className="h-[18px] w-[18px]" />
-                  <span>{t("scan_bill")}</span>
                 </Button>
               </div>
             </div>
@@ -812,6 +829,11 @@ export default function PantrySection({
             onClose={() => setIsScanModalOpen(false)}
             onCompleted={refresh}
             initialEntryMode={scanModalEntryMode}
+          />
+          <PhotoScanModal
+            isOpen={isPhotoModalOpen}
+            onClose={() => setIsPhotoModalOpen(false)}
+            onCompleted={refresh}
           />
         </motion.div>
       )}

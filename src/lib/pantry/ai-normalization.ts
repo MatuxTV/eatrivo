@@ -1,7 +1,8 @@
 import { HumanMessage } from "@langchain/core/messages";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 import type { pantryItems } from "@/db/schema";
+import { messageText } from "@/lib/ai/message-text";
 import type {
   PantryBatchInputItem,
   PantryBatchSuggestion,
@@ -185,27 +186,23 @@ export async function getPantryAiSuggestions(
     throw new Error("Missing pantry AI normalization prompt input.");
   }
 
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) {
-    apiLogger.warn("[pantry.aiNormalize] GOOGLE_AI_API_KEY missing, skipping AI normalization", {
-      metadata: { userProfileId: input.userProfileId },
+  let model: BaseChatModel;
+  try {
+    const { getChatModel } = await import("@/lib/ai/models");
+    model = getChatModel("pantryNormalize").model;
+  } catch (error) {
+    apiLogger.warn("[pantry.aiNormalize] AI model unavailable, skipping AI normalization", {
+      metadata: {
+        userProfileId: input.userProfileId,
+        reason: error instanceof Error ? error.message : "unknown",
+      },
     });
     return [];
   }
 
-  const model = new ChatGoogleGenerativeAI({
-    model: "gemini-2.5-flash",
-    apiKey,
-    maxOutputTokens: 8192,
-    temperature: 0,
-  });
-
   try {
     const response = await model.invoke([new HumanMessage(systemPrompt)]);
-    const contentText =
-      typeof response.content === "string"
-        ? response.content
-        : JSON.stringify(response.content);
+    const contentText = messageText(response);
     const parsed = JSON.parse(extractJSONArray(contentText));
     const suggestions = normalizeSuggestionArray(parsed);
 

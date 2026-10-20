@@ -3,6 +3,8 @@ import { chatMessages, chatSessions } from "@/db/schema";
 import { AIMessage } from "@langchain/core/messages";
 import { eq } from "drizzle-orm";
 import type { ChatState } from "../state";
+import { messageText } from "@/lib/ai/message-text";
+import { resolveModelConfig } from "@/lib/ai/model-config";
 
 export async function saveAssistantMessage(
   state: typeof ChatState.State,
@@ -14,10 +16,7 @@ export async function saveAssistantMessage(
 
   if (!lastAI) return {};
 
-  const content =
-    typeof lastAI.content === "string"
-      ? lastAI.content
-      : JSON.stringify(lastAI.content);
+  const content = messageText(lastAI);
   const now = new Date();
 
   try {
@@ -28,7 +27,7 @@ export async function saveAssistantMessage(
       content,
       intent: state.intent ?? null,
       metadata: {
-        model: "gemini-3-flash-preview",
+        model: resolveModelConfig("chat").model,
         payload: state.assistantMessageMetadata,
       },
     });

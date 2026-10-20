@@ -1,6 +1,6 @@
 import { CacheService, RequestLock } from "@/lib/cache/redis";
 
-const PANTRY_DRAFT_TTL_SECONDS = 60;
+const PANTRY_DRAFT_TTL_SECONDS = 30 * 60;
 
 export interface PantryDraftItem {
   token: string;

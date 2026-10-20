@@ -108,5 +108,6 @@ export async function repairRecipeUnits(
     unitSemanticAudit: null,
     requestError: null,
     validationErrorType: null,
+    retryCount: state.retryCount + 1,
   };
 }

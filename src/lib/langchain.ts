@@ -1,47 +1,7 @@
 // src/lib/langchain.ts
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HumanMessage } from "@langchain/core/messages";
 import { apiLogger } from "./logger";
-
-interface UserProfile {
-  dateofBirth: Date;
-  weight: number;
-  height: number;
-  sex: "man" | "woman";
-  goal: "lose_weight" | "gain_muscle" | "maintain_weight";
-  activityLevel:
-    | "sedentary"
-    | "lightly_active"
-    | "moderately_active"
-    | "very_active"
-    | "athlete";
-  mealsPerDay: number;
-  maxPrepTime: "quick" | "normal" | "slow";
-  dietType?:
-    | "none"
-    | "lactosefree"
-    | "vegetarian"
-    | "vegan"
-    | "pescatarian"
-    | "ketogenic"
-    | "paleolithic";
-  budget: "low" | "medium" | "high";
-  likedFoods: string;
-  dislikedFoods: string;
-  allergies: string;
-  language: "sk" | "en";
-}
-
-interface ShoppingData {
-  markdown: string;
-}
-
-const model = new ChatGoogleGenerativeAI({
-  model: "gemini-3-flash-preview",
-  maxOutputTokens: 150000,
-  temperature: 0.7,
-  apiKey: process.env.GOOGLE_AI_API_KEY,
-});
+import { messageText } from "./ai/message-text";
 
 interface ShoppingListUserInfo {
   sex: "man" | "woman";
@@ -75,34 +35,6 @@ interface ShoppingListUserInfo {
 }
 
 export class EatrivoAIService {
-  private static getErrorDetails(error: unknown): Record<string, unknown> {
-    if (error instanceof Error) {
-      const anyError = error as unknown as {
-        cause?: unknown;
-        attemptNumber?: unknown;
-        retriesLeft?: unknown;
-      };
-
-      const cause = anyError.cause;
-      const causeDetails =
-        cause instanceof Error
-          ? { name: cause.name, message: cause.message }
-          : typeof cause === "object" && cause !== null
-            ? cause
-            : cause;
-
-      return {
-        name: error.name,
-        message: error.message,
-        attemptNumber: anyError.attemptNumber,
-        retriesLeft: anyError.retriesLeft,
-        cause: causeDetails,
-      };
-    }
-
-    return { error };
-  }
-
   private static extractJSON(content: string): string {
     // Pokus 1: Odstráň markdown wrapper
     let cleaned = content
@@ -129,179 +61,11 @@ export class EatrivoAIService {
     return cleaned;
   }
 
-  /** @deprecated Volané z saveToDb LangGraph nodu. Migrovať do samostatného generateMealPlan nodu keď bude čas. */
-  static async generateWeeklyMealPlan(
-    userProfile: UserProfile,
-    shoppingListData: ShoppingData,
-  ) {
-    try {
-      if (!process.env.GOOGLE_AI_API_KEY) {
-        apiLogger.error("GOOGLE_AI_API_KEY is not set", undefined, {
-          context: "LangChain",
-        });
-        throw new Error("GOOGLE_AI_API_KEY is not set");
-      }
-
-      const userAge =
-        new Date().getFullYear() -
-        new Date(userProfile.dateofBirth).getFullYear();
-      const totalMeals = userProfile.mealsPerDay * 7;
-
-      // Realistic protein: 1.2g/kg for normal goals, 2g/kg for muscle gain
-      const proteinMultiplier = userProfile.goal === "gain_muscle" ? 2.0 : 1.2;
-      const dailyProtein = Math.round(userProfile.weight * proteinMultiplier);
-
-      // Calculate BMI for context
-      const heightInMeters = userProfile.height / 100;
-      const bmi =
-        Math.round(
-          (userProfile.weight / (heightInMeters * heightInMeters)) * 10,
-        ) / 10;
-      const bmiCategory =
-        bmi < 18.5
-          ? "podváha"
-          : bmi < 25
-            ? "normálna"
-            : bmi < 30
-              ? "nadváha"
-              : "obezita";
-
-      const prompt = `Si expert AI nutricionista. Vytvor personalizovaný 7-dňový jedálny plán (Pondelok–Nedeľa) VÝHRADNE z poskytnutého nákupného zoznamu.
-JAZYK:
-Vysledok bude v jazyku = ${userProfile.language}
-
-📋 PROFIL:
-${userProfile.sex === "man" ? "Muž" : "Žena"}, ${userAge}r, ${
-        userProfile.weight
-      }kg, ${userProfile.height}cm (BMI: ${bmi} - ${bmiCategory})
-Cieľ: ${userProfile.goal} | Aktivita: ${userProfile.activityLevel} | Jedál: ${
-        userProfile.mealsPerDay
-      }/deň
-Diéta: ${userProfile.dietType || "žiadna"} | Čas: ${
-        userProfile.maxPrepTime
-      } | Budget: ${userProfile.budget}
-Obľúbené: ${userProfile.likedFoods || "-"} | Neobľúbené: ${
-        userProfile.dislikedFoods || "-"
-      } | Alergie: ${userProfile.allergies || "-"}
-
-💡 VÝŠKA & VÁHA KONTEXT:
-• Výška ${userProfile.height}cm + váha ${
-        userProfile.weight
-      }kg = BMI ${bmi} (${bmiCategory})
-• Vyššie osoby (napr. 200cm) potrebujú viac kalórií než nižšie (165cm) pri rovnakej váhe - výška priamo ovplyvňuje BMR
-• ${
-        bmi < 18.5
-          ? "Pri podváhe: Väčšie porcie, kaloricky husté potraviny"
-          : bmi < 25
-            ? "Normálna váha: Vyvážené porcie"
-            : bmi < 30
-              ? "Nadváha: Primerane menšie porcie, viac zeleniny"
-              : "Obezita: Výrazne menšie porcie, nízkokalorické potraviny"
-      }
-
-🛒 NÁKUP:
-${shoppingListData.markdown}
-
-⚙️ PRAVIDLÁ:
-1. LEN ingrediencie z nákupu
-2. Rešpektuj diétu, alergie, obľúbené/neobľúbené
-3. Čas: quick≤15min, normal 15-30min, slow 30-45min
-4. ${userProfile.mealsPerDay} jedál/deň, 2-8 ingrediencií/jedlo, slovenské názvy
-5. Bielkoviny: ${dailyProtein}g/deň (${proteinMultiplier}g/kg)
-6. NAJDOLEZITEJSIE : vystupny prompt bude v jazyku ${userProfile.language} (en = English || sk = Slovakia)
-
-🎯 MEAL_TYPE (${userProfile.mealsPerDay}/deň):
-${
-  userProfile.mealsPerDay === 3
-    ? "raňajky, obed, večera"
-    : userProfile.mealsPerDay === 4
-      ? "raňajky, desiata, obed, večera"
-      : userProfile.mealsPerDay === 5
-        ? "raňajky, desiata, obed, olovrant, večera"
-        : "raňajky, desiata, obed, olovrant, večera, druhá večera"
-}
-
-⚠️ TYPY:
-• meal: calories/protein/carbs/fat = NUMBER
-• day: totalDaily... = STRING s jednotkou
-• ingredient: amount = STRING s jednotkou, type = protein|carb|fat|vegetable|fruit|seasoning
-
-📊 JSON: {"week": [{"day": "Pondelok", "totalDailyCalories": "1800 kcal", "totalDailyProtein": "90 g", "totalDailyCarbs": "180 g", "totalDailyFats": "60 g", "meals": [{"name": "Ovsená kaša", "meal_type": "raňajky", "prepTime": 10, "difficulty": "ľahké", "calories": 400, "protein": 25, "carbs": 50, "fat": 10, "ingredients": [{"name": "Ovos", "amount": "60 g", "type": "carb"}], "ingredientCount": 3}]}]}
-
-📈 CIELE:
-• ${totalMeals} jedál (${userProfile.mealsPerDay}/deň × 7)
-• Bielkoviny: ${dailyProtein}g/deň (${proteinMultiplier}g/kg)
-• Kalórie podľa cieľa a aktivity:
-  - lose_weight: TDEE - deficit (sedentary -300 kcal | lightly -280 | moderate -260 | very active -240 | athlete -220)
-  - maintain_weight: TDEE (udržanie)
-  - gain_muscle: TDEE +15% (rast)
-• Makro rozdelenie:
-  - lose_weight: Proteín ${proteinMultiplier}g/kg, Tuky 25%, Sacharidy 30-35% (znížené pre deficit)
-  - maintain_weight: Proteín ${proteinMultiplier}g/kg, Tuky 25%, Sacharidy 40-45%
-  - gain_muscle: Proteín 2g/kg, Tuky 25%, Sacharidy 45-50% (zvýšené pre energiu)
-
-💡 STRATÉGIE:
-• Difficulty: ľahké(≤2 kroky), stredne(3-5), náročné(6+)
-• Chýbajúca surovina → alternatíva z nákupu
-• Vegan → B12 + omega-3
-• lose_weight → viac zeleniny | gain_muscle → viac proteínu
-
-✅ VALIDÁCIA:
-1. Meal nutričné hodnoty = NUMBER, day totals = STRING
-2. 7 dní, ${userProfile.mealsPerDay} meals/deň, 2-8 ingrediencií
-3. LEN ingrediencie z nákupu
-4. Žiadne alergie/neobľúbené
-5. Proteín ~${dailyProtein}g/deň
-
-⚡ VÝSTUP: Vráť VÝHRADNE čistý JSON objekt. Začni {, skonči }. Žiadny markdown wrapper, žiadne \`\`\`json, žiadne komentáre, žiadny text pred/po JSON.`;
-
-      const response = await model.invoke([new HumanMessage(prompt)]);
-
-      // Spracuj odpoveď
-      let contentText: string;
-      if (typeof response.content === "string") {
-        contentText = response.content;
-      } else if (Array.isArray(response.content)) {
-        contentText = response.content
-          .filter(
-            (part): part is { type: string; text: string } =>
-              typeof part === "object" && part !== null && "text" in part,
-          )
-          .map((part) => part.text)
-          .join("");
-      } else {
-        contentText = JSON.stringify(response.content);
-      }
-
-      contentText = this.extractJSON(contentText);
-
-      return JSON.parse(contentText);
-    } catch (error) {
-      apiLogger.error("Error generating meal plan", error, {
-        context: "LangChain",
-        metadata: {
-          model: "gemini-2.5-flash",
-          hasApiKey: Boolean(process.env.GOOGLE_AI_API_KEY),
-          promptChars:
-            typeof shoppingListData?.markdown === "string"
-              ? shoppingListData.markdown.length
-              : undefined,
-          errorDetails: this.getErrorDetails(error),
-        },
-      });
-      throw new Error("Failed to generate AI meal plan");
-    }
-  }
-
-  /** @deprecated Nahradené LangGraph grafom v src/lib/langgraph/shopping-list/. Zachované ako fallback. */
+  /** Admin-only helper that generates a shopping list through the AI factory. */
   static async generateShoppingList(userInfo: ShoppingListUserInfo) {
     try {
-      if (!process.env.GOOGLE_AI_API_KEY) {
-        apiLogger.error("GOOGLE_AI_API_KEY is not set", undefined, {
-          context: "LangChain",
-        });
-        throw new Error("GOOGLE_AI_API_KEY is not set");
-      }
+      const { getChatModel } = await import("@/lib/ai/model-factory");
+      const { model } = getChatModel("shoppingList");
 
       const userAge =
         new Date().getFullYear() - new Date(userInfo.dateOfBirth).getFullYear();
@@ -616,20 +380,7 @@ Uisti sa, že vrátiš čistý JSON (začni { a skonči }), bez markdown wrapper
 
       const response = await model.invoke([new HumanMessage(prompt)]);
 
-      let contentText: string;
-      if (typeof response.content === "string") {
-        contentText = response.content;
-      } else if (Array.isArray(response.content)) {
-        contentText = response.content
-          .filter(
-            (part): part is { type: string; text: string } =>
-              typeof part === "object" && part !== null && "text" in part,
-          )
-          .map((part) => part.text)
-          .join("");
-      } else {
-        contentText = JSON.stringify(response.content);
-      }
+      let contentText = messageText(response);
 
       contentText = this.extractJSON(contentText);
 
