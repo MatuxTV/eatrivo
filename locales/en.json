@@ -2586,5 +2586,262 @@
         }
       }
     }
+  },
+  "marketing": {
+    "meta": {
+      "title": "Eatrivo – cook with what you already have",
+      "description": "Snap what's in your kitchen. Rivo suggests a meal for your goal and your shopping list only gets what's actually missing. Free."
+    },
+    "nav": {
+      "howItWorks": "How it works",
+      "features": "Features",
+      "pricing": "Pricing",
+      "signIn": "Sign in",
+      "startFree": "Start for free",
+      "homeAria": "Eatrivo – home"
+    },
+    "hero": {
+      "titleLine1": "You have more at home",
+      "titleLine2": "than you think.",
+      "description": "Snap what's on your counter. Rivo turns it into a meal for your goal, and you only buy what's really missing.",
+      "cta": "Start for free",
+      "secondaryCta": "How it works",
+      "trust": "Free, no credit card. Sign in with Google.",
+      "desktopHint": "Eatrivo works on your phone. Scan the QR code to continue there.",
+      "recognized": "Rivo spotted 6 ingredients",
+      "photoAlt": "Top-down view of a kitchen counter: eggs, cherry tomatoes, bell pepper, onion, feta and spinach",
+      "rivoAlt": "Rivo, the Eatrivo chef, holding a pan",
+      "tags": {
+        "eggs": "eggs",
+        "tomatoes": "cherry tomatoes",
+        "pepper": "bell pepper",
+        "onion": "onion",
+        "feta": "feta",
+        "spinach": "spinach"
+      }
+    },
+    "counter": {
+      "titleLine1": "From the counter",
+      "titleLine2": "straight to the pan.",
+      "description": "Rivo knows your pantry and your goal. It suggests a meal you can cook right now, not three shopping trips from now.",
+      "ingredients": {
+        "eggs": "eggs",
+        "tomatoes": "tomatoes",
+        "pepper": "pepper",
+        "onion": "onion",
+        "feta": "feta",
+        "spinach": "spinach"
+      },
+      "panAlt": "Shakshuka with spinach and feta in a pan",
+      "suggests": "Rivo suggests for today",
+      "recipeTitle": "Shakshuka with spinach and feta",
+      "time": "20 min",
+      "kcal": "410 kcal",
+      "protein": "24 g protein",
+      "have": "You have 6 of 7 ingredients",
+      "missing": "Missing: coriander",
+      "missingHint": "The only thing on your shopping list",
+      "addToList": "Add to list",
+      "note": "Sample recipe, nutrition values are illustrative."
+    },
+    "fill": {
+      "titleLine1": "Fill your pantry",
+      "titleLine2": "in seconds.",
+      "description": "No retyping lists. Snap the food you have at home and Eatrivo recognizes the items for you.",
+      "confirmNote": "You review and edit everything before it's saved.",
+      "sheetTitle": "Add from photos",
+      "sheetMeta": "3 photos · 6 items recognized",
+      "checkQuantity": "Check quantity",
+      "addButton": "Add 6 items to pantry",
+      "items": {
+        "eggs": {
+          "name": "Eggs",
+          "qty": "4 pcs"
+        },
+        "tomatoes": {
+          "name": "Cherry tomatoes",
+          "qty": "250 g"
+        },
+        "pepper": {
+          "name": "Red bell pepper",
+          "qty": "1 pc"
+        },
+        "onion": {
+          "name": "Onion",
+          "qty": "1 pc"
+        },
+        "feta": {
+          "name": "Feta",
+          "qty": "200 g"
+        },
+        "spinach": {
+          "name": "Baby spinach",
+          "qty": "100 g"
+        }
+      },
+      "plusBadge": "PLUS",
+      "receiptTitle": "Receipt scan",
+      "receiptDescription": "Snap your grocery receipt and the items land in your pantry on their own.",
+      "barcodeTitle": "Barcode",
+      "barcodeDescription": "Point the camera at the code and the product is looked up for you."
+    },
+    "expiry": {
+      "titleLine1": "Use it up",
+      "titleLine2": "before it goes off.",
+      "description": "Your pantry keeps an eye on use-by dates. Rivo cooks from what needs using first, so less food ends up in the bin.",
+      "rows": {
+        "spinach": {
+          "name": "Baby spinach",
+          "qty": "Opened pack",
+          "expires": "Expires tomorrow"
+        },
+        "feta": {
+          "name": "Feta",
+          "qty": "200 g",
+          "expires": "In 3 days"
+        },
+        "tomatoes": {
+          "name": "Cherry tomatoes",
+          "qty": "250 g",
+          "expires": "In 5 days"
+        },
+        "eggs": {
+          "name": "Eggs",
+          "qty": "4 pcs",
+          "expires": "In 12 days"
+        }
+      },
+      "tip": "Today I'm suggesting meals with spinach and feta, so nothing goes to waste."
+    },
+    "goal": {
+      "titleLine1": "Your goal.",
+      "titleLine2": "Your rules.",
+      "description": "When you sign up, you set your goal, diet and allergies. Rivo keeps them in every recipe without being reminded.",
+      "goals": {
+        "lose": "Lose weight",
+        "maintain": "Maintain",
+        "gain": "Build muscle"
+      },
+      "goalsAria": "Goal selection example",
+      "diets": {
+        "vegetarian": "vegetarian",
+        "lactoseFree": "lactose-free",
+        "nutFree": "nut-free",
+        "vegan": "vegan",
+        "glutenFree": "gluten-free",
+        "fishFree": "no fish"
+      },
+      "checks": {
+        "macros": "Calories and protein matched to your goal",
+        "allergens": "Allergens never show up in recipes",
+        "setup": "Setup takes about 2 minutes"
+      }
+    },
+    "rivo": {
+      "titleLine1": "Rivo,",
+      "titleLine2": "a chef",
+      "titleLine3": "in your pocket.",
+      "description": "Ask like you'd ask a friend. Rivo sees your pantry, knows your goal and suggests what to cook, or adjusts a recipe to suit you.",
+      "imageAlt": "Rivo holding a meal plan",
+      "userMessage": "I have eggs, spinach and feta. What's for dinner?",
+      "name": "Rivo",
+      "reply": "Shakshuka! It's ready in 20 minutes and you have almost everything. Only coriander is missing. Should I add it to your shopping list?",
+      "quickYes": "Yes, add it",
+      "quickOther": "Something else",
+      "chatAria": "Example conversation with Rivo"
+    },
+    "pricing": {
+      "title": "Start for free.",
+      "description": "Turn on Plus when you want to fill your pantry even faster.",
+      "free": {
+        "name": "Free",
+        "price": "€0",
+        "features": {
+          "pantry": "Digital pantry with use-by tracking",
+          "recipes": "Recipes from Rivo based on your pantry",
+          "profile": "Goal, diet and allergies",
+          "shopping": "Shopping list"
+        },
+        "cta": "Start for free"
+      },
+      "plus": {
+        "name": "Plus",
+        "badge": "BEST VALUE",
+        "price": "€3.99",
+        "period": "/ month",
+        "features": {
+          "everything": "Everything in Free",
+          "receipt": "Grocery receipt scan",
+          "barcode": "Barcode scan",
+          "support": "Support Eatrivo's development"
+        },
+        "cta": "Try Plus"
+      },
+      "trust": "Cancel anytime · Secure payment via Stripe"
+    },
+    "faq": {
+      "title": "FAQ",
+      "imageAlt": "Rivo thinking",
+      "items": {
+        "free": {
+          "q": "Is Eatrivo free?",
+          "a": "Yes. The pantry, Rivo's recipes and goal setup are free. Plus adds receipt and barcode scanning."
+        },
+        "photo": {
+          "q": "How does adding from a photo work?",
+          "a": "Take or upload photos of your food, Eatrivo recognizes the items and you review them before they're saved to your pantry."
+        },
+        "diet": {
+          "q": "Does it work for vegetarians and vegans?",
+          "a": "Yes. You pick your diet when setting up your profile and Rivo follows it in every recipe."
+        },
+        "allergies": {
+          "q": "What if I have allergies or intolerances?",
+          "a": "Set your allergies and foods to avoid in your profile. Recipes leave them out automatically."
+        },
+        "cancel": {
+          "q": "Can I cancel my subscription anytime?",
+          "a": "Yes. No commitments or hidden fees, cancel in one click through the Stripe portal."
+        }
+      }
+    },
+    "finalCta": {
+      "titleLine1": "What's on your",
+      "titleLine2": "counter today?",
+      "description": "Show it to Rivo and cook something good tonight.",
+      "cta": "Start for free",
+      "trust": "Free, no credit card.",
+      "imageAlt": "Rivo holding a phone"
+    },
+    "footer": {
+      "tagline": "Cook with what you already have.",
+      "product": "Product",
+      "legal": "Legal",
+      "howItWorks": "How it works",
+      "pricing": "Pricing",
+      "signIn": "Sign in",
+      "terms": "Terms of service",
+      "privacy": "Privacy policy",
+      "cookies": "Cookie policy",
+      "medical": "Medical disclaimer",
+      "complaints": "Complaints",
+      "languageSk": "Slovenčina",
+      "languageEn": "English",
+      "languageAria": "Language",
+      "copyright": "© {year} Eatrivo"
+    }
+  },
+  "desktopGate": {
+    "metaTitle": "Eatrivo lives on your phone",
+    "title": "Eatrivo lives on your phone.",
+    "description": "You cook in the kitchen, not at your desk. That is why Eatrivo works on your phone and tablet, where it is always at hand.",
+    "qrAlt": "QR code linking to eatrivo.sk",
+    "qrCaption": "Scan with your phone camera",
+    "stepsTitle": "How to start",
+    "step1": "Scan the QR code or open eatrivo.sk on your phone.",
+    "step2": "Sign in with Google.",
+    "step3": "Add Eatrivo to your home screen and open it like an app.",
+    "back": "Back to home",
+    "imageAlt": "Rivo holding a phone"
   }
 }

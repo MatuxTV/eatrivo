@@ -31,7 +31,7 @@ export default async function PantryPageCanonical() {
 
   const session = await auth();
   if (!session?.user) {
-    redirect(`/${safeLocale}`);
+    redirect(`/${safeLocale}/signin`);
   }
 
   return <PantryPage membership={session.user.membership ?? "basic"} />;

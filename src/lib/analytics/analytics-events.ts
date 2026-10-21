@@ -60,6 +60,11 @@ export const analyticsEventDefinitions = {
     destinations: [],
     allowClient: true,
   },
+  desktop_gate_viewed: {
+    eventType: "page_view",
+    destinations: [],
+    allowClient: true,
+  },
   welcome_auth_viewed: {
     eventType: "page_view",
     destinations: [],

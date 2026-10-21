@@ -2595,5 +2595,262 @@
         }
       }
     }
+  },
+  "marketing": {
+    "meta": {
+      "title": "Eatrivo – uvar z toho, čo už máš",
+      "description": "Odfoť, čo máš doma. Rivo z toho navrhne jedlo pre tvoj cieľ a na nákupný zoznam dá len to, čo naozaj chýba. Zadarmo."
+    },
+    "nav": {
+      "howItWorks": "Ako to funguje",
+      "features": "Funkcie",
+      "pricing": "Cenník",
+      "signIn": "Prihlásiť sa",
+      "startFree": "Začať zadarmo",
+      "homeAria": "Eatrivo – domov"
+    },
+    "hero": {
+      "titleLine1": "Máš doma viac,",
+      "titleLine2": "než si myslíš.",
+      "description": "Odfoť, čo máš na linke. Rivo z toho navrhne jedlo pre tvoj cieľ a dokúpiš len to, čo naozaj chýba.",
+      "cta": "Začať zadarmo",
+      "secondaryCta": "Ako to funguje",
+      "trust": "Zadarmo, bez platobnej karty. Prihlásenie cez Google.",
+      "desktopHint": "Eatrivo funguje v mobile. Naskenuj QR kód a pokračuj v telefóne.",
+      "recognized": "Rivo rozpoznal 6 surovín",
+      "photoAlt": "Pohľad zhora na kuchynskú linku: vajcia, cherry paradajky, paprika, cibuľa, feta a špenát",
+      "rivoAlt": "Rivo, kuchár Eatrivo, s panvicou",
+      "tags": {
+        "eggs": "vajcia",
+        "tomatoes": "cherry paradajky",
+        "pepper": "paprika",
+        "onion": "cibuľa",
+        "feta": "feta",
+        "spinach": "špenát"
+      }
+    },
+    "counter": {
+      "titleLine1": "Z pultu rovno",
+      "titleLine2": "do panvice.",
+      "description": "Rivo pozná tvoju špajzu aj tvoj cieľ. Navrhne jedlo, na ktoré máš suroviny už teraz, nie o tri nákupy neskôr.",
+      "ingredients": {
+        "eggs": "vajcia",
+        "tomatoes": "paradajky",
+        "pepper": "paprika",
+        "onion": "cibuľa",
+        "feta": "feta",
+        "spinach": "špenát"
+      },
+      "panAlt": "Shakshuka so špenátom a fetou v panvici",
+      "suggests": "Rivo navrhuje na dnes",
+      "recipeTitle": "Shakshuka so špenátom a fetou",
+      "time": "20 min",
+      "kcal": "410 kcal",
+      "protein": "24 g bielkovín",
+      "have": "Máš doma 6 zo 7 surovín",
+      "missing": "Chýba: koriander",
+      "missingHint": "Jediná vec na nákupnom zozname",
+      "addToList": "Do nákupu",
+      "note": "Ukážkový recept, nutričné hodnoty sú ilustračné."
+    },
+    "fill": {
+      "titleLine1": "Špajzu naplníš",
+      "titleLine2": "za pár sekúnd.",
+      "description": "Žiadne prepisovanie zoznamov. Odfoť jedlo, ktoré máš doma, a Eatrivo položky rozpozná za teba.",
+      "confirmNote": "Pred uložením všetko skontroluješ a upravíš ty.",
+      "sheetTitle": "Pridať z fotiek",
+      "sheetMeta": "3 fotky · rozpoznaných 6 položiek",
+      "checkQuantity": "Skontroluj množstvo",
+      "addButton": "Pridať 6 položiek do špajze",
+      "items": {
+        "eggs": {
+          "name": "Vajcia",
+          "qty": "4 ks"
+        },
+        "tomatoes": {
+          "name": "Cherry paradajky",
+          "qty": "250 g"
+        },
+        "pepper": {
+          "name": "Červená paprika",
+          "qty": "1 ks"
+        },
+        "onion": {
+          "name": "Cibuľa",
+          "qty": "1 ks"
+        },
+        "feta": {
+          "name": "Feta",
+          "qty": "200 g"
+        },
+        "spinach": {
+          "name": "Baby špenát",
+          "qty": "100 g"
+        }
+      },
+      "plusBadge": "PLUS",
+      "receiptTitle": "Sken bločku",
+      "receiptDescription": "Odfoť nákupný bloček a položky sa do špajze doplnia samy.",
+      "barcodeTitle": "Čiarový kód",
+      "barcodeDescription": "Namier kameru na kód a produkt sa dohľadá za teba."
+    },
+    "expiry": {
+      "titleLine1": "Najprv to,",
+      "titleLine2": "čo sa minie.",
+      "description": "Špajza stráži dátumy spotreby. Rivo potom varí najprv z toho, čo treba spotrebovať, a menej jedla skončí v koši.",
+      "rows": {
+        "spinach": {
+          "name": "Baby špenát",
+          "qty": "Otvorené balenie",
+          "expires": "Expiruje zajtra"
+        },
+        "feta": {
+          "name": "Feta",
+          "qty": "200 g",
+          "expires": "O 3 dni"
+        },
+        "tomatoes": {
+          "name": "Cherry paradajky",
+          "qty": "250 g",
+          "expires": "O 5 dní"
+        },
+        "eggs": {
+          "name": "Vajcia",
+          "qty": "4 ks",
+          "expires": "O 12 dní"
+        }
+      },
+      "tip": "Dnes navrhujem jedlá so špenátom a fetou, nech nič nevyhodíš."
+    },
+    "goal": {
+      "titleLine1": "Tvoj cieľ.",
+      "titleLine2": "Tvoje pravidlá.",
+      "description": "Pri registrácii nastavíš cieľ, spôsob stravovania a alergie. Rivo ich drží v každom recepte, bez pripomínania.",
+      "goals": {
+        "lose": "Schudnúť",
+        "maintain": "Udržať váhu",
+        "gain": "Nabrať svaly"
+      },
+      "goalsAria": "Ukážka výberu cieľa",
+      "diets": {
+        "vegetarian": "vegetarián",
+        "lactoseFree": "bez laktózy",
+        "nutFree": "bez orechov",
+        "vegan": "vegán",
+        "glutenFree": "bez lepku",
+        "fishFree": "bez rýb"
+      },
+      "checks": {
+        "macros": "Kalórie a bielkoviny podľa tvojho cieľa",
+        "allergens": "Alergény sa v receptoch neobjavia",
+        "setup": "Nastavenie zaberie asi 2 minúty"
+      }
+    },
+    "rivo": {
+      "titleLine1": "Rivo,",
+      "titleLine2": "kuchár",
+      "titleLine3": "vo vrecku.",
+      "description": "Opýtaj sa ako kamaráta. Rivo vidí tvoju špajzu, pozná tvoj cieľ a navrhne, čo uvariť, alebo recept upraví podľa teba.",
+      "imageAlt": "Rivo s jedálnym plánom",
+      "userMessage": "Mám vajcia, špenát a fetu. Čo na večeru?",
+      "name": "Rivo",
+      "reply": "Shakshuka! Je hotová za 20 minút a máš skoro všetko. Chýba len koriander. Mám ho pridať do nákupu?",
+      "quickYes": "Áno, pridaj",
+      "quickOther": "Niečo iné",
+      "chatAria": "Ukážka rozhovoru s Rivom"
+    },
+    "pricing": {
+      "title": "Začni zadarmo.",
+      "description": "Plus si zapneš, keď budeš chcieť dopĺňať špajzu ešte rýchlejšie.",
+      "free": {
+        "name": "Zadarmo",
+        "price": "0 €",
+        "features": {
+          "pantry": "Špajza so sledovaním spotreby",
+          "recipes": "Recepty od Riva zo špajze",
+          "profile": "Cieľ, stravovanie a alergie",
+          "shopping": "Nákupný zoznam"
+        },
+        "cta": "Začať zadarmo"
+      },
+      "plus": {
+        "name": "Plus",
+        "badge": "NAJLEPŠIA HODNOTA",
+        "price": "3,99 €",
+        "period": "/ mesiac",
+        "features": {
+          "everything": "Všetko zo Zadarmo",
+          "receipt": "Sken nákupného bločku",
+          "barcode": "Sken čiarového kódu",
+          "support": "Podporíš vývoj Eatrivo"
+        },
+        "cta": "Vyskúšať Plus"
+      },
+      "trust": "Zrušíš kedykoľvek · Bezpečná platba cez Stripe"
+    },
+    "faq": {
+      "title": "Časté otázky",
+      "imageAlt": "Rivo premýšľa",
+      "items": {
+        "free": {
+          "q": "Je Eatrivo zadarmo?",
+          "a": "Áno. Špajzu, recepty od Riva a nastavenie cieľa máš zadarmo. Plus pridáva sken bločku a čiarového kódu."
+        },
+        "photo": {
+          "q": "Ako funguje pridanie z fotky?",
+          "a": "Odfotíš alebo nahráš fotky potravín, Eatrivo rozpozná položky a ty ich pred uložením do špajze skontroluješ."
+        },
+        "diet": {
+          "q": "Funguje to aj pre vegetariánov a vegánov?",
+          "a": "Áno. Pri nastavení profilu si vyberieš stravovanie a Rivo ho zohľadní v každom recepte."
+        },
+        "allergies": {
+          "q": "Čo ak mám alergie alebo intolerancie?",
+          "a": "V profile nastavíš alergie a potraviny, ktorým sa chceš vyhnúť. Recepty ich automaticky vylúčia."
+        },
+        "cancel": {
+          "q": "Môžem predplatné zrušiť kedykoľvek?",
+          "a": "Áno. Bez záväzkov a skrytých poplatkov, zrušíš ho jedným klikom cez portál Stripe."
+        }
+      }
+    },
+    "finalCta": {
+      "titleLine1": "Čo máš dnes",
+      "titleLine2": "na linke?",
+      "description": "Ukáž to Rivovi a uvar z toho niečo dobré ešte dnes večer.",
+      "cta": "Začať zadarmo",
+      "trust": "Zadarmo, bez platobnej karty.",
+      "imageAlt": "Rivo s telefónom"
+    },
+    "footer": {
+      "tagline": "Uvar z toho, čo už máš.",
+      "product": "Produkt",
+      "legal": "Právne",
+      "howItWorks": "Ako to funguje",
+      "pricing": "Cenník",
+      "signIn": "Prihlásiť sa",
+      "terms": "Podmienky používania",
+      "privacy": "Ochrana súkromia",
+      "cookies": "Zásady cookies",
+      "medical": "Zdravotné vylúčenie",
+      "complaints": "Reklamácie",
+      "languageSk": "Slovenčina",
+      "languageEn": "English",
+      "languageAria": "Jazyk",
+      "copyright": "© {year} Eatrivo"
+    }
+  },
+  "desktopGate": {
+    "metaTitle": "Eatrivo je v mobile",
+    "title": "Eatrivo je v mobile.",
+    "description": "Varíš v kuchyni, nie pri počítači. Eatrivo preto funguje na telefóne a tablete, kde ho máš vždy po ruke.",
+    "qrAlt": "QR kód s odkazom na eatrivo.sk",
+    "qrCaption": "Naskenuj fotoaparátom v telefóne",
+    "stepsTitle": "Ako začať",
+    "step1": "Naskenuj QR kód alebo otvor eatrivo.sk v telefóne.",
+    "step2": "Prihlás sa cez Google.",
+    "step3": "Pridaj si Eatrivo na plochu a otváraj ho ako appku.",
+    "back": "Späť na úvod",
+    "imageAlt": "Rivo s telefónom"
   }
 }

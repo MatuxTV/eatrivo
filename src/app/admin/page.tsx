@@ -74,7 +74,7 @@ export default async function AdminPage() {
   );
 
   if (!session?.user?.id) {
-    redirect(`/${safeLocale}`);
+    redirect(`/${safeLocale}/signin`);
   }
 
   const userProfile = await db.query.userProfiles.findFirst({
