@@ -12,6 +12,7 @@ import {
   LOCALE_HEADER_NAME,
   isAppShellRoute,
 } from "./src/i18n/routing";
+import { DESKTOP_GATE_PATH, isDesktopRequest } from "./src/lib/device";
 
 // Extend NextRequest type for Vercel Edge geo property
 interface NextRequestWithGeo extends NextRequest {
@@ -85,6 +86,34 @@ function buildLocaleHeaders(requestHeaders: Headers, locale: string) {
   return nextHeaders;
 }
 
+/** Rewrite the request to the locale-prefixed desktop gate page. */
+function desktopGate(req: NextRequest, locale: string) {
+  const url = req.nextUrl.clone();
+  url.pathname = `/${locale}${DESKTOP_GATE_PATH}`;
+  // NextAuth rebases nextUrl onto AUTH_URL; keep the rewrite on the incoming
+  // host so Next treats it as an internal rewrite, not an external proxy.
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  if (host) {
+    url.host = host;
+    url.protocol = req.headers.get("x-forwarded-proto") ?? url.protocol;
+  }
+  return NextResponse.rewrite(url);
+}
+
+/**
+ * Routes that require a touch device. App shell routes are gated except the
+ * admin area; the signin and onboarding routes are gated as well.
+ */
+function isGated(bare: string) {
+  return (
+    (isAppShellRoute(bare) &&
+      !(bare === "/admin" || bare.startsWith("/admin/"))) ||
+    bare === "/signin" ||
+    bare === "/onboarding" ||
+    bare.startsWith("/onboarding/")
+  );
+}
+
 export default auth((req) => {
   const { nextUrl } = req;
 
@@ -135,6 +164,13 @@ export default auth((req) => {
   const pathname = nextUrl.pathname;
 
   if (isAppShellRoute(pathname)) {
+    if (
+      isGated(pathname) &&
+      !hasAdminRole(req.auth?.user?.role) &&
+      isDesktopRequest(req)
+    )
+      return desktopGate(req, preferred);
+
     // Canonical app shell route — no locale prefix needed
     const response = NextResponse.next({
       request: {
@@ -191,6 +227,13 @@ function handleAuthAndIntl(
   const intlResponse = intlMiddleware(req);
 
   const isLoggedIn = !!req.auth?.user;
+
+  if (
+    isGated(pathnameWithoutLocale) &&
+    !hasAdminRole(req.auth?.user?.role) &&
+    isDesktopRequest(req)
+  )
+    return desktopGate(req, locale);
 
   // Protect all routes defined in permissions config
   const protectedRoute = Object.keys(permissions).some((route) =>

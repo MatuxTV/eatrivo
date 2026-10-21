@@ -47,6 +47,24 @@
   --color-input: #f3f4f6;
   --color-ring: var(--color-eatrivo-purple);
 
+  /* Marketing landing (light theme, forced) */
+  --color-mk-bg: #fafafa;
+  --color-mk-surface: #ffffff;
+  --color-mk-text: #333333;
+  --color-mk-text-2: #5b6472;
+  --color-mk-purple: #7b3ff2;
+  --color-mk-purple-2: #8b5cf6;
+  --color-mk-purple-soft: #efe3ff;
+  --color-mk-purple-deep: #2a1162;
+  --color-mk-border-purple: #e9d9ff;
+  --color-mk-border: #e5e7eb;
+  --color-mk-mint: #ddf7ee;
+  --color-mk-green: #22c55e;
+  --color-mk-green-deep: #15803d;
+  --color-mk-orange: #f97316;
+  --color-mk-orange-soft: #ffedd5;
+  --color-mk-orange-deep: #9a3412;
+
   /* Food Categories */
   --color-food-fresh: #16a34a;
   --color-food-spicy: #dc2626;
@@ -153,6 +171,11 @@
   h5,
   h6 {
     @apply font-heading font-semibold tracking-tight;
+  }
+
+  /* Brand surfaces (e.g. the marketing landing) keep Quicksand in headings too. */
+  .font-brand :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-brand);
   }
 }
 

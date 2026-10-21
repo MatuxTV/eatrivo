@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { isLocale, type Locale } from "@/i18n/routing";
 import { auth } from "@/../auth";
-import { WelcomeAuthScreen } from "@/components/auth/WelcomeAuthScreen";
+import LandingPage from "@/components/marketing/LandingPage";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -13,11 +13,19 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale: localeParam } = await params;
   const locale: Locale = isLocale(localeParam) ? localeParam : "sk";
-  const t = await getTranslations({ locale, namespace: "auth.welcome" });
+  const t = await getTranslations({ locale, namespace: "marketing.meta" });
+  const title = t("title");
+  const description = t("description");
 
   return {
-    title: t("metaTitle"),
-    description: t("metaDescription"),
+    title,
+    description,
+    alternates: { languages: { sk: "/sk", en: "/en" } },
+    openGraph: {
+      title,
+      description,
+      images: ["/images/landing/hero-counter.webp"],
+    },
   };
 }
 
@@ -30,5 +38,5 @@ export default async function Home({ params }: PageProps) {
     redirect("/home");
   }
 
-  return <WelcomeAuthScreen locale={locale} />;
+  return <LandingPage locale={locale} />;
 }
