@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(rtk ls *)"
+      "Bash(rtk ls *)",
+      "mcp__figma-console__figma_execute",
+      "mcp__figma-console__figma_take_screenshot"
     ]
   }
 }

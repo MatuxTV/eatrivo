@@ -1,27 +1,17 @@
 "use client";
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   AlertCircle,
-  Beef,
-  Bookmark,
   Check,
   ChefHat,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Droplet,
-  Flame,
-  Loader2,
   Minus,
   Plus,
   Sparkles,
-  Users,
-  Wheat,
-  X,
 } from "lucide-react";
 
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
@@ -32,7 +22,6 @@ import {
   customRecipeStreamEventSchema,
 } from "@/lib/custom-recipes/contracts";
 import {
-  getRecipeCategoryGradient,
   normalizeRecipeCategoryKey,
   type CanonicalRecipeCategoryKey,
 } from "@/lib/recipes/category-keys";
@@ -54,7 +43,10 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { PANTRY_QUANTITY_TRACKING } from "@/lib/config/features";
+
+const RecipeBrowserDialog = dynamic(() => import("./RecipeBrowserDialog"), {
+  ssr: false,
+});
 
 export type CustomRecipeGenerationStatus =
   | "idle"
@@ -222,6 +214,8 @@ interface RivoCustomRecipeExperienceProps {
   showPanel?: boolean;
   onStatusChange?: (status: CustomRecipeGenerationStatus) => void;
   onStateChange?: (snapshot: CustomRecipeHeroSnapshot) => void;
+  isRecipeBookmarked?: (recipeId: string) => boolean;
+  onBookmarkChange?: (recipeId: string, bookmarked: boolean) => void;
 }
 
 export interface RivoCustomRecipeExperienceHandle {
@@ -696,6 +690,8 @@ const RivoCustomRecipeExperience = forwardRef<
   showPanel = true,
   onStatusChange,
   onStateChange,
+  isRecipeBookmarked,
+  onBookmarkChange,
 }: RivoCustomRecipeExperienceProps, ref) {
   const t = useTranslations("home");
   const locale = useLocale();
@@ -717,13 +713,6 @@ const RivoCustomRecipeExperience = forwardRef<
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogIndex, setDialogIndex] = useState(0);
   const [dialogRecipes, setDialogRecipes] = useState<BasicHomeRecipePreview[]>([]);
-  const [dialogDirection, setDialogDirection] = useState(0);
-  const [selectedMissingIngredients, setSelectedMissingIngredients] = useState<Set<string>>(
-    new Set(),
-  );
-  const [bookmarkedRecipeId, setBookmarkedRecipeId] = useState<string | null>(null);
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [isBookmarkPending, setIsBookmarkPending] = useState(false);
 
   const customRecipeTips = useMemo(
     () => [
@@ -749,10 +738,7 @@ const RivoCustomRecipeExperience = forwardRef<
     [rawResultPayload?.meta.mode, result?.fallbackRecommendations, t],
   );
   const userMessage = resolveMessageDescriptor(t, result?.userMessage);
-  const activeDialogRecipe = dialogRecipes[dialogIndex] ?? null;
   const isPreferencesOnlyMode = rawResultPayload?.meta.mode === "preferences_only";
-  const hasNextDialogRecipe = dialogIndex < dialogRecipes.length - 1;
-  const hasPreviousDialogRecipe = dialogIndex > 0;
   const mealTypeOptions = useMemo(
     () => [
       {
@@ -833,68 +819,6 @@ const RivoCustomRecipeExperience = forwardRef<
       window.clearInterval(interval);
     };
   }, [status]);
-
-  useEffect(() => {
-    if (!dialogOpen) {
-      setSelectedMissingIngredients(new Set());
-    }
-  }, [dialogOpen]);
-
-  useEffect(() => {
-    if (!dialogOpen || !activeDialogRecipe) {
-      setBookmarkedRecipeId(null);
-      setIsBookmarked(false);
-      setIsBookmarkPending(false);
-      return;
-    }
-
-    if (!isPersistedRecipeId(activeDialogRecipe.id)) {
-      setBookmarkedRecipeId(null);
-      setIsBookmarked(false);
-      return;
-    }
-
-    let isCancelled = false;
-
-    setBookmarkedRecipeId(activeDialogRecipe.id);
-    setIsBookmarkPending(true);
-
-    void fetch(`/api/recipes/${activeDialogRecipe.id}/bookmark`, {
-      method: "GET",
-      cache: "no-store",
-    })
-      .then(async (response) => {
-        const payload = await response.json().catch(() => null);
-
-        if (!response.ok) {
-          throw new Error(
-            readErrorMessage(payload) ?? "Bookmark status request failed.",
-          );
-        }
-
-        if (isCancelled) {
-          return;
-        }
-
-        setIsBookmarked(Boolean((payload as { bookmarked?: boolean } | null)?.bookmarked));
-      })
-      .catch(() => {
-        if (isCancelled) {
-          return;
-        }
-
-        setIsBookmarked(false);
-      })
-      .finally(() => {
-        if (!isCancelled) {
-          setIsBookmarkPending(false);
-        }
-      });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [activeDialogRecipe, dialogOpen]);
 
   useEffect(() => {
     const persistedState = readPersistedCustomRecipeState(locale);
@@ -1034,29 +958,6 @@ const RivoCustomRecipeExperience = forwardRef<
     };
   }, [t]);
 
-  useEffect(() => {
-    if (!dialogOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowRight" && hasNextDialogRecipe) {
-        setDialogDirection(1);
-        setDialogIndex((current) => current + 1);
-      }
-
-      if (event.key === "ArrowLeft" && hasPreviousDialogRecipe) {
-        setDialogDirection(-1);
-        setDialogIndex((current) => current - 1);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [dialogOpen, hasNextDialogRecipe, hasPreviousDialogRecipe]);
-
   const consumeRecipeStream = useCallback(
     async (response: Response, requestId: number) => {
       if (!response.ok) {
@@ -1156,7 +1057,6 @@ const RivoCustomRecipeExperience = forwardRef<
 
       setDialogRecipes(recipes);
       setDialogIndex(index);
-      setDialogDirection(0);
       setDialogOpen(true);
     },
     [],
@@ -1462,45 +1362,6 @@ const RivoCustomRecipeExperience = forwardRef<
     [handleOpenFallbackRecipe, handleOpenPantry, handleOpenRequestDialog, handleOpenResultRecipe],
   );
 
-  const handleNextDialogRecipe = useCallback(() => {
-    if (!hasNextDialogRecipe) {
-      return;
-    }
-
-    setDialogDirection(1);
-    setDialogIndex((current) => current + 1);
-  }, [hasNextDialogRecipe]);
-
-  const handlePreviousDialogRecipe = useCallback(() => {
-    if (!hasPreviousDialogRecipe) {
-      return;
-    }
-
-    setDialogDirection(-1);
-    setDialogIndex((current) => current - 1);
-  }, [hasPreviousDialogRecipe]);
-
-  const handleSelectMissingIngredient = useCallback(
-    async (name: string, quantity: string | null, category: string | null) => {
-      if (!onAddToShoppingList) {
-        return;
-      }
-
-      setSelectedMissingIngredients((previous) => new Set(previous).add(name));
-
-      try {
-        await onAddToShoppingList(name, quantity, category);
-      } catch {
-        setSelectedMissingIngredients((previous) => {
-          const next = new Set(previous);
-          next.delete(name);
-          return next;
-        });
-      }
-    },
-    [onAddToShoppingList],
-  );
-
   const persistAcceptedGeneratedRecipe = useCallback(
     (recipe: BasicHomeRecipePreview) => {
       const generatedRecipe = getGeneratedRecipeFromPreview(recipe);
@@ -1526,74 +1387,6 @@ const RivoCustomRecipeExperience = forwardRef<
     [getGeneratedRecipeFromPreview, locale, rawResultPayload?.meta.locale],
   );
 
-  const handleToggleBookmark = useCallback(async () => {
-    if (!activeDialogRecipe || isBookmarkPending) {
-      return;
-    }
-
-    triggerHaptic("light");
-    setIsBookmarkPending(true);
-
-    const previousBookmarked = isBookmarked;
-    let recipeId = isPersistedRecipeId(activeDialogRecipe.id)
-      ? activeDialogRecipe.id
-      : bookmarkedRecipeId;
-
-    try {
-      if (!recipeId) {
-        const persistedRecipe = await persistGeneratedRecipeForBookmark(
-          activeDialogRecipe,
-        );
-
-        if (!persistedRecipe?.recipeId) {
-          throw new Error("Persisted recipe id is missing.");
-        }
-
-        recipeId = persistedRecipe.recipeId;
-        setBookmarkedRecipeId(recipeId);
-        replaceRecipeReference(activeDialogRecipe.id, {
-          recipeId,
-          slug: persistedRecipe.slug,
-        });
-      }
-
-      const response = await fetch(`/api/recipes/${recipeId}/bookmark`, {
-        method: previousBookmarked ? "DELETE" : "POST",
-      });
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(
-          readErrorMessage(payload) ?? "Bookmark request failed.",
-        );
-      }
-
-      setIsBookmarked(!previousBookmarked);
-      toast.success(
-        t(
-          previousBookmarked
-            ? "basic.recipeDialog.bookmarkRemoved"
-            : "basic.recipeDialog.bookmarkSaved",
-        ),
-      );
-    } catch (bookmarkError) {
-      setIsBookmarked(previousBookmarked);
-      toast.error(t("basic.recipeDialog.bookmarkError"));
-      console.error("[CustomRecipe] bookmark toggle failed", bookmarkError);
-    } finally {
-      setIsBookmarkPending(false);
-    }
-  }, [
-    activeDialogRecipe,
-    bookmarkedRecipeId,
-    isBookmarked,
-    isBookmarkPending,
-    persistGeneratedRecipeForBookmark,
-    replaceRecipeReference,
-    t,
-    triggerHaptic,
-  ]);
-
   const handleCookGeneratedRecipe = useCallback(
     (recipe: BasicHomeRecipePreview) => {
       setDialogOpen(false);
@@ -1601,6 +1394,25 @@ const RivoCustomRecipeExperience = forwardRef<
       onCookRecipe?.(recipe);
     },
     [onCookRecipe, persistAcceptedGeneratedRecipe],
+  );
+
+  // Generated recipes only get a database id once they are persisted, which the
+  // bookmark API needs; the sheet calls this on the first bookmark tap.
+  const handleEnsureBookmarkRecipeId = useCallback(
+    async (recipe: BasicHomeRecipePreview) => {
+      const persisted = await persistGeneratedRecipeForBookmark(recipe);
+
+      if (!persisted?.recipeId) {
+        throw new Error("Persisted recipe id is missing.");
+      }
+
+      replaceRecipeReference(recipe.id, {
+        recipeId: persisted.recipeId,
+        slug: persisted.slug,
+      });
+      return persisted.recipeId;
+    },
+    [persistGeneratedRecipeForBookmark, replaceRecipeReference],
   );
 
   const fadeIn = shouldReduceMotion
@@ -1611,18 +1423,6 @@ const RivoCustomRecipeExperience = forwardRef<
         exit: { opacity: 0, y: -8 },
         transition: { duration: 0.4, ease: "easeOut" as const },
       };
-  const dialogSlideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 300 : -300,
-      opacity: 0,
-    }),
-    center: { x: 0, opacity: 1 },
-    exit: (direction: number) => ({
-      x: direction > 0 ? -300 : 300,
-      opacity: 0,
-    }),
-  };
-
   return (
     <>
       {showPanel ? (
@@ -2169,455 +1969,20 @@ const RivoCustomRecipeExperience = forwardRef<
         </DialogContent>
       </Dialog>
 
-      <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
-        <DialogContent
-          showCloseButton={false}
-          className="max-w-[95vw] sm:max-w-2xl max-h-[92vh] overflow-y-auto bg-eatrivo-white-primary p-0 gap-0 border-none shadow-2xl rounded-[2rem] sm:rounded-[2.5rem]"
-        >
-          {activeDialogRecipe ? (
-            <>
-              <div className="sticky top-0 z-30 flex items-center justify-between bg-eatrivo-white-primary/98 px-4 pt-4 pb-2">
-                <button
-                  type="button"
-                  disabled={!hasPreviousDialogRecipe}
-                  onClick={handlePreviousDialogRecipe}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-lg ring-1 ring-gray-200/50 transition-all hover:bg-white active:scale-90 disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-
-                <span className="text-[12px] font-bold tracking-wider text-gray-400">
-                  {dialogIndex + 1} / {dialogRecipes.length}
-                </span>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={!hasNextDialogRecipe}
-                    onClick={handleNextDialogRecipe}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-lg ring-1 ring-gray-200/50 transition-all hover:bg-white active:scale-90 disabled:cursor-not-allowed disabled:opacity-30"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDialogOpen(false)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-lg ring-1 ring-gray-200/50 transition-all hover:bg-white active:scale-90"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-
-              <AnimatePresence mode="wait" custom={dialogDirection}>
-                <motion.div
-                  key={activeDialogRecipe.id}
-                  custom={dialogDirection}
-                  variants={dialogSlideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                >
-                  <div
-                    className={`relative mx-4 overflow-hidden rounded-[1.5rem] bg-gradient-to-br ${getRecipeCategoryGradient(activeDialogRecipe.categoryKey)} p-6 text-white sm:p-8`}
-                  >
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.3),transparent_45%)]" />
-                    <div className="relative z-10 space-y-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex flex-wrap gap-2">
-                          <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] backdrop-blur-md">
-                            {activeDialogRecipe.category}
-                          </span>
-                          {activeDialogRecipe.mealPrepFriendly ? (
-                            <span className="flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] backdrop-blur-md">
-                              <Sparkles className="h-3 w-3" />
-                              {t("basic.recipeDialog.mealPrep")}
-                            </span>
-                          ) : null}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            void handleToggleBookmark();
-                          }}
-                          disabled={isBookmarkPending}
-                          aria-label={
-                            isBookmarked ? "Remove bookmark" : "Save recipe"
-                          }
-                          title={isBookmarked ? "Remove bookmark" : "Save recipe"}
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-lg ring-1 ring-white/30 backdrop-blur-md transition-all active:scale-95 disabled:cursor-wait disabled:opacity-70 ${
-                            isBookmarked
-                              ? "bg-white text-eatrivo-purple"
-                              : "bg-white/18 text-white hover:bg-white/26"
-                          }`}
-                        >
-                          {isBookmarkPending ? (
-                            <Loader2 className="h-4.5 w-4.5 animate-spin" />
-                          ) : (
-                            <Bookmark
-                              className={`h-4.5 w-4.5 ${isBookmarked ? "fill-current" : ""}`}
-                            />
-                          )}
-                        </button>
-                      </div>
-
-                      <DialogTitle className="text-balance text-3xl font-black leading-[1.05] tracking-tighter text-white drop-shadow-sm sm:text-4xl">
-                        {activeDialogRecipe.title}
-                      </DialogTitle>
-                      <DialogDescription className="sr-only">
-                        {t("basic.recipeDialog.detail")}
-                      </DialogDescription>
-
-                      <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-white/90">
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="h-4 w-4" />
-                          {activeDialogRecipe.totalTimeMin} {t("time.minutesShort")}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <Flame className="h-4 w-4" />
-                          {activeDialogRecipe.calories} kcal
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <Users className="h-4 w-4" />
-                            {activeDialogRecipe.servings === 1
-                              ? t("basic.recipeDialog.oneServing", {
-                                  count: activeDialogRecipe.servings,
-                                })
-                              : t("basic.recipeDialog.servings", {
-                                  count: activeDialogRecipe.servings,
-                                })}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-8 p-6 sm:p-8">
-                    <div>
-                      <h3 className="mb-4 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">
-                        {t("recipe.nutritionValues")}
-                        <div className="h-px flex-1 bg-gray-100" />
-                      </h3>
-
-                      <div className="grid grid-cols-4 gap-3">
-                        {[
-                          {
-                            icon: Flame,
-                            value: activeDialogRecipe.calories,
-                            unit: "",
-                            label: t("nutrition.calories"),
-                            color: "text-orange-500 bg-orange-50",
-                          },
-                          {
-                            icon: Beef,
-                            value: activeDialogRecipe.proteinG,
-                            unit: "g",
-                            label: t("nutrition.protein"),
-                            color: "text-green-600 bg-green-50",
-                          },
-                          {
-                            icon: Wheat,
-                            value: activeDialogRecipe.carbsG,
-                            unit: "g",
-                            label: t("nutrition.carbs"),
-                            color: "text-amber-600 bg-amber-50",
-                          },
-                          {
-                            icon: Droplet,
-                            value: activeDialogRecipe.fatG,
-                            unit: "g",
-                            label: t("nutrition.fats"),
-                            color: "text-rose-500 bg-rose-50",
-                          },
-                        ].map((macro) => (
-                          <div
-                            key={macro.label}
-                            className="flex flex-col items-center gap-2 rounded-2xl bg-gray-50 p-3 ring-1 ring-gray-100"
-                          >
-                            <div
-                              className={`flex h-8 w-8 items-center justify-center rounded-full ${macro.color}`}
-                            >
-                              <macro.icon className="h-4 w-4" />
-                            </div>
-                            <span className="text-xl font-black leading-none tracking-tight text-[#1a1a2e]">
-                              {macro.value}
-                              {macro.unit}
-                            </span>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                              {macro.label}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="mb-4 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">
-                        {t("recipe.ingredients")}
-                        <div className="h-px flex-1 bg-gray-100" />
-                      </h3>
-
-                      {(() => {
-                        const ingredientByName = new Map(
-                          activeDialogRecipe.ingredientItems.map((ingredient) => [
-                            ingredient.name.trim().toLowerCase(),
-                            ingredient,
-                          ]),
-                        );
-
-                        const resolveAmountLabel = (
-                          ingredientName: string,
-                          fallbackAmount: string | null,
-                        ) => {
-                          const ingredient = ingredientByName.get(
-                            ingredientName.trim().toLowerCase(),
-                          );
-
-                          // [PANTRY_QUANTITY_TRACKING] flag off: keep the recipe's own amount, "have at home" only when there is no amount
-                          if (
-                            ingredient?.pantryComparison?.status ===
-                              "available-staple" &&
-                            (PANTRY_QUANTITY_TRACKING ||
-                              !(ingredient.pantryComparison.requiredLabel ?? ingredient.amount ?? fallbackAmount))
-                          ) {
-                            return t("basic.recipeDialog.stapleAvailable");
-                          }
-
-                          if (
-                            ingredient?.pantryComparison?.status === "insufficient" &&
-                            ingredient.pantryComparison.requiredLabel &&
-                            ingredient.pantryComparison.availableLabel
-                          ) {
-                            return `${ingredient.pantryComparison.requiredLabel} (${t("basic.recipeDialog.haveAmountInline", {
-                              amount: ingredient.pantryComparison.availableLabel,
-                            })})`;
-                          }
-
-                          return (
-                            ingredient?.pantryComparison?.requiredLabel ??
-                            ingredient?.amount ??
-                            fallbackAmount
-                          );
-                        };
-
-                        const resolveTone = (
-                          ingredientName: string,
-                          available: boolean,
-                          matchType: "exact" | "fallback",
-                        ) => {
-                          if (!available) {
-                            return "red" as const;
-                          }
-
-                          if (matchType === "fallback") {
-                            return "orange" as const;
-                          }
-
-                          const comparison = ingredientByName.get(
-                            ingredientName.trim().toLowerCase(),
-                          )?.pantryComparison;
-
-                          if (
-                            comparison?.status === "insufficient" ||
-                            comparison?.status === "unit-mismatch" ||
-                            comparison?.status === "missing-pantry-quantity"
-                          ) {
-                            return "orange" as const;
-                          }
-
-                          return "green" as const;
-                        };
-
-                        const available = (activeDialogRecipe.matchedIngredients ?? []).map(
-                          (ingredient) => ({
-                            key: ingredient.recipeIngredientName,
-                            name: ingredient.recipeIngredientName,
-                            note:
-                              ingredient.matchType === "fallback" &&
-                              ingredient.pantryIngredientName &&
-                              ingredient.pantryIngredientName.trim().toLowerCase() !==
-                                ingredient.recipeIngredientName.trim().toLowerCase()
-                                ? t("basic.recipeDialog.fallbackUsing", {
-                                    ingredient: ingredient.pantryIngredientName,
-                                  })
-                                : null,
-                            amount: resolveAmountLabel(
-                              ingredient.recipeIngredientName,
-                              ingredient.amount,
-                            ),
-                            category: null,
-                            available: true,
-                            matchType: ingredient.matchType,
-                            isStaple:
-                              // [PANTRY_QUANTITY_TRACKING] flag off: nothing is shown as a "staple"
-                              PANTRY_QUANTITY_TRACKING &&
-                              ingredientByName.get(
-                                ingredient.recipeIngredientName.trim().toLowerCase(),
-                              )?.pantryComparison?.status === "available-staple",
-                            tone: resolveTone(
-                              ingredient.recipeIngredientName,
-                              true,
-                              ingredient.matchType,
-                            ),
-                          }),
-                        );
-                        const fallbackAvailable =
-                          activeDialogRecipe.matchedIngredients === undefined
-                            ? activeDialogRecipe.ingredientItems.map((ingredient) => ({
-                                key: ingredient.name,
-                                name: ingredient.name,
-                                note: null,
-                                amount: resolveAmountLabel(
-                                  ingredient.name,
-                                  ingredient.amount,
-                                ),
-                                category: null,
-                                available: true,
-                                matchType: "exact" as const,
-                                isStaple:
-                                  // [PANTRY_QUANTITY_TRACKING] flag off: nothing is shown as a "staple"
-                                  PANTRY_QUANTITY_TRACKING &&
-                                  ingredient.pantryComparison?.status === "available-staple",
-                                tone: resolveTone(ingredient.name, true, "exact"),
-                              }))
-                            : [];
-                        const missing = (activeDialogRecipe.missingIngredients ?? []).map(
-                          (ingredientName) => ({
-                            key: ingredientName,
-                            name: ingredientName,
-                            note: null,
-                            amount: resolveAmountLabel(ingredientName, null),
-                            category:
-                              ingredientByName.get(
-                                ingredientName.trim().toLowerCase(),
-                              )?.category ?? null,
-                            available: false,
-                            matchType: "exact" as const,
-                            isStaple: false,
-                            tone: "red" as const,
-                          }),
-                        );
-                        const allIngredients = [
-                          ...available,
-                          ...fallbackAvailable,
-                          ...missing,
-                        ];
-
-                        if (allIngredients.length === 0) {
-                          return (
-                            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 py-8 text-center">
-                              <ChefHat className="mx-auto mb-3 h-8 w-8 text-gray-300" />
-                              <p className="text-[13px] font-bold text-gray-400">
-                                {t("recipe.noIngredients")}
-                              </p>
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            {allIngredients.map((ingredient) => (
-                              <div
-                                key={`${ingredient.key}-${ingredient.available ? "available" : "missing"}`}
-                                className={`flex items-center gap-3 rounded-xl px-4 py-3 ring-1 transition-colors ${
-                                  ingredient.tone === "green"
-                                    ? "bg-green-50/60 ring-green-200/50"
-                                    : ingredient.tone === "orange"
-                                      ? "bg-amber-50/70 ring-amber-200/60"
-                                      : "bg-red-50/60 ring-red-200/50"
-                                }`}
-                              >
-                                {ingredient.available && !ingredient.isStaple ? (
-                                  <div
-                                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full shadow-sm ${
-                                      ingredient.tone === "orange"
-                                        ? "bg-eatrivo-orange"
-                                        : "bg-eatrivo-green"
-                                    }`}
-                                  >
-                                    {ingredient.tone === "orange" ? (
-                                      <Minus className="h-3 w-3 text-white" />
-                                    ) : (
-                                      <Check className="h-3 w-3 text-white" strokeWidth={3} />
-                                    )}
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      void handleSelectMissingIngredient(
-                                        ingredient.name,
-                                        ingredient.amount,
-                                        ingredient.category,
-                                      );
-                                    }}
-                                    disabled={selectedMissingIngredients.has(ingredient.name)}
-                                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-all active:scale-90 ${
-                                      selectedMissingIngredients.has(ingredient.name)
-                                        ? "bg-gray-200"
-                                        : ingredient.isStaple
-                                          ? "bg-eatrivo-green shadow-sm shadow-green-200 hover:bg-green-600"
-                                          : "bg-red-500 shadow-sm shadow-red-200 hover:bg-red-600"
-                                    }`}
-                                    title={t("basic.recipeDialog.addToShoppingList")}
-                                  >
-                                    {selectedMissingIngredients.has(ingredient.name) ? (
-                                      <Check className="h-3 w-3 text-gray-500" strokeWidth={3} />
-                                    ) : (
-                                      <Plus className="h-3 w-3 text-white" strokeWidth={3} />
-                                    )}
-                                  </button>
-                                )}
-
-                                <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
-                                  <div className="min-w-0 flex-1">
-                                    <span
-                                      className={`block truncate text-[13px] font-bold ${
-                                        ingredient.tone === "green"
-                                          ? "text-[#1a1a2e]"
-                                          : ingredient.tone === "orange"
-                                            ? "text-amber-800"
-                                            : "text-red-700"
-                                      }`}
-                                    >
-                                      {ingredient.name}
-                                    </span>
-                                    {ingredient.note ? (
-                                      <span className="mt-1 block truncate text-[11px] font-semibold text-amber-700/80">
-                                        {ingredient.note}
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                  {ingredient.amount ? (
-                                    <span className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-gray-500 ring-1 ring-gray-200/70">
-                                      {ingredient.amount}
-                                    </span>
-                                  ) : null}
-                                </div>
-                              </div>
-                            ))}
-
-                            <div className="pt-2 sm:col-span-2">
-                              <Button
-                                className="w-full"
-                                onClick={() => handleCookGeneratedRecipe(activeDialogRecipe)}
-                                disabled={!onCookRecipe}
-                              >
-                                {t("basic.recipeDialog.cookThisRecipe")}
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <RecipeBrowserDialog
+        open={dialogOpen}
+        onOpenChange={handleDialogOpenChange}
+        recipes={dialogRecipes}
+        initialIndex={dialogIndex}
+        getBookmarkRecipeId={(recipe) =>
+          isPersistedRecipeId(recipe.id) ? recipe.id : null
+        }
+        onEnsureBookmarkRecipeId={handleEnsureBookmarkRecipeId}
+        isRecipeBookmarked={isRecipeBookmarked}
+        onBookmarkChange={onBookmarkChange}
+        onAddToShoppingList={onAddToShoppingList}
+        onCookRecipe={handleCookGeneratedRecipe}
+      />
     </>
   );
 });

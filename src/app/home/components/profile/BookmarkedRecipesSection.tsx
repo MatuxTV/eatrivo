@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -48,6 +48,9 @@ interface BookmarksResponse {
 interface BookmarkedRecipesSectionProps {
   isProfileLoading: boolean;
   onOpenRecipe: (recipe: BasicHomeRecipePreview) => void;
+  /** The list reloads every time this becomes true (section opened again). */
+  isActive?: boolean;
+  onBookmarkRemoved?: (recipeId: string) => void;
 }
 
 const PAGE_SIZE = 12;
@@ -55,6 +58,8 @@ const PAGE_SIZE = 12;
 export default function BookmarkedRecipesSection({
   isProfileLoading,
   onOpenRecipe,
+  isActive = true,
+  onBookmarkRemoved,
 }: BookmarkedRecipesSectionProps) {
   const t = useTranslations("profile");
   const locale = useLocale();
@@ -64,11 +69,20 @@ export default function BookmarkedRecipesSection({
   const [total, setTotal] = useState(0);
   const [pendingRecipeIds, setPendingRecipeIds] = useState<Set<string>>(new Set());
   const [openingRecipeId, setOpeningRecipeId] = useState<string | null>(null);
+  const hasLoadedOnceRef = useRef(false);
 
   const fetchBookmarks = useCallback(
-    async (offset = 0, mode: "replace" | "append" = "replace") => {
+    async (
+      offset = 0,
+      mode: "replace" | "append" = "replace",
+      options?: { silent?: boolean },
+    ) => {
+      const silent = options?.silent ?? false;
+
       if (mode === "replace") {
-        setIsLoading(true);
+        if (!silent) {
+          setIsLoading(true);
+        }
       } else {
         setIsLoadingMore(true);
       }
@@ -99,9 +113,12 @@ export default function BookmarkedRecipesSection({
           mode === "append" ? [...current, ...payload.items] : payload.items,
         );
         setTotal(payload.pagination.total);
+        hasLoadedOnceRef.current = true;
       } catch (error) {
         console.error("[Profile] failed to load bookmarks", error);
-        toast.error(t("bookmarks.toast.loadError"));
+        if (!silent) {
+          toast.error(t("bookmarks.toast.loadError"));
+        }
       } finally {
         setIsLoading(false);
         setIsLoadingMore(false);
@@ -110,9 +127,15 @@ export default function BookmarkedRecipesSection({
     [locale, t],
   );
 
+  // Reload on every open: on mount and whenever the profile section becomes
+  // visible again. Later reloads keep the current list on screen.
   useEffect(() => {
-    void fetchBookmarks();
-  }, [fetchBookmarks]);
+    if (!isActive) {
+      return;
+    }
+
+    void fetchBookmarks(0, "replace", { silent: hasLoadedOnceRef.current });
+  }, [fetchBookmarks, isActive]);
 
   const hasMore = items.length < total;
 
@@ -186,6 +209,7 @@ export default function BookmarkedRecipesSection({
         }
 
         toast.success(t("bookmarks.toast.removed"));
+        onBookmarkRemoved?.(recipeId);
       } catch (error) {
         console.error("[Profile] failed to remove bookmark", error);
         setItems(previousItems);
@@ -199,7 +223,7 @@ export default function BookmarkedRecipesSection({
         });
       }
     },
-    [items, t],
+    [items, onBookmarkRemoved, t],
   );
 
   const content = useMemo(() => {
