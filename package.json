@@ -17,7 +17,8 @@
     "db:studio": "drizzle-kit studio",
     "db:merge": "tsx scripts/merge-db.ts",
     "db:import:recipes": "tsx scripts/import-recipes.ts",
-    "db:import:recipe-url": "tsx scripts/import-recipe-url.ts"
+    "db:import:recipe-url": "tsx scripts/import-recipe-url.ts",
+    "db:backfill:recipe-images": "tsx --conditions=react-server scripts/backfill-recipe-images.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",
@@ -72,6 +73,7 @@
     "redis": "^5.8.3",
     "resend": "^6.5.2",
     "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
     "sonner": "^2.0.7",
     "stripe": "^20.3.0",
     "swiper": "^12.1.2",

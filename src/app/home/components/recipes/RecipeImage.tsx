@@ -36,6 +36,7 @@ export function RecipeImage({
           src={src}
           alt={alt}
           fill
+          unoptimized
           sizes="(max-width: 768px) 50vw, 33vw"
           className="object-cover"
         />

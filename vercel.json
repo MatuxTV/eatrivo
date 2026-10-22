@@ -8,6 +8,7 @@
       "path": "/api/cron/notify-users",
       "schedule": "0 10 */2 * *"
     },
-    { "path": "/api/cron/check-pantry-expiry", "schedule": "0 9 * * *" }
+    { "path": "/api/cron/check-pantry-expiry", "schedule": "0 9 * * *" },
+    { "path": "/api/cron/recipe-images", "schedule": "30 2 * * *" }
   ]
 }

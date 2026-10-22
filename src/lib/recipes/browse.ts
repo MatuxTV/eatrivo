@@ -2,6 +2,7 @@ import { and, asc, count, desc, eq, inArray, lte, type SQL } from "drizzle-orm";
 
 import type { BasicHomeRecipePreview } from "@/app/home/types/data";
 import {
+  recipeImages,
   recipeIngredients,
   recipes,
   recipeTranslations,
@@ -27,6 +28,7 @@ import {
   type DietPreference,
 } from "@/lib/recipes/recipe-filters";
 import { getRecipeAvailabilityForUserProfile } from "@/lib/recipes/recipe-matches";
+import { resolveRecipeImageUrls } from "@/lib/recipe-images/urls";
 
 const DEFAULT_PAGE_SIZE = 8;
 const MAX_PAGE_SIZE = 24;
@@ -46,6 +48,7 @@ type RecipeBrowseRow = {
   restrictionFlags: string[];
   dietTags: string[];
   mealPrepFriendly: boolean;
+  coverImageKey: string | null;
 };
 
 export interface RecipeBrowseFilters {
@@ -313,6 +316,7 @@ async function buildRecipePreviews(
       matchedIngredients: availability?.matchedIngredients,
       mealPrepFriendly: row.mealPrepFriendly,
       missingIngredients: availability?.missingIngredientNames,
+      ...resolveRecipeImageUrls(row.coverImageKey),
     }];
   });
 }
@@ -379,8 +383,10 @@ export async function getRecipeBrowsePage(
         restrictionFlags: recipes.restrictionFlags,
         dietTags: recipes.dietTags,
         mealPrepFriendly: recipes.mealPrepFriendly,
+        coverImageKey: recipeImages.storageKey,
       })
       .from(recipes)
+      .leftJoin(recipeImages, eq(recipes.coverImageId, recipeImages.id))
       .where(whereClause)
       .orderBy(desc(recipes.proteinG), asc(recipes.totalTimeMin), asc(recipes.slug), asc(recipes.id))
       .limit(limit)

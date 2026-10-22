@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 
 import { db } from "@/lib/db/pool";
 import {
@@ -15,6 +15,10 @@ import {
 import { apiLogger } from "@/lib/logger";
 import { normalizeRecipeCategoryKey } from "@/lib/recipes/category-keys";
 import { ensureCatalogIngredients } from "@/lib/ingredients/catalog";
+import { getDishSignature } from "@/lib/recipe-images/signature";
+
+/** Same inputs as ensureRecipeImage: English name + first ingredients in recipe order. */
+const SIGNATURE_INGREDIENT_COUNT = 6;
 
 type PersistableCanonicalRecipe = NonNullable<
   CustomRecipeGeneratedRecipe["canonicalRecipe"]
@@ -167,6 +171,28 @@ export async function persistAcceptedCustomRecipe(
   const persistedIngredients = canonicalRecipe.ingredients.map((ingredient, index) =>
     buildPersistedIngredient(ingredient, index),
   );
+  const dishSignature = getDishSignature({
+    nameEn: canonicalRecipe.translations.en.name,
+    ingredientKeys: persistedIngredients
+      .slice(0, SIGNATURE_INGREDIENT_COUNT)
+      .map((ingredient) => ingredient.row.ingredientKey ?? ingredient.row.canonicalName)
+      .filter((key): key is string => Boolean(key)),
+  });
+
+  // Recipes are shared by everyone, so the same dish is stored only once: if
+  // another recipe (any user or the catalog) already has this signature, reuse it.
+  const [sameDish] = await db
+    .select({ id: recipes.id, slug: recipes.slug, externalKey: recipes.externalKey })
+    .from(recipes)
+    .where(and(eq(recipes.dishSignature, dishSignature), ne(recipes.externalKey, externalKey)))
+    .limit(1);
+
+  if (sameDish) {
+    apiLogger.info("[customRecipe.accept] reused existing recipe for the same dish", {
+      metadata: { userId: input.userId, recipeId: sameDish.id, dishSignature },
+    });
+    return sameDish;
+  }
 
   const recipePayload = {
     slug,
@@ -189,6 +215,7 @@ export async function persistAcceptedCustomRecipe(
     dietTags: canonicalRecipe.diet_tags,
     restrictionFlags: canonicalRecipe.restriction_flags,
     mealPrepFriendly: canonicalRecipe.meal_prep_friendly,
+    dishSignature,
   };
 
   const [upsertedRecipe] = await db
@@ -214,6 +241,7 @@ export async function persistAcceptedCustomRecipe(
         dietTags: recipePayload.dietTags,
         restrictionFlags: recipePayload.restrictionFlags,
         mealPrepFriendly: recipePayload.mealPrepFriendly,
+        dishSignature: recipePayload.dishSignature,
         updatedAt: new Date(),
       },
     })

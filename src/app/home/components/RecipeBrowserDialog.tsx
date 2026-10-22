@@ -341,6 +341,8 @@ export default function RecipeBrowserDialog({
           >
             <RecipeDetailHero
               categoryKey={recipe.categoryKey}
+              imageUrl={recipe.imageUrl}
+              imageAlt={recipe.title}
               counterLabel={`${currentIndex + 1} / ${recipes.length}`}
               hasPrev={hasPrev}
               hasNext={hasNext}

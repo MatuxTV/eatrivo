@@ -18,7 +18,7 @@ type TipRecipe = Pick<
   | "fatG"
   | "category"
   | "mealPrepFriendly"
-> & { categoryKey?: string | null };
+> & { categoryKey?: string | null; imageUrl?: string | null };
 
 interface TipOfDayCardProps {
   recipe: TipRecipe;
@@ -38,6 +38,8 @@ export function TipOfDayCard({ recipe, onOpen, badge }: TipOfDayCardProps) {
     >
       <RecipeImage
         categoryKey={recipe.categoryKey}
+        src={recipe.imageUrl}
+        alt={recipe.title}
         className="h-[172px] w-full"
         emojiClassName="text-[64px]"
       >

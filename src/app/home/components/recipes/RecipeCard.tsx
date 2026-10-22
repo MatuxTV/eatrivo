@@ -51,7 +51,12 @@ export function RecipeCard({
         "group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white text-left transition-transform duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-eatrivo-purple/30",
       )}
     >
-      <RecipeImage categoryKey={recipe.categoryKey} className="h-28 w-full">
+      <RecipeImage
+        categoryKey={recipe.categoryKey}
+        src={recipe.imageThumbUrl ?? recipe.imageUrl}
+        alt={recipe.title}
+        className="h-28 w-full"
+      >
         {onToggleBookmark ? (
           <BookmarkButton
             className="absolute right-2 top-2"

@@ -32,6 +32,8 @@ interface RecipeMatchPayloadItem {
   matchedIngredientNames: string[];
   matchedIngredients?: BasicHomeRecipePreview["matchedIngredients"];
   missingIngredientNames?: string[];
+  imageUrl?: string | null;
+  imageThumbUrl?: string | null;
 }
 
 const PANTRY_CHANGED_EVENT = "pantry:changed";
@@ -167,6 +169,8 @@ export function usePantrySync({
               ingredientPreview: match.matchedIngredientNames,
               matchedIngredients: match.matchedIngredients,
               mealPrepFriendly: match.mealPrepFriendly,
+              imageUrl: match.imageUrl ?? null,
+              imageThumbUrl: match.imageThumbUrl ?? null,
             })),
           );
         }
@@ -192,6 +196,8 @@ export function usePantrySync({
               ingredientPreview: match.matchedIngredientNames,
               matchedIngredients: match.matchedIngredients,
               mealPrepFriendly: match.mealPrepFriendly,
+              imageUrl: match.imageUrl ?? null,
+              imageThumbUrl: match.imageThumbUrl ?? null,
               missingIngredients: match.missingIngredientNames,
             })),
           );

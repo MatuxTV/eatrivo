@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils/utils";
 
 interface RecipeDetailHeroProps {
   categoryKey: string;
+  imageUrl?: string | null;
+  imageAlt?: string;
   counterLabel: string;
   hasPrev: boolean;
   hasNext: boolean;
@@ -27,6 +29,8 @@ const NAV_BUTTON_CLASS =
 
 export function RecipeDetailHero({
   categoryKey,
+  imageUrl,
+  imageAlt,
   counterLabel,
   hasPrev,
   hasNext,
@@ -42,6 +46,8 @@ export function RecipeDetailHero({
   return (
     <RecipeImage
       categoryKey={categoryKey}
+      src={imageUrl}
+      alt={imageAlt}
       className="h-[230px] w-full"
       emojiClassName="text-[72px]"
     >

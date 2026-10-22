@@ -25,13 +25,16 @@ import {
 } from "@/lib/langgraph/custom-recipe/constants";
 import type { CustomRecipeState } from "@/lib/langgraph/custom-recipe/state";
 import { trackEvent } from "@/lib/analytics/analytics";
+import { persistGeneratedRecipesInBackground } from "@/lib/custom-recipes/auto-persist";
 import { apiLogger } from "@/lib/logger";
 import { RequestLock } from "@/lib/cache/redis";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+// The stream itself finishes well under a minute; the extra time covers the
+// after() work that saves the generated recipes and creates their photos.
+export const maxDuration = 300;
 
 const CUSTOM_RECIPE_LOCK_TTL_SECONDS = 300;
 
@@ -507,6 +510,17 @@ export async function POST(request: NextRequest) {
                 userCreated: true,
                 result: nodeState.finalResult,
               }));
+
+              // Every generated recipe becomes an official recipe with a photo.
+              persistGeneratedRecipesInBackground({
+                userId,
+                locale: parsedBody.data.locale ?? "en",
+                jobId,
+                candidates: [
+                  nodeState.finalResult.pantryRecipe,
+                  nodeState.finalResult.almostCookableRecipe,
+                ],
+              });
 
               apiLogger.info("[customRecipe.generate] job completed", {
                 metadata: {
