@@ -18,6 +18,10 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         ghost: "hover:scale-105 transition-all duration-200 ",
         link: "text-primary underline-offset-4 hover:underline",
+        brand:
+          "bg-eatrivo-purple text-white font-bold shadow-sm hover:bg-eatrivo-purple/90 focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 active:scale-[0.98] transition-[transform,background-color] duration-150",
+        brandOutline:
+          "border-[1.5px] border-[#E9D9FF] bg-white text-eatrivo-purple font-bold hover:bg-[#F6F0FF] focus-visible:ring-2 focus-visible:ring-purple-300 active:scale-[0.98] transition-[transform,background-color] duration-150",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

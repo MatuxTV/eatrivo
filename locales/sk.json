@@ -712,23 +712,6 @@
           "resumed": "Rivo pokračuje v generovaní tvojho receptu."
         }
       },
-      "pantryDashboard": {
-        "badge": "Tvoja špajza",
-        "itemsUnit": "surovín",
-        "cookablePrefix": "Môžeš z nich uvariť až ",
-        "cookableSuffix": " jedál",
-        "openCta": "Otvor špajzu"
-      },
-      "cookableEmpty": {
-        "title": "Zatiaľ nemáš z čoho variť",
-        "description": "Pridaj viac surovín do špajze a my ti z nich vymyslíme recepty."
-      },
-      "almostCookable": {
-        "title": "Skoro na dosah",
-        "subtitle": "- chýba pár surovín",
-        "scrollLeft": "Posunúť recepty doľava",
-        "scrollRight": "Posunúť recepty doprava"
-      },
       "recipeDialog": {
         "mealPrep": "Meal prep",
         "detail": "Detail receptu",
@@ -744,7 +727,20 @@
         "removeBookmark": "Odstrániť záložku",
         "bookmarkSaved": "Recept bol uložený do záložiek.",
         "bookmarkRemoved": "Recept bol odstránený zo záložiek.",
-        "bookmarkError": "Záložku sa nepodarilo upraviť."
+        "bookmarkError": "Záložku sa nepodarilo upraviť.",
+        "close": "Zavrieť",
+        "previous": "Predchádzajúci recept",
+        "next": "Ďalší recept",
+        "statTime": "Čas",
+        "statServings": "Porcie",
+        "statIngredients": "Surovín",
+        "nutritionTitle": "Nutričné hodnoty",
+        "perServing": "na porciu",
+        "haveCount": "Máš {have} z {total}",
+        "missingHint": "Chýba · pridaj do nákupu",
+        "addedHint": "Pridané do nákupu",
+        "addMissing": "Do nákupu ({count})",
+        "cookShort": "Uvariť"
       },
       "restrictionFlags": {
         "contains-dairy": "Obsahuje mlieko",
@@ -824,6 +820,26 @@
         "step4Title": "Dokonči a naservíruj",
         "step4Text": "Na záver dochuť podľa potreby, skontroluj posledné kroky a môžeš servírovať."
       },
+      "allRecipes": {
+        "title": "Všetky recepty"
+      },
+      "recipeCard": {
+        "proteinShort": "bielk.",
+        "missing": "Chýba {items}",
+        "more": "{count, plural, one {+# ďalšia} few {+# ďalšie} other {+# ďalších}}",
+        "haveAll": "Máš všetko",
+        "bookmark": "Uložiť recept",
+        "unbookmark": "Odstrániť z uložených",
+        "tipBadge": "Tip dňa"
+      },
+      "cookNow": {
+        "title": "Uvaríš hneď",
+        "subtitle": "Z toho, čo máš doma",
+        "seeAll": "Všetky",
+        "collapse": "Zbaliť",
+        "proteinLong": "bielkovín",
+        "slideLabel": "Recept {index} z {count}"
+      },
       "filters": {
         "title": "Filtre receptov",
         "empty": "Žiadne recepty pre tento filter",
@@ -835,7 +851,7 @@
         "selectedCount": "Vybrané filtre: {count}",
         "selectedValue": "Vybrané: {value}",
         "loading": "Načítavam recepty...",
-        "loadMore": "Načítať ďalších 8 receptov",
+        "loadMore": "Načítať ďalšie recepty",
         "loadingMore": "Načítavam ďalšie recepty...",
         "loadError": "Nepodarilo sa načítať recepty",
         "retry": "Skúsiť znova",

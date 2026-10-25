@@ -149,6 +149,8 @@ async function getBasicHomeData(
       ingredientPreview: match.matchedIngredientNames,
       matchedIngredients: match.matchedIngredients,
       mealPrepFriendly: match.mealPrepFriendly,
+      imageUrl: match.imageUrl ?? null,
+      imageThumbUrl: match.imageThumbUrl ?? null,
     })),
     almostCookableRecipes: recipeMatches.almostCookable.map((match) => ({
       id: match.id,
@@ -169,6 +171,8 @@ async function getBasicHomeData(
       ingredientPreview: match.matchedIngredientNames,
       matchedIngredients: match.matchedIngredients,
       mealPrepFriendly: match.mealPrepFriendly,
+      imageUrl: match.imageUrl ?? null,
+      imageThumbUrl: match.imageThumbUrl ?? null,
       missingIngredients: match.missingIngredientNames,
     })),
     pantryNames,

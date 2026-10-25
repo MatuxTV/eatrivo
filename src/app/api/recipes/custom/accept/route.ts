@@ -5,10 +5,13 @@ import { auth } from "../../../../../../auth";
 import { customRecipeAcceptRequestSchema } from "@/lib/custom-recipes/contracts";
 import { persistAcceptedCustomRecipe } from "@/lib/custom-recipes/persistence";
 import { apiLogger } from "@/lib/logger";
+import { ensureRecipeImage } from "@/lib/recipe-images/service";
 import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rateLimit";
 import { handleApiError, unauthorizedError, validationError } from "@/lib/safeError";
 
 export const runtime = "nodejs";
+// Room for the after() photo generation.
+export const maxDuration = 120;
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
@@ -56,6 +59,7 @@ export async function POST(request: NextRequest) {
         locale: parsedBody.data.locale,
         recipe: parsedBody.data.recipe,
       });
+      after(() => ensureRecipeImage(persistedRecipe.id).then(() => undefined));
 
       return NextResponse.json({
         accepted: true,
@@ -67,11 +71,12 @@ export async function POST(request: NextRequest) {
 
     after(async () => {
       try {
-        await persistAcceptedCustomRecipe({
+        const persistedRecipe = await persistAcceptedCustomRecipe({
           userId: session.user.id,
           locale: parsedBody.data.locale,
           recipe: parsedBody.data.recipe,
         });
+        await ensureRecipeImage(persistedRecipe.id);
       } catch (error) {
         apiLogger.error("[customRecipe.accept] background persist failed", error, {
           metadata: {

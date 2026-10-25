@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import RecipeCreationFormCard from "./components/RecipeCreationFormCard";
 import RecipeCreationResultCard from "./components/RecipeCreationResultCard";
+import { useRecipeBookmarks, type RecipeBookmarks } from "@/hooks/useRecipeBookmarks";
 import {
   isChatAssistantMessageMetadata,
 } from "@/lib/chat/message-metadata";
@@ -191,12 +192,17 @@ function ChatSessionList({
 interface ChatWithRivoPageProps {
   onCookRecipe?: (recipe: BasicHomeRecipePreview) => void;
   isActive?: boolean;
+  /** Shared bookmark state from HomePage; the standalone route loads its own. */
+  bookmarks?: RecipeBookmarks;
 }
 
 export default function ChatWithRivoPage({
   onCookRecipe,
   isActive = true,
+  bookmarks: bookmarksProp,
 }: ChatWithRivoPageProps = {}) {
+  const ownBookmarks = useRecipeBookmarks({ enabled: !bookmarksProp });
+  const bookmarks = bookmarksProp ?? ownBookmarks;
   const t = useTranslations("home.comingSoon.chatWithRivo");
   const locale = useLocale();
   useTutorialSurface("chatWithRivo");
@@ -980,6 +986,8 @@ export default function ChatWithRivoPage({
                             metadata={payload}
                             message={msg.content}
                             onCookRecipe={onCookRecipe}
+                            isRecipeBookmarked={bookmarks.isBookmarked}
+                            onBookmarkChange={bookmarks.setBookmarked}
                           />
                         );
                       }

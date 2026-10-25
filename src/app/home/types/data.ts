@@ -27,6 +27,12 @@ export interface BasicHomeRecipePreview {
   }[];
   mealPrepFriendly: boolean;
   missingIngredients?: string[];
+  /** Cover photo (1024px); null/undefined → placeholder tile. */
+  imageUrl?: string | null;
+  /** Cover photo thumbnail (512px) for cards. */
+  imageThumbUrl?: string | null;
+  /** A cover photo is being generated in the background (Rivo recipes). */
+  imagePending?: boolean;
 }
 
 export interface BasicHomePantrySummary {

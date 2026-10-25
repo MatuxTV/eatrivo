@@ -111,6 +111,18 @@ export const recipeSourceEnum = pgEnum("recipe_source", [
   "ai_custom",
 ]);
 
+export const recipeImageStatusEnum = pgEnum("recipe_image_status", [
+  "pending",
+  "ready",
+  "failed",
+]);
+
+export const recipeImageSourceEnum = pgEnum("recipe_image_source", [
+  "ai",
+  "admin",
+  "upload",
+]);
+
 export const ingredientSourceEnum = pgEnum("ingredient_source", [
   "recipe",
   "admin",
@@ -140,6 +152,10 @@ export const recipes = pgTable("recipes", {
   slug: text("slug").notNull().unique(),
   externalKey: text("external_key").notNull().unique(),
   imageKey: text("image_key"),
+  coverImageId: uuid("cover_image_id").references(
+    (): AnyPgColumn => recipeImages.id,
+    { onDelete: "set null" },
+  ),
   source: recipeSourceEnum("source").default("catalog").notNull(),
   userGenerated: boolean("user_generated").default(false).notNull(),
   createdByUserId: uuid("created_by_user_id").references(() => users.id, {
@@ -158,13 +174,49 @@ export const recipes = pgTable("recipes", {
   dietTags: jsonb("diet_tags").$type<string[]>().default([]).notNull(),
   restrictionFlags: jsonb("restriction_flags").$type<string[]>().default([]).notNull(),
   mealPrepFriendly: boolean("meal_prep_friendly").default(false).notNull(),
+  /** Normalized dish identity (name + main ingredients) used to avoid duplicates. */
+  dishSignature: text("dish_signature"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
-});
+}, (table) => ({
+  dishSignatureIdx: index("recipes_dish_signature_idx").on(table.dishSignature),
+}));
+
+export const recipeImages = pgTable(
+  "recipe_images",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    recipeId: uuid("recipe_id")
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    storageKey: text("storage_key").notNull().unique(),
+    status: recipeImageStatusEnum("status").default("pending").notNull(),
+    source: recipeImageSourceEnum("source").default("ai").notNull(),
+    model: text("model"),
+    prompt: text("prompt"),
+    dishSignature: text("dish_signature"),
+    width: integer("width"),
+    height: integer("height"),
+    bytes: integer("bytes"),
+    error: text("error"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    recipeIdx: index("recipe_images_recipe_id_idx").on(table.recipeId),
+    dishSignatureIdx: index("recipe_images_dish_signature_idx").on(
+      table.dishSignature,
+    ),
+  }),
+);
 
 export const ingredients = pgTable("ingredients", {
   id: uuid("id").primaryKey().defaultRandom(),

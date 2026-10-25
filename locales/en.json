@@ -712,23 +712,6 @@
           "resumed": "Rivo resumed your recipe generation."
         }
       },
-      "pantryDashboard": {
-        "badge": "Your Pantry",
-        "itemsUnit": "items",
-        "cookablePrefix": "You can cook up to ",
-        "cookableSuffix": " recipes",
-        "openCta": "Open pantry"
-      },
-      "cookableEmpty": {
-        "title": "Nothing to cook yet",
-        "description": "Add more ingredients to your pantry and we'll find recipes for you."
-      },
-      "almostCookable": {
-        "title": "Almost there",
-        "subtitle": "- missing a few ingredients",
-        "scrollLeft": "Scroll recipes left",
-        "scrollRight": "Scroll recipes right"
-      },
       "recipeDialog": {
         "mealPrep": "Meal prep",
         "detail": "Recipe detail",
@@ -744,7 +727,20 @@
         "removeBookmark": "Remove bookmark",
         "bookmarkSaved": "Recipe saved to bookmarks.",
         "bookmarkRemoved": "Recipe removed from bookmarks.",
-        "bookmarkError": "Could not update bookmark."
+        "bookmarkError": "Could not update bookmark.",
+        "close": "Close",
+        "previous": "Previous recipe",
+        "next": "Next recipe",
+        "statTime": "Time",
+        "statServings": "Servings",
+        "statIngredients": "Ingredients",
+        "nutritionTitle": "Nutrition",
+        "perServing": "per serving",
+        "haveCount": "You have {have} of {total}",
+        "missingHint": "Missing · add to shopping list",
+        "addedHint": "Added to shopping list",
+        "addMissing": "Shopping list ({count})",
+        "cookShort": "Cook"
       },
       "restrictionFlags": {
         "contains-dairy": "Contains dairy",
@@ -824,6 +820,26 @@
         "step4Title": "Finish and plate",
         "step4Text": "Taste, adjust the seasoning, and serve while everything is fresh and hot."
       },
+      "allRecipes": {
+        "title": "All recipes"
+      },
+      "recipeCard": {
+        "proteinShort": "protein",
+        "missing": "Missing {items}",
+        "more": "{count, plural, one {+# more} other {+# more}}",
+        "haveAll": "You have everything",
+        "bookmark": "Save recipe",
+        "unbookmark": "Remove from saved",
+        "tipBadge": "Tip of the day"
+      },
+      "cookNow": {
+        "title": "Cook now",
+        "subtitle": "From what you have at home",
+        "seeAll": "See all",
+        "collapse": "Show less",
+        "proteinLong": "protein",
+        "slideLabel": "Recipe {index} of {count}"
+      },
       "filters": {
         "title": "Recipe filters",
         "empty": "No recipes for this filter",
@@ -835,7 +851,7 @@
         "selectedCount": "{count} filters selected",
         "selectedValue": "Selected: {value}",
         "loading": "Loading recipes...",
-        "loadMore": "Load 8 more recipes",
+        "loadMore": "Load more recipes",
         "loadingMore": "Loading more recipes...",
         "loadError": "Couldn't load recipes right now",
         "retry": "Try again",

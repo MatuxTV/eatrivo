@@ -3,6 +3,7 @@ import { and, eq, inArray, isNotNull, or } from "drizzle-orm";
 import { db } from "@/index";
 import {
   pantryItems,
+  recipeImages,
   recipeIngredients,
   recipes,
   recipeTranslations,
@@ -33,6 +34,7 @@ import {
   type IngredientGraph,
 } from "@/lib/ingredients/ingredient-matching";
 import { loadIngredientGraph, loadIngredientNameMap } from "@/lib/pantry/ingredient-resolution";
+import { resolveRecipeImageUrls } from "@/lib/recipe-images/urls";
 
 export interface RecipeMatchOptions {
   maxMissingIngredients?: number;
@@ -67,6 +69,9 @@ export interface MatchedRecipe {
   matchedIngredients: RecipeIngredientMatch[];
   matchedIngredientNames: string[];
   missingIngredientNames: string[];
+  /** Cover photo URLs, attached for the recipes returned to the UI. */
+  imageUrl?: string | null;
+  imageThumbUrl?: string | null;
 }
 
 export interface RecipeIngredientMatch {
@@ -303,13 +308,36 @@ export async function getRecipeMatchesForUserProfile(
     .sort(sortAlmostCookable)
     .slice(0, almostCookableLimit);
 
+  const withImages = await attachRecipeImageUrls([...cookable, ...almostCookable]);
+
   return {
     pantryIsEmpty: false,
     pantryIngredientKeyCount,
     recipeCountAnalyzed: analyzedRecipes.length,
-    cookable,
-    almostCookable,
+    cookable: withImages.slice(0, cookable.length),
+    almostCookable: withImages.slice(cookable.length),
   };
+}
+
+/** Adds cover photo URLs to the (few) recipes that are sent to the client. */
+async function attachRecipeImageUrls(
+  matches: MatchedRecipe[],
+): Promise<MatchedRecipe[]> {
+  if (matches.length === 0) {
+    return matches;
+  }
+
+  const rows = await db
+    .select({ recipeId: recipes.id, storageKey: recipeImages.storageKey })
+    .from(recipes)
+    .innerJoin(recipeImages, eq(recipes.coverImageId, recipeImages.id))
+    .where(inArray(recipes.id, matches.map((match) => match.id)));
+  const keyByRecipeId = new Map(rows.map((row) => [row.recipeId, row.storageKey]));
+
+  return matches.map((match) => ({
+    ...match,
+    ...resolveRecipeImageUrls(keyByRecipeId.get(match.id)),
+  }));
 }
 
 export async function getRecipeAvailabilityForUserProfile(

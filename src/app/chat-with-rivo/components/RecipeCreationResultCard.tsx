@@ -17,17 +17,32 @@ export default function RecipeCreationResultCard({
   metadata,
   message,
   onCookRecipe,
+  isRecipeBookmarked,
+  onBookmarkChange,
 }: {
   metadata: RecipeCreationResultMessageMetadata;
   message?: string;
   onCookRecipe?: (recipe: BasicHomeRecipePreview) => void;
+  /** Bookmark state shared by the page; unknown → not bookmarked. */
+  isRecipeBookmarked?: (recipeId: string) => boolean;
+  onBookmarkChange?: (recipeId: string, bookmarked: boolean) => void;
 }) {
   const router = useRouter();
   const locale = useLocale() as "en" | "sk";
   const [open, setOpen] = useState(false);
   const [persistedRecipeId, setPersistedRecipeId] = useState<string | null>(null);
   const [isBookmarkPending, setIsBookmarkPending] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [localBookmarked, setLocalBookmarked] = useState(false);
+  // Once the recipe has a database id the shared page state is the source of truth.
+  const isBookmarked =
+    persistedRecipeId && isRecipeBookmarked
+      ? isRecipeBookmarked(persistedRecipeId)
+      : localBookmarked;
+
+  const applyBookmarkChange = (recipeId: string, bookmarked: boolean) => {
+    setLocalBookmarked(bookmarked);
+    onBookmarkChange?.(recipeId, bookmarked);
+  };
 
   const recipe = metadata.recipe;
   const preview = metadata.preview;
@@ -90,7 +105,7 @@ export default function RecipeCreationResultCard({
         throw new Error(payload?.error ?? "Bookmark request failed");
       }
 
-      setIsBookmarked((value) => !value);
+      applyBookmarkChange(recipeId, !isBookmarked);
       toast.success(isBookmarked ? "Recept bol odobratý zo záložiek." : "Recept bol uložený do záložiek.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Bookmark request failed");
@@ -152,6 +167,10 @@ export default function RecipeCreationResultCard({
         initialIndex={0}
         bookmarkRecipeId={persistedRecipeId}
         onEnsureBookmarkRecipeId={ensurePersistedRecipe}
+        isRecipeBookmarked={(recipeId) =>
+          recipeId === persistedRecipeId ? isBookmarked : (isRecipeBookmarked?.(recipeId) ?? false)
+        }
+        onBookmarkChange={applyBookmarkChange}
         onCookRecipe={onCookRecipe}
       />
     </>

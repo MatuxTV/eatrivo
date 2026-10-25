@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import PersonalInfoSection from "./PersonalInfoSection";
 import NutritionPreferencesSection from "./NutritionPreferencesSection";
 import BookmarkedRecipesSection from "./BookmarkedRecipesSection";
+import type { RecipeBookmarks } from "@/hooks/useRecipeBookmarks";
 import ProfileBillingSection from "./ProfileBillingSection";
 import AppShellViewport from "@/app/home/components/AppShellViewport";
 import type {
@@ -37,6 +38,10 @@ interface ProfilePageClientProps {
   initialProfileData?: UserProfileSnapshot | null;
   initialNutritionData?: UserNutritionSnapshot | null;
   initialView?: ProfileView;
+  /** Shared bookmark state from HomePage, kept in sync when a bookmark is removed here. */
+  bookmarks?: RecipeBookmarks;
+  /** Whether the profile section is the visible Home section. */
+  isActive?: boolean;
 }
 
 type ProfileView =
@@ -52,6 +57,8 @@ export default function ProfilePageClient({
   initialProfileData = null,
   initialNutritionData = null,
   initialView = "default",
+  bookmarks,
+  isActive = true,
 }: ProfilePageClientProps) {
   const t = useTranslations("profile");
   const router = useRouter();
@@ -399,6 +406,8 @@ export default function ProfilePageClient({
         return renderDetailShell(
           <BookmarkedRecipesSection
             isProfileLoading={isLoading}
+            isActive={isActive}
+            onBookmarkRemoved={(recipeId) => bookmarks?.setBookmarked(recipeId, false)}
             onOpenRecipe={(recipe) => {
               onOpenBookmarkedRecipe?.(recipe);
             }}

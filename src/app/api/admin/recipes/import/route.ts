@@ -1,10 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { inArray } from "drizzle-orm";
+
+import { recipes } from "@/db/schema";
+import { db } from "@/lib/db/pool";
+import { ensureRecipeImage } from "@/lib/recipe-images/service";
 
 import { isAuthError, requireAdminAuth } from "@/lib/auth/adminAuth";
 import {
   persistPreparedRecipeImport,
   prepareRecipeImportFromObject,
 } from "@/lib/recipes/recipe-importer";
+
+export const maxDuration = 300;
 
 interface RecipeImportRequest {
   jsonText: string;
@@ -81,6 +88,26 @@ export async function POST(request: Request) {
     }
 
     const result = await persistPreparedRecipeImport(prepared.rows);
+
+    // Give imported recipes a cover: a freshly uploaded photo replaces the
+    // current cover, otherwise a photo is generated (within the monthly budget).
+    const imported = result.externalKeys.length
+      ? await db
+          .select({ id: recipes.id })
+          .from(recipes)
+          .where(inArray(recipes.externalKey, result.externalKeys))
+      : [];
+    if (body.uploadedImageKey?.trim() && imported.length > 0) {
+      await db
+        .update(recipes)
+        .set({ coverImageId: null })
+        .where(inArray(recipes.id, imported.map((row) => row.id)));
+    }
+    after(async () => {
+      for (const row of imported) {
+        await ensureRecipeImage(row.id);
+      }
+    });
 
     return NextResponse.json({
       success: true,

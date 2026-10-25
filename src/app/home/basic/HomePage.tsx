@@ -33,6 +33,7 @@ import AppShellViewport from "../components/AppShellViewport";
 /* ---- Extracted modules ---- */
 import { usePantrySync } from "@/hooks/usePantrySync";
 import { useShoppingList } from "@/hooks/useShoppingList";
+import { useRecipeBookmarks } from "@/hooks/useRecipeBookmarks";
 import RecipesSection from "../components/RecipesSection";
 import PantrySection from "@/app/pantry/components/PantryPage";
 import ProfilePageClient from "@/app/home/components/profile/ProfilePageClient";
@@ -210,6 +211,8 @@ export default function HomePage({
     refreshPantrySummary: pantrySync.refreshPantrySummary,
   });
 
+  const bookmarks = useRecipeBookmarks();
+
   /* ---- Navigation state ---- */
 
   const [activeSection, setActiveSection] = useState<AppHomeSection>("home");
@@ -280,6 +283,7 @@ export default function HomePage({
       error: null,
       userMessage: null,
       fallbackRecommendations: [],
+      imagesByRecipeId: {},
     });
   const [pendingProfileRecipe, setPendingProfileRecipe] =
     useState<BasicHomeRecipePreview | null>(null);
@@ -489,15 +493,14 @@ export default function HomePage({
                   <ShoppingListSection shopping={shopping} />
                 ) : (
                   <RecipesSection
+                    bookmarks={bookmarks}
                     featuredRecipes={featuredRecipes}
                     recipeShuffleTime={recipeShuffleTime}
                     recipeBrowseAvailableFilters={recipeBrowseAvailableFilters}
                     initialRecipeHasMore={initialRecipeHasMore}
                     initialRecipeTotalCount={initialRecipeTotalCount}
                     livePantryNames={pantrySync.livePantryNames}
-                    livePantrySummary={pantrySync.livePantrySummary}
                     liveCookableRecipes={pantrySync.liveCookableRecipes}
-                    liveAlmostCookableRecipes={pantrySync.liveAlmostCookableRecipes}
                     customRecipeState={customRecipeState}
                     onCustomRecipeStateChange={handleCustomRecipeStateChange}
                     onOpenPantrySection={openPantrySection}
@@ -535,6 +538,8 @@ export default function HomePage({
           >
             <div className="-mx-4 md:-mx-8 md:-my-8">
               <ProfilePageClient
+                bookmarks={bookmarks}
+                isActive={primaryActiveSection === "profile"}
                 onBack={() => setActiveSection("home")}
                 onOpenBookmarkedRecipe={handleOpenBookmarkedRecipeFromProfile}
                 initialProfileData={initialProfileData}
@@ -551,6 +556,7 @@ export default function HomePage({
             className="overflow-hidden p-0"
           >
             <ChatWithRivoPage
+              bookmarks={bookmarks}
               isActive={primaryActiveSection === "chatWithRivo"}
               onCookRecipe={handleCookRecipe}
             />
