@@ -283,6 +283,7 @@ export default function HomePage({
       error: null,
       userMessage: null,
       fallbackRecommendations: [],
+      imagesByRecipeId: {},
     });
   const [pendingProfileRecipe, setPendingProfileRecipe] =
     useState<BasicHomeRecipePreview | null>(null);

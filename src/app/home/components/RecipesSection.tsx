@@ -27,6 +27,7 @@ import type {
   BasicHomeRecipePreview,
   RecipeBrowseAvailableFilters,
 } from "@/app/home/types/data";
+import { applyGeneratedRecipeImage } from "@/hooks/useGeneratedRecipeImages";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import type { RecipeBookmarks } from "@/hooks/useRecipeBookmarks";
 import { shuffleRecipesByTime } from "@/app/home/utils/shuffleRecipes";
@@ -168,7 +169,7 @@ export default function RecipesSection({
   initialRecipeHasMore,
   initialRecipeTotalCount,
   livePantryNames,
-  liveCookableRecipes,
+  liveCookableRecipes: liveCookableRecipesFromDb,
   customRecipeState,
   onCustomRecipeStateChange,
   onOpenPantrySection,
@@ -245,7 +246,22 @@ export default function RecipesSection({
     [pantryNameSet],
   );
 
-  const enrichedBrowseRecipes = useMemo(() => enrichRecipes(browseRecipes), [browseRecipes, enrichRecipes]);
+  // A Rivo recipe can reach these lists before its photo is generated; the Rivo
+  // panel tracks the photo, so show its skeleton/photo instead of the emoji tile.
+  const { imagesByRecipeId } = customRecipeState;
+  const withLivePhoto = useCallback(
+    (recipe: BasicHomeRecipePreview) =>
+      recipe.imageUrl ? recipe : applyGeneratedRecipeImage(recipe, imagesByRecipeId[recipe.id]),
+    [imagesByRecipeId],
+  );
+  const liveCookableRecipes = useMemo(
+    () => liveCookableRecipesFromDb.map(withLivePhoto),
+    [liveCookableRecipesFromDb, withLivePhoto],
+  );
+  const enrichedBrowseRecipes = useMemo(
+    () => enrichRecipes(browseRecipes).map(withLivePhoto),
+    [browseRecipes, enrichRecipes, withLivePhoto],
+  );
 
   const availableCategoryFilters = useMemo(() => {
     return [...new Set(recipeBrowseAvailableFilters.categoryKeys.map(normalizeCategoryKey).filter(isValidCategoryKey))]

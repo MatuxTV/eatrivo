@@ -1,11 +1,12 @@
 import "server-only";
 
-import { and, asc, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, exists, inArray, isNull, or } from "drizzle-orm";
 
 import { db } from "@/lib/db/pool";
-import { recipes } from "@/db/schema";
+import { recipes, userProfiles, users } from "@/db/schema";
 
 import { getMonthlySpendUsd } from "./budget-store";
+import { PAID_MEMBERSHIPS } from "./eligibility";
 import { ensureRecipeImage, type EnsureRecipeImageResult } from "./service";
 
 export type BackfillSource = "catalog" | "ai_custom" | "all";
@@ -23,6 +24,24 @@ export interface BackfillReport {
   monthlySpendUsd: number;
 }
 
+// Pre-filter so free users' custom recipes never take up the run's slots.
+// ensureRecipeImage still re-checks (e.g. a lapsed premium subscription).
+const ownerMayHavePhotos = or(
+  eq(recipes.source, "catalog"),
+  exists(
+    db
+      .select({ id: users.id })
+      .from(users)
+      .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+      .where(
+        and(
+          eq(users.id, recipes.createdByUserId),
+          or(inArray(users.membership, [...PAID_MEMBERSHIPS]), eq(userProfiles.role, "admin")),
+        ),
+      ),
+  ),
+);
+
 /** Fills missing cover photos for up to `limit` recipes (oldest first). */
 export async function backfillRecipeImages({
   limit,
@@ -37,6 +56,7 @@ export async function backfillRecipeImages({
       and(
         isNull(recipes.coverImageId),
         source === "all" ? undefined : eq(recipes.source, source),
+        ownerMayHavePhotos,
       ),
     )
     .orderBy(asc(recipes.createdAt))

@@ -5,7 +5,8 @@ import { randomUUID } from "node:crypto";
 import { and, asc, count, eq, isNull } from "drizzle-orm";
 
 import { db } from "@/lib/db/pool";
-import { recipeImages, recipeIngredients, recipeTranslations, recipes } from "@/db/schema";
+import { recipeImages, recipeIngredients, recipeTranslations, recipes, userProfiles, users } from "@/db/schema";
+import { checkSubscriptionStatus } from "@/lib/billing/subscription";
 import { apiLogger } from "@/lib/logger";
 import { isS3ClientConfigured } from "@/lib/storage/s3";
 
@@ -17,6 +18,7 @@ import {
   releaseRecipeImageLock,
 } from "./budget-store";
 import { getImagePriceUsd, getMonthlyBudgetUsd, getRecipeImageModel } from "./config";
+import { isPaidMembership, isRecipeImageEligible, type RecipeImageOwner } from "./eligibility";
 import { buildRecipeImagePrompt } from "./prompt";
 import { generateRecipeImage } from "./provider";
 import { getDishSignature } from "./signature";
@@ -25,7 +27,7 @@ import { buildRecipeImageKey } from "./storage-keys";
 
 export type EnsureRecipeImageResult =
   | { status: "exists" | "reused" | "generated"; imageId: string }
-  | { status: "skipped"; reason: "budget" | "locked" | "not-found" | "no-storage" | "too-many-failures" }
+  | { status: "skipped"; reason: "budget" | "locked" | "not-found" | "not-eligible" | "no-storage" | "too-many-failures" }
   | { status: "failed"; error: string };
 
 const MAX_INGREDIENTS = 6;
@@ -40,6 +42,8 @@ async function loadRecipeForImage(recipeId: string) {
       legacyImageKey: recipes.imageKey,
       categoryKey: recipes.categoryKey,
       defaultLocale: recipes.defaultLocale,
+      source: recipes.source,
+      createdByUserId: recipes.createdByUserId,
     })
     .from(recipes)
     .where(eq(recipes.id, recipeId))
@@ -75,13 +79,81 @@ async function loadRecipeForImage(recipeId: string) {
   return {
     ...recipe,
     nameEn,
+    // English canonical names: the prompt is English, and localized labels
+    // (e.g. Slovak) get rendered as text labels in the photo.
     ingredientLabels: ingredientRows
-      .map((row) => row.displayLabel ?? row.canonicalName)
+      .map((row) => row.canonicalName ?? row.displayLabel)
       .filter((label): label is string => Boolean(label)),
     ingredientKeys: ingredientRows
       .map((row) => row.ingredientKey ?? row.canonicalName)
       .filter((key): key is string => Boolean(key)),
   };
+}
+
+async function loadRecipeImageOwner(userId: string | null): Promise<RecipeImageOwner | null> {
+  if (!userId) {
+    return null;
+  }
+
+  const [owner] = await db
+    .select({ membership: users.membership, role: userProfiles.role })
+    .from(users)
+    .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!owner) {
+    return null;
+  }
+
+  // Only premium/pro can lapse; skip the subscription lookup for everyone else.
+  const subscriptionExpired =
+    isPaidMembership(owner.membership) && owner.role !== "admin"
+      ? (await checkSubscriptionStatus(userId)).isExpired
+      : false;
+
+  return { role: owner.role, membership: owner.membership, subscriptionExpired };
+}
+
+/** Whether this user's own custom recipes get AI photos (admin or active paid membership). */
+export async function canUserGetCustomRecipeImages(userId: string): Promise<boolean> {
+  return isRecipeImageEligible({ source: "ai_custom", owner: await loadRecipeImageOwner(userId) });
+}
+
+export type RecipeCoverImageStatus =
+  | { status: "ready"; storageKey: string }
+  | { status: "pending" }
+  | { status: "none" };
+
+/** Cover photo state for clients waiting on a background generation. */
+export async function getRecipeCoverImageStatus(recipeId: string): Promise<RecipeCoverImageStatus> {
+  const [recipe] = await db
+    .select({
+      source: recipes.source,
+      createdByUserId: recipes.createdByUserId,
+      storageKey: recipeImages.storageKey,
+      imageStatus: recipeImages.status,
+    })
+    .from(recipes)
+    .leftJoin(recipeImages, eq(recipeImages.id, recipes.coverImageId))
+    .where(eq(recipes.id, recipeId))
+    .limit(1);
+
+  if (!recipe) {
+    return { status: "none" };
+  }
+
+  if (recipe.storageKey && recipe.imageStatus === "ready") {
+    return { status: "ready", storageKey: recipe.storageKey };
+  }
+
+  const eligible =
+    recipe.source === "catalog" ||
+    isRecipeImageEligible({
+      source: recipe.source,
+      owner: await loadRecipeImageOwner(recipe.createdByUserId),
+    });
+  return eligible ? { status: "pending" } : { status: "none" };
 }
 
 /**
@@ -132,6 +204,17 @@ export async function ensureRecipeImage(
       .set({ coverImageId: legacyImageId, updatedAt: new Date() })
       .where(eq(recipes.id, recipeId));
     return { status: "exists", imageId: legacyImageId };
+  }
+
+  // Photos are a paid perk for custom recipes: free users get none, not even a reused one.
+  if (
+    recipe.source !== "catalog" &&
+    !isRecipeImageEligible({
+      source: recipe.source,
+      owner: await loadRecipeImageOwner(recipe.createdByUserId),
+    })
+  ) {
+    return { status: "skipped", reason: "not-eligible" };
   }
 
   const dishSignature = getDishSignature({

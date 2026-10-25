@@ -42,6 +42,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  applyGeneratedRecipeImage,
+  indexGeneratedImagesByRecipeId,
+  useGeneratedRecipeImages,
+  type GeneratedRecipeImage,
+  type GeneratedRecipeImageSource,
+} from "@/hooks/useGeneratedRecipeImages";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 const RecipeBrowserDialog = dynamic(() => import("./RecipeBrowserDialog"), {
@@ -200,6 +207,8 @@ export interface CustomRecipeHeroSnapshot {
   error: string | null;
   userMessage: string | null;
   fallbackRecommendations: CustomRecipeFallbackItem[];
+  /** Photo state of the generated recipes by database id, for the home lists. */
+  imagesByRecipeId: Record<string, GeneratedRecipeImage>;
 }
 
 interface RivoCustomRecipeExperienceProps {
@@ -713,6 +722,43 @@ const RivoCustomRecipeExperience = forwardRef<
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogIndex, setDialogIndex] = useState(0);
   const [dialogRecipes, setDialogRecipes] = useState<BasicHomeRecipePreview[]>([]);
+  // Generated recipes are renamed to their database id once persisted (bookmark);
+  // this keeps the link back to the generated key their photo is tracked under.
+  const generatedKeyByRecipeIdRef = useRef(new Map<string, string>());
+
+  const generatedImageSources = useMemo<GeneratedRecipeImageSource[] | null>(() => {
+    if (!rawResultPayload) {
+      return null;
+    }
+
+    const sources: GeneratedRecipeImageSource[] = [];
+    if (rawResultPayload.pantryRecipe.status === "available") {
+      sources.push({ key: "generated-pantry-recipe", recipe: rawResultPayload.pantryRecipe });
+    }
+    if (rawResultPayload.almostCookableRecipe.status === "available") {
+      sources.push({
+        key: "generated-almost-cookable-recipe",
+        recipe: rawResultPayload.almostCookableRecipe,
+      });
+    }
+    return sources.length > 0 ? sources : null;
+  }, [rawResultPayload]);
+  const generatedImages = useGeneratedRecipeImages({
+    locale: rawResultPayload?.meta.locale ?? (locale === "sk" ? "sk" : "en"),
+    sources: generatedImageSources,
+  });
+  const applyGeneratedImage = useCallback(
+    (recipe: BasicHomeRecipePreview) =>
+      applyGeneratedRecipeImage(
+        recipe,
+        generatedImages[generatedKeyByRecipeIdRef.current.get(recipe.id) ?? recipe.id],
+      ),
+    [generatedImages],
+  );
+  const dialogRecipesWithImages = useMemo(
+    () => dialogRecipes.map(applyGeneratedImage),
+    [applyGeneratedImage, dialogRecipes],
+  );
 
   const customRecipeTips = useMemo(
     () => [
@@ -765,23 +811,35 @@ const RivoCustomRecipeExperience = forwardRef<
     onStatusChange?.(status);
   }, [onStatusChange, status]);
 
+  // The home hero card shows the result too, so it gets the photo state as well.
+  const resultWithImages = useMemo(
+    () => (result ? { ...result, recipes: result.recipes.map(applyGeneratedImage) } : null),
+    [applyGeneratedImage, result],
+  );
+  const imagesByRecipeId = useMemo(
+    () => indexGeneratedImagesByRecipeId(generatedImages),
+    [generatedImages],
+  );
+
   useEffect(() => {
     onStateChange?.({
       status,
       progress,
       displayTip,
-      result,
+      result: resultWithImages,
       error,
       userMessage,
       fallbackRecommendations,
+      imagesByRecipeId,
     });
   }, [
     displayTip,
     error,
     fallbackRecommendations,
+    imagesByRecipeId,
     onStateChange,
     progress,
-    result,
+    resultWithImages,
     status,
     userMessage,
   ]);
@@ -1067,6 +1125,11 @@ const RivoCustomRecipeExperience = forwardRef<
       previousRecipeId: string,
       persistedRecipe: { recipeId: string; slug?: string },
     ) => {
+      generatedKeyByRecipeIdRef.current.set(
+        persistedRecipe.recipeId,
+        generatedKeyByRecipeIdRef.current.get(previousRecipeId) ?? previousRecipeId,
+      );
+
       const replaceRecipe = (recipe: BasicHomeRecipePreview) => {
         if (recipe.id !== previousRecipeId) {
           return recipe;
@@ -1972,7 +2035,7 @@ const RivoCustomRecipeExperience = forwardRef<
       <RecipeBrowserDialog
         open={dialogOpen}
         onOpenChange={handleDialogOpenChange}
-        recipes={dialogRecipes}
+        recipes={dialogRecipesWithImages}
         initialIndex={dialogIndex}
         getBookmarkRecipeId={(recipe) =>
           isPersistedRecipeId(recipe.id) ? recipe.id : null

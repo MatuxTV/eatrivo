@@ -31,6 +31,8 @@ export interface BasicHomeRecipePreview {
   imageUrl?: string | null;
   /** Cover photo thumbnail (512px) for cards. */
   imageThumbUrl?: string | null;
+  /** A cover photo is being generated in the background (Rivo recipes). */
+  imagePending?: boolean;
 }
 
 export interface BasicHomePantrySummary {

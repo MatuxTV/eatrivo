@@ -12,8 +12,8 @@ test("buildRecipeImagePrompt uses the fixed top-down style and lists ingredients
 
   assert.match(prompt, /^Top-down overhead photo of Spinach shakshuka with feta/);
   assert.match(prompt, /single plated breakfast serving/);
-  assert.match(prompt, /Clearly visible: eggs, tomatoes, spinach, feta\./);
-  assert.match(prompt, /No text, no labels, no logos/);
+  assert.match(prompt, /made with eggs, tomatoes, spinach, feta; show only the cooked dish/);
+  assert.match(prompt, /No text, no labels, no captions/);
 });
 
 test("buildRecipeImagePrompt caps ingredients and adapts the serving to the category", () => {
@@ -24,7 +24,13 @@ test("buildRecipeImagePrompt caps ingredients and adapts the serving to the cate
   });
 
   assert.match(prompt, /in a clear glass/);
-  assert.match(prompt, /Clearly visible: a, b, c, d, e, f\./);
+  assert.match(prompt, /made with a, b, c, d, e, f;/);
+});
+
+test("buildRecipeImagePrompt falls back to the finished dish without ingredients", () => {
+  const prompt = buildRecipeImagePrompt({ nameEn: "Chicken curry", mainIngredients: [] });
+
+  assert.match(prompt, /Show only the finished, cooked dish\./);
 });
 
 test("buildRecipeImagePrompt is deterministic", () => {

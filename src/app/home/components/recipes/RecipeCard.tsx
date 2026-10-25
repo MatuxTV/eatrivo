@@ -54,6 +54,7 @@ export function RecipeCard({
       <RecipeImage
         categoryKey={recipe.categoryKey}
         src={recipe.imageThumbUrl ?? recipe.imageUrl}
+        loading={recipe.imagePending}
         alt={recipe.title}
         className="h-28 w-full"
       >

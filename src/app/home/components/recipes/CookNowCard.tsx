@@ -54,6 +54,7 @@ export function CookNowCard({
       <RecipeImage
         categoryKey={recipe.categoryKey}
         src={recipe.imageThumbUrl ?? recipe.imageUrl}
+        loading={recipe.imagePending}
         alt={recipe.title}
         className="h-[124px] w-[124px] shrink-0 rounded-2xl"
         emojiClassName="text-[52px]"

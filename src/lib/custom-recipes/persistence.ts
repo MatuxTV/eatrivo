@@ -156,18 +156,11 @@ export interface PersistAcceptedCustomRecipeInput {
   sourceJobId?: string | null;
 }
 
-export async function persistAcceptedCustomRecipe(
-  input: PersistAcceptedCustomRecipeInput,
-) {
+/** Deterministic identity of a generated recipe: the same inputs always map to the same row. */
+function buildCustomRecipeIdentity(input: Omit<PersistAcceptedCustomRecipeInput, "sourceJobId">) {
   const canonicalRecipe =
     input.recipe.canonicalRecipe ?? buildLegacyCanonicalRecipe(input.recipe, input.locale);
-  const categoryKey = canonicalRecipe.category_key;
   const recipeHash = buildRecipeHash(input.userId, canonicalRecipe);
-  const externalKey = `ai-custom:${input.userId}:${recipeHash}`;
-  const slugBase =
-    slugify(canonicalRecipe.translations[canonicalRecipe.default_locale].name)
-    || "custom-recipe";
-  const slug = `${slugBase}-${recipeHash.slice(0, 8)}`;
   const persistedIngredients = canonicalRecipe.ingredients.map((ingredient, index) =>
     buildPersistedIngredient(ingredient, index),
   );
@@ -178,6 +171,57 @@ export async function persistAcceptedCustomRecipe(
       .map((ingredient) => ingredient.row.ingredientKey ?? ingredient.row.canonicalName)
       .filter((key): key is string => Boolean(key)),
   });
+
+  return {
+    canonicalRecipe,
+    recipeHash,
+    externalKey: `ai-custom:${input.userId}:${recipeHash}`,
+    persistedIngredients,
+    dishSignature,
+  };
+}
+
+/**
+ * Finds the row a generated recipe was (or will be) saved as, using the same
+ * rules as persistAcceptedCustomRecipe: its own key first, then a shared dish.
+ * Returns null while the background save has not happened yet.
+ */
+export async function findPersistedCustomRecipe(
+  input: Omit<PersistAcceptedCustomRecipeInput, "sourceJobId">,
+) {
+  const { externalKey, dishSignature } = buildCustomRecipeIdentity(input);
+  const columns = {
+    id: recipes.id,
+    coverImageId: recipes.coverImageId,
+  };
+
+  const [own] = await db
+    .select(columns)
+    .from(recipes)
+    .where(eq(recipes.externalKey, externalKey))
+    .limit(1);
+  if (own) {
+    return own;
+  }
+
+  const [sameDish] = await db
+    .select(columns)
+    .from(recipes)
+    .where(eq(recipes.dishSignature, dishSignature))
+    .limit(1);
+  return sameDish ?? null;
+}
+
+export async function persistAcceptedCustomRecipe(
+  input: PersistAcceptedCustomRecipeInput,
+) {
+  const { canonicalRecipe, recipeHash, externalKey, persistedIngredients, dishSignature } =
+    buildCustomRecipeIdentity(input);
+  const categoryKey = canonicalRecipe.category_key;
+  const slugBase =
+    slugify(canonicalRecipe.translations[canonicalRecipe.default_locale].name)
+    || "custom-recipe";
+  const slug = `${slugBase}-${recipeHash.slice(0, 8)}`;
 
   // Recipes are shared by everyone, so the same dish is stored only once: if
   // another recipe (any user or the catalog) already has this signature, reuse it.

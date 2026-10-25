@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils/utils";
 interface RecipeDetailHeroProps {
   categoryKey: string;
   imageUrl?: string | null;
+  /** The cover photo is still generating: show a skeleton. */
+  imageLoading?: boolean;
   imageAlt?: string;
   counterLabel: string;
   hasPrev: boolean;
@@ -30,6 +32,7 @@ const NAV_BUTTON_CLASS =
 export function RecipeDetailHero({
   categoryKey,
   imageUrl,
+  imageLoading = false,
   imageAlt,
   counterLabel,
   hasPrev,
@@ -47,6 +50,7 @@ export function RecipeDetailHero({
     <RecipeImage
       categoryKey={categoryKey}
       src={imageUrl}
+      loading={imageLoading}
       alt={imageAlt}
       className="h-[230px] w-full"
       emojiClassName="text-[72px]"

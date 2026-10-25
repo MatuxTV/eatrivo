@@ -36,13 +36,15 @@ export function buildRecipeImagePrompt(input: {
     .filter((ingredient) => ingredient.length > 0)
     .slice(0, 6);
 
-  const visible =
-    ingredients.length > 0 ? ingredients.join(", ") : "the main ingredients";
+  const madeWith =
+    ingredients.length > 0
+      ? `The finished dish is made with ${ingredients.join(", ")}; show only the cooked dish, not the raw ingredients.`
+      : "Show only the finished, cooked dish.";
 
   return [
     `Top-down overhead photo of ${input.nameEn}, ${resolveServingPhrase(input.categoryKey)} on a light neutral stone surface, soft natural daylight from the left, shallow shadows, realistic home-cooked food, appetizing, true-to-life colors.`,
-    `Clearly visible: ${visible}.`,
-    "No text, no labels, no logos, no hands, no people, no cutlery clutter, no extra dishes.",
+    madeWith,
+    "No text, no labels, no captions, no lettering, no logos, no packaging, no bottles, no hands, no people, no cutlery clutter, no extra dishes or bowls of ingredients.",
     "Square 1:1 composition, dish centered, fills about 70% of the frame.",
   ].join(" ");
 }
