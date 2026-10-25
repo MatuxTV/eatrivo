@@ -22,7 +22,7 @@ import { isPaidMembership, isRecipeImageEligible, type RecipeImageOwner } from "
 import { buildRecipeImagePrompt } from "./prompt";
 import { generateRecipeImage } from "./provider";
 import { getDishSignature } from "./signature";
-import { storeRecipeImage } from "./storage";
+import { loadImageProcessor, storeRecipeImage } from "./storage";
 import { buildRecipeImageKey } from "./storage-keys";
 
 export type EnsureRecipeImageResult =
@@ -290,6 +290,8 @@ export async function ensureRecipeImage(
       dishSignature,
     });
 
+    // Fail before the paid generation call if images cannot be processed here.
+    await loadImageProcessor();
     const generated = await generateRecipeImage(prompt, { model });
     await addMonthlySpendUsd(price);
     const stored = await storeRecipeImage(recipeId, imageId, generated.bytes);
