@@ -4,6 +4,7 @@ import {
 } from "@/lib/custom-recipes/contracts";
 import { validateCustomRecipeIngredientAmountFormat } from "@/lib/custom-recipes/unit-validation";
 import { apiLogger } from "@/lib/logger";
+import { isDefaultAvailabilityStaple } from "@/lib/pantry/tracking";
 import type { CustomRecipeState } from "../state";
 import { ZodError } from "zod";
 
@@ -142,7 +143,12 @@ function validatePantryReferences(
       }
 
       const matchName = ingredient.pantryMatchName?.trim().toLowerCase();
-      if (!matchName || !pantryNames.has(matchName)) {
+      // The prompt tells the model to treat basic staples (salt, pepper, oil…)
+      // as always available, even when they are not in the pantry list.
+      const isStaple =
+        isDefaultAvailabilityStaple({ name: ingredient.name }) ||
+        isDefaultAvailabilityStaple({ name: ingredient.pantryMatchName });
+      if (!matchName || (!pantryNames.has(matchName) && !isStaple)) {
         return `Invalid pantryMatchName for ingredient "${ingredient.name}"`;
       }
     }
