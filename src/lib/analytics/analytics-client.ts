@@ -97,6 +97,8 @@ export const trackClientEvent = ({
     fetch("/api/analytics/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      // Lets the event finish sending when the page navigates or reloads right after.
+      keepalive: true,
       body: JSON.stringify({
         eventName,
         metadata: sanitizedMetadata,

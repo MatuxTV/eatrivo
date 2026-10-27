@@ -154,6 +154,29 @@ export function buildUserAliasValues(input: {
   }));
 }
 
+// Remembers which ingredient the AI matched a name to, as the user's own alias,
+// so the next add of the same name resolves without an AI call. An existing
+// alias for that name is kept: the first remembered choice stands.
+export async function rememberAiIngredientChoice(input: {
+  userId: string;
+  locale: string;
+  rawName: string;
+  ingredientId: string;
+}): Promise<void> {
+  const aliasValues = buildUserAliasValues({
+    ingredientId: input.ingredientId,
+    userId: input.userId,
+    locale: input.locale,
+    names: [input.rawName],
+  }).map((value) => ({ ...value, source: "ai" as const }));
+
+  if (aliasValues.length === 0) {
+    return;
+  }
+
+  await db.insert(ingredientAliases).values(aliasValues).onConflictDoNothing();
+}
+
 // Re-keys stored rows that point at an ingredient so their denormalized
 // text keys stay in sync with ingredient_id.
 function rekeyReferencingRows(input: {

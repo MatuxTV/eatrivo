@@ -14,19 +14,13 @@ import {
 import { db } from "@/index";
 import { apiLogger } from "@/lib/logger";
 import {
-  findPantrySuggestionForItem,
-  getPantryAiSuggestions,
-} from "@/lib/pantry/ai-normalization";
-import {
   getAliasCandidateKeysForName,
   loadIngredientGraph,
   loadUserIngredientAliasIndex,
   resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
-import { ensureUserIngredient } from "@/lib/pantry/user-ingredients";
-import { classifyUserIngredient } from "@/lib/pantry/ingredient-classification";
+import { normalizeShoppingListItemInBackground } from "@/lib/pantry/shopping-item-normalization";
 import { findSameIngredientItem } from "@/lib/pantry/shopping-list-core";
-import { reportIngredientResolutionFeedback } from "@/lib/feedback/ingredient-resolution-feedback";
 import {
   resolveShoppingListSeedFromPantryItem,
 } from "@/lib/pantry/grocery";
@@ -272,8 +266,9 @@ export async function POST(request: NextRequest) {
         ),
     ]);
 
+    const manualName = body.name?.trim() || null;
     const pantryRows =
-      body.name || body.pantryItemId || body.pantryItemIds?.length || body.lowStockOnly
+      manualName === null
         ? await db
             .select()
             .from(pantryItems)
@@ -281,7 +276,7 @@ export async function POST(request: NextRequest) {
             .orderBy(asc(pantryItems.createdAt))
         : [];
 
-    const userInfo = body.name
+    const userInfo = manualName
       ? await db.query.userInfoTable.findFirst({
           where: eq(userInfoTable.userProfileId, userProfileId),
         })
@@ -300,126 +295,39 @@ export async function POST(request: NextRequest) {
     ]);
 
     const locale = userInfo?.language ?? "sk";
-    const manualName = body.name?.trim() ?? null;
-    const userAliasIndex = manualName
-      ? await loadUserIngredientAliasIndex(locale, session.user.id)
-      : null;
-    // Same resolution as a manual pantry add: skip the AI call when the
-    // name maps to exactly one known ingredient.
-    const needsAiSuggestion =
+    const [userAliasIndex, ingredientGraph] = await Promise.all([
+      manualName ? loadUserIngredientAliasIndex(locale, session.user.id) : null,
+      loadIngredientGraph(locale),
+    ]);
+    // A name that maps to exactly one known ingredient is linked right away.
+    // Anything else goes on the list as typed and the AI links it after the
+    // response, so adding an item never waits on the model.
+    const resolvesNow =
       manualName !== null &&
       userAliasIndex !== null &&
-      getAliasCandidateKeysForName(manualName, userAliasIndex.index).length !== 1;
-    const aiSuggestion = needsAiSuggestion
-      ? findPantrySuggestionForItem(
-          await getPantryAiSuggestions({
-            userProfileId,
-            locale,
-            currentPantry: pantryRows,
-            pendingItems: [
-              {
-                name: manualName!,
-                trackingMode: null,
-                inStock: null,
-                quantity: resolvedManualAmount.quantity,
-                unit: resolvedManualAmount.unit,
-                category: body.category ?? guessFoodCategory(manualName!),
-                expiryDate: null,
-              },
-            ],
-          }),
-          manualName!,
-          0,
-        )
+      getAliasCandidateKeysForName(manualName, userAliasIndex.index).length === 1;
+    const resolvedManualIdentity = resolvesNow
+      ? resolvePantryIngredientIdentity(manualName!, locale, userAliasIndex!.index)
       : null;
-
-    const ingredientGraph = await loadIngredientGraph(locale);
-    let resolvedManualIdentity =
-      manualName && userAliasIndex
-        ? resolvePantryIngredientIdentity(
-            manualName,
-            locale,
-            userAliasIndex.index,
-            aiSuggestion?.ingredientSpecificKey ??
-              aiSuggestion?.matchedExistingIngredientSpecificKey ??
-              null,
-            aiSuggestion?.ingredientKey ??
-              aiSuggestion?.matchedExistingIngredientKey ??
-              null,
-          )
-        : null;
-    let manualIngredientId: string | null = null;
-    let createdUserIngredientId: string | null = null;
-
-    if (manualName && resolvedManualIdentity) {
-      const identityKey =
-        resolvedManualIdentity.ingredientSpecificKey ??
-        resolvedManualIdentity.ingredientKey;
-
-      if (identityKey) {
-        manualIngredientId =
-          ingredientGraph.idByKey.get(identityKey) ??
-          userAliasIndex?.privateIdByKey.get(identityKey) ??
-          null;
-      } else {
-        // Unknown item → private user ingredient, classified in the background.
-        const userIngredient = await ensureUserIngredient({
-          userId: session.user.id,
-          locale,
-          rawName: manualName,
-        });
-
-        if (userIngredient) {
-          manualIngredientId = userIngredient.id;
-          createdUserIngredientId = userIngredient.created ? userIngredient.id : null;
-          resolvedManualIdentity = {
-            ...resolvedManualIdentity,
-            ingredientName: userIngredient.canonicalName ?? manualName,
-            ingredientKey: userIngredient.key,
-            ingredientSpecificKey: userIngredient.key,
-          };
-        } else {
-          await reportIngredientResolutionFeedback({
-            source: "shopping-list-current-upsert",
-            rawName: manualName,
-            locale: session?.user?.locale ?? "sk",
-            userId: session?.user?.id ?? null,
-            userEmail: session?.user?.email ?? null,
-            userName: session?.user?.name ?? null,
-          });
-        }
-      }
-    }
-
-    if (body.name) {
-      apiLogger.debug("[shopping-list.current.upsert] AI normalization resolved", {
-        metadata: {
-          shoppingListId: shoppingList.id,
-          userProfileId,
-          itemName: body.name.trim(),
-          normalizedName: aiSuggestion?.normalizedName ?? null,
-          ingredientKey:
-            aiSuggestion?.ingredientKey ??
-            aiSuggestion?.matchedExistingIngredientKey ??
-            null,
-          ingredientSpecificKey:
-            aiSuggestion?.ingredientSpecificKey ??
-            aiSuggestion?.matchedExistingIngredientSpecificKey ??
-            null,
-          category: aiSuggestion?.category ?? null,
-          confidence: aiSuggestion?.confidence ?? null,
-        },
-      });
-    }
+    const resolvedManualKey =
+      resolvedManualIdentity?.ingredientSpecificKey ??
+      resolvedManualIdentity?.ingredientKey ??
+      null;
+    const manualIngredientId = resolvedManualKey
+      ? ingredientGraph.idByKey.get(resolvedManualKey) ??
+        userAliasIndex?.privateIdByKey.get(resolvedManualKey) ??
+        null
+      : null;
+    const manualCategory = body.category ?? null;
 
     const seeds =
-      body.name
+      manualName
         ? [
             {
-              name: resolvedManualIdentity!.ingredientName ?? body.name.trim(),
-              ingredientName: resolvedManualIdentity!.ingredientName,
-              ingredientKey: resolvedManualIdentity!.ingredientKey,
-              ingredientSpecificKey: resolvedManualIdentity!.ingredientSpecificKey,
+              name: resolvedManualIdentity?.ingredientName ?? manualName,
+              ingredientName: resolvedManualIdentity?.ingredientName ?? null,
+              ingredientKey: resolvedManualIdentity?.ingredientKey ?? null,
+              ingredientSpecificKey: resolvedManualIdentity?.ingredientSpecificKey ?? null,
               ingredientId: manualIngredientId,
               quantity:
                 resolvedManualAmount.quantity !== null
@@ -427,10 +335,7 @@ export async function POST(request: NextRequest) {
                   : null,
               unit: resolvedManualAmount.unit,
               amountLabel: resolvedManualAmount.amountLabel,
-              category:
-                aiSuggestion?.category ??
-                body.category ??
-                guessFoodCategory(body.name),
+              category: manualCategory ?? guessFoodCategory(manualName),
             },
           ]
         : pantryInventoryItems
@@ -483,6 +388,7 @@ export async function POST(request: NextRequest) {
 
     const mutableItems = [...existingItems];
     const addedItemIds: string[] = [];
+    let pendingNormalizationItemId: string | null = null;
 
     for (const seed of seeds) {
       const existingItem = findSameIngredientItem(mutableItems, seed);
@@ -598,6 +504,9 @@ export async function POST(request: NextRequest) {
 
       mutableItems.push(insertedItem);
       addedItemIds.push(insertedItem.id);
+      if (manualName && !resolvesNow) {
+        pendingNormalizationItemId = insertedItem.id;
+      }
 
       apiLogger.info("[shopping-list.current.upsert] inserted shopping list item", {
         metadata: {
@@ -627,18 +536,23 @@ export async function POST(request: NextRequest) {
     await CacheService.del(`shopping-lists:${session.user.id}`);
     await CacheService.del(`pantry:${userProfileId}`);
 
-    if (createdUserIngredientId && manualName) {
-      const classifyUserId = session.user.id;
-      const classifyIngredientId = createdUserIngredientId;
-      after(async () => {
-        await classifyUserIngredient({
-          ingredientId: classifyIngredientId,
-          userId: classifyUserId,
-          userProfileId,
-          locale,
-          rawName: manualName,
-        });
-      });
+    if (pendingNormalizationItemId && manualName) {
+      const normalizeInput = {
+        shoppingListItemId: pendingNormalizationItemId,
+        userId: session.user.id,
+        userProfileId,
+        locale,
+        rawName: manualName,
+        quantity: resolvedManualAmount.quantity,
+        unit: resolvedManualAmount.unit,
+        userCategory: manualCategory,
+        feedbackUser: {
+          email: session.user.email ?? null,
+          name: session.user.name ?? null,
+          locale: session.user.locale ?? null,
+        },
+      };
+      after(() => normalizeShoppingListItemInBackground(normalizeInput));
     }
 
     return NextResponse.json({
@@ -651,6 +565,7 @@ export async function POST(request: NextRequest) {
       },
       items: mapShoppingListItems(result.items),
       addedItemIds,
+      pendingNormalizationItemIds: pendingNormalizationItemId ? [pendingNormalizationItemId] : [],
     });
   } catch (error) {
     apiLogger.error("Failed to upsert current shopping list item", error);

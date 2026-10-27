@@ -8,7 +8,8 @@ export const shoppingListItemCheckSchema = z.object({
 
 export const shoppingListCheckoutSchema = z.object({
   mode: z.enum(["checked_only", "all"]).default("checked_only"),
-  completeList: z.literal(true),
+  // true = refuse unless every item is checked; otherwise only the checked items move
+  completeList: z.boolean().default(false),
 });
 
 export type ShoppingListItemCheckInput = z.infer<

@@ -317,7 +317,8 @@ export async function ensureRecipeImage(
     apiLogger.error("[recipe-images] generation failed", error, { metadata: { recipeId } });
     await db
       .update(recipeImages)
-      .set({ status: "failed", error: message.slice(0, 500), updatedAt: new Date() })
+      // Long enough to keep the cause that native-module errors list after their headline.
+      .set({ status: "failed", error: message.slice(0, 2000), updatedAt: new Date() })
       .where(eq(recipeImages.id, imageId))
       .catch(() => undefined);
     return { status: "failed", error: message };

@@ -26,12 +26,13 @@ import {
 } from "@/lib/pantry/ai-normalization";
 import {
   getAliasCandidateKeysForName,
+  getRememberableAiKey,
   loadUserIngredientAliasIndex,
   resolveIngredientIdByKeys,
   resolvePantryIngredientIdentity,
 } from "@/lib/pantry/ingredient-resolution";
 import { reportIngredientResolutionFeedback } from "@/lib/feedback/ingredient-resolution-feedback";
-import { ensureUserIngredient } from "@/lib/pantry/user-ingredients";
+import { ensureUserIngredient, rememberAiIngredientChoice } from "@/lib/pantry/user-ingredients";
 import { classifyUserIngredient } from "@/lib/pantry/ingredient-classification";
 import { buildPantryInventoryItems, derivePantryInventoryItem } from "@/lib/pantry/grocery";
 import { invalidatePantryCaches, pantryCacheKey } from "@/lib/pantry/restock";
@@ -429,6 +430,25 @@ export async function POST(req: NextRequest) {
         category: newItem.category,
       },
     });
+
+    const rememberedAiKey = userIngredient ? null : getRememberableAiKey(aiSuggestion, resolvedIdentity);
+    if (rememberedAiKey && resolvedIngredientId) {
+      const rememberedIngredientId = resolvedIngredientId;
+      after(async () => {
+        try {
+          await rememberAiIngredientChoice({
+            userId: session.user.id,
+            locale,
+            rawName: normalizedName,
+            ingredientId: rememberedIngredientId,
+          });
+        } catch (error) {
+          apiLogger.error("[pantry.create] failed to remember AI ingredient match", error, {
+            metadata: { userProfileId: userProfile.id, ingredientKey: rememberedAiKey },
+          });
+        }
+      });
+    }
 
     if (userIngredient?.created) {
       const userIngredientId = userIngredient.id;

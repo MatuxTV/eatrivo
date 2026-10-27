@@ -95,6 +95,22 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   trailingSlash: false,
+  // Build tracing copies sharp's JavaScript but not its platform binary, so
+  // recipe photo processing failed on the server with "Could not load the sharp
+  // module". Ship the installed binaries with the routes that process photos.
+  outputFileTracingIncludes: Object.fromEntries(
+    [
+      "/api/admin/recipe-images/backfill",
+      "/api/admin/recipes/import",
+      "/api/cron/recipe-images",
+      "/api/recipes/custom/accept",
+      "/api/recipes/custom/generate",
+      "/api/recipes/custom/image",
+    ].map((route) => [
+      route,
+      ["./node_modules/@img/sharp-*/**/*", "./node_modules/@img/sharp-libvips-*/**/*"],
+    ]),
+  ),
   async headers() {
     return [
       {

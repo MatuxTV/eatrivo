@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse, after } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 import { auth } from "../../../../../../auth";
 import {
@@ -113,6 +113,10 @@ export async function POST(
       .select({
         id: shoppingLists.id,
         status: shoppingLists.status,
+        title: shoppingLists.title,
+        description: shoppingLists.description,
+        weekStartDate: shoppingLists.weekStartDate,
+        weekEndDate: shoppingLists.weekEndDate,
       })
       .from(shoppingLists)
       .where(
@@ -180,16 +184,32 @@ export async function POST(
       return errorResponse("Validation failed", "NO_CHECKED_ITEMS", 400);
     }
 
-    if (
-      bodyResult.data.completeList &&
-      selectedItems.length !== allItems.length
-    ) {
+    const isPartialCheckout = selectedItems.length !== allItems.length;
+
+    if (bodyResult.data.completeList && isPartialCheckout) {
       return errorResponse(
         "Validation failed",
         "SHOPPING_LIST_NOT_FULLY_CHECKED",
         400,
       );
     }
+
+    // A partial checkout moves the bought items onto their own completed list,
+    // so the active list keeps the rest and the purchase history survives.
+    const [splitList] = isPartialCheckout
+      ? await db
+          .insert(shoppingLists)
+          .values({
+            userProfileId: userProfile.id,
+            title: shoppingList.title,
+            description: shoppingList.description,
+            weekStartDate: shoppingList.weekStartDate,
+            weekEndDate: shoppingList.weekEndDate,
+            status: "completed",
+          })
+          .returning({ id: shoppingLists.id })
+      : [];
+    const importListId = splitList?.id ?? shoppingList.id;
 
     const userPantryItems = await db
       .select({
@@ -209,7 +229,7 @@ export async function POST(
 
     const existingImportKeys = new Set(
       userPantryItems
-        .filter((item) => item.shoppingListId === shoppingList.id)
+        .filter((item) => item.shoppingListId === importListId)
         .map((item) => buildPantryImportKey(item)),
     );
     const itemsToImport = selectedItems.filter(
@@ -263,7 +283,7 @@ export async function POST(
               : null,
           category: item.category || guessFoodCategory(item.name),
           source: "shopping_list" as const,
-          shoppingListId: shoppingList.id,
+          shoppingListId: importListId,
         };
 
         apiLogger.debug("[shopping-list.checkout] prepared pantry item", {
@@ -357,10 +377,25 @@ export async function POST(
       });
     }
 
+    if (splitList) {
+      await db
+        .update(shoppingListItems)
+        .set({ shoppingListId: splitList.id, updatedAt: new Date() })
+        .where(
+          and(
+            eq(shoppingListItems.shoppingListId, shoppingList.id),
+            inArray(
+              shoppingListItems.id,
+              selectedItems.map((item) => item.id),
+            ),
+          ),
+        );
+    }
+
     const [updatedShoppingList] = await db
       .update(shoppingLists)
       .set({
-        status: "completed",
+        status: isPartialCheckout ? "active" : "completed",
         updated_at: new Date(),
       })
       .where(

@@ -212,6 +212,7 @@ export async function loadUserIngredientAliasIndex(
         alias: ingredientAliases.alias,
         key: ingredients.key,
         canonicalName: ingredients.canonicalName,
+        source: ingredientAliases.source,
       })
       .from(ingredientAliases)
       .innerJoin(ingredients, eq(ingredients.id, ingredientAliases.ingredientId))

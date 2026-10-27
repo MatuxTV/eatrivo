@@ -12,7 +12,12 @@ export interface IngredientAliasRow {
   locale: string;
   ingredientName: string | null;
   displayName: string;
+  // The user's own remembered choice for this name; it wins over every other match.
+  isUserChoice?: boolean;
 }
+
+// An AI match is remembered as a user alias only at or above this confidence.
+export const AI_ALIAS_CONFIDENCE_THRESHOLD = 0.8;
 
 export interface IngredientAliasIndex {
   byAlias: Map<string, IngredientAliasRow[]>;
@@ -244,15 +249,19 @@ function getUniqueCandidateKeys(
   candidates: string[],
 ): string[] {
   const keys = new Set<string>();
+  const userChoiceKeys = new Set<string>();
 
   for (const candidate of candidates) {
     const rows = aliasIndex.byAlias.get(candidate) ?? [];
     for (const row of rows) {
       keys.add(row.ingredientKey);
+      if (row.isUserChoice) {
+        userChoiceKeys.add(row.ingredientKey);
+      }
     }
   }
 
-  return [...keys];
+  return [...(userChoiceKeys.size > 0 ? userChoiceKeys : keys)];
 }
 
 export function getAliasCandidateKeysForName(
@@ -367,6 +376,8 @@ export interface PrivateIngredientAliasRow {
   // global one after a private ingredient was merged into it.
   key: string;
   canonicalName: string | null;
+  // "ai" marks a remembered AI match, which wins over global matches.
+  source?: string | null;
 }
 
 export interface UserIngredientAliasIndex {
@@ -424,16 +435,25 @@ export function overlayUserIngredients(
       continue;
     }
 
+    const isUserChoice = row.source === "ai";
     const existing = [...(byAlias.get(alias) ?? [])];
-    if (existing.some((entry) => entry.ingredientKey === row.key)) {
+    const sameKeyIndex = existing.findIndex((entry) => entry.ingredientKey === row.key);
+    if (sameKeyIndex !== -1 && !isUserChoice) {
       continue;
     }
-    existing.push({
+
+    const entry: IngredientAliasRow = {
       ingredientKey: row.key,
       locale: row.locale ?? input.locale,
       ingredientName: row.canonicalName ?? null,
       displayName: row.alias,
-    });
+      ...(isUserChoice ? { isUserChoice } : {}),
+    };
+    if (sameKeyIndex !== -1) {
+      existing[sameKeyIndex] = entry;
+    } else {
+      existing.push(entry);
+    }
     byAlias.set(alias, existing);
   }
 
@@ -447,4 +467,33 @@ export function overlayUserIngredients(
     },
     privateIdByKey,
   };
+}
+
+// The key an AI suggestion confidently picked for a name, when the resolved
+// identity actually used it; null when nothing is worth remembering.
+export function getRememberableAiKey(
+  suggestion: {
+    ingredientKey: string | null;
+    ingredientSpecificKey: string | null;
+    matchedExistingIngredientKey: string | null;
+    matchedExistingIngredientSpecificKey: string | null;
+    confidence: number | null;
+  } | null,
+  identity: Pick<ResolvedPantryIngredientIdentity, "ingredientSpecificKey" | "source">,
+): string | null {
+  if (!suggestion || (suggestion.confidence ?? 0) < AI_ALIAS_CONFIDENCE_THRESHOLD) {
+    return null;
+  }
+  if (identity.source !== "ai-suggested" && identity.source !== "translation-ai-disambiguated") {
+    return null;
+  }
+
+  const suggestedKeys = [
+    suggestion.ingredientSpecificKey,
+    suggestion.matchedExistingIngredientSpecificKey,
+    suggestion.ingredientKey,
+    suggestion.matchedExistingIngredientKey,
+  ];
+  const key = identity.ingredientSpecificKey;
+  return key && suggestedKeys.includes(key) ? key : null;
 }

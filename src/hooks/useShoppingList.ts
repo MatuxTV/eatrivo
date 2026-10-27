@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { logger } from "@/lib/logger";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { formatAmountLabel, localizeAmountForDisplay } from "@/lib/pantry/format";
-import { PANTRY_UNIT_OPTIONS, parseQuantity } from "@/lib/ingredients/units";
+import { PANTRY_UNIT_OPTIONS, guessFoodCategory, parseQuantity } from "@/lib/ingredients/units";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -32,6 +32,19 @@ interface ShoppingListApiItem {
   category: string;
   sortOrder: number;
   isChecked?: boolean;
+}
+
+export interface FrequentShoppingItem {
+  name: string;
+  category: string;
+  timesBought: number;
+}
+
+export interface CustomShoppingItemInput {
+  name: string;
+  quantity: number | null;
+  unit: string | null;
+  category: string | null;
 }
 
 export interface ShoppingListApiMeta {
@@ -71,6 +84,14 @@ const SHOPPING_CATEGORY_TRANSLATION_KEYS: Record<string, string> = {
   other: "other",
 };
 
+const MAX_VISIBLE_FREQUENT_ITEMS = 6;
+
+const toNameKey = (name: string) => name.trim().toLowerCase();
+
+// The server links a manually added item to the ingredient catalog in the
+// background; one refresh after this delay picks up its corrected category.
+const BACKGROUND_MATCH_REFRESH_MS = 5000;
+
 /* ------------------------------------------------------------------ */
 /*  Hook                                                               */
 /* ------------------------------------------------------------------ */
@@ -89,7 +110,8 @@ export function useShoppingList({ refreshPantrySummary }: UseShoppingListOptions
   /* ---- state ---- */
   const [shoppingListItems, setShoppingListItems] = useState<ShoppingListItem[]>([]);
   const [currentShoppingList, setCurrentShoppingList] = useState<ShoppingListApiMeta | null>(null);
-  const [isCompletingShoppingList, setIsCompletingShoppingList] = useState(false);
+  const [isMovingToPantry, setIsMovingToPantry] = useState(false);
+  const [frequentItems, setFrequentItems] = useState<FrequentShoppingItem[]>([]);
   const [checkedItemIds, setCheckedItemIds] = useState<Set<string>>(new Set());
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitleValue, setEditTitleValue] = useState("");
@@ -99,6 +121,10 @@ export function useShoppingList({ refreshPantrySummary }: UseShoppingListOptions
   const [quantityDraftUnit, setQuantityDraftUnit] = useState("ks");
   const [isUpdatingQuantityItemId, setIsUpdatingQuantityItemId] = useState<string | null>(null);
   const titleInputRef = useRef<HTMLInputElement | null>(null);
+  // Items shown optimistically while their add request is still in flight,
+  // keyed by lowercase name. Kept across server responses until confirmed.
+  const pendingAddsRef = useRef(new Map<string, ShoppingListItem>());
+  const backgroundRefreshRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* ---- helpers ---- */
 
@@ -328,6 +354,14 @@ export function useShoppingList({ refreshPantrySummary }: UseShoppingListOptions
     }
   }, [editTitleValue, currentShoppingList?.id, t]);
 
+  const withPendingAdds = useCallback((items: ShoppingListItem[]) => {
+    const onList = new Set(items.map((item) => toNameKey(item.name)));
+    const stillPending = [...pendingAddsRef.current.entries()]
+      .filter(([nameKey]) => !onList.has(nameKey))
+      .map(([, item]) => item);
+    return [...items, ...stillPending];
+  }, []);
+
   const loadCurrentShoppingList = useCallback(async () => {
     if (!session?.user?.id) {
       setShoppingListItems([]);
@@ -353,7 +387,7 @@ export function useShoppingList({ refreshPantrySummary }: UseShoppingListOptions
 
       setCurrentShoppingList(payload.shoppingList ?? null);
       const items = Array.isArray(payload.items) ? mapShoppingListItems(payload.items) : [];
-      setShoppingListItems(items);
+      setShoppingListItems(withPendingAdds(items));
       const initialChecked = new Set<string>();
       items.forEach((item) => {
         if (item.isChecked && item.id) initialChecked.add(item.id);
@@ -365,7 +399,7 @@ export function useShoppingList({ refreshPantrySummary }: UseShoppingListOptions
         metadata: { error: error instanceof Error ? error.message : String(error) },
       });
     }
-  }, [mapShoppingListItems, session?.user?.id]);
+  }, [mapShoppingListItems, session?.user?.id, withPendingAdds]);
 
   const handleAddToShoppingList = useCallback(
     async (ingredientName: string, quantity: string | null, category: string | null) => {
@@ -400,10 +434,109 @@ export function useShoppingList({ refreshPantrySummary }: UseShoppingListOptions
     [loadCurrentShoppingList, mapShoppingListItems, t],
   );
 
-  const handleCompleteShoppingList = useCallback(async () => {
-    if (!currentShoppingList?.id || isCompletingShoppingList) return;
+  const loadFrequentItems = useCallback(async () => {
+    if (!session?.user?.id) {
+      setFrequentItems([]);
+      return;
+    }
 
-    setIsCompletingShoppingList(true);
+    try {
+      const response = await fetch("/api/shopping-lists/frequent", { cache: "no-store" });
+      if (!response.ok) return;
+      const payload = (await response.json()) as { items?: FrequentShoppingItem[] };
+      setFrequentItems(Array.isArray(payload.items) ? payload.items : []);
+    } catch (error) {
+      logger.warn("Failed to fetch frequently bought items", {
+        context: "useShoppingList",
+        metadata: { error: error instanceof Error ? error.message : String(error) },
+      });
+    }
+  }, [session?.user?.id]);
+
+  // Shows the item at once and saves it in the background; the server's
+  // ingredient matching never blocks the UI.
+  const handleAddCustomItem = useCallback(
+    ({ name, quantity, unit, category }: CustomShoppingItemInput): boolean => {
+      const normalizedName = name.trim();
+      if (!normalizedName) return false;
+
+      const nameKey = toNameKey(normalizedName);
+      const hasAmount =
+        quantity !== null && Number.isFinite(quantity) && quantity > 0 && Boolean(unit);
+      const alreadyOnList = shoppingListItems.some((item) => toNameKey(item.name) === nameKey);
+
+      if (!alreadyOnList && !pendingAddsRef.current.has(nameKey)) {
+        const optimisticItem: ShoppingListItem = {
+          name: normalizedName,
+          quantity: hasAmount ? formatAmountLabel(quantity, unit) : null,
+          quantityValue: hasAmount ? String(quantity) : null,
+          unit: hasAmount ? unit : null,
+          category: category ?? guessFoodCategory(normalizedName),
+          isChecked: false,
+        };
+        pendingAddsRef.current.set(nameKey, optimisticItem);
+        setShoppingListItems((prev) => [...prev, optimisticItem]);
+      }
+      triggerHaptic("light");
+
+      void (async () => {
+        try {
+          const response = await fetch("/api/shopping-lists/current", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: normalizedName,
+              ...(hasAmount ? { quantity, unit } : {}),
+              ...(category ? { category } : {}),
+            }),
+          });
+
+          if (!response.ok) throw new Error(`Add failed with status ${response.status}`);
+
+          const payload = (await response.json()) as {
+            shoppingList?: ShoppingListApiMeta | null;
+            items?: ShoppingListApiItem[];
+            pendingNormalizationItemIds?: string[];
+          };
+          pendingAddsRef.current.delete(nameKey);
+          if (payload.shoppingList) setCurrentShoppingList(payload.shoppingList);
+          if (Array.isArray(payload.items)) {
+            setShoppingListItems(withPendingAdds(mapShoppingListItems(payload.items)));
+          }
+
+          if (payload.pendingNormalizationItemIds?.length) {
+            if (backgroundRefreshRef.current) clearTimeout(backgroundRefreshRef.current);
+            backgroundRefreshRef.current = setTimeout(() => {
+              backgroundRefreshRef.current = null;
+              void loadCurrentShoppingList();
+            }, BACKGROUND_MATCH_REFRESH_MS);
+          }
+        } catch (error) {
+          pendingAddsRef.current.delete(nameKey);
+          setShoppingListItems((prev) =>
+            prev.filter((item) => item.id || toNameKey(item.name) !== nameKey),
+          );
+          logger.warn("Failed to add custom shopping list item", {
+            context: "useShoppingList",
+            metadata: {
+              name: normalizedName,
+              error: error instanceof Error ? error.message : String(error),
+            },
+          });
+          toast.error(t("basic.shoppingList.addError"));
+        }
+      })();
+
+      return true;
+    },
+    [loadCurrentShoppingList, mapShoppingListItems, shoppingListItems, t, triggerHaptic, withPendingAdds],
+  );
+
+  // Moves the checked items into the pantry; unchecked items stay on the list.
+  const handleMoveCheckedToPantry = useCallback(async (): Promise<boolean> => {
+    if (!currentShoppingList?.id || isMovingToPantry) return false;
+
+    setIsMovingToPantry(true);
 
     try {
       const response = await fetch(
@@ -411,32 +544,43 @@ export function useShoppingList({ refreshPantrySummary }: UseShoppingListOptions
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mode: "checked_only", completeList: true }),
+          body: JSON.stringify({ mode: "checked_only", completeList: false }),
         },
       );
 
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(payload?.error ?? "Failed to complete shopping list");
+        throw new Error(payload?.error ?? "Failed to move items to pantry");
       }
 
-      toast.success(t("basic.shoppingList.completeSuccess") || "Nákup uložený do špajze!");
+      triggerHaptic("medium");
+      toast.success(t("basic.shoppingList.moveSuccess"));
       setCheckedItemIds(new Set());
 
-      await refreshPantrySummary();
-      await loadCurrentShoppingList();
+      await Promise.all([refreshPantrySummary(), loadCurrentShoppingList(), loadFrequentItems()]);
+      return true;
     } catch (error) {
-      logger.warn("Failed to complete shopping list", {
+      logger.warn("Failed to move checked items to pantry", {
         context: "useShoppingList",
         metadata: {
           shoppingListId: currentShoppingList.id,
           error: error instanceof Error ? error.message : String(error),
         },
       });
+      toast.error(t("basic.shoppingList.moveError"));
+      return false;
     } finally {
-      setIsCompletingShoppingList(false);
+      setIsMovingToPantry(false);
     }
-  }, [currentShoppingList?.id, isCompletingShoppingList, loadCurrentShoppingList, refreshPantrySummary, t]);
+  }, [
+    currentShoppingList?.id,
+    isMovingToPantry,
+    loadCurrentShoppingList,
+    loadFrequentItems,
+    refreshPantrySummary,
+    t,
+    triggerHaptic,
+  ]);
 
   /* ---- derived ---- */
 
@@ -446,6 +590,19 @@ export function useShoppingList({ refreshPantrySummary }: UseShoppingListOptions
   );
 
   const allItemsChecked = shoppingListItems.length > 0 && totalChecked === shoppingListItems.length;
+
+  const checkedItems = useMemo(
+    () => shoppingListItems.filter((item) => checkedItemIds.has(item.id ?? "")),
+    [shoppingListItems, checkedItemIds],
+  );
+
+  // Frequently bought items that are not on the list yet.
+  const visibleFrequentItems = useMemo(() => {
+    const onList = new Set(shoppingListItems.map((item) => toNameKey(item.name)));
+    return frequentItems
+      .filter((item) => !onList.has(toNameKey(item.name)))
+      .slice(0, MAX_VISIBLE_FREQUENT_ITEMS);
+  }, [frequentItems, shoppingListItems]);
 
   const shoppingListItemsByCategory = useMemo(() => {
     return shoppingListItems.reduce<Record<string, ShoppingListItem[]>>((acc, item) => {
@@ -477,13 +634,24 @@ export function useShoppingList({ refreshPantrySummary }: UseShoppingListOptions
     void loadCurrentShoppingList();
   }, [loadCurrentShoppingList]);
 
+  useEffect(() => {
+    void loadFrequentItems();
+  }, [loadFrequentItems]);
+
+  useEffect(
+    () => () => {
+      if (backgroundRefreshRef.current) clearTimeout(backgroundRefreshRef.current);
+    },
+    [],
+  );
+
   /* ---- public API ---- */
 
   return {
     // state
     shoppingListItems,
     currentShoppingList,
-    isCompletingShoppingList,
+    isMovingToPantry,
     checkedItemIds,
     isEditingTitle,
     editTitleValue,
@@ -499,6 +667,8 @@ export function useShoppingList({ refreshPantrySummary }: UseShoppingListOptions
     // derived
     totalChecked,
     allItemsChecked,
+    checkedItems,
+    visibleFrequentItems,
     shoppingListItemsByCategory,
     shoppingListCategories,
     // callbacks
@@ -510,7 +680,8 @@ export function useShoppingList({ refreshPantrySummary }: UseShoppingListOptions
     handleStartEditTitle,
     cancelEditTitle,
     handleSaveTitle,
-    handleCompleteShoppingList,
+    handleMoveCheckedToPantry,
+    handleAddCustomItem,
     handleAddToShoppingList,
     loadCurrentShoppingList,
     // helpers

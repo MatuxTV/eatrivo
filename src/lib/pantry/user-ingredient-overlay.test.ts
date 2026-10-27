@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   buildNormalizedAliases,
+  getRememberableAiKey,
   overlayUserIngredients,
   resolvePantryIngredientIdentity,
   type IngredientAliasIndex,
@@ -226,4 +227,63 @@ test("overlayUserIngredients gives a classified private ingredient its stored fa
     "bread",
   );
   assert.equal(globalIndex.familyKeyByKey.has("ghee"), false);
+});
+
+test("overlayUserIngredients lets a remembered AI choice win over global matches", () => {
+  const overlay = overlayUserIngredients(buildGlobalIndex(), {
+    locale: "sk",
+    privateRows: [{ id: "private:ghee", key: "ghee", canonicalName: "Ghee" }],
+    privateNameRows: [],
+    privateAliasRows: [
+      { locale: "sk", alias: "maslo", key: "ghee", canonicalName: "Ghee", source: "ai" },
+    ],
+  });
+
+  const resolved = resolvePantryIngredientIdentity("maslo", "sk", overlay.index);
+
+  assert.equal(resolved.ingredientSpecificKey, "ghee");
+  assert.equal(resolved.source, "translation-exact");
+});
+
+test("overlayUserIngredients marks a remembered choice that matches the global key", () => {
+  const overlay = overlayUserIngredients(buildGlobalIndex(), {
+    locale: "sk",
+    privateRows: [],
+    privateNameRows: [],
+    privateAliasRows: [
+      { locale: "sk", alias: "maslo", key: "butter", canonicalName: "Butter", source: "ai" },
+    ],
+  });
+
+  const rows = overlay.index.byAlias.get("maslo") ?? [];
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].isUserChoice, true);
+});
+
+test("getRememberableAiKey keeps a confident AI pick the identity actually used", () => {
+  const suggestion = {
+    ingredientKey: "chicken",
+    ingredientSpecificKey: "chicken-breast",
+    matchedExistingIngredientKey: null,
+    matchedExistingIngredientSpecificKey: null,
+    confidence: 0.9,
+  };
+
+  assert.equal(
+    getRememberableAiKey(suggestion, { ingredientSpecificKey: "chicken-breast", source: "ai-suggested" }),
+    "chicken-breast",
+  );
+  assert.equal(
+    getRememberableAiKey({ ...suggestion, confidence: 0.79 }, { ingredientSpecificKey: "chicken-breast", source: "ai-suggested" }),
+    null,
+  );
+  assert.equal(
+    getRememberableAiKey(suggestion, { ingredientSpecificKey: "chicken-thigh", source: "ai-suggested" }),
+    null,
+  );
+  assert.equal(
+    getRememberableAiKey(suggestion, { ingredientSpecificKey: "chicken-breast", source: "translation-exact" }),
+    null,
+  );
+  assert.equal(getRememberableAiKey(null, { ingredientSpecificKey: "chicken-breast", source: "ai-suggested" }), null);
 });

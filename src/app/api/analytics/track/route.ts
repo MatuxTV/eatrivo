@@ -24,7 +24,12 @@ export async function POST(req: NextRequest) {
       return rateLimitResult.response;
     }
 
-    const body = await req.json();
+    // A request aborted mid-send (page reload or navigation) arrives with an
+    // empty or cut-off body; that is a client hiccup, not a server error.
+    const body: unknown = await req.json().catch(() => null);
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
 
     const { eventType, eventName, metadata } = body as {
       eventType?: unknown;
